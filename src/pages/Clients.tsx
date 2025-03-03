@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -66,6 +65,7 @@ const Clients = () => {
 
     setClients((prev) => [newClient, ...prev]);
     setIsAddingClient(false);
+    toast.success("Client created successfully");
   };
 
   const handleEditClient = (data: any) => {
@@ -79,6 +79,7 @@ const Clients = () => {
       )
     );
     setEditingClient(null);
+    toast.success("Client updated successfully");
   };
 
   const handleDeleteClient = (id: string) => {
@@ -227,9 +228,11 @@ const Clients = () => {
       </div>
 
       {/* Add Client Dialog */}
-      <Dialog
-        open={isAddingClient}
-        onOpenChange={(open) => !open && setIsAddingClient(false)}
+      <Dialog 
+        open={isAddingClient} 
+        onOpenChange={(open) => {
+          if (!open) setIsAddingClient(false);
+        }}
       >
         <DialogContent className="sm:max-w-[500px]">
           <ClientForm
@@ -240,9 +243,11 @@ const Clients = () => {
       </Dialog>
 
       {/* Edit Client Dialog */}
-      <Dialog
-        open={!!editingClient}
-        onOpenChange={(open) => !open && setEditingClient(null)}
+      <Dialog 
+        open={!!editingClient} 
+        onOpenChange={(open) => {
+          if (!open) setEditingClient(null);
+        }}
       >
         <DialogContent className="sm:max-w-[500px]">
           {editingClient && (
@@ -256,9 +261,11 @@ const Clients = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={!!isDeleting}
-        onOpenChange={(open) => !open && setIsDeleting(null)}
+      <Dialog 
+        open={!!isDeleting} 
+        onOpenChange={(open) => {
+          if (!open) setIsDeleting(null);
+        }}
       >
         <DialogContent className="sm:max-w-[425px]">
           <div className="space-y-4">

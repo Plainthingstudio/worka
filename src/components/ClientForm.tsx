@@ -61,7 +61,7 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     onSave(values);
-    toast.success(client ? "Client updated successfully" : "Client created successfully");
+    // Remove the toast from here, it will be handled in the parent component
   };
 
   const leadSources: LeadSource[] = [
