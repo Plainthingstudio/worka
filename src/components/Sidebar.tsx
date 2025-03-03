@@ -5,6 +5,11 @@ import {
   LayoutDashboard,
   Users,
   ListChecks,
+  Settings,
+  HelpCircle,
+  Calendar,
+  FileText,
+  BarChart2,
   LogOut,
   Menu,
   X,
@@ -35,13 +40,38 @@ const Sidebar = () => {
       label: "Projects",
       href: "/projects",
     },
+    {
+      icon: Calendar,
+      label: "Calendar",
+      href: "/calendar",
+    },
+    {
+      icon: FileText,
+      label: "Invoices",
+      href: "/invoices",
+    },
+    {
+      icon: BarChart2,
+      label: "Reports",
+      href: "/reports",
+    },
+    {
+      icon: Settings,
+      label: "Settings",
+      href: "/settings",
+    },
+    {
+      icon: HelpCircle,
+      label: "Help",
+      href: "/help",
+    },
   ];
 
   return (
     <div
       className={cn(
         "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-border bg-white transition-all duration-300 ease-in-out",
-        expanded ? "w-64" : "w-20"
+        expanded ? "w-64" : "w-16"
       )}
     >
       <div className="flex h-16 items-center justify-between px-4">
@@ -91,6 +121,9 @@ const Sidebar = () => {
         <NavLink
           to="/auth"
           className="flex items-center rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
+          onClick={() => {
+            localStorage.removeItem("isLoggedIn");
+          }}
         >
           <LogOut
             className={cn("h-5 w-5", expanded ? "mr-3" : "mx-auto")}
@@ -100,6 +133,6 @@ const Sidebar = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Sidebar;

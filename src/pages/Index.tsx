@@ -19,7 +19,7 @@ export default function Index() {
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
-      <div className="flex-1">
+      <div className="flex-1 ml-[calc(4rem)] md:ml-64">
         <Navbar title="Dashboard" />
         <main className="p-6">
           <Dashboard />
