@@ -205,8 +205,7 @@ const Clients = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
+                    <TableHead>Contact Info</TableHead>
                     <TableHead>Lead Source</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -228,20 +227,24 @@ const Clients = () => {
                         <TableCell className="font-medium">
                           {client.name}
                         </TableCell>
-                        <TableCell className="flex items-center gap-1">
-                          <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                          {client.email}
-                        </TableCell>
-                        <TableCell className="flex items-center gap-1">
-                          <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                          {client.phone}
+                        <TableCell>
+                          <div className="flex flex-col space-y-1">
+                            <div className="flex items-center gap-1.5">
+                              <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                              <span>{client.email}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                              <span>{client.phone}</span>
+                            </div>
+                          </div>
                         </TableCell>
                         <TableCell>
                           <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
                             {client.leadSource}
                           </span>
                         </TableCell>
-                        <TableCell className="flex items-center gap-1 text-muted-foreground">
+                        <TableCell className="text-muted-foreground">
                           {format(new Date(client.createdAt), "MMM dd, yyyy")}
                         </TableCell>
                         <TableCell className="text-right">
