@@ -24,6 +24,10 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogHeader,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -45,14 +49,14 @@ const Clients = () => {
   const [clients, setClients] = useState<Client[]>(initialClients);
   const [search, setSearch] = useState("");
   
-  // Dialog state management
-  const [addClientOpen, setAddClientOpen] = useState(false);
-  const [editClientOpen, setEditClientOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // Dialog states - separate states for each dialog
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
-  // Store client data for edit/delete operations
-  const [activeClientId, setActiveClientId] = useState<string | null>(null);
-  const [clientToEdit, setClientToEdit] = useState<Client | null>(null);
+  // Client data states
+  const [currentClient, setCurrentClient] = useState<Client | null>(null);
+  const [clientIdToDelete, setClientIdToDelete] = useState<string | null>(null);
 
   const filteredClients = clients.filter((client) =>
     client.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -60,7 +64,19 @@ const Clients = () => {
     client.phone.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Clear dialog states when closing dialogs
+  const clearDialogStates = () => {
+    setCurrentClient(null);
+    setClientIdToDelete(null);
+  };
+
   // Add client functions
+  const openAddDialog = () => setIsAddDialogOpen(true);
+  const closeAddDialog = () => {
+    setIsAddDialogOpen(false);
+    clearDialogStates();
+  };
+  
   const handleAddClient = (data: any) => {
     const newClient: Client = {
       id: `client-${Date.now()}`,
@@ -72,48 +88,52 @@ const Clients = () => {
     };
 
     setClients((prev) => [newClient, ...prev]);
-    setAddClientOpen(false);
+    closeAddDialog();
     toast.success("Client created successfully");
   };
 
   // Edit client functions
+  const openEditDialog = (client: Client) => {
+    setCurrentClient(client);
+    setIsEditDialogOpen(true);
+  };
+  
+  const closeEditDialog = () => {
+    setIsEditDialogOpen(false);
+    clearDialogStates();
+  };
+  
   const handleEditClient = (data: any) => {
-    if (!clientToEdit) return;
+    if (!currentClient) return;
 
     setClients((prev) =>
       prev.map((client) =>
-        client.id === clientToEdit.id
+        client.id === currentClient.id
           ? { ...client, ...data }
           : client
       )
     );
-    setEditClientOpen(false);
-    setClientToEdit(null);
+    closeEditDialog();
     toast.success("Client updated successfully");
   };
 
   // Delete client functions
+  const openDeleteDialog = (clientId: string) => {
+    setClientIdToDelete(clientId);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const closeDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+    clearDialogStates();
+  };
+  
   const handleDeleteClient = () => {
-    if (!activeClientId) return;
+    if (!clientIdToDelete) return;
     
-    setClients((prev) => prev.filter((client) => client.id !== activeClientId));
-    setDeleteDialogOpen(false);
-    setActiveClientId(null);
+    setClients((prev) => prev.filter((client) => client.id !== clientIdToDelete));
+    closeDeleteDialog();
     toast.success("Client deleted successfully");
-  };
-
-  // Open/close functions for all dialogs
-  const openAddClientDialog = () => setAddClientOpen(true);
-  const closeAddClientDialog = () => setAddClientOpen(false);
-  
-  const openEditClientDialog = (client: Client) => {
-    setClientToEdit(client);
-    setEditClientOpen(true);
-  };
-  
-  const openDeleteDialog = (id: string) => {
-    setActiveClientId(id);
-    setDeleteDialogOpen(true);
   };
 
   return (
@@ -131,7 +151,7 @@ const Clients = () => {
                 Manage and track your client relationships.
               </p>
             </div>
-            <Button onClick={openAddClientDialog}>
+            <Button onClick={openAddDialog}>
               <Plus className="mr-2 h-4 w-4" />
               Add Client
             </Button>
@@ -230,7 +250,7 @@ const Clients = () => {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
-                                onClick={() => openEditClientDialog(client)}
+                                onClick={() => openEditDialog(client)}
                               >
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Edit
@@ -255,62 +275,42 @@ const Clients = () => {
         </main>
       </div>
 
-      {/* Add Client Dialog */}
-      <Dialog 
-        open={addClientOpen} 
-        onOpenChange={(open) => {
-          if (!open) closeAddClientDialog();
-        }}
-      >
-        <DialogContent className="sm:max-w-[500px]">
-          <ClientForm
-            onSave={handleAddClient}
-            onCancel={closeAddClientDialog}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Client Dialog */}
-      <Dialog 
-        open={editClientOpen} 
-        onOpenChange={(open) => {
-          if (!open) {
-            setEditClientOpen(false);
-            setClientToEdit(null);
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-[500px]">
-          {clientToEdit && (
+      {/* Add Client Dialog - only render when open */}
+      {isAddDialogOpen && (
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
             <ClientForm
-              client={clientToEdit}
-              onSave={handleEditClient}
-              onCancel={() => {
-                setEditClientOpen(false);
-                setClientToEdit(null);
-              }}
+              onSave={handleAddClient}
+              onCancel={closeAddDialog}
             />
-          )}
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog 
-        open={deleteDialogOpen} 
-        onOpenChange={(open) => {
-          if (!open) {
-            setDeleteDialogOpen(false);
-            setActiveClientId(null);
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-[425px]">
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Confirm Deletion</h2>
-            <p className="text-muted-foreground">
-              Are you sure you want to delete this client? This action cannot be undone.
-            </p>
-            <div className="flex gap-2 pt-4">
+      {/* Edit Client Dialog - only render when open */}
+      {isEditDialogOpen && currentClient && (
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <ClientForm
+              client={currentClient}
+              onSave={handleEditClient}
+              onCancel={closeEditDialog}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Delete Confirmation Dialog - only render when open */}
+      {isDeleteDialogOpen && (
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Confirm Deletion</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this client? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex gap-2 pt-4">
               <Button
                 variant="destructive"
                 onClick={handleDeleteClient}
@@ -320,18 +320,15 @@ const Clients = () => {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => {
-                  setDeleteDialogOpen(false);
-                  setActiveClientId(null);
-                }}
+                onClick={closeDeleteDialog}
                 className="flex-1"
               >
                 Cancel
               </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
