@@ -78,6 +78,16 @@ const Projects = () => {
     return matchesSearch && matchesStatus;
   });
 
+  // These functions are separated to improve readability and maintainability
+  const openAddProjectDialog = () => setIsAddingProject(true);
+  const closeAddProjectDialog = () => setIsAddingProject(false);
+  
+  const openEditProjectDialog = (project: Project) => setEditingProject(project);
+  const closeEditProjectDialog = () => setEditingProject(null);
+  
+  const openDeleteDialog = (id: string) => setIsDeleting(id);
+  const closeDeleteDialog = () => setIsDeleting(null);
+
   const handleAddProject = (data: any) => {
     const newProject: Project = {
       id: `project-${Date.now()}`,
@@ -149,7 +159,7 @@ const Projects = () => {
                 Track and manage all your client projects.
               </p>
             </div>
-            <Button onClick={() => setIsAddingProject(true)}>
+            <Button onClick={openAddProjectDialog}>
               <Plus className="mr-2 h-4 w-4" />
               Create Project
             </Button>
@@ -267,7 +277,7 @@ const Projects = () => {
                                       variant="ghost"
                                       size="icon"
                                       className="h-8 w-8"
-                                      onClick={() => setEditingProject(project)}
+                                      onClick={() => openEditProjectDialog(project)}
                                     >
                                       <Pencil className="h-4 w-4" />
                                       <span className="sr-only">Edit</span>
@@ -286,7 +296,7 @@ const Projects = () => {
                                       variant="ghost"
                                       size="icon"
                                       className="h-8 w-8 text-destructive"
-                                      onClick={() => setIsDeleting(project.id)}
+                                      onClick={() => openDeleteDialog(project.id)}
                                     >
                                       <Trash className="h-4 w-4" />
                                       <span className="sr-only">Delete</span>
@@ -311,72 +321,70 @@ const Projects = () => {
       </div>
 
       {/* Add Project Dialog */}
-      <Dialog
-        open={isAddingProject}
-        onOpenChange={(open) => {
-          if (!open) setIsAddingProject(false);
-        }}
-      >
-        <DialogContent className="sm:max-w-[600px]">
-          <ProjectForm
-            clients={clients}
-            onSave={handleAddProject}
-            onCancel={() => setIsAddingProject(false)}
-          />
-        </DialogContent>
-      </Dialog>
+      {isAddingProject && (
+        <Dialog
+          open={isAddingProject}
+          onOpenChange={closeAddProjectDialog}
+        >
+          <DialogContent className="sm:max-w-[600px]">
+            <ProjectForm
+              clients={clients}
+              onSave={handleAddProject}
+              onCancel={closeAddProjectDialog}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Edit Project Dialog */}
-      <Dialog
-        open={!!editingProject}
-        onOpenChange={(open) => {
-          if (!open) setEditingProject(null);
-        }}
-      >
-        <DialogContent className="sm:max-w-[600px]">
-          {editingProject && (
+      {editingProject && (
+        <Dialog
+          open={!!editingProject}
+          onOpenChange={closeEditProjectDialog}
+        >
+          <DialogContent className="sm:max-w-[600px]">
             <ProjectForm
               project={editingProject}
               clients={clients}
               onSave={handleEditProject}
-              onCancel={() => setEditingProject(null)}
+              onCancel={closeEditProjectDialog}
             />
-          )}
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={!!isDeleting}
-        onOpenChange={(open) => {
-          if (!open) setIsDeleting(null);
-        }}
-      >
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this project? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex gap-2 pt-4">
-            <Button
-              variant="destructive"
-              onClick={() => isDeleting && handleDeleteProject(isDeleting)}
-              className="flex-1"
-            >
-              Delete
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleting(null)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {isDeleting && (
+        <Dialog
+          open={!!isDeleting}
+          onOpenChange={closeDeleteDialog}
+        >
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Confirm Deletion</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this project? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex gap-2 pt-4">
+              <Button
+                variant="destructive"
+                onClick={() => isDeleting && handleDeleteProject(isDeleting)}
+                className="flex-1"
+              >
+                Delete
+              </Button>
+              <Button
+                variant="outline"
+                onClick={closeDeleteDialog}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
