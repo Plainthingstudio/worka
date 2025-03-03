@@ -228,13 +228,13 @@ const Clients = () => {
                           {client.name}
                         </TableCell>
                         <TableCell>
-                          <div className="flex flex-col space-y-1">
-                            <div className="flex items-center gap-1.5">
-                              <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-4 w-4 text-muted-foreground" />
                               <span>{client.email}</span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                              <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-muted-foreground" />
                               <span>{client.phone}</span>
                             </div>
                           </div>
