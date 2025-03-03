@@ -1,18 +1,9 @@
 
-import React, { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import {
-  LayoutDashboard,
-  Users,
-  DollarSign,
-  ListChecks,
-  ArrowUpRight,
-  Clock,
-} from "lucide-react";
-import { Client, DashboardStats, Project } from "@/types";
-import Navbar from "@/components/Navbar";
-import Sidebar from "@/components/Sidebar";
-import StatCard from "@/components/StatCard";
+import { ArrowRight, Users, Briefcase, DollarSign, Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -21,15 +12,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import StatCard from "@/components/StatCard";
+import { Client, Project } from "@/types";
 
-// Mock data
+// Import mock data
 import { clients, projects } from "@/mockData";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [stats, setStats] = useState<DashboardStats>({
+  const [stats, setStats] = useState({
     totalClients: 0,
     totalProjects: 0,
     totalEarnings: 0,
@@ -61,127 +52,141 @@ const Dashboard = () => {
     .slice(0, 5);
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-      <div className="flex-1 pl-64">
-        <Navbar title="Dashboard" />
-        <main className="container mx-auto p-6">
-          <div className="mb-8">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Dashboard Overview
-            </h1>
-            <p className="text-muted-foreground">
-              Welcome back! Here's what's happening with your studio.
-            </p>
-          </div>
+    <div className="w-full max-w-screen-2xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Dashboard Overview
+        </h1>
+      </div>
 
-          <div className="mb-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              title="Total Clients"
-              value={stats.totalClients}
-              icon={Users}
-              change={{ value: 12, type: "increase" }}
-              className="delay-[0ms]"
-            />
-            <StatCard
-              title="Total Projects"
-              value={stats.totalProjects}
-              icon={ListChecks}
-              change={{ value: 8, type: "increase" }}
-              className="delay-[100ms]"
-            />
-            <StatCard
-              title="Total Earnings"
-              value={stats.totalEarnings.toLocaleString()}
-              prefix="$"
-              icon={DollarSign}
-              change={{ value: 14, type: "increase" }}
-              className="delay-[200ms]"
-            />
-            <StatCard
-              title="Active Projects"
-              value={stats.activeProjects}
-              icon={Clock}
-              change={{ value: 2, type: "decrease" }}
-              className="delay-[300ms]"
-            />
-          </div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard
+          title="Total Clients"
+          value={stats.totalClients}
+          icon={Users}
+          className="bg-white shadow-sm border border-border"
+        />
+        <StatCard
+          title="Total Projects"
+          value={stats.totalProjects}
+          icon={Briefcase}
+          className="bg-white shadow-sm border border-border"
+        />
+        <StatCard
+          title="Total Earnings"
+          value={stats.totalEarnings.toLocaleString()}
+          prefix="$"
+          icon={DollarSign}
+          className="bg-white shadow-sm border border-border"
+        />
+        <StatCard
+          title="Active Projects"
+          value={stats.activeProjects}
+          icon={Activity}
+          className="bg-white shadow-sm border border-border"
+        />
+      </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
-              <div className="flex items-center justify-between border-b p-4">
-                <h2 className="font-semibold">Recent Clients</h2>
-                <Button
-                  variant="ghost"
-                  className="text-sm text-muted-foreground"
-                  onClick={() => navigate("/clients")}
-                >
-                  View All
-                  <ArrowUpRight className="ml-1 h-4 w-4" />
-                </Button>
-              </div>
-              <div className="p-4">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Lead Source</TableHead>
+      {/* Recent Clients */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-medium">Recent Clients</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-sm text-muted-foreground"
+            onClick={() => navigate("/clients")}
+          >
+            Go to Clients
+            <ArrowRight className="ml-1 h-4 w-4" />
+          </Button>
+        </div>
+        <div className="bg-white rounded-md border border-border overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Lead Source</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recentClients.length > 0 ? (
+                recentClients.map((client) => (
+                  <TableRow key={client.id}>
+                    <TableCell className="font-medium">{client.name}</TableCell>
+                    <TableCell>{client.email}</TableCell>
+                    <TableCell>{client.phone}</TableCell>
+                    <TableCell>{client.leadSource}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-4">
+                    No clients found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+
+      {/* Active Projects */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-medium">Active Projects</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-sm text-muted-foreground"
+            onClick={() => navigate("/projects")}
+          >
+            Go to Projects
+            <ArrowRight className="ml-1 h-4 w-4" />
+          </Button>
+        </div>
+        <div className="bg-white rounded-md border border-border overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Project Name</TableHead>
+                <TableHead>Client</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Deadline</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {activeProjects.length > 0 ? (
+                activeProjects.map((project) => {
+                  const client = clients.find(c => c.id === project.clientId);
+                  return (
+                    <TableRow key={project.id}>
+                      <TableCell className="font-medium">{project.name}</TableCell>
+                      <TableCell>{client?.name}</TableCell>
+                      <TableCell>
+                        <span className={`status-badge status-${project.status.toLowerCase().replace(' ', '-')}`}>
+                          {project.status}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(project.deadline), "yyyy-MM-dd")}
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {recentClients.map((client) => (
-                      <TableRow key={client.id}>
-                        <TableCell className="font-medium">{client.name}</TableCell>
-                        <TableCell>{client.email}</TableCell>
-                        <TableCell>{client.leadSource}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-
-            <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
-              <div className="flex items-center justify-between border-b p-4">
-                <h2 className="font-semibold">Active Projects</h2>
-                <Button
-                  variant="ghost"
-                  className="text-sm text-muted-foreground"
-                  onClick={() => navigate("/projects")}
-                >
-                  View All
-                  <ArrowUpRight className="ml-1 h-4 w-4" />
-                </Button>
-              </div>
-              <div className="p-4">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Project</TableHead>
-                      <TableHead>Client</TableHead>
-                      <TableHead>Deadline</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {activeProjects.map((project) => {
-                      const client = clients.find(c => c.id === project.clientId);
-                      return (
-                        <TableRow key={project.id}>
-                          <TableCell className="font-medium">{project.name}</TableCell>
-                          <TableCell>{client?.name}</TableCell>
-                          <TableCell>
-                            {format(new Date(project.deadline), "MMM dd, yyyy")}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          </div>
-        </main>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-4">
+                    No active projects found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,4 @@
 
-import React from "react";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,12 +26,12 @@ const StatCard = ({
 }: StatCardProps) => {
   return (
     <div className={cn(
-      "glass-card flex flex-col overflow-hidden rounded-xl p-6 transition-all duration-300 ease-in-out hover:shadow-md animate-fade-in",
+      "flex flex-col overflow-hidden rounded-md p-4 transition-all duration-300 ease-in-out hover:shadow-md",
       className
     )}>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-2 flex items-center justify-between">
         <p className="text-sm font-medium text-muted-foreground">{title}</p>
-        <div className="rounded-full bg-primary/10 p-2.5 text-primary">
+        <div className="rounded-full bg-primary/10 p-2 text-primary">
           <Icon className="h-4 w-4" />
         </div>
       </div>
