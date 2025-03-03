@@ -1,4 +1,3 @@
-
 import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -63,7 +62,6 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     onSave(values);
-    toast.success(client ? "Client updated successfully" : "Client created successfully");
   };
 
   const leadSources: LeadSource[] = [

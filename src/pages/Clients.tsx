@@ -47,11 +47,12 @@ import Sidebar from "@/components/Sidebar";
 import ClientForm from "@/components/ClientForm";
 import { Client, LeadSource } from "@/types";
 
-// Use clients from the central mockData to maintain consistency
-import { clients as initialClients } from "@/mockData";
+// Import and modify the clients from mockData
+import { clients as mockClients } from "@/mockData";
 
 const Clients = () => {
-  const [clients, setClients] = useState<Client[]>(initialClients);
+  // Initialize state with the mockClients but allow it to be updated
+  const [clients, setClients] = useState<Client[]>(mockClients);
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [isAddingClient, setIsAddingClient] = useState(false);
@@ -70,7 +71,6 @@ const Clients = () => {
     return matchesSearch && matchesSource;
   });
 
-  // These functions are separated to improve readability and maintainability
   const openAddClientDialog = () => setIsAddingClient(true);
   const closeAddClientDialog = () => setIsAddingClient(false);
   
@@ -90,7 +90,14 @@ const Clients = () => {
       createdAt: new Date(),
     };
 
-    setClients((prev) => [newClient, ...prev]);
+    // Update both local state and the central mockData
+    const updatedClients = [newClient, ...clients];
+    setClients(updatedClients);
+    
+    // Update the original array to make it available globally
+    mockClients.length = 0; // Clear the array
+    mockClients.push(...updatedClients); // Add all clients back
+    
     setIsAddingClient(false);
     toast.success("Client created successfully");
   };
@@ -98,19 +105,33 @@ const Clients = () => {
   const handleEditClient = (data: any) => {
     if (!editingClient) return;
 
-    setClients((prev) =>
-      prev.map((client) =>
-        client.id === editingClient.id
-          ? { ...client, ...data }
-          : client
-      )
+    const updatedClients = clients.map((client) =>
+      client.id === editingClient.id
+        ? { ...client, ...data }
+        : client
     );
+    
+    // Update both local state and the central mockData
+    setClients(updatedClients);
+    
+    // Update the original array to make it available globally
+    mockClients.length = 0; 
+    mockClients.push(...updatedClients);
+    
     setEditingClient(null);
     toast.success("Client updated successfully");
   };
 
   const handleDeleteClient = (id: string) => {
-    setClients((prev) => prev.filter((client) => client.id !== id));
+    const updatedClients = clients.filter((client) => client.id !== id);
+    
+    // Update both local state and the central mockData
+    setClients(updatedClients);
+    
+    // Update the original array to make it available globally
+    mockClients.length = 0;
+    mockClients.push(...updatedClients);
+    
     setIsDeleting(null);
     toast.success("Client deleted successfully");
   };

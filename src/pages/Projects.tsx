@@ -53,11 +53,12 @@ import ProjectForm from "@/components/ProjectForm";
 import { Client, Project, ProjectStatus } from "@/types";
 
 // Import clients and projects from the centralized mockData
-import { clients, projects as initialProjects } from "@/mockData";
+import { clients, projects as mockProjects } from "@/mockData";
 
 const Projects = () => {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  // Initialize state with the mockProjects but keep track of the reference to mockProjects
+  const [projects, setProjects] = useState<Project[]>(mockProjects);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isAddingProject, setIsAddingProject] = useState(false);
@@ -100,7 +101,14 @@ const Projects = () => {
       createdAt: new Date(),
     };
 
-    setProjects((prev) => [newProject, ...prev]);
+    // Update both local state and the central mockData
+    const updatedProjects = [newProject, ...projects];
+    setProjects(updatedProjects);
+    
+    // Update the original array to make it available globally
+    mockProjects.length = 0; // Clear the array
+    mockProjects.push(...updatedProjects); // Add all projects back
+    
     setIsAddingProject(false);
     toast.success("Project created successfully");
   };
@@ -108,19 +116,33 @@ const Projects = () => {
   const handleEditProject = (data: any) => {
     if (!editingProject) return;
 
-    setProjects((prev) =>
-      prev.map((project) =>
-        project.id === editingProject.id
-          ? { ...project, ...data }
-          : project
-      )
+    const updatedProjects = projects.map((project) =>
+      project.id === editingProject.id
+        ? { ...project, ...data }
+        : project
     );
+    
+    // Update both local state and the central mockData
+    setProjects(updatedProjects);
+    
+    // Update the original array to make it available globally
+    mockProjects.length = 0;
+    mockProjects.push(...updatedProjects);
+    
     setEditingProject(null);
     toast.success("Project updated successfully");
   };
 
   const handleDeleteProject = (id: string) => {
-    setProjects((prev) => prev.filter((project) => project.id !== id));
+    const updatedProjects = projects.filter((project) => project.id !== id);
+    
+    // Update both local state and the central mockData
+    setProjects(updatedProjects);
+    
+    // Update the original array to make it available globally
+    mockProjects.length = 0;
+    mockProjects.push(...updatedProjects);
+    
     setIsDeleting(null);
     toast.success("Project deleted successfully");
   };
