@@ -9,6 +9,7 @@ import {
   Mail,
   Phone,
   User,
+  EyeIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,9 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -91,6 +95,7 @@ const Clients = () => {
     return matchesSearch && matchesSource;
   });
 
+  // These functions are separated to improve readability and maintainability
   const openAddClientDialog = () => setIsAddingClient(true);
   const closeAddClientDialog = () => setIsAddingClient(false);
   
@@ -112,6 +117,7 @@ const Clients = () => {
 
     setClients((prev) => [newClient, ...prev]);
     setIsAddingClient(false);
+    toast.success("Client created successfully");
   };
 
   const handleEditClient = (data: any) => {
@@ -125,6 +131,7 @@ const Clients = () => {
       )
     );
     setEditingClient(null);
+    toast.success("Client updated successfully");
   };
 
   const handleDeleteClient = (id: string) => {
@@ -218,16 +225,15 @@ const Clients = () => {
                   ) : (
                     filteredClients.map((client) => (
                       <TableRow key={client.id}>
-                        <TableCell className="font-medium flex items-center gap-2">
-                          <User className="h-4 w-4 text-muted-foreground" />
+                        <TableCell className="font-medium">
                           {client.name}
                         </TableCell>
-                        <TableCell className="flex items-center gap-2">
-                          <Mail className="h-4 w-4 text-muted-foreground" />
+                        <TableCell className="flex items-center gap-1">
+                          <Mail className="h-3.5 w-3.5 text-muted-foreground" />
                           {client.email}
                         </TableCell>
-                        <TableCell className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-muted-foreground" />
+                        <TableCell className="flex items-center gap-1">
+                          <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                           {client.phone}
                         </TableCell>
                         <TableCell>
@@ -235,7 +241,7 @@ const Clients = () => {
                             {client.leadSource}
                           </span>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
+                        <TableCell className="flex items-center gap-1 text-muted-foreground">
                           {format(new Date(client.createdAt), "MMM dd, yyyy")}
                         </TableCell>
                         <TableCell className="text-right">
@@ -327,25 +333,27 @@ const Clients = () => {
           onOpenChange={closeDeleteDialog}
         >
           <DialogContent className="sm:max-w-[425px]">
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold">Confirm Deletion</h2>
-              <p className="text-muted-foreground">
+            <DialogHeader>
+              <DialogTitle>Confirm Deletion</DialogTitle>
+              <DialogDescription>
                 Are you sure you want to delete this client? This action cannot be undone.
-              </p>
-              <div className="flex gap-2 pt-4 justify-end">
-                <Button
-                  variant="outline"
-                  onClick={closeDeleteDialog}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => isDeleting && handleDeleteClient(isDeleting)}
-                >
-                  Delete
-                </Button>
-              </div>
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex gap-2 pt-4">
+              <Button
+                variant="destructive"
+                onClick={() => isDeleting && handleDeleteClient(isDeleting)}
+                className="flex-1"
+              >
+                Delete
+              </Button>
+              <Button
+                variant="outline"
+                onClick={closeDeleteDialog}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
