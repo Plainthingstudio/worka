@@ -44,9 +44,15 @@ const Clients = () => {
   const navigate = useNavigate();
   const [clients, setClients] = useState<Client[]>(initialClients);
   const [search, setSearch] = useState("");
-  const [isAddingClient, setIsAddingClient] = useState(false);
-  const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  
+  // Dialog state management
+  const [addClientOpen, setAddClientOpen] = useState(false);
+  const [editClientOpen, setEditClientOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  
+  // Store client data for edit/delete operations
+  const [activeClientId, setActiveClientId] = useState<string | null>(null);
+  const [clientToEdit, setClientToEdit] = useState<Client | null>(null);
 
   const filteredClients = clients.filter((client) =>
     client.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -54,6 +60,7 @@ const Clients = () => {
     client.phone.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Add client functions
   const handleAddClient = (data: any) => {
     const newClient: Client = {
       id: `client-${Date.now()}`,
@@ -65,39 +72,49 @@ const Clients = () => {
     };
 
     setClients((prev) => [newClient, ...prev]);
-    setIsAddingClient(false);
+    setAddClientOpen(false);
     toast.success("Client created successfully");
   };
 
+  // Edit client functions
   const handleEditClient = (data: any) => {
-    if (!editingClient) return;
+    if (!clientToEdit) return;
 
     setClients((prev) =>
       prev.map((client) =>
-        client.id === editingClient.id
+        client.id === clientToEdit.id
           ? { ...client, ...data }
           : client
       )
     );
-    setEditingClient(null);
+    setEditClientOpen(false);
+    setClientToEdit(null);
     toast.success("Client updated successfully");
   };
 
-  const handleDeleteClient = (id: string) => {
-    setClients((prev) => prev.filter((client) => client.id !== id));
-    setIsDeleting(null);
+  // Delete client functions
+  const handleDeleteClient = () => {
+    if (!activeClientId) return;
+    
+    setClients((prev) => prev.filter((client) => client.id !== activeClientId));
+    setDeleteDialogOpen(false);
+    setActiveClientId(null);
     toast.success("Client deleted successfully");
   };
 
-  // These functions are separated to improve readability and maintainability
-  const openAddClientDialog = () => setIsAddingClient(true);
-  const closeAddClientDialog = () => setIsAddingClient(false);
+  // Open/close functions for all dialogs
+  const openAddClientDialog = () => setAddClientOpen(true);
+  const closeAddClientDialog = () => setAddClientOpen(false);
   
-  const openEditClientDialog = (client: Client) => setEditingClient(client);
-  const closeEditClientDialog = () => setEditingClient(null);
+  const openEditClientDialog = (client: Client) => {
+    setClientToEdit(client);
+    setEditClientOpen(true);
+  };
   
-  const openDeleteDialog = (id: string) => setIsDeleting(id);
-  const closeDeleteDialog = () => setIsDeleting(null);
+  const openDeleteDialog = (id: string) => {
+    setActiveClientId(id);
+    setDeleteDialogOpen(true);
+  };
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -239,68 +256,82 @@ const Clients = () => {
       </div>
 
       {/* Add Client Dialog */}
-      {isAddingClient && (
-        <Dialog 
-          open={isAddingClient} 
-          onOpenChange={closeAddClientDialog}
-        >
-          <DialogContent className="sm:max-w-[500px]">
-            <ClientForm
-              onSave={handleAddClient}
-              onCancel={closeAddClientDialog}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
+      <Dialog 
+        open={addClientOpen} 
+        onOpenChange={(open) => {
+          if (!open) closeAddClientDialog();
+        }}
+      >
+        <DialogContent className="sm:max-w-[500px]">
+          <ClientForm
+            onSave={handleAddClient}
+            onCancel={closeAddClientDialog}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Client Dialog */}
-      {editingClient && (
-        <Dialog 
-          open={!!editingClient} 
-          onOpenChange={closeEditClientDialog}
-        >
-          <DialogContent className="sm:max-w-[500px]">
+      <Dialog 
+        open={editClientOpen} 
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditClientOpen(false);
+            setClientToEdit(null);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[500px]">
+          {clientToEdit && (
             <ClientForm
-              client={editingClient}
+              client={clientToEdit}
               onSave={handleEditClient}
-              onCancel={closeEditClientDialog}
+              onCancel={() => {
+                setEditClientOpen(false);
+                setClientToEdit(null);
+              }}
             />
-          </DialogContent>
-        </Dialog>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      {isDeleting && (
-        <Dialog 
-          open={!!isDeleting} 
-          onOpenChange={closeDeleteDialog}
-        >
-          <DialogContent className="sm:max-w-[425px]">
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold">Confirm Deletion</h2>
-              <p className="text-muted-foreground">
-                Are you sure you want to delete this client? This action cannot be undone.
-              </p>
-              <div className="flex gap-2 pt-4">
-                <Button
-                  variant="destructive"
-                  onClick={() => isDeleting && handleDeleteClient(isDeleting)}
-                  className="flex-1"
-                >
-                  Delete
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={closeDeleteDialog}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-              </div>
+      <Dialog 
+        open={deleteDialogOpen} 
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteDialogOpen(false);
+            setActiveClientId(null);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">Confirm Deletion</h2>
+            <p className="text-muted-foreground">
+              Are you sure you want to delete this client? This action cannot be undone.
+            </p>
+            <div className="flex gap-2 pt-4">
+              <Button
+                variant="destructive"
+                onClick={handleDeleteClient}
+                className="flex-1"
+              >
+                Delete
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setDeleteDialogOpen(false);
+                  setActiveClientId(null);
+                }}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
             </div>
-          </DialogContent>
-        </Dialog>
-      )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
