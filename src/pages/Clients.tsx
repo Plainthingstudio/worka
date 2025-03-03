@@ -15,11 +15,7 @@ import ClientForm from "@/components/ClientForm";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 
 // Mock data
 import { clients as initialClients } from "@/mockData";
@@ -28,10 +24,15 @@ const Clients = () => {
   const [clients, setClients] = useState<Client[]>(initialClients);
   const [search, setSearch] = useState("");
   
-  // Dialog states - following Projects page pattern
-  const [isAddingClient, setIsAddingClient] = useState(false);
-  const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  // Single dialog state with mode
+  const [dialog, setDialog] = useState<{
+    open: boolean;
+    mode: "add" | "edit" | "delete" | null;
+    client?: Client;
+  }>({
+    open: false,
+    mode: null
+  });
 
   const filteredClients = clients.filter((client) =>
     client.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -39,9 +40,22 @@ const Clients = () => {
     client.phone.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Add client functions
-  const openAddDialog = () => setIsAddingClient(true);
-  const closeAddDialog = () => setIsAddingClient(false);
+  // Dialog handlers
+  const openAddDialog = () => {
+    setDialog({ open: true, mode: "add" });
+  };
+
+  const openEditDialog = (client: Client) => {
+    setDialog({ open: true, mode: "edit", client });
+  };
+
+  const openDeleteDialog = (client: Client) => {
+    setDialog({ open: true, mode: "delete", client });
+  };
+
+  const closeDialog = () => {
+    setDialog({ open: false, mode: null });
+  };
   
   const handleAddClient = (data: any) => {
     const newClient: Client = {
@@ -54,37 +68,29 @@ const Clients = () => {
     };
 
     setClients((prev) => [newClient, ...prev]);
-    closeAddDialog();
+    closeDialog();
     toast.success("Client created successfully");
   };
 
-  // Edit client functions
-  const openEditDialog = (client: Client) => setEditingClient(client);
-  const closeEditDialog = () => setEditingClient(null);
-  
   const handleEditClient = (data: any) => {
-    if (!editingClient) return;
+    if (!dialog.client) return;
 
     setClients((prev) =>
       prev.map((client) =>
-        client.id === editingClient.id
+        client.id === dialog.client?.id
           ? { ...client, ...data }
           : client
       )
     );
-    closeEditDialog();
+    closeDialog();
     toast.success("Client updated successfully");
   };
 
-  // Delete client functions
-  const openDeleteDialog = (clientId: string) => setIsDeleting(clientId);
-  const closeDeleteDialog = () => setIsDeleting(null);
-  
   const handleDeleteClient = () => {
-    if (!isDeleting) return;
+    if (!dialog.client) return;
     
-    setClients((prev) => prev.filter((client) => client.id !== isDeleting));
-    closeDeleteDialog();
+    setClients((prev) => prev.filter((client) => client.id !== dialog.client?.id));
+    closeDialog();
     toast.success("Client deleted successfully");
   };
 
@@ -109,69 +115,53 @@ const Clients = () => {
         </main>
       </div>
 
-      {/* Add Client Dialog - follows Projects page pattern */}
-      {isAddingClient && (
-        <Dialog
-          open={isAddingClient}
-          onOpenChange={(open) => !open && closeAddDialog()}
-        >
-          <DialogContent className="sm:max-w-[500px]">
+      {/* Unified Dialog with conditional content */}
+      <Dialog
+        open={dialog.open}
+        onOpenChange={(open) => {
+          if (!open) closeDialog();
+        }}
+      >
+        <DialogContent className="sm:max-w-[500px]">
+          {dialog.mode === "add" && (
             <ClientForm
               onSave={handleAddClient}
-              onCancel={closeAddDialog}
+              onCancel={closeDialog}
             />
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Edit Client Dialog - follows Projects page pattern */}
-      {editingClient && (
-        <Dialog
-          open={!!editingClient}
-          onOpenChange={(open) => !open && closeEditDialog()}
-        >
-          <DialogContent className="sm:max-w-[500px]">
+          )}
+          {dialog.mode === "edit" && dialog.client && (
             <ClientForm
-              client={editingClient}
+              client={dialog.client}
               onSave={handleEditClient}
-              onCancel={closeEditDialog}
+              onCancel={closeDialog}
             />
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Delete Confirmation Dialog - follows Projects page pattern */}
-      {isDeleting && (
-        <Dialog
-          open={!!isDeleting}
-          onOpenChange={(open) => !open && closeDeleteDialog()}
-        >
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Confirm Deletion</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete this client? This action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex gap-2 pt-4">
-              <Button
-                variant="destructive"
-                onClick={handleDeleteClient}
-                className="flex-1"
-              >
-                Delete
-              </Button>
-              <Button
-                variant="outline"
-                onClick={closeDeleteDialog}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
+          )}
+          {dialog.mode === "delete" && dialog.client && (
+            <div>
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold">Confirm Deletion</h2>
+                <p className="text-sm text-muted-foreground">
+                  Are you sure you want to delete this client? This action cannot be undone.
+                </p>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <button 
+                  className="px-4 py-2 border rounded-md hover:bg-muted"
+                  onClick={closeDialog}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90"
+                  onClick={handleDeleteClient}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-          </DialogContent>
-        </Dialog>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -25,13 +25,7 @@ const App = () => (
           <Route path="/clients" element={<Clients />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/auth" element={<Auth />} />
-          {/* Placeholder routes for new sidebar menu items */}
-          <Route path="/calendar" element={<NotFound />} />
-          <Route path="/invoices" element={<NotFound />} />
-          <Route path="/reports" element={<NotFound />} />
-          <Route path="/settings" element={<NotFound />} />
-          <Route path="/help" element={<NotFound />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          {/* 404 catch-all route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

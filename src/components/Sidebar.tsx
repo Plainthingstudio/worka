@@ -5,11 +5,6 @@ import {
   LayoutDashboard,
   Users,
   ListChecks,
-  Settings,
-  HelpCircle,
-  Calendar,
-  FileText,
-  BarChart2,
   LogOut,
   Menu,
   X,
@@ -39,31 +34,6 @@ const Sidebar = () => {
       icon: ListChecks,
       label: "Projects",
       href: "/projects",
-    },
-    {
-      icon: Calendar,
-      label: "Calendar",
-      href: "/calendar",
-    },
-    {
-      icon: FileText,
-      label: "Invoices",
-      href: "/invoices",
-    },
-    {
-      icon: BarChart2,
-      label: "Reports",
-      href: "/reports",
-    },
-    {
-      icon: Settings,
-      label: "Settings",
-      href: "/settings",
-    },
-    {
-      icon: HelpCircle,
-      label: "Help",
-      href: "/help",
     },
   ];
 
