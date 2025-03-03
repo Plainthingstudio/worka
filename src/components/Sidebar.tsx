@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
-  Users,
   ListChecks,
   LogOut,
   Menu,
@@ -24,11 +23,6 @@ const Sidebar = () => {
       icon: LayoutDashboard,
       label: "Dashboard",
       href: "/dashboard",
-    },
-    {
-      icon: Users,
-      label: "Clients",
-      href: "/clients",
     },
     {
       icon: ListChecks,
