@@ -1,66 +1,69 @@
 
+import { Client, Project, LeadSource, ProjectStatus, ProjectType, Currency, PaymentType } from "@/types";
+
 // Mock data for clients
-export const clients = [
+export const clients: Client[] = [
   {
     id: '1',
     name: 'Jane Cooper',
     email: 'jane.cooper@example.com',
     phone: '+1 (555) 123-4567',
-    leadSource: 'Website',
-    createdAt: '2023-03-15T10:30:00Z',
+    leadSource: 'Website' as LeadSource,
+    createdAt: new Date('2023-03-15T10:30:00Z'),
   },
   {
     id: '2',
     name: 'Robert Fox',
     email: 'robert.fox@example.com',
     phone: '+1 (555) 234-5678',
-    leadSource: 'Dribbble',
-    createdAt: '2023-04-20T14:45:00Z',
+    leadSource: 'Dribbble' as LeadSource,
+    createdAt: new Date('2023-04-20T14:45:00Z'),
   },
   {
     id: '3',
     name: 'Esther Howard',
     email: 'esther.howard@example.com',
     phone: '+1 (555) 345-6789',
-    leadSource: 'Linkedin',
-    createdAt: '2023-05-05T09:15:00Z',
+    leadSource: 'LinkedIn' as LeadSource,
+    createdAt: new Date('2023-05-05T09:15:00Z'),
   },
   {
     id: '4',
     name: 'Leslie Alexander',
     email: 'leslie.alexander@example.com',
     phone: '+1 (555) 456-7890',
-    leadSource: 'Direct Email',
-    createdAt: '2023-05-12T11:20:00Z',
+    leadSource: 'Direct Email' as LeadSource,
+    createdAt: new Date('2023-05-12T11:20:00Z'),
   },
   {
     id: '5',
     name: 'Dianne Russell',
     email: 'dianne.russell@example.com',
     phone: '+1 (555) 567-8901',
-    leadSource: 'Behance',
-    createdAt: '2023-06-01T16:00:00Z',
+    leadSource: 'Behance' as LeadSource,
+    createdAt: new Date('2023-06-01T16:00:00Z'),
   },
 ];
 
 // Mock data for projects
-export const projects = [
+export const projects: Project[] = [
   {
     id: '1',
     name: 'Website Redesign',
     clientId: '1',
-    status: 'In Progress',
-    deadline: '2023-08-30T23:59:59Z',
+    status: 'In progress' as ProjectStatus,
+    deadline: new Date('2023-08-30T23:59:59Z'),
     fee: 5000,
-    currency: 'USD',
-    type: 'Project Based',
-    createdAt: '2023-06-15T10:30:00Z',
+    currency: 'USD' as Currency,
+    projectType: 'Project Based' as ProjectType,
+    createdAt: new Date('2023-06-15T10:30:00Z'),
     payments: [
       {
         id: '1',
-        type: 'Down Payment',
+        projectId: '1',
+        paymentType: 'Down Payment' as PaymentType,
         amount: 2500,
-        date: '2023-06-20T14:30:00Z',
+        date: new Date('2023-06-20T14:30:00Z'),
         notes: 'Initial 50% payment',
       },
     ],
@@ -69,18 +72,19 @@ export const projects = [
     id: '2',
     name: 'Mobile App Development',
     clientId: '2',
-    status: 'Planning',
-    deadline: '2023-10-15T23:59:59Z',
+    status: 'Planning' as ProjectStatus,
+    deadline: new Date('2023-10-15T23:59:59Z'),
     fee: 12000,
-    currency: 'USD',
-    type: 'Project Based',
-    createdAt: '2023-05-20T09:15:00Z',
+    currency: 'USD' as Currency,
+    projectType: 'Project Based' as ProjectType,
+    createdAt: new Date('2023-05-20T09:15:00Z'),
     payments: [
       {
         id: '1',
-        type: 'Down Payment',
+        projectId: '2',
+        paymentType: 'Down Payment' as PaymentType,
         amount: 4000,
-        date: '2023-05-25T11:30:00Z',
+        date: new Date('2023-05-25T11:30:00Z'),
         notes: 'Initial payment',
       },
     ],
@@ -89,25 +93,27 @@ export const projects = [
     id: '3',
     name: 'Branding Package',
     clientId: '3',
-    status: 'Completed',
-    deadline: '2023-06-30T23:59:59Z',
+    status: 'Completed' as ProjectStatus,
+    deadline: new Date('2023-06-30T23:59:59Z'),
     fee: 3500,
-    currency: 'USD',
-    type: 'Project Based',
-    createdAt: '2023-04-10T13:45:00Z',
+    currency: 'USD' as Currency,
+    projectType: 'Project Based' as ProjectType,
+    createdAt: new Date('2023-04-10T13:45:00Z'),
     payments: [
       {
         id: '1',
-        type: 'Down Payment',
+        projectId: '3',
+        paymentType: 'Down Payment' as PaymentType,
         amount: 1750,
-        date: '2023-04-15T10:00:00Z',
+        date: new Date('2023-04-15T10:00:00Z'),
         notes: '50% initial payment',
       },
       {
         id: '2',
-        type: 'Final Payment',
+        projectId: '3',
+        paymentType: 'Final Payment' as PaymentType,
         amount: 1750,
-        date: '2023-06-28T15:00:00Z',
+        date: new Date('2023-06-28T15:00:00Z'),
         notes: 'Final payment upon delivery',
       },
     ],
@@ -116,18 +122,19 @@ export const projects = [
     id: '4',
     name: 'UI/UX Consulting',
     clientId: '4',
-    status: 'In Progress',
-    deadline: '2023-09-15T23:59:59Z',
+    status: 'In progress' as ProjectStatus,
+    deadline: new Date('2023-09-15T23:59:59Z'),
     fee: 75000,
-    currency: 'IDR',
-    type: 'Monthly Retainer',
-    createdAt: '2023-06-01T09:00:00Z',
+    currency: 'IDR' as Currency,
+    projectType: 'Monthly Retainer' as ProjectType,
+    createdAt: new Date('2023-06-01T09:00:00Z'),
     payments: [
       {
         id: '1',
-        type: 'Down Payment',
+        projectId: '4',
+        paymentType: 'Down Payment' as PaymentType,
         amount: 25000,
-        date: '2023-06-05T10:30:00Z',
+        date: new Date('2023-06-05T10:30:00Z'),
         notes: 'First month retainer',
       },
     ],
@@ -136,18 +143,19 @@ export const projects = [
     id: '5',
     name: 'Marketing Materials',
     clientId: '5',
-    status: 'Paused',
-    deadline: '2023-08-10T23:59:59Z',
+    status: 'Paused' as ProjectStatus,
+    deadline: new Date('2023-08-10T23:59:59Z'),
     fee: 2000,
-    currency: 'USD',
-    type: 'Project Based',
-    createdAt: '2023-05-15T11:30:00Z',
+    currency: 'USD' as Currency,
+    projectType: 'Project Based' as ProjectType,
+    createdAt: new Date('2023-05-15T11:30:00Z'),
     payments: [
       {
         id: '1',
-        type: 'Down Payment',
+        projectId: '5',
+        paymentType: 'Down Payment' as PaymentType,
         amount: 1000,
-        date: '2023-05-20T13:00:00Z',
+        date: new Date('2023-05-20T13:00:00Z'),
         notes: '50% down payment',
       },
     ],
@@ -163,18 +171,18 @@ export const stats = {
     const amountInUSD = project.currency === 'IDR' ? project.fee / 15000 : project.fee;
     return sum + amountInUSD;
   }, 0),
-  activeProjects: projects.filter(p => p.status === 'In Progress' || p.status === 'Planning').length,
+  activeProjects: projects.filter(p => p.status === 'In progress' || p.status === 'Planning').length,
 };
 
 // Recent clients (for dashboard)
 export const recentClients = clients.sort((a, b) => 
-  new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  b.createdAt.getTime() - a.createdAt.getTime()
 ).slice(0, 5);
 
 // Active projects (for dashboard)
 export const activeProjects = projects
-  .filter(p => p.status === 'In Progress' || p.status === 'Planning')
-  .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
+  .filter(p => p.status === 'In progress' || p.status === 'Planning')
+  .sort((a, b) => a.deadline.getTime() - b.deadline.getTime())
   .slice(0, 5);
 
 // Helper function to get client name by ID
