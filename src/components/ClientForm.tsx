@@ -22,7 +22,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { X } from "lucide-react";
+import {
+  DialogTitle,
+  DialogDescription,
+  DialogHeader,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -69,20 +74,15 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
   ];
 
   return (
-    <div className="space-y-6 p-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">
-          {client ? "Edit Client" : "Add New Client"}
-        </h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onCancel}
-          className="rounded-full hover:bg-muted"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
+    <>
+      <DialogHeader className="mb-4">
+        <DialogTitle>{client ? "Edit Client" : "Add New Client"}</DialogTitle>
+        <DialogDescription>
+          {client 
+            ? "Update the client's information below." 
+            : "Fill out the form below to add a new client to your database."}
+        </DialogDescription>
+      </DialogHeader>
 
       <Form {...form}>
         <form
@@ -156,17 +156,17 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
             )}
           />
 
-          <div className="flex gap-2 pt-4">
-            <Button type="submit" className="flex-1">
-              {client ? "Update Client" : "Create Client"}
-            </Button>
+          <DialogFooter className="flex gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-          </div>
+            <Button type="submit">
+              {client ? "Update Client" : "Create Client"}
+            </Button>
+          </DialogFooter>
         </form>
       </Form>
-    </div>
+    </>
   );
 };
 

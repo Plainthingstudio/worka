@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, X } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { Client, Currency, Project, ProjectStatus, ProjectType } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -29,6 +29,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DialogTitle,
+  DialogDescription,
+  DialogHeader,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -99,20 +105,15 @@ const ProjectForm = ({ project, clients, onSave, onCancel }: ProjectFormProps) =
   ];
 
   return (
-    <div className="space-y-6 p-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">
-          {project ? "Edit Project" : "Create New Project"}
-        </h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onCancel}
-          className="rounded-full hover:bg-muted"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
+    <>
+      <DialogHeader className="mb-4">
+        <DialogTitle>{project ? "Edit Project" : "Create New Project"}</DialogTitle>
+        <DialogDescription>
+          {project 
+            ? "Update the project details below." 
+            : "Fill out the form below to create a new project."}
+        </DialogDescription>
+      </DialogHeader>
 
       <Form {...form}>
         <form
@@ -288,17 +289,17 @@ const ProjectForm = ({ project, clients, onSave, onCancel }: ProjectFormProps) =
             )}
           />
 
-          <div className="flex gap-2 pt-4">
-            <Button type="submit" className="flex-1">
-              {project ? "Update Project" : "Create Project"}
-            </Button>
+          <DialogFooter className="flex gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-          </div>
+            <Button type="submit">
+              {project ? "Update Project" : "Create Project"}
+            </Button>
+          </DialogFooter>
         </form>
       </Form>
-    </div>
+    </>
   );
 };
 

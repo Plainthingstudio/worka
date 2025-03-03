@@ -261,7 +261,7 @@ const Clients = () => {
         onOpenChange={(open) => !open && setIsDeleting(null)}
       >
         <DialogContent className="sm:max-w-[425px]">
-          <div className="space-y-4 p-6">
+          <div className="space-y-4">
             <h2 className="text-lg font-semibold">Confirm Deletion</h2>
             <p className="text-muted-foreground">
               Are you sure you want to delete this client? This action cannot be undone.

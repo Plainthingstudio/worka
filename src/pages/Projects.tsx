@@ -24,6 +24,9 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -342,27 +345,27 @@ const Projects = () => {
         onOpenChange={(open) => !open && setIsDeleting(null)}
       >
         <DialogContent className="sm:max-w-[425px]">
-          <div className="space-y-4 p-6">
-            <h2 className="text-lg font-semibold">Confirm Deletion</h2>
-            <p className="text-muted-foreground">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
               Are you sure you want to delete this project? This action cannot be undone.
-            </p>
-            <div className="flex gap-2 pt-4">
-              <Button
-                variant="destructive"
-                onClick={() => isDeleting && handleDeleteProject(isDeleting)}
-                className="flex-1"
-              >
-                Delete
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsDeleting(null)}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-            </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 pt-4">
+            <Button
+              variant="destructive"
+              onClick={() => isDeleting && handleDeleteProject(isDeleting)}
+              className="flex-1"
+            >
+              Delete
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleting(null)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
