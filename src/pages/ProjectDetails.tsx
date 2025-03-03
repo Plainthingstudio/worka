@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -476,6 +475,7 @@ const ProjectDetails = () => {
             </DialogDescription>
           </DialogHeader>
           <PaymentForm
+            projectId={project.id}
             currency={project.currency}
             onSave={handleAddPayment}
             onCancel={() => setIsPaymentDialogOpen(false)}
