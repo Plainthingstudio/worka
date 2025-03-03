@@ -6,6 +6,7 @@ import {
   ListChecks,
   LogOut,
   Menu,
+  Users,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,11 @@ const Sidebar = () => {
       icon: LayoutDashboard,
       label: "Dashboard",
       href: "/dashboard",
+    },
+    {
+      icon: Users,
+      label: "Clients",
+      href: "/clients",
     },
     {
       icon: ListChecks,
