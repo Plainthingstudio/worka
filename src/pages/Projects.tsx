@@ -94,6 +94,7 @@ const Projects = () => {
 
     setProjects((prev) => [newProject, ...prev]);
     setIsAddingProject(false);
+    toast.success("Project created successfully");
   };
 
   const handleEditProject = (data: any) => {
@@ -107,6 +108,7 @@ const Projects = () => {
       )
     );
     setEditingProject(null);
+    toast.success("Project updated successfully");
   };
 
   const handleDeleteProject = (id: string) => {
@@ -311,7 +313,9 @@ const Projects = () => {
       {/* Add Project Dialog */}
       <Dialog
         open={isAddingProject}
-        onOpenChange={(open) => !open && setIsAddingProject(false)}
+        onOpenChange={(open) => {
+          if (!open) setIsAddingProject(false);
+        }}
       >
         <DialogContent className="sm:max-w-[600px]">
           <ProjectForm
@@ -325,7 +329,9 @@ const Projects = () => {
       {/* Edit Project Dialog */}
       <Dialog
         open={!!editingProject}
-        onOpenChange={(open) => !open && setEditingProject(null)}
+        onOpenChange={(open) => {
+          if (!open) setEditingProject(null);
+        }}
       >
         <DialogContent className="sm:max-w-[600px]">
           {editingProject && (
@@ -342,7 +348,9 @@ const Projects = () => {
       {/* Delete Confirmation Dialog */}
       <Dialog
         open={!!isDeleting}
-        onOpenChange={(open) => !open && setIsDeleting(null)}
+        onOpenChange={(open) => {
+          if (!open) setIsDeleting(null);
+        }}
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
