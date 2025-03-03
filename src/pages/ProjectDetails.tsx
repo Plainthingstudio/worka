@@ -428,6 +428,12 @@ const ProjectDetails = () => {
       {/* Edit Project Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Edit Project</DialogTitle>
+            <DialogDescription>
+              Make changes to the project details.
+            </DialogDescription>
+          </DialogHeader>
           <ProjectForm
             project={project}
             clients={clients}
