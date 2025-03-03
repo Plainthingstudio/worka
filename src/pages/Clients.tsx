@@ -47,33 +47,8 @@ import Sidebar from "@/components/Sidebar";
 import ClientForm from "@/components/ClientForm";
 import { Client, LeadSource } from "@/types";
 
-// Mock data for initial clients (will be replaced with real data from API in production)
-const initialClients: Client[] = [
-  {
-    id: "client-1",
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    phone: "+1 (555) 123-4567",
-    leadSource: "LinkedIn",
-    createdAt: new Date("2023-01-15"),
-  },
-  {
-    id: "client-2",
-    name: "Bob Smith",
-    email: "bob@example.com",
-    phone: "+1 (555) 987-6543",
-    leadSource: "Website",
-    createdAt: new Date("2023-02-20"),
-  },
-  {
-    id: "client-3",
-    name: "Carol Davis",
-    email: "carol@example.com",
-    phone: "+1 (555) 456-7890",
-    leadSource: "Dribbble",
-    createdAt: new Date("2023-03-10"),
-  },
-];
+// Use clients from the central mockData to maintain consistency
+import { clients as initialClients } from "@/mockData";
 
 const Clients = () => {
   const [clients, setClients] = useState<Client[]>(initialClients);
@@ -205,7 +180,8 @@ const Clients = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
-                    <TableHead>Contact Info</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Phone Number</TableHead>
                     <TableHead>Lead Source</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -228,15 +204,15 @@ const Clients = () => {
                           {client.name}
                         </TableCell>
                         <TableCell>
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                              <Mail className="h-4 w-4 text-muted-foreground" />
-                              <span>{client.email}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Phone className="h-4 w-4 text-muted-foreground" />
-                              <span>{client.phone}</span>
-                            </div>
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <span>{client.email}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <span>{client.phone}</span>
                           </div>
                         </TableCell>
                         <TableCell>

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -53,7 +52,7 @@ import Sidebar from "@/components/Sidebar";
 import ProjectForm from "@/components/ProjectForm";
 import { Client, Project, ProjectStatus } from "@/types";
 
-// Mock data
+// Import clients and projects from the centralized mockData
 import { clients, projects as initialProjects } from "@/mockData";
 
 const Projects = () => {
@@ -78,7 +77,6 @@ const Projects = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // These functions are separated to improve readability and maintainability
   const openAddProjectDialog = () => setIsAddingProject(true);
   const closeAddProjectDialog = () => setIsAddingProject(false);
   
