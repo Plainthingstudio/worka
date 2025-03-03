@@ -22,7 +22,7 @@ import { Client } from "@/types";
 interface ClientListProps {
   clients: Client[];
   onEdit: (client: Client) => void;
-  onDelete: (clientId: string) => void;
+  onDelete: (client: Client) => void;
 }
 
 const ClientList = ({ clients, onEdit, onDelete }: ClientListProps) => {
@@ -115,7 +115,7 @@ const ClientList = ({ clients, onEdit, onDelete }: ClientListProps) => {
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
-                        onClick={() => onDelete(client.id)}
+                        onClick={() => onDelete(client)}
                       >
                         <Trash className="mr-2 h-4 w-4" />
                         Delete
