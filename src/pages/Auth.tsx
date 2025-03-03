@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,17 +11,40 @@ import { toast } from "sonner";
 const Auth = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState("demo@example.com");
+  const [password, setPassword] = useState("password123");
+  
+  useEffect(() => {
+    // Auto-login functionality for development
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    if (isLoggedIn) {
+      navigate("/");
+    }
+  }, [navigate]);
   
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate login
+    // Simulate login with any credentials
     setTimeout(() => {
+      localStorage.setItem("isLoggedIn", "true");
       setIsLoading(false);
       toast.success("Successfully logged in");
-      navigate("/dashboard");
-    }, 1000);
+      navigate("/");
+    }, 500);
+  };
+  
+  const handleDummyLogin = () => {
+    setIsLoading(true);
+    
+    // Simulate login with dummy credentials
+    setTimeout(() => {
+      localStorage.setItem("isLoggedIn", "true");
+      setIsLoading(false);
+      toast.success("Successfully logged in with demo account");
+      navigate("/");
+    }, 500);
   };
   
   const handleSignup = (e: React.FormEvent<HTMLFormElement>) => {
@@ -30,10 +53,11 @@ const Auth = () => {
     
     // Simulate signup
     setTimeout(() => {
+      localStorage.setItem("isLoggedIn", "true");
       setIsLoading(false);
       toast.success("Account created successfully");
-      navigate("/dashboard");
-    }, 1000);
+      navigate("/");
+    }, 500);
   };
 
   return (
@@ -59,7 +83,28 @@ const Auth = () => {
             Manage your clients and projects easily
           </p>
           
-          <Tabs defaultValue="login" className="mt-8">
+          <div className="mt-6 flex flex-col space-y-3">
+            <Button
+              onClick={handleDummyLogin}
+              className="w-full"
+              disabled={isLoading}
+              variant="default"
+            >
+              {isLoading ? "Logging in..." : "Login with Demo Account"}
+            </Button>
+            <div className="relative my-2">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border"></span>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with credentials
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <Tabs defaultValue="login" className="mt-4">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -75,6 +120,8 @@ const Auth = () => {
                     type="email"
                     autoComplete="email"
                     required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -92,6 +139,8 @@ const Auth = () => {
                     type="password"
                     autoComplete="current-password"
                     required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
@@ -136,6 +185,12 @@ const Auth = () => {
               </form>
             </TabsContent>
           </Tabs>
+          
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            <p>Demo credentials:</p>
+            <p>Email: demo@example.com</p>
+            <p>Password: password123</p>
+          </div>
         </div>
       </div>
       
