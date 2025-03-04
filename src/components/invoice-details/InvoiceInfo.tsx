@@ -1,23 +1,19 @@
-
 import React from "react";
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 import { Invoice } from "@/types";
 import { Client } from "@/types";
-
 interface InvoiceInfoProps {
   invoice: Invoice;
   client: Client;
   formatCurrency: (amount: number) => string;
 }
-
 const InvoiceInfo: React.FC<InvoiceInfoProps> = ({
   invoice,
   client,
-  formatCurrency,
+  formatCurrency
 }) => {
-  return (
-    <div className="rounded-lg border bg-card shadow-sm">
+  return <div className="">
       {/* Invoice Header */}
       <div className="border-b p-6">
         <div className="grid gap-6 md:grid-cols-2">
@@ -41,8 +37,6 @@ const InvoiceInfo: React.FC<InvoiceInfoProps> = ({
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default InvoiceInfo;
