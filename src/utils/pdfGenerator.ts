@@ -56,8 +56,8 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     pdf.text("Total Due:", pageWidth - margin, margin + 40, { align: "right" });
     pdf.text(`USD: $ ${invoice.total.toFixed(2)}`, pageWidth - margin, margin + 47, { align: "right" });
     
-    // Add billed to section (left)
-    pdf.setFontSize(10);
+    // Add billed to section (left) - INCREASED FONT SIZE HERE
+    pdf.setFontSize(12); // Increased from 10
     pdf.setFont("helvetica", "bold");
     pdf.text("Bill To:", margin, margin + 40);
     pdf.setFont("helvetica", "normal");
@@ -68,7 +68,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     
     // Add table headers
     const tableTop = margin + 80;
-    pdf.setFontSize(9);
+    pdf.setFontSize(11); // Increased from 9
     pdf.setFont("helvetica", "bold");
     
     // Table headers
@@ -82,8 +82,9 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     pdf.setLineWidth(0.5);
     pdf.line(margin, tableTop + 2, pageWidth - margin, tableTop + 2);
     
-    // Draw table rows
+    // Draw table rows - INCREASED FONT SIZE HERE
     pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(10); // Increased from default
     let currentY = tableTop + 10;
     
     invoice.items.forEach((item, index) => {
@@ -116,10 +117,11 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     pdf.line(margin, currentY, pageWidth - margin, currentY);
     currentY += 10;
     
-    // Add totals section
+    // Add totals section - INCREASED FONT SIZE HERE
     const totalsX = pageWidth - margin - 70;
     const valuesX = pageWidth - margin;
     
+    pdf.setFontSize(12); // Increased from default
     pdf.text("SUB TOTAL", totalsX, currentY);
     pdf.text(`$${invoice.subtotal.toFixed(2)}`, valuesX, currentY, { align: "right" });
     currentY += 8;
@@ -138,16 +140,19 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     pdf.line(totalsX - 20, currentY, valuesX, currentY);
     currentY += 10;
     
-    // Grand total
+    // Grand total - INCREASED FONT SIZE HERE
     pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(14); // Increased from default
     pdf.text("Grand Total", totalsX, currentY);
     pdf.text(`$${invoice.total.toFixed(2)}`, valuesX, currentY, { align: "right" });
     
     // Add terms and conditions (Skip payment method and contact sections)
     const termsY = currentY + 40;
     pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(12); // Increased from default
     pdf.text("Terms & Condition", margin, termsY);
     pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(11); // Increased from default
     
     const termsText = invoice.termsAndConditions || 
       "Payment is due within the specified term. Please make the payment to the specified account.";
@@ -160,8 +165,10 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     if (invoice.notes && invoice.notes.trim().length > 0) {
       const notesY = termsY + 30;
       pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(12); // Increased from default
       pdf.text("Notes", margin, notesY);
       pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(11); // Increased from default
       
       const notesText = invoice.notes;
       const splitNotes = pdf.splitTextToSize(notesText, contentWidth);
