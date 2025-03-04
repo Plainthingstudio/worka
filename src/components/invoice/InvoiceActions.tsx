@@ -17,6 +17,11 @@ const InvoiceActions: React.FC<InvoiceActionsProps> = ({
 }) => {
   const navigate = useNavigate();
   
+  const handleSubmit = () => {
+    console.log("Submitting invoice...");
+    onSubmit();
+  };
+  
   return (
     <div className="flex justify-end gap-3">
       <Button
@@ -44,7 +49,7 @@ const InvoiceActions: React.FC<InvoiceActionsProps> = ({
       </Button>
       <Button
         type="button"
-        onClick={onSubmit}
+        onClick={handleSubmit}
       >
         {isEditing ? "Update Invoice" : "Save Invoice"}
       </Button>

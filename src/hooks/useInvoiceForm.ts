@@ -28,7 +28,7 @@ export function useInvoiceForm() {
     paymentTerms: "Net 30",
     items: [emptyItem],
     subtotal: 0,
-    taxPercentage:.0,
+    taxPercentage: 0,
     taxAmount: 0,
     discountPercentage: 0,
     discountAmount: 0,
@@ -56,6 +56,7 @@ export function useInvoiceForm() {
             // Ensure items have all required properties
             items: existingInvoice.items.map(item => ({
               ...item,
+              id: item.id || uuidv4(), // Ensure each item has an ID
               quantity: Number(item.quantity),
               rate: Number(item.rate),
               amount: Number(item.quantity) * Number(item.rate)

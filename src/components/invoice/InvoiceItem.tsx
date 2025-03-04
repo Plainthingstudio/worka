@@ -28,6 +28,9 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
     onUpdate(item.id, "quantity", value > 0 ? value : 1);
   };
 
+  // Calculate the current amount based on quantity and rate
+  const amount = Number(item.quantity) * Number(item.rate);
+
   return (
     <div className="mb-2 grid grid-cols-12 gap-2 rounded-md border p-2">
       <div className="col-span-5">
@@ -60,7 +63,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
         </div>
       </div>
       <div className="col-span-2 flex items-center justify-end">
-        ${formatCurrency(Number(item.quantity) * Number(item.rate))}
+        ${formatCurrency(amount)}
       </div>
       <div className="col-span-1 flex items-center justify-center">
         <Button
