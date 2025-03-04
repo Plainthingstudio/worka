@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -41,26 +42,34 @@ export function useInvoiceForm() {
   useEffect(() => {
     if (isEditing && invoiceId) {
       try {
+        console.log("Loading invoice for editing, ID:", invoiceId);
         const storedInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
         const existingInvoice = storedInvoices.find((inv) => inv.id === invoiceId);
         
         if (existingInvoice) {
           console.log("Loading existing invoice:", existingInvoice);
           
+          // Ensure items array is properly processed
+          const processedItems = existingInvoice.items && Array.isArray(existingInvoice.items) 
+            ? existingInvoice.items.map(item => ({
+                id: item.id || uuidv4(),
+                description: item.description || "",
+                quantity: Number(item.quantity) || 1,
+                rate: Number(item.rate) || 0,
+                amount: Number(item.quantity || 1) * Number(item.rate || 0)
+              }))
+            : [emptyItem];
+          
+          console.log("Processed items for editing:", processedItems);
+          
           const processedInvoice = {
             ...existingInvoice,
             date: new Date(existingInvoice.date),
             dueDate: new Date(existingInvoice.dueDate),
             createdAt: new Date(existingInvoice.createdAt),
-            items: existingInvoice.items && existingInvoice.items.length > 0 
-              ? existingInvoice.items.map(item => ({
-                  id: item.id || uuidv4(),
-                  description: item.description || "",
-                  quantity: Number(item.quantity) || 1,
-                  rate: Number(item.rate) || 0,
-                  amount: Number(item.quantity || 1) * Number(item.rate || 0)
-                }))
-              : [emptyItem]
+            items: processedItems,
+            taxPercentage: Number(existingInvoice.taxPercentage) || 0,
+            discountPercentage: Number(existingInvoice.discountPercentage) || 0
           };
           
           setInvoice(processedInvoice);
@@ -77,19 +86,22 @@ export function useInvoiceForm() {
     }
   }, [isEditing, invoiceId, toast, emptyItem]);
 
+  // Ensure calculations are updated whenever relevant fields change
   useEffect(() => {
+    console.log("Recalculating invoice totals based on items:", invoice.items);
+    
     const updatedItems = invoice.items.map(item => ({
       ...item,
-      quantity: Number(item.quantity),
-      rate: Number(item.rate),
-      amount: Number(item.quantity) * Number(item.rate)
+      quantity: Number(item.quantity) || 1,
+      rate: Number(item.rate) || 0,
+      amount: (Number(item.quantity) || 1) * (Number(item.rate) || 0)
     }));
 
     const subtotal = updatedItems.reduce((sum, item) => sum + item.amount, 0);
     
-    const taxAmount = (subtotal * invoice.taxPercentage) / 100;
+    const taxAmount = (subtotal * (Number(invoice.taxPercentage) || 0)) / 100;
     
-    const discountAmount = (subtotal * invoice.discountPercentage) / 100;
+    const discountAmount = (subtotal * (Number(invoice.discountPercentage) || 0)) / 100;
     
     const total = subtotal + taxAmount - discountAmount;
 
@@ -121,17 +133,19 @@ export function useInvoiceForm() {
     console.log("Current items:", invoice.items);
 
     setInvoice(prev => {
+      // Ensure the items array is properly handled
+      const currentItems = Array.isArray(prev.items) ? prev.items : [];
       const updatedInvoice = {
         ...prev,
-        items: [...prev.items, newItem]
+        items: [...currentItems, newItem]
       };
-      console.log("Updated invoice items:", updatedInvoice.items);
+      console.log("Updated invoice items after add:", updatedInvoice.items);
       return updatedInvoice;
     });
   }, [invoice.items]);
 
   const removeItem = useCallback((itemId: string) => {
-    if (invoice.items.length === 1) {
+    if (!Array.isArray(invoice.items) || invoice.items.length <= 1) {
       toast({
         title: "Cannot remove item",
         description: "Invoice must have at least one item.",
@@ -140,23 +154,28 @@ export function useInvoiceForm() {
       return;
     }
     
+    console.log("Removing item with ID:", itemId);
+    
     setInvoice(prev => ({
       ...prev,
       items: prev.items.filter(item => item.id !== itemId)
     }));
-  }, [invoice.items.length, toast]);
+  }, [invoice.items, toast]);
 
   const updateItem = useCallback((id: string, field: keyof InvoiceItem, value: any) => {
+    console.log(`Updating item ${id}, field: ${field}, value:`, value);
+    
     setInvoice(prev => ({
       ...prev,
-      items: prev.items.map(item => 
+      items: Array.isArray(prev.items) ? prev.items.map(item => 
         item.id === id ? { ...item, [field]: value } : item
-      )
+      ) : [emptyItem]
     }));
-  }, []);
+  }, [emptyItem]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    console.log(`Updating invoice field: ${name}, value:`, value);
     
     if (name === "taxPercentage" || name === "discountPercentage") {
       setInvoice(prev => ({
@@ -181,7 +200,7 @@ export function useInvoiceForm() {
       return false;
     }
 
-    if (invoice.items.some(item => !item.description || item.quantity <= 0)) {
+    if (!Array.isArray(invoice.items) || invoice.items.some(item => !item.description || Number(item.quantity) <= 0)) {
       toast({
         title: "Invalid items",
         description: "Please ensure all items have a description and positive quantity.",
@@ -194,6 +213,8 @@ export function useInvoiceForm() {
   }, [invoice.clientId, invoice.items, toast]);
 
   const saveInvoice = useCallback(() => {
+    console.log("Attempting to save invoice:", invoice);
+    
     if (!validateInvoice()) {
       return;
     }
@@ -201,17 +222,18 @@ export function useInvoiceForm() {
     try {
       const storedInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
       
-      const finalItems = invoice.items.map(item => ({
+      // Ensure items are properly formatted for storage
+      const finalItems = Array.isArray(invoice.items) ? invoice.items.map(item => ({
         id: item.id,
         description: item.description || "",
         quantity: Number(item.quantity) || 1,
         rate: Number(item.rate) || 0,
-        amount: Number(item.quantity) * Number(item.rate)
-      }));
+        amount: (Number(item.quantity) || 1) * (Number(item.rate) || 0)
+      })) : [emptyItem];
       
       const subtotal = finalItems.reduce((sum, item) => sum + item.amount, 0);
-      const taxAmount = (subtotal * invoice.taxPercentage) / 100;
-      const discountAmount = (subtotal * invoice.discountPercentage) / 100;
+      const taxAmount = (subtotal * (Number(invoice.taxPercentage) || 0)) / 100;
+      const discountAmount = (subtotal * (Number(invoice.discountPercentage) || 0)) / 100;
       const total = subtotal + taxAmount - discountAmount;
       
       const invoiceToSave = {
@@ -256,7 +278,7 @@ export function useInvoiceForm() {
         variant: "destructive"
       });
     }
-  }, [invoice, isEditing, navigate, toast, validateInvoice]);
+  }, [invoice, isEditing, navigate, toast, validateInvoice, emptyItem]);
 
   const formatCurrency = useCallback((amount: number) => {
     return amount.toLocaleString(undefined, {

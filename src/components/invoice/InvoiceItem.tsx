@@ -18,28 +18,41 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
   onRemove, 
   formatCurrency 
 }) => {
+  // Ensure we have valid values, defaulting as needed
+  const itemId = item?.id || '';
+  const description = item?.description || '';
+  const quantity = Number(item?.quantity) || 1;
+  const rate = Number(item?.rate) || 0;
+  const amount = quantity * rate;
+
   const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value) || 0;
-    onUpdate(item.id, "rate", value);
+    console.log(`Updating rate for item ${itemId} to:`, value);
+    onUpdate(itemId, "rate", value);
   };
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value) || 1;
-    onUpdate(item.id, "quantity", value > 0 ? value : 1);
+    const validValue = value > 0 ? value : 1;
+    console.log(`Updating quantity for item ${itemId} to:`, validValue);
+    onUpdate(itemId, "quantity", validValue);
   };
 
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onUpdate(item.id, "description", e.target.value);
+    console.log(`Updating description for item ${itemId} to:`, e.target.value);
+    onUpdate(itemId, "description", e.target.value);
   };
 
-  // Calculate the current amount based on quantity and rate
-  const amount = Number(item.quantity || 1) * Number(item.rate || 0);
+  const handleRemove = () => {
+    console.log(`Removing item with ID:`, itemId);
+    onRemove(itemId);
+  };
 
   return (
     <div className="mb-2 grid grid-cols-12 gap-2 rounded-md border p-2">
       <div className="col-span-5">
         <Input
-          value={item.description || ""}
+          value={description}
           onChange={handleDescriptionChange}
           placeholder="Item description"
         />
@@ -48,7 +61,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
         <Input
           type="number"
           min="1"
-          value={item.quantity || 1}
+          value={quantity}
           onChange={handleQuantityChange}
           className="text-center"
         />
@@ -60,7 +73,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
             type="number"
             min="0"
             step="0.01"
-            value={item.rate || 0}
+            value={rate}
             onChange={handleRateChange}
             className="pl-8 text-center"
           />
@@ -74,7 +87,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
           type="button"
           size="icon"
           variant="ghost"
-          onClick={() => onRemove(item.id)}
+          onClick={handleRemove}
         >
           <Trash className="h-4 w-4" />
         </Button>

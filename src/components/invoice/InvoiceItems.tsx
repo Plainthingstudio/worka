@@ -21,9 +21,12 @@ const InvoiceItems: React.FC<InvoiceItemsProps> = ({
   formatCurrency 
 }) => {
   const handleAddItem = () => {
-    console.log("Add item button clicked");
+    console.log("Add item button clicked from InvoiceItems component");
     onAddItem();
   };
+
+  // Ensure we always have an array of items to work with
+  const items = Array.isArray(invoice.items) ? invoice.items : [];
 
   return (
     <div>
@@ -37,7 +40,7 @@ const InvoiceItems: React.FC<InvoiceItemsProps> = ({
         <div className="col-span-1"></div>
       </div>
       
-      {invoice.items.map((item) => (
+      {items.map((item) => (
         <InvoiceItem
           key={item.id}
           item={item}
