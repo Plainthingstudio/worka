@@ -1,7 +1,6 @@
 
 import React from "react";
-import { Bell, Search, User, LogOut } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,25 +19,7 @@ const Navbar = ({ title }: { title?: string }) => {
         <h1 className="text-xl font-semibold tracking-tight">{title || "Studio Manager"}</h1>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative w-64">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search..."
-            className="w-full rounded-full bg-muted pl-9 focus-visible:ring-primary"
-          />
-        </div>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative text-muted-foreground hover:text-foreground"
-        >
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-primary" />
-        </Button>
-
+      <div className="flex items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="gap-2">
@@ -56,10 +37,6 @@ const Navbar = ({ title }: { title?: string }) => {
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Bell className="mr-2 h-4 w-4" />
-              <span>Notifications</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => window.location.href = "/auth"}>
