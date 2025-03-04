@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -55,13 +54,13 @@ const Dashboard = () => {
   const getProjectTypeBadgeClass = (type: ProjectType) => {
     switch (type) {
       case "Project Based":
-        return "bg-blue-100 text-blue-800 hover:bg-blue-100/80";
+        return "bg-blue-50 text-blue-700 ring-blue-700/10";
       case "Monthly Retainer":
-        return "bg-purple-100 text-purple-800 hover:bg-purple-100/80";
+        return "bg-purple-50 text-purple-700 ring-purple-700/10";
       case "Monthly Pay as you go":
-        return "bg-amber-100 text-amber-800 hover:bg-amber-100/80";
+        return "bg-yellow-50 text-yellow-800 ring-yellow-600/20";
       default:
-        return "bg-gray-100 text-gray-800 hover:bg-gray-100/80";
+        return "bg-gray-50 text-gray-600 ring-gray-500/10";
     }
   };
 
@@ -182,7 +181,7 @@ const Dashboard = () => {
                       <TableCell className="font-medium">{project.name}</TableCell>
                       <TableCell>{client?.name}</TableCell>
                       <TableCell>
-                        <span className={`status-badge status-${project.status.toLowerCase().replace(' ', '-')}`}>
+                        <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-yellow-600/20 ring-inset">
                           {project.status}
                         </span>
                       </TableCell>

@@ -5,24 +5,24 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset",
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+          "bg-primary text-primary-foreground border-transparent",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-secondary text-secondary-foreground border-transparent",
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+          "bg-destructive text-destructive-foreground border-transparent",
         outline: "text-foreground",
-        // Add new variants for project types
+        // Updated project type variants with new styling
         "project-based": 
-          "border-transparent bg-blue-100 text-blue-700 hover:bg-blue-100/80",
+          "bg-blue-50 text-blue-700 ring-blue-700/10",
         "monthly-retainer": 
-          "border-transparent bg-purple-100 text-purple-700 hover:bg-purple-100/80",
+          "bg-purple-50 text-purple-700 ring-purple-700/10",
         "monthly-pay": 
-          "border-transparent bg-amber-100 text-amber-700 hover:bg-amber-100/80",
+          "bg-yellow-50 text-yellow-800 ring-yellow-600/20",
       },
     },
     defaultVariants: {

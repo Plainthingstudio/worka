@@ -27,17 +27,17 @@ const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) =>
   const getStatusBadgeClass = (status: ProjectStatus) => {
     switch (status) {
       case "Planning":
-        return "status-badge status-planning";
+        return "bg-blue-50 text-blue-700 ring-blue-700/10";
       case "In progress":
-        return "status-badge status-in-progress";
+        return "bg-yellow-50 text-yellow-800 ring-yellow-600/20";
       case "Completed":
-        return "status-badge status-completed";
+        return "bg-green-50 text-green-700 ring-green-600/20";
       case "Paused":
-        return "status-badge status-paused";
+        return "bg-purple-50 text-purple-700 ring-purple-700/10";
       case "Cancelled":
-        return "status-badge status-cancelled";
+        return "bg-red-50 text-red-700 ring-red-600/10";
       default:
-        return "status-badge";
+        return "bg-gray-50 text-gray-600 ring-gray-500/10";
     }
   };
 
@@ -63,7 +63,7 @@ const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) =>
         {client?.name || "Unknown Client"}
       </TableCell>
       <TableCell>
-        <span className={getStatusBadgeClass(project.status)}>
+        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${getStatusBadgeClass(project.status)}`}>
           {project.status}
         </span>
       </TableCell>

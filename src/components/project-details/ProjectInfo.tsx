@@ -14,30 +14,30 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
   const getStatusBadgeClass = (status: ProjectStatus) => {
     switch (status) {
       case "Planning":
-        return "bg-blue-100 text-blue-800 hover:bg-blue-100/80";
+        return "bg-blue-50 text-blue-700 ring-blue-700/10";
       case "In progress":
-        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80";
+        return "bg-yellow-50 text-yellow-800 ring-yellow-600/20";
       case "Completed":
-        return "bg-green-100 text-green-800 hover:bg-green-100/80";
+        return "bg-green-50 text-green-700 ring-green-600/20";
       case "Paused":
-        return "bg-purple-100 text-purple-800 hover:bg-purple-100/80";
+        return "bg-purple-50 text-purple-700 ring-purple-700/10";
       case "Cancelled":
-        return "bg-red-100 text-red-800 hover:bg-red-100/80";
+        return "bg-red-50 text-red-700 ring-red-600/10";
       default:
-        return "bg-gray-100 text-gray-800 hover:bg-gray-100/80";
+        return "bg-gray-50 text-gray-600 ring-gray-500/10";
     }
   };
 
-  const getProjectTypeBadgeClass = (type: ProjectType) => {
+  const getProjectTypeBadgeVariant = (type: ProjectType) => {
     switch (type) {
       case "Project Based":
-        return "bg-blue-100 text-blue-800 hover:bg-blue-100/80";
+        return "project-based";
       case "Monthly Retainer":
-        return "bg-purple-100 text-purple-800 hover:bg-purple-100/80";
+        return "monthly-retainer";
       case "Monthly Pay as you go":
-        return "bg-amber-100 text-amber-800 hover:bg-amber-100/80";
+        return "monthly-pay";
       default:
-        return "bg-gray-100 text-gray-800 hover:bg-gray-100/80";
+        return "secondary";
     }
   };
 
@@ -50,7 +50,10 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
             <Badge className={getStatusBadgeClass(project.status)}>
               {project.status}
             </Badge>
-            <Badge className={`flex items-center gap-1 ${getProjectTypeBadgeClass(project.projectType)}`}>
+            <Badge 
+              variant={getProjectTypeBadgeVariant(project.projectType)}
+              className="flex items-center gap-1"
+            >
               <Tag className="h-3 w-3" />
               <span>{project.projectType}</span>
             </Badge>
