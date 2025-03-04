@@ -27,6 +27,8 @@ const InvoiceItems: React.FC<InvoiceItemsProps> = ({
 
   // Ensure we always have an array of items to work with
   const items = Array.isArray(invoice.items) ? invoice.items : [];
+  
+  console.log("Rendering InvoiceItems with items:", items);
 
   return (
     <div>

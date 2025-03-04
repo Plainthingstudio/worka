@@ -28,7 +28,11 @@ const InvoiceForm = () => {
   // For debugging
   useEffect(() => {
     console.log("Current invoice state:", invoice);
-  }, [invoice]);
+    console.log("Is editing mode:", isEditing);
+    if (Array.isArray(invoice.items)) {
+      console.log("Items count:", invoice.items.length);
+    }
+  }, [invoice, isEditing]);
 
   // Debug when adding item
   const handleAddItem = () => {

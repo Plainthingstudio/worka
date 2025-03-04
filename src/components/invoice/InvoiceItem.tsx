@@ -25,6 +25,8 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
   const rate = Number(item?.rate) || 0;
   const amount = quantity * rate;
 
+  console.log("Rendering InvoiceItem:", { id: itemId, description, quantity, rate, amount });
+
   const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value) || 0;
     console.log(`Updating rate for item ${itemId} to:`, value);

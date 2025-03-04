@@ -50,23 +50,30 @@ export function useInvoiceForm() {
           console.log("Loading existing invoice:", existingInvoice);
           
           // Ensure items array is properly processed
-          const processedItems = existingInvoice.items && Array.isArray(existingInvoice.items) 
+          const processedItems = Array.isArray(existingInvoice.items) 
             ? existingInvoice.items.map(item => ({
                 id: item.id || uuidv4(),
                 description: item.description || "",
                 quantity: Number(item.quantity) || 1,
                 rate: Number(item.rate) || 0,
-                amount: Number(item.quantity || 1) * Number(item.rate || 0)
+                amount: (Number(item.quantity) || 1) * (Number(item.rate) || 0)
               }))
             : [emptyItem];
           
           console.log("Processed items for editing:", processedItems);
           
+          // Convert date strings to Date objects
           const processedInvoice = {
             ...existingInvoice,
-            date: new Date(existingInvoice.date),
-            dueDate: new Date(existingInvoice.dueDate),
-            createdAt: new Date(existingInvoice.createdAt),
+            date: existingInvoice.date instanceof Date 
+              ? existingInvoice.date 
+              : new Date(existingInvoice.date),
+            dueDate: existingInvoice.dueDate instanceof Date 
+              ? existingInvoice.dueDate 
+              : new Date(existingInvoice.dueDate),
+            createdAt: existingInvoice.createdAt instanceof Date 
+              ? existingInvoice.createdAt 
+              : new Date(existingInvoice.createdAt),
             items: processedItems,
             taxPercentage: Number(existingInvoice.taxPercentage) || 0,
             discountPercentage: Number(existingInvoice.discountPercentage) || 0
@@ -89,6 +96,10 @@ export function useInvoiceForm() {
   // Ensure calculations are updated whenever relevant fields change
   useEffect(() => {
     console.log("Recalculating invoice totals based on items:", invoice.items);
+    
+    if (!Array.isArray(invoice.items) || invoice.items.length === 0) {
+      return;
+    }
     
     const updatedItems = invoice.items.map(item => ({
       ...item,
@@ -114,8 +125,7 @@ export function useInvoiceForm() {
       total
     }));
   }, [
-    invoice.items.map(item => item.quantity).join(','),
-    invoice.items.map(item => item.rate).join(','),
+    invoice.items,
     invoice.taxPercentage,
     invoice.discountPercentage
   ]);
@@ -165,12 +175,21 @@ export function useInvoiceForm() {
   const updateItem = useCallback((id: string, field: keyof InvoiceItem, value: any) => {
     console.log(`Updating item ${id}, field: ${field}, value:`, value);
     
-    setInvoice(prev => ({
-      ...prev,
-      items: Array.isArray(prev.items) ? prev.items.map(item => 
-        item.id === id ? { ...item, [field]: value } : item
-      ) : [emptyItem]
-    }));
+    setInvoice(prev => {
+      if (!Array.isArray(prev.items)) {
+        return {
+          ...prev,
+          items: [emptyItem]
+        };
+      }
+      
+      return {
+        ...prev,
+        items: prev.items.map(item => 
+          item.id === id ? { ...item, [field]: value } : item
+        )
+      };
+    });
   }, [emptyItem]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -236,8 +255,12 @@ export function useInvoiceForm() {
       const discountAmount = (subtotal * (Number(invoice.discountPercentage) || 0)) / 100;
       const total = subtotal + taxAmount - discountAmount;
       
+      // Convert Date objects to strings when saving
       const invoiceToSave = {
         ...invoice,
+        date: invoice.date instanceof Date ? invoice.date.toISOString() : invoice.date,
+        dueDate: invoice.dueDate instanceof Date ? invoice.dueDate.toISOString() : invoice.dueDate,
+        createdAt: invoice.createdAt instanceof Date ? invoice.createdAt.toISOString() : invoice.createdAt,
         items: finalItems,
         subtotal,
         taxAmount,
