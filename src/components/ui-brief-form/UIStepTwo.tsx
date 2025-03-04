@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
@@ -30,7 +29,6 @@ const UIStepTwo = ({ onNext, onPrevious }: UIStepTwoProps) => {
       "targetAudience", 
       "websitePurpose", 
       "projectDescription",
-      "keyFeatures",
       "generalStyle"
     ]);
     
@@ -93,26 +91,6 @@ const UIStepTwo = ({ onNext, onPrevious }: UIStepTwoProps) => {
               <FormControl>
                 <Textarea 
                   placeholder="Describe your project in detail, including its goals and objectives" 
-                  className="min-h-[100px]"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <FormField
-          control={control}
-          name="keyFeatures"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Key Features*</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="List the key features or functionality you need in your website/app" 
                   className="min-h-[100px]"
                   {...field} 
                 />
@@ -382,26 +360,6 @@ const UIStepTwo = ({ onNext, onPrevious }: UIStepTwoProps) => {
               <FormControl>
                 <Textarea 
                   placeholder="Describe any specific style preferences or design elements you'd like to include" 
-                  className="min-h-[80px]"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <FormField
-          control={control}
-          name="responsiveRequirements"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Responsive Requirements</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Describe your requirements for responsive design (mobile, tablet, desktop)" 
                   className="min-h-[80px]"
                   {...field} 
                 />

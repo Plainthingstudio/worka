@@ -45,7 +45,7 @@ const UIDesignBrief = () => {
       targetAudience: "",
       websitePurpose: "",
       projectDescription: "",
-      keyFeatures: "",
+      // Removed keyFeatures
       reference1: "",
       reference2: "",
       reference3: "",
@@ -59,7 +59,7 @@ const UIDesignBrief = () => {
       hasWireframe: "",
       wireframeDetails: "",
       stylePreferences: "",
-      responsiveRequirements: "",
+      // Removed responsiveRequirements
       
       // Step Three defaults
       pageCount: 1,

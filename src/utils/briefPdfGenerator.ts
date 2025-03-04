@@ -1,4 +1,3 @@
-
 import jsPDF from "jspdf";
 import { format } from "date-fns";
 
@@ -168,8 +167,6 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
     y = checkPageOverflow(doc, y);
     y = addField(doc, "Project Description", brief.projectDescription, y);
     y = checkPageOverflow(doc, y);
-    y = addField(doc, "Key Features", brief.keyFeatures, y);
-    y = checkPageOverflow(doc, y);
     
     // Website Type Interest
     if (brief.websiteTypeInterest && brief.websiteTypeInterest.length > 0) {
@@ -218,11 +215,6 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
       y = checkPageOverflow(doc, y);
     }
     
-    if (brief.responsiveRequirements) {
-      y = addField(doc, "Responsive Requirements", brief.responsiveRequirements, y);
-      y = checkPageOverflow(doc, y);
-    }
-
     // References
     if (brief.reference1 || brief.reference2 || brief.reference3 || brief.reference4) {
       y = addSectionTitle(doc, "References", y);
