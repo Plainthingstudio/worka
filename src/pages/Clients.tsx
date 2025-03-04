@@ -1,50 +1,19 @@
+
 import React, { useState, useEffect } from "react";
-import { format } from "date-fns";
-import {
-  Plus,
-  Search,
-  Pencil,
-  Trash,
-  Mail,
-  Phone,
-  User,
-  EyeIcon,
-} from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import ClientForm from "@/components/ClientForm";
 import { Client, LeadSource } from "@/types";
+import ClientsFilter from "@/components/clients/ClientsFilter";
+import ClientsTable from "@/components/clients/ClientsTable";
+import DeleteConfirmationDialog from "@/components/clients/DeleteConfirmationDialog";
 
 // Import and modify the clients from mockData
 import { clients as mockClients } from "@/mockData";
@@ -191,130 +160,21 @@ const Clients = () => {
             </Button>
           </div>
 
-          <div className="glass-card mb-6 rounded-xl border shadow-sm animate-fade-in">
-            <div className="flex flex-col gap-4 p-4 sm:flex-row">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search clients..."
-                  className="pl-9"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <div className="w-full sm:w-48">
-                <Select
-                  value={sourceFilter}
-                  onValueChange={setSourceFilter}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Filter by source" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Sources</SelectItem>
-                    {leadSources.map((source) => (
-                      <SelectItem key={source} value={source}>
-                        {source}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="overflow-x-auto p-4 pt-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone Number</TableHead>
-                    <TableHead>Lead Source</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredClients.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className="h-24 text-center text-muted-foreground"
-                      >
-                        No clients found.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredClients.map((client) => (
-                      <TableRow key={client.id}>
-                        <TableCell className="font-medium">
-                          {client.name}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-muted-foreground" />
-                            <span>{client.email}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-muted-foreground" />
-                            <span>{client.phone}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                            {client.leadSource}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {format(new Date(client.createdAt), "MMM dd, yyyy")}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => openEditClientDialog(client)}
-                                  >
-                                    <Pencil className="h-4 w-4" />
-                                    <span className="sr-only">Edit</span>
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Edit Client</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                            
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-destructive"
-                                    onClick={() => openDeleteDialog(client.id)}
-                                  >
-                                    <Trash className="h-4 w-4" />
-                                    <span className="sr-only">Delete</span>
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Delete Client</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+          <ClientsFilter 
+            search={search}
+            setSearch={setSearch}
+            sourceFilter={sourceFilter}
+            setSourceFilter={setSourceFilter}
+            leadSources={leadSources}
+          />
+
+          <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
+            <div className="overflow-x-auto p-4">
+              <ClientsTable 
+                clients={filteredClients}
+                onEdit={openEditClientDialog}
+                onDelete={openDeleteDialog}
+              />
             </div>
           </div>
         </main>
@@ -353,35 +213,11 @@ const Clients = () => {
 
       {/* Delete Confirmation Dialog */}
       {isDeleting && (
-        <Dialog
-          open={!!isDeleting}
-          onOpenChange={closeDeleteDialog}
-        >
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Confirm Deletion</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete this client? This action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex gap-2 pt-4">
-              <Button
-                variant="destructive"
-                onClick={() => isDeleting && handleDeleteClient(isDeleting)}
-                className="flex-1"
-              >
-                Delete
-              </Button>
-              <Button
-                variant="outline"
-                onClick={closeDeleteDialog}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <DeleteConfirmationDialog
+          isOpen={!!isDeleting}
+          onClose={closeDeleteDialog}
+          onConfirm={() => isDeleting && handleDeleteClient(isDeleting)}
+        />
       )}
     </div>
   );
