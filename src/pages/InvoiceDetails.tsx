@@ -23,6 +23,7 @@ const InvoiceDetails = () => {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [client, setClient] = useState<any>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
   useEffect(() => {
     // Get invoice from localStorage
@@ -44,6 +45,27 @@ const InvoiceDetails = () => {
       navigate("/invoices");
     }
   }, [invoiceId, navigate, toast, location]);
+
+  // Listen for sidebar state changes
+  useEffect(() => {
+    const handleSidebarChange = () => {
+      const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
+      setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
+    };
+
+    // Initial check
+    handleSidebarChange();
+
+    // Set up mutation observer to watch for class changes on the sidebar
+    const observer = new MutationObserver(handleSidebarChange);
+    const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
+    
+    if (sidebarElement) {
+      observer.observe(sidebarElement, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleDelete = () => {
     if (!invoice) return;
@@ -80,9 +102,13 @@ const InvoiceDetails = () => {
     return (
       <div className="flex h-screen bg-muted/10">
         <Sidebar />
-        <div className="flex-1 overflow-auto pl-14 md:pl-56">
+        <div 
+          className={`flex-1 w-full transition-all duration-300 ease-in-out ${
+            isSidebarExpanded ? "ml-56" : "ml-14"
+          }`}
+        >
           <Navbar title="Invoice Details" />
-          <main className="container mx-auto py-8">
+          <main className="p-6">
             <InvoiceLoading />
           </main>
         </div>
@@ -93,9 +119,13 @@ const InvoiceDetails = () => {
   return (
     <div className="flex h-screen bg-muted/10">
       <Sidebar />
-      <div className="flex-1 overflow-auto pl-14 md:pl-56">
+      <div 
+        className={`flex-1 w-full transition-all duration-300 ease-in-out ${
+          isSidebarExpanded ? "ml-56" : "ml-14"
+        }`}
+      >
         <Navbar title="Invoice Details" />
-        <main className="container mx-auto py-8">
+        <main className="p-6">
           <InvoiceDetailsHeader 
             invoice={invoice}
             onDeleteClick={() => setDeleteConfirmOpen(true)}

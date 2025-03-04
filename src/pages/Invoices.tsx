@@ -33,6 +33,7 @@ const Invoices = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
   // Load invoices from localStorage whenever the component mounts or location changes
   // This ensures the list refreshes when returning from the edit page
@@ -40,6 +41,27 @@ const Invoices = () => {
     const storedInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
     setInvoices(storedInvoices);
   }, [location]);
+
+  // Listen for sidebar state changes
+  useEffect(() => {
+    const handleSidebarChange = () => {
+      const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
+      setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
+    };
+
+    // Initial check
+    handleSidebarChange();
+
+    // Set up mutation observer to watch for class changes on the sidebar
+    const observer = new MutationObserver(handleSidebarChange);
+    const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
+    
+    if (sidebarElement) {
+      observer.observe(sidebarElement, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const confirmDelete = (invoiceId: string) => {
     setInvoiceToDelete(invoiceId);
@@ -70,9 +92,13 @@ const Invoices = () => {
   return (
     <div className="flex h-screen bg-muted/10">
       <Sidebar />
-      <div className="flex-1 overflow-auto pl-14 md:pl-56">
+      <div 
+        className={`flex-1 w-full transition-all duration-300 ease-in-out ${
+          isSidebarExpanded ? "ml-56" : "ml-14"
+        }`}
+      >
         <Navbar title="Invoices" />
-        <main className="container mx-auto py-8">
+        <main className="p-6">
           <div className="mb-8 flex items-center justify-between">
             <h1 className="text-2xl font-semibold tracking-tight">Invoices</h1>
             <Button
