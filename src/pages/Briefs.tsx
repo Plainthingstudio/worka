@@ -656,11 +656,6 @@ const Briefs = () => {
                       <p className="mt-1">{briefDetails.projectDescription || "Not provided"}</p>
                     </div>
                     
-                    <div>
-                      <h4 className="font-medium">Key Features</h4>
-                      <p className="mt-1">{briefDetails.keyFeatures || "Not provided"}</p>
-                    </div>
-                    
                     {/* Competitors section */}
                     <div>
                       <h4 className="font-medium">Competitors</h4>
@@ -693,11 +688,6 @@ const Briefs = () => {
                     <div>
                       <h4 className="font-medium">Style Preferences</h4>
                       <p className="mt-1">{briefDetails.stylePreferences || "Not provided"}</p>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-medium">Responsive Requirements</h4>
-                      <p className="mt-1">{briefDetails.responsiveRequirements || "Not provided"}</p>
                     </div>
                     
                     <div>
