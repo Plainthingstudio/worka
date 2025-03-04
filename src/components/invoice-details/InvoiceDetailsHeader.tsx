@@ -62,8 +62,9 @@ const InvoiceDetailsHeader: React.FC<InvoiceDetailsHeaderProps> = ({
             Delete
           </Button>
           <Button
-            variant="secondary"
+            variant="outline"
             size="sm"
+            className="border-primary text-primary hover:bg-primary/10"
             onClick={() => navigate(`/invoices/${invoice.id}/edit`)}
           >
             <Edit className="mr-1 h-4 w-4" />
