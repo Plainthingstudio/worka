@@ -40,13 +40,12 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2">$</span>
           <Input
-            type="text"
+            type="number"
             inputMode="decimal"
-            value={formatCurrency(item.rate)}
-            onChange={(e) => {
-              const value = e.target.value.replace(/[^\d.]/g, '');
-              onUpdate(item.id, "rate", parseFloat(value) || 0);
-            }}
+            min="0"
+            step="0.01"
+            value={item.rate}
+            onChange={(e) => onUpdate(item.id, "rate", parseFloat(e.target.value) || 0)}
             className="pl-8 text-center"
           />
         </div>

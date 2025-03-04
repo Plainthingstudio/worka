@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Eye } from "lucide-react";
+import { Eye, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -39,11 +39,15 @@ const InvoiceActions: React.FC<InvoiceActionsProps> = ({
         variant="secondary"
         onClick={onGeneratePDF}
       >
+        <FileText className="mr-1 h-4 w-4" />
         Generate PDF
       </Button>
       <Button
-        type="button"
-        onClick={onSubmit}
+        type="submit"
+        onClick={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
       >
         {isEditing ? "Update Invoice" : "Save Invoice"}
       </Button>
