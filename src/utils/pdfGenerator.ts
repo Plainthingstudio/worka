@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import { Invoice } from '@/types';
 import { clients } from '@/mockData';
@@ -59,18 +58,20 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     pdf.text(`USD: $ ${invoice.total.toFixed(2)}`, pageWidth - margin, margin + 47, { align: "right" });
     
     // Add billed to section (left) - INCREASED FONT SIZE HERE
-    pdf.setFontSize(12); // Increased from 10
+    pdf.setFontSize(12);
     pdf.setFont("helvetica", "bold");
     pdf.text("Bill To:", margin, margin + 40);
     pdf.setFont("helvetica", "normal");
     pdf.text(client.name, margin, margin + 47);
-    // Since 'address' doesn't exist on the Client type, use a default address
-    pdf.text("123 Street, Town/City, Country", margin, margin + 54);
+    
+    // Use client's actual address or fallback to a default
+    const clientAddress = client.address || "No address provided";
+    pdf.text(clientAddress, margin, margin + 54);
     pdf.text(client.phone, margin, margin + 61);
     
     // Add table headers
     const tableTop = margin + 80;
-    pdf.setFontSize(11); // Increased from 9
+    pdf.setFontSize(11);
     pdf.setFont("helvetica", "bold");
     
     // Table headers

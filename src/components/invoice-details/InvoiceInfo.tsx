@@ -35,6 +35,7 @@ const InvoiceInfo: React.FC<InvoiceInfoProps> = ({
             <h3 className="font-medium">Billed To:</h3>
             <div className="mt-1 text-sm">
               <p className="font-medium">{client.name}</p>
+              {client.address && <p>{client.address}</p>}
               <p>{client.email}</p>
               <p>{client.phone}</p>
             </div>

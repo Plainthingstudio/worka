@@ -68,6 +68,7 @@ const InvoiceHeader: React.FC<InvoiceHeaderProps> = ({ invoice, clients, setInvo
                 const client = clients.find(c => c.id === invoice.clientId);
                 return client ? (
                   <>
+                    {client.address && <div>{client.address}</div>}
                     <div>{client.email}</div>
                     <div>{client.phone}</div>
                   </>
