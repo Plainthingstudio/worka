@@ -104,7 +104,8 @@ export function useInvoiceStorage() {
           description: "The invoice has been successfully updated."
         });
       } else {
-        updatedInvoices = [...storedInvoices, invoiceToSave];
+        // Add new invoices at the beginning of the array instead of the end
+        updatedInvoices = [invoiceToSave, ...storedInvoices];
         
         toast({
           title: "Invoice created",
