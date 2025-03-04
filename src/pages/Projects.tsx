@@ -188,16 +188,16 @@ const Projects = () => {
     }
   };
 
-  const getProjectTypeBadgeClass = (type: ProjectType) => {
+  const getProjectTypeBadgeVariant = (type: ProjectType) => {
     switch (type) {
       case "Project Based":
-        return "bg-blue-100 text-blue-800 hover:bg-blue-100/80";
+        return "project-based";
       case "Monthly Retainer":
-        return "bg-purple-100 text-purple-800 hover:bg-purple-100/80";
+        return "monthly-retainer";
       case "Monthly Pay as you go":
-        return "bg-amber-100 text-amber-800 hover:bg-amber-100/80";
+        return "monthly-pay";
       default:
-        return "bg-gray-100 text-gray-800 hover:bg-gray-100/80";
+        return "secondary";
     }
   };
 
@@ -306,9 +306,12 @@ const Projects = () => {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge className={`flex items-center gap-1 ${getProjectTypeBadgeClass(project.projectType)}`}>
-                              <Tag className="h-3 w-3" />
-                              <span>{project.projectType}</span>
+                            <Badge 
+                              variant={getProjectTypeBadgeVariant(project.projectType)}
+                              className="flex items-center gap-1"
+                            >
+                              <Tag className="h-3.5 w-3.5" />
+                              {project.projectType}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">

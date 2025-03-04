@@ -1,4 +1,5 @@
 
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -120,6 +121,11 @@
   .status-cancelled {
     @apply bg-red-100 text-red-800;
   }
+  
+  /* Project type badges */
+  .project-type-badge {
+    @apply inline-flex items-center justify-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
 }
 
 /* Loading animations */
@@ -141,3 +147,4 @@
   background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
   background-size: 800px 104px;
 }
+
