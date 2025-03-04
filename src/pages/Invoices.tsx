@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { format } from "date-fns";
-import { Plus, Eye, Edit, Trash, FileText, Download, MoreVertical } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -19,18 +10,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { clients } from "@/mockData";
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
 import { Invoice } from "@/types";
 import { generateInvoicePDF } from "@/utils/pdfGenerator";
+import InvoicesFilter from "@/components/invoices/InvoicesFilter";
+import InvoicesTable from "@/components/invoices/InvoicesTable";
 
 const Invoices = () => {
   const navigate = useNavigate();
@@ -40,6 +27,8 @@ const Invoices = () => {
   const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null);
   const { toast } = useToast();
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     const storedInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
@@ -107,6 +96,27 @@ const Invoices = () => {
     return client ? client.name : "Unknown Client";
   };
 
+  const handleViewInvoice = (invoiceId: string) => {
+    navigate(`/invoices/${invoiceId}`);
+  };
+
+  const handleEditInvoice = (invoiceId: string) => {
+    navigate(`/invoices/${invoiceId}/edit`);
+  };
+
+  const filteredInvoices = invoices.filter((invoice) => {
+    const matchesSearch = 
+      invoice.invoiceNumber.toLowerCase().includes(search.toLowerCase()) ||
+      getClientName(invoice.clientId).toLowerCase().includes(search.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || 
+      (statusFilter === "paid" && invoice.isPaid) ||
+      (statusFilter === "unpaid" && !invoice.isPaid) ||
+      (statusFilter === "overdue" && !invoice.isPaid && new Date(invoice.dueDate) < new Date());
+    
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <div className="flex h-screen bg-muted/10">
       <Sidebar />
@@ -129,99 +139,26 @@ const Invoices = () => {
             </Button>
           </div>
 
+          <InvoicesFilter
+            search={search}
+            setSearch={setSearch}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+          />
+
           <div className="rounded-lg border bg-card shadow-sm">
             <div className="border-b px-6 py-4">
               <h2 className="text-lg font-medium">Invoice List</h2>
             </div>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Invoice #</TableHead>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invoices.length > 0 ? (
-                    invoices.map((invoice) => (
-                      <TableRow key={invoice.id}>
-                        <TableCell className="font-medium">
-                          {invoice.invoiceNumber}
-                        </TableCell>
-                        <TableCell>{getClientName(invoice.clientId)}</TableCell>
-                        <TableCell>
-                          {format(new Date(invoice.date), "MMM dd, yyyy")}
-                        </TableCell>
-                        <TableCell>
-                          ${invoice.total.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </TableCell>
-                        <TableCell className="flex justify-end gap-2">
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => handleDownload(invoice)}
-                            title="Download PDF"
-                            className="h-9 px-4"
-                          >
-                            <Download className="h-4 w-4 mr-1" />
-                            Download
-                          </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-9 w-9 p-0"
-                                title="More actions"
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem 
-                                onClick={() => navigate(`/invoices/${invoice.id}`)}
-                                className="cursor-pointer"
-                              >
-                                <Eye className="mr-2 h-4 w-4" />
-                                View
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => navigate(`/invoices/${invoice.id}/edit`)}
-                                className="cursor-pointer"
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => confirmDelete(invoice.id)}
-                                className="cursor-pointer text-destructive focus:text-destructive"
-                              >
-                                <Trash className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={5}
-                        className="h-24 text-center text-muted-foreground"
-                      >
-                        No invoices found. Create your first invoice to get started.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+            <div className="overflow-x-auto p-4">
+              <InvoicesTable
+                invoices={filteredInvoices}
+                getClientName={getClientName}
+                onView={handleViewInvoice}
+                onEdit={handleEditInvoice}
+                onDelete={confirmDelete}
+                onDownload={handleDownload}
+              />
             </div>
           </div>
         </main>
