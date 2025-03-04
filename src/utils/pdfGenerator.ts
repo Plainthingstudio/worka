@@ -82,7 +82,8 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     pdf.text("Bill To:", margin, margin + 40);
     pdf.setFont("helvetica", "normal");
     pdf.text(client.name, margin, margin + 47);
-    pdf.text(client.address || "123 Street, Town/City, Country", margin, margin + 54);
+    // Since 'address' doesn't exist on the Client type, use a default address
+    pdf.text("123 Street, Town/City, Country", margin, margin + 54);
     pdf.text(client.phone, margin, margin + 61);
     
     // Add table headers
@@ -176,7 +177,8 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     pdf.setFont("helvetica", "bold");
     pdf.text("Contact", margin, contactY);
     pdf.setFont("helvetica", "normal");
-    pdf.text(client.address || "123 Street, Town Postal, Country", margin, contactY + 7);
+    // Using default address since client.address doesn't exist in the type
+    pdf.text("123 Street, Town Postal, Country", margin, contactY + 7);
     pdf.text(client.phone, margin, contactY + 14);
     pdf.text(client.email, margin, contactY + 21);
     
