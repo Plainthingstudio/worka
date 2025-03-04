@@ -54,6 +54,15 @@ const IllustrationStepOne: React.FC<IllustrationStepOneProps> = ({ onNext }) => 
         </div>
 
         <div className="space-y-2">
+          <Label htmlFor="phone">Phone Number</Label>
+          <Input
+            id="phone"
+            placeholder="Enter your phone number"
+            {...register("phone")}
+          />
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="companyName">Company Name <span className="text-red-500">*</span></Label>
           <Input
             id="companyName"
