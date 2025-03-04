@@ -170,11 +170,12 @@ const Invoices = () => {
                         <TableCell className="flex justify-end gap-2">
                           <Button
                             variant="default"
-                            size="icon"
+                            size="sm"
                             onClick={() => handleDownload(invoice)}
                             title="Download PDF"
                           >
                             <Download className="h-4 w-4" />
+                            Download
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
