@@ -8,6 +8,7 @@ import {
   Menu,
   ChevronLeft,
   Users,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,11 @@ const Sidebar = () => {
       icon: ListChecks,
       label: "Projects",
       href: "/projects",
+    },
+    {
+      icon: FileText,
+      label: "Invoices",
+      href: "/invoices",
     },
   ];
 

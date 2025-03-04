@@ -10,6 +10,9 @@ import ProjectDetails from "./pages/ProjectDetails";
 import Clients from "./pages/Clients";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import Invoices from "./pages/Invoices";
+import InvoiceDetails from "./pages/InvoiceDetails";
+import InvoiceForm from "./pages/InvoiceForm";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +28,10 @@ const App = () => (
           <Route path="/clients" element={<Clients />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:projectId" element={<ProjectDetails />} />
+          <Route path="/invoices" element={<Invoices />} />
+          <Route path="/invoices/new" element={<InvoiceForm />} />
+          <Route path="/invoices/:invoiceId" element={<InvoiceDetails />} />
+          <Route path="/invoices/:invoiceId/edit" element={<InvoiceForm />} />
           <Route path="/auth" element={<Auth />} />
           {/* 404 catch-all route */}
           <Route path="*" element={<NotFound />} />

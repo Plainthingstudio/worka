@@ -9,6 +9,8 @@ export type Currency = 'USD' | 'IDR';
 
 export type PaymentType = 'Down Payment' | 'Final Payment' | 'Milestone Payment';
 
+export type PaymentTerms = 'Due on Receipt' | 'Net 15' | 'Net 30' | 'Net 45' | 'Net 60' | 'Custom';
+
 export interface Client {
   id: string;
   name: string;
@@ -39,6 +41,35 @@ export interface Project {
   projectType: ProjectType;
   payments: Payment[];
   createdAt: Date;
+}
+
+export interface InvoiceItem {
+  id: string;
+  description: string;
+  quantity: number;
+  rate: number;
+  amount: number;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  clientId: string;
+  client?: Client;
+  date: Date;
+  dueDate: Date;
+  paymentTerms: string;
+  items: InvoiceItem[];
+  subtotal: number;
+  taxPercentage: number;
+  taxAmount: number;
+  discountPercentage: number;
+  discountAmount: number;
+  total: number;
+  notes?: string;
+  termsAndConditions?: string;
+  createdAt: Date;
+  status: 'Draft' | 'Sent' | 'Paid' | 'Overdue';
 }
 
 export interface DashboardStats {
