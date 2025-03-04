@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
@@ -22,9 +21,6 @@ import { Client, Invoice, InvoiceItem } from "@/types";
 import { clients } from "@/mockData";
 import { v4 as uuidv4 } from "uuid";
 
-// Import uuid
-<lov-add-dependency>uuid@latest @types/uuid@latest</lov-add-dependency>
-
 const InvoiceForm = () => {
   const navigate = useNavigate();
   const { invoiceId } = useParams();
@@ -44,7 +40,7 @@ const InvoiceForm = () => {
     invoiceNumber: `INV-${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`,
     clientId: "",
     date: new Date(),
-    dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default to 30 days from now
+    dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     paymentTerms: "Net 30",
     items: [emptyItem],
     subtotal: 0,
@@ -59,14 +55,12 @@ const InvoiceForm = () => {
     status: "Draft",
   });
 
-  // Load invoice data if editing
   useEffect(() => {
     if (isEditing && invoiceId) {
       const invoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
       const existingInvoice = invoices.find((inv) => inv.id === invoiceId);
       
       if (existingInvoice) {
-        // Make sure dates are Date objects
         existingInvoice.date = new Date(existingInvoice.date);
         existingInvoice.dueDate = new Date(existingInvoice.dueDate);
         existingInvoice.createdAt = new Date(existingInvoice.createdAt);
@@ -76,24 +70,18 @@ const InvoiceForm = () => {
     }
   }, [isEditing, invoiceId]);
 
-  // Calculate all amounts when items or percentages change
   useEffect(() => {
-    // Calculate the amount for each item
     const updatedItems = invoice.items.map(item => ({
       ...item,
       amount: item.quantity * item.rate
     }));
 
-    // Calculate subtotal
     const subtotal = updatedItems.reduce((sum, item) => sum + item.amount, 0);
     
-    // Calculate tax amount
     const taxAmount = (subtotal * invoice.taxPercentage) / 100;
     
-    // Calculate discount amount
     const discountAmount = (subtotal * invoice.discountPercentage) / 100;
     
-    // Calculate total
     const total = subtotal + taxAmount - discountAmount;
 
     setInvoice(prev => ({
@@ -178,7 +166,6 @@ const InvoiceForm = () => {
       return;
     }
 
-    // Save the invoice
     const invoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
     
     if (isEditing) {
@@ -201,13 +188,10 @@ const InvoiceForm = () => {
       });
     }
     
-    // Redirect to the invoices list
     navigate("/invoices");
   };
 
   const generatePDF = () => {
-    // In a real application, this would generate a PDF
-    // For this demo, we'll just show a toast message
     toast({
       title: "PDF Generated",
       description: "In a production app, this would generate and download a PDF.",
@@ -238,7 +222,6 @@ const InvoiceForm = () => {
           </h1>
 
           <div className="space-y-6 rounded-lg border bg-card p-6 shadow-sm">
-            {/* Invoice Header */}
             <div className="grid gap-6 md:grid-cols-2">
               <div>
                 <Label htmlFor="invoiceNumber">Invoice Number</Label>
@@ -342,7 +325,6 @@ const InvoiceForm = () => {
               />
             </div>
 
-            {/* Invoice Items */}
             <div>
               <h3 className="mb-4 text-lg font-medium">Invoice Items</h3>
               
@@ -415,7 +397,6 @@ const InvoiceForm = () => {
               </Button>
             </div>
 
-            {/* Invoice Summary */}
             <div className="mt-6 grid gap-3">
               <div className="ml-auto grid w-64 grid-cols-2 gap-2">
                 <div className="text-right">Subtotal:</div>
@@ -460,7 +441,6 @@ const InvoiceForm = () => {
               </div>
             </div>
 
-            {/* Notes & Terms */}
             <div className="grid gap-6 md:grid-cols-2">
               <div>
                 <Label htmlFor="notes">Notes</Label>
@@ -487,7 +467,6 @@ const InvoiceForm = () => {
               </div>
             </div>
 
-            {/* Actions */}
             <div className="flex justify-end gap-3">
               <Button
                 type="button"
