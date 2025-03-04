@@ -652,6 +652,25 @@ const Briefs = () => {
                     </div>
                     
                     <div>
+                      <h4 className="font-medium">Website Type Interest</h4>
+                      <p className="mt-1">
+                        {briefDetails.websiteTypeInterest && briefDetails.websiteTypeInterest.length 
+                          ? briefDetails.websiteTypeInterest.join(", ") 
+                          : "Not provided"}
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium">Current Website</h4>
+                      <p className="mt-1">{briefDetails.currentWebsite || "Not provided"}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium">Website Purpose</h4>
+                      <p className="mt-1">{briefDetails.websitePurpose || "Not provided"}</p>
+                    </div>
+                    
+                    <div>
                       <h4 className="font-medium">Project Description</h4>
                       <p className="mt-1">{briefDetails.projectDescription || "Not provided"}</p>
                     </div>
@@ -674,6 +693,37 @@ const Briefs = () => {
                     </div>
                     
                     <div>
+                      <h4 className="font-medium">Brand Guidelines</h4>
+                      <p className="mt-1">{briefDetails.hasBrandGuidelines ? "Yes" : "No"}</p>
+                      {briefDetails.hasBrandGuidelines === "Yes" && briefDetails.brandGuidelinesDetails && (
+                        <p className="mt-1">{briefDetails.brandGuidelinesDetails}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium">Wireframe</h4>
+                      <p className="mt-1">{briefDetails.hasWireframe ? "Yes" : "No"}</p>
+                      {briefDetails.hasWireframe === "Yes" && briefDetails.wireframeDetails && (
+                        <p className="mt-1">{briefDetails.wireframeDetails}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium">General Style</h4>
+                      <p className="mt-1">{briefDetails.generalStyle || "Not provided"}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium">Color Preferences</h4>
+                      <p className="mt-1">{briefDetails.colorPreferences || "Not provided"}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium">Font Preferences</h4>
+                      <p className="mt-1">{briefDetails.fontPreferences || "Not provided"}</p>
+                    </div>
+                    
+                    <div>
                       <h4 className="font-medium">Design References</h4>
                       <div className="space-y-2 mt-1">
                         {briefDetails.reference1 && <p>1. {briefDetails.reference1}</p>}
@@ -688,6 +738,36 @@ const Briefs = () => {
                     <div>
                       <h4 className="font-medium">Style Preferences</h4>
                       <p className="mt-1">{briefDetails.stylePreferences || "Not provided"}</p>
+                    </div>
+                    
+                    {/* Pages Information */}
+                    <div>
+                      <h4 className="font-medium">Number of Pages</h4>
+                      <p className="mt-1">{briefDetails.pageCount || "Not provided"}</p>
+                    </div>
+                    
+                    {briefDetails.pageDetails && briefDetails.pageDetails.length > 0 && 
+                      <div>
+                        <h4 className="font-medium">Page Details</h4>
+                        <div className="space-y-2 mt-1">
+                          {briefDetails.pageDetails.map((detail: string, index: number) => 
+                            detail && <div key={index} className="border p-3 rounded-md">
+                              <p className="font-medium">Page {index + 1}</p>
+                              <p>{detail}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    }
+                    
+                    <div>
+                      <h4 className="font-medium">Website Content</h4>
+                      <p className="mt-1">{briefDetails.websiteContent || "Not provided"}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium">Development Service</h4>
+                      <p className="mt-1">{briefDetails.developmentService || "Not provided"}</p>
                     </div>
                     
                     <div>
