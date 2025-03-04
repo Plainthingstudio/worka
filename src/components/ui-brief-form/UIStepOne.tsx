@@ -13,6 +13,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface UIStepOneProps {
   onNext: () => void;
@@ -26,7 +33,9 @@ const UIStepOne = ({ onNext }: UIStepOneProps) => {
       "name", 
       "email", 
       "companyName", 
-      "aboutCompany"
+      "aboutCompany",
+      "projectType",
+      "projectSize"
     ]);
     
     if (isValid) {
@@ -46,6 +55,25 @@ const UIStepOne = ({ onNext }: UIStepOneProps) => {
     { value: "desktopapp", label: "Desktop Application" },
     { value: "mobileapp", label: "Mobile Application" },
     { value: "other", label: "Other" },
+  ];
+
+  const projectTypes = [
+    "Website Redesign",
+    "New Website",
+    "Web Application",
+    "Mobile App UI",
+    "E-commerce Platform",
+    "Dashboard UI",
+    "Landing Page",
+    "Design System",
+    "Other"
+  ];
+
+  const projectSizes = [
+    "Small (1-5 screens)",
+    "Medium (6-15 screens)",
+    "Large (16-30 screens)",
+    "Enterprise (30+ screens)"
   ];
 
   return (
@@ -120,6 +148,62 @@ const UIStepOne = ({ onNext }: UIStepOneProps) => {
             </FormItem>
           )}
         />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <FormField
+            control={control}
+            name="projectType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Project Type*</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select project type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {projectTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <FormField
+            control={control}
+            name="projectSize"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Project Size*</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select project size" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {projectSizes.map((size) => (
+                      <SelectItem key={size} value={size}>
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
       </div>
       
       <div className="space-y-2">

@@ -684,8 +684,9 @@ const Briefs = () => {
                         {briefDetails.reference1 && <p>1. {briefDetails.reference1}</p>}
                         {briefDetails.reference2 && <p>2. {briefDetails.reference2}</p>}
                         {briefDetails.reference3 && <p>3. {briefDetails.reference3}</p>}
+                        {briefDetails.reference4 && <p>4. {briefDetails.reference4}</p>}
                         {!briefDetails.reference1 && !briefDetails.reference2 && 
-                         !briefDetails.reference3 && <p>Not provided</p>}
+                         !briefDetails.reference3 && !briefDetails.reference4 && <p>Not provided</p>}
                       </div>
                     </div>
                     

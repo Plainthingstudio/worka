@@ -20,6 +20,8 @@ const UIDesignBrief = () => {
       // Step One defaults
       companyName: "",
       aboutCompany: "",
+      projectType: "",
+      projectSize: "",
       websiteTypeInterest: {
         agency: false,
         portfolio: false,
@@ -42,6 +44,8 @@ const UIDesignBrief = () => {
       // Step Two defaults
       targetAudience: "",
       websitePurpose: "",
+      projectDescription: "",
+      keyFeatures: "",
       reference1: "",
       reference2: "",
       reference3: "",
@@ -49,10 +53,13 @@ const UIDesignBrief = () => {
       generalStyle: "",
       colorPreferences: "",
       fontPreferences: "",
+      existingBrandAssets: "",
       hasBrandGuidelines: "",
       brandGuidelinesDetails: "",
       hasWireframe: "",
       wireframeDetails: "",
+      stylePreferences: "",
+      responsiveRequirements: "",
       
       // Step Three defaults
       pageCount: 1,

@@ -1,1065 +1,454 @@
 
-import jsPDF from 'jspdf';
-import { format } from 'date-fns';
+import jsPDF from "jspdf";
+import { format } from "date-fns";
 
-export const generateIllustrationBriefPDF = async (brief: any): Promise<void> => {
-  try {
-    // Initialize PDF document
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
-    
-    // Document constants
-    const pageWidth = 210;
-    const margin = 20;
-    const contentWidth = pageWidth - (margin * 2);
-    
-    // Use helvetica font
-    pdf.setFont("helvetica");
-    
-    // Add title
-    pdf.setFontSize(20);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Illustration Design Brief", margin, margin);
-    
-    let currentY = margin + 20;
-    
-    // Contact Information
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Contact Information", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 60, currentY + 1);
-    currentY += 10;
-    
-    // Name and Email
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Name:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.name || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Email:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.email || "N/A", margin + 40, currentY);
-    currentY += 15;
-    
-    // Company Information
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Company Information", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 70, currentY + 1);
-    currentY += 10;
-    
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Company Name:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.companyName || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("About Company:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const aboutTextLines = pdf.splitTextToSize(brief.aboutCompany || "N/A", contentWidth);
-    pdf.text(aboutTextLines, margin, currentY);
-    currentY += aboutTextLines.length * 5 + 5;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Illustrations Purpose:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const purposeTextLines = pdf.splitTextToSize(brief.illustrationsPurpose || "N/A", contentWidth);
-    pdf.text(purposeTextLines, margin, currentY);
-    currentY += purposeTextLines.length * 5 + 5;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Illustrations For:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.illustrationsFor || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Illustrations Style:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.illustrationsStyle || "N/A", margin + 40, currentY);
-    currentY += 15;
-    
-    // Check if we need a new page
-    if (currentY > 250) {
-      pdf.addPage();
-      currentY = margin;
-    }
-    
-    // Target Audience & Competitors
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Target Audience & Competitors", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 90, currentY + 1);
-    currentY += 10;
-    
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Target Audience:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const audienceTextLines = pdf.splitTextToSize(brief.targetAudience || "N/A", contentWidth);
-    pdf.text(audienceTextLines, margin, currentY);
-    currentY += audienceTextLines.length * 5 + 5;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Competitors:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    let competitors = "";
-    if (brief.competitor1) competitors += brief.competitor1 + ", ";
-    if (brief.competitor2) competitors += brief.competitor2 + ", ";
-    if (brief.competitor3) competitors += brief.competitor3 + ", ";
-    if (brief.competitor4) competitors += brief.competitor4;
-    if (competitors.endsWith(", ")) competitors = competitors.slice(0, -2);
-    if (!competitors) competitors = "N/A";
-    
-    const competitorsTextLines = pdf.splitTextToSize(competitors, contentWidth);
-    pdf.text(competitorsTextLines, margin, currentY);
-    currentY += competitorsTextLines.length * 5 + 15;
-    
-    // Check if we need a new page
-    if (currentY > 250) {
-      pdf.addPage();
-      currentY = margin;
-    }
-    
-    // Illustration Requirements
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Illustration Requirements", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 80, currentY + 1);
-    currentY += 10;
-    
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Number of Illustrations:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.illustrationsCount?.toString() || "N/A", margin + 60, currentY);
-    currentY += 10;
-    
-    // Print each illustration detail
-    if (brief.illustrationDetails && brief.illustrationDetails.length > 0) {
-      brief.illustrationDetails.forEach((detail: string, index: number) => {
-        if (detail && detail.trim()) {
-          pdf.setFont("helvetica", "bold");
-          pdf.text(`Illustration ${index + 1}:`, margin, currentY);
-          currentY += 8;
-          pdf.setFont("helvetica", "normal");
-          
-          const detailLines = pdf.splitTextToSize(detail, contentWidth);
-          pdf.text(detailLines, margin, currentY);
-          currentY += detailLines.length * 5 + 5;
-          
-          // Check if we need a new page
-          if (currentY > 250 && index < brief.illustrationDetails.length - 1) {
-            pdf.addPage();
-            currentY = margin;
-          }
-        }
-      });
-    }
-    
-    currentY += 5;
-    
-    // Check if we need a new page
-    if (currentY > 230) {
-      pdf.addPage();
-      currentY = margin;
-    }
-    
-    // Design Preferences
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Design Preferences", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 60, currentY + 1);
-    currentY += 10;
-    
-    // Brand Guidelines
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Brand Guidelines:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const guidelinesTextLines = pdf.splitTextToSize(brief.brandGuidelines || "N/A", contentWidth);
-    pdf.text(guidelinesTextLines, margin, currentY);
-    currentY += guidelinesTextLines.length * 5 + 5;
-    
-    // References
-    pdf.setFont("helvetica", "bold");
-    pdf.text("References:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    let references = "";
-    if (brief.reference1) references += brief.reference1 + ", ";
-    if (brief.reference2) references += brief.reference2 + ", ";
-    if (brief.reference3) references += brief.reference3 + ", ";
-    if (brief.reference4) references += brief.reference4;
-    if (references.endsWith(", ")) references = references.slice(0, -2);
-    if (!references) references = "N/A";
-    
-    const referencesTextLines = pdf.splitTextToSize(references, contentWidth);
-    pdf.text(referencesTextLines, margin, currentY);
-    currentY += referencesTextLines.length * 5 + 5;
-    
-    // General Style
-    pdf.setFont("helvetica", "bold");
-    pdf.text("General Style:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.generalStyle || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    // Color Preferences
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Color Preferences:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.colorPreferences || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    // Like & Dislike Design
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Like & Dislike Design:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const likesTextLines = pdf.splitTextToSize(brief.likeDislikeDesign || "N/A", contentWidth);
-    pdf.text(likesTextLines, margin, currentY);
-    currentY += likesTextLines.length * 5 + 15;
-    
-    // Check if we need a new page
-    if (currentY > 250) {
-      pdf.addPage();
-      currentY = margin;
-    }
-    
-    // Project Scope
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Project Scope", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 40, currentY + 1);
-    currentY += 10;
-    
-    // Deliverables
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Deliverables:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    
-    if (brief.deliverables && brief.deliverables.length > 0) {
-      pdf.text(brief.deliverables.join(", "), margin + 40, currentY);
-    } else {
-      pdf.text("N/A", margin + 40, currentY);
-    }
-    currentY += 8;
-    
-    // Completion Deadline
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Completion Deadline:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    
-    let deadlineText = "N/A";
-    if (brief.completionDeadline) {
-      try {
-        deadlineText = format(new Date(brief.completionDeadline), "yyyy-MM-dd");
-      } catch (e) {
-        deadlineText = brief.completionDeadline;
-      }
-    }
-    
-    pdf.text(deadlineText, margin + 50, currentY);
-    
-    // Add page numbers
-    const pageCount = pdf.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      pdf.setPage(i);
-      pdf.setFontSize(10);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(`Page ${i} of ${pageCount}`, pageWidth - margin, 287, { align: "right" });
-    }
-    
-    // Add the current date to the PDF
-    const currentDate = format(new Date(), "yyyy-MM-dd");
-    pdf.setPage(1);
-    pdf.setFontSize(10);
-    pdf.text(`Generated on: ${currentDate}`, pageWidth - margin, margin - 5, { align: "right" });
-    
-    // Save the PDF
-    pdf.save(`Illustration_Brief_${brief.companyName || 'Unnamed'}.pdf`);
-    
-    return Promise.resolve();
-  } catch (error) {
-    console.error('Error generating brief PDF:', error);
-    return Promise.reject(error);
+// Helper function to add a section title
+const addSectionTitle = (doc: jsPDF, text: string, y: number) => {
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text(text, 20, y);
+  doc.setLineWidth(0.2);
+  doc.line(20, y + 1, 190, y + 1);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  return y + 10;
+};
+
+// Helper function to add a field
+const addField = (doc: jsPDF, label: string, value: string | null | undefined, y: number) => {
+  const safeValue = typeof value === 'string' ? value.trim() : (value || "Not provided");
+  
+  doc.setFont("helvetica", "bold");
+  doc.text(`${label}:`, 20, y);
+  doc.setFont("helvetica", "normal");
+  
+  // Check if we need to wrap text
+  if (safeValue && safeValue.length > 80) {
+    const textLines = doc.splitTextToSize(safeValue, 150);
+    doc.text(textLines, 40, y);
+    return y + (textLines.length * 5);
+  } else {
+    doc.text(safeValue, 40, y);
+    return y + 6;
   }
 };
 
-export const generateUIDesignBriefPDF = async (brief: any): Promise<void> => {
+// Helper function to check page overflow and add a new page if needed
+const checkPageOverflow = (doc: jsPDF, y: number, margin: number = 20) => {
+  if (y > 270) {
+    doc.addPage();
+    return margin;
+  }
+  return y;
+};
+
+export const generateIllustrationBriefPDF = async (brief: any) => {
   try {
-    // Initialize PDF document
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
-    
-    // Document constants
-    const pageWidth = 210;
-    const margin = 20;
-    const contentWidth = pageWidth - (margin * 2);
-    
-    // Use helvetica font
-    pdf.setFont("helvetica");
-    
+    const doc = new jsPDF();
+    let y = 20;
+
     // Add title
-    pdf.setFontSize(20);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("UI Design Brief", margin, margin);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Illustration Design Brief", 105, y, { align: "center" });
+    y += 15;
+
+    // Client Information
+    y = addSectionTitle(doc, "Client Information", y);
+    y = addField(doc, "Name", brief.name, y);
+    y = addField(doc, "Email", brief.email, y);
+    y = addField(doc, "Company", brief.companyName, y);
+    y = checkPageOverflow(doc, y);
+
+    // Brief Information
+    y = addSectionTitle(doc, "Brief Information", y);
+    y = addField(doc, "Submission Date", format(new Date(brief.submissionDate), "MMMM dd, yyyy"), y);
+    y = addField(doc, "Status", brief.status, y);
+    y = checkPageOverflow(doc, y);
+
+    // Project Details
+    y = addSectionTitle(doc, "Project Details", y);
+    y = addField(doc, "About Company", brief.aboutCompany, y);
+    y = checkPageOverflow(doc, y);
+    y = addField(doc, "Illustrations Purpose", brief.illustrationsPurpose, y);
+    y = checkPageOverflow(doc, y);
+    y = addField(doc, "Illustrations For", brief.illustrationsFor, y);
+    y = checkPageOverflow(doc, y);
+    y = addField(doc, "Illustrations Style", brief.illustrationsStyle, y);
+    y = checkPageOverflow(doc, y);
+    y = addField(doc, "Target Audience", brief.targetAudience, y);
+    y = checkPageOverflow(doc, y);
+
+    // References
+    if (brief.reference1 || brief.reference2 || brief.reference3 || brief.reference4) {
+      y = addSectionTitle(doc, "References", y);
+      if (brief.reference1) y = addField(doc, "Reference 1", brief.reference1, y);
+      if (brief.reference2) y = addField(doc, "Reference 2", brief.reference2, y);
+      if (brief.reference3) y = addField(doc, "Reference 3", brief.reference3, y);
+      if (brief.reference4) y = addField(doc, "Reference 4", brief.reference4, y);
+      y = checkPageOverflow(doc, y);
+    }
+
+    // Illustration Details
+    if (brief.illustrationDetails && brief.illustrationDetails.length > 0) {
+      y = addSectionTitle(doc, "Illustration Details", y);
+      y = addField(doc, "Number of Illustrations", brief.illustrationsCount.toString(), y);
+      y = checkPageOverflow(doc, y);
+      
+      brief.illustrationDetails.forEach((detail: string, index: number) => {
+        if (detail) {
+          y = addField(doc, `Illustration ${index + 1}`, detail, y);
+          y = checkPageOverflow(doc, y);
+        }
+      });
+    }
+
+    // Deliverables
+    if (brief.deliverables && brief.deliverables.length > 0) {
+      y = addSectionTitle(doc, "Deliverables", y);
+      y = addField(doc, "File Formats", brief.deliverables.join(", "), y);
+      y = checkPageOverflow(doc, y);
+    }
+
+    // Deadline
+    y = addSectionTitle(doc, "Deadline", y);
+    const deadlineValue = brief.completionDeadline 
+      ? format(new Date(brief.completionDeadline), "MMMM dd, yyyy") 
+      : "Not specified";
+    y = addField(doc, "Completion Deadline", deadlineValue, y);
+
+    // Save the PDF
+    doc.save(`Illustration_Brief_${brief.id}.pdf`);
     
-    let currentY = margin + 20;
+    return true;
+  } catch (error) {
+    console.error("Error generating illustration brief PDF:", error);
+    throw error;
+  }
+};
+
+export const generateUIDesignBriefPDF = async (brief: any) => {
+  try {
+    const doc = new jsPDF();
+    let y = 20;
+
+    // Add title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("UI Design Brief", 105, y, { align: "center" });
+    y += 15;
+
+    // Client Information
+    y = addSectionTitle(doc, "Client Information", y);
+    y = addField(doc, "Name", brief.name, y);
+    y = addField(doc, "Email", brief.email, y);
+    y = addField(doc, "Company", brief.companyName, y);
+    y = checkPageOverflow(doc, y);
+
+    // Brief Information
+    y = addSectionTitle(doc, "Brief Information", y);
+    y = addField(doc, "Submission Date", format(new Date(brief.submissionDate), "MMMM dd, yyyy"), y);
+    y = addField(doc, "Status", brief.status, y);
+    y = checkPageOverflow(doc, y);
+
+    // Project Overview
+    y = addSectionTitle(doc, "Project Overview", y);
+    y = addField(doc, "About Company", brief.aboutCompany, y);
+    y = checkPageOverflow(doc, y);
+    y = addField(doc, "Project Type", brief.projectType, y);
+    y = checkPageOverflow(doc, y);
+    y = addField(doc, "Project Size", brief.projectSize, y);
+    y = checkPageOverflow(doc, y);
     
-    // Contact Information
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Contact Information", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 60, currentY + 1);
-    currentY += 10;
-    
-    // Name and Email
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Name:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.name || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Email:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.email || "N/A", margin + 40, currentY);
-    currentY += 15;
-    
-    // Company Information
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Company Information", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 70, currentY + 1);
-    currentY += 10;
-    
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Company Name:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.companyName || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("About Company:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const aboutTextLines = pdf.splitTextToSize(brief.aboutCompany || "N/A", contentWidth);
-    pdf.text(aboutTextLines, margin, currentY);
-    currentY += aboutTextLines.length * 5 + 5;
+    // Project Details
+    y = addSectionTitle(doc, "Project Details", y);
+    y = addField(doc, "Target Audience", brief.targetAudience, y);
+    y = checkPageOverflow(doc, y);
+    y = addField(doc, "Website/App Purpose", brief.websitePurpose, y);
+    y = checkPageOverflow(doc, y);
+    y = addField(doc, "Project Description", brief.projectDescription, y);
+    y = checkPageOverflow(doc, y);
+    y = addField(doc, "Key Features", brief.keyFeatures, y);
+    y = checkPageOverflow(doc, y);
     
     // Website Type Interest
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Website Type Interest:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    let websiteTypes = "";
-    if (brief.websiteTypeInterest && Array.isArray(brief.websiteTypeInterest)) {
-      websiteTypes = brief.websiteTypeInterest.join(", ");
-    } else {
-      websiteTypes = "N/A";
-    }
-    
-    const websiteTypesLines = pdf.splitTextToSize(websiteTypes, contentWidth);
-    pdf.text(websiteTypesLines, margin, currentY);
-    currentY += websiteTypesLines.length * 5 + 5;
-    
-    // Check if we need a new page
-    if (currentY > 250) {
-      pdf.addPage();
-      currentY = margin;
+    if (brief.websiteTypeInterest && brief.websiteTypeInterest.length > 0) {
+      y = addField(doc, "Website Type Interest", brief.websiteTypeInterest.join(", "), y);
+      y = checkPageOverflow(doc, y);
     }
     
     // Current Website
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Current Website:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.currentWebsite || "N/A", margin + 40, currentY);
-    currentY += 15;
-    
+    if (brief.currentWebsite) {
+      y = addField(doc, "Current Website", brief.currentWebsite, y);
+      y = checkPageOverflow(doc, y);
+    }
+
     // Competitors
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Competitors", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 40, currentY + 1);
-    currentY += 10;
-    
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "normal");
-    
-    let competitors = "";
-    if (brief.competitor1) competitors += brief.competitor1 + ", ";
-    if (brief.competitor2) competitors += brief.competitor2 + ", ";
-    if (brief.competitor3) competitors += brief.competitor3 + ", ";
-    if (brief.competitor4) competitors += brief.competitor4;
-    if (competitors.endsWith(", ")) competitors = competitors.slice(0, -2);
-    if (!competitors) competitors = "N/A";
-    
-    const competitorsTextLines = pdf.splitTextToSize(competitors, contentWidth);
-    pdf.text(competitorsTextLines, margin, currentY);
-    currentY += competitorsTextLines.length * 5 + 15;
-    
-    // Target Audience & Website Purpose
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Target Audience & Purpose", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 80, currentY + 1);
-    currentY += 10;
-    
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Target Audience:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const audienceTextLines = pdf.splitTextToSize(brief.targetAudience || "N/A", contentWidth);
-    pdf.text(audienceTextLines, margin, currentY);
-    currentY += audienceTextLines.length * 5 + 5;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Website Purpose:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const purposeTextLines = pdf.splitTextToSize(brief.websitePurpose || "N/A", contentWidth);
-    pdf.text(purposeTextLines, margin, currentY);
-    currentY += purposeTextLines.length * 5 + 15;
-    
-    // Check if we need a new page
-    if (currentY > 250) {
-      pdf.addPage();
-      currentY = margin;
+    if (brief.competitor1 || brief.competitor2 || brief.competitor3 || brief.competitor4) {
+      y = addSectionTitle(doc, "Competitors", y);
+      if (brief.competitor1) y = addField(doc, "Competitor 1", brief.competitor1, y);
+      if (brief.competitor2) y = addField(doc, "Competitor 2", brief.competitor2, y);
+      if (brief.competitor3) y = addField(doc, "Competitor 3", brief.competitor3, y);
+      if (brief.competitor4) y = addField(doc, "Competitor 4", brief.competitor4, y);
+      y = checkPageOverflow(doc, y);
     }
-    
+
     // Design Preferences
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Design Preferences", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 60, currentY + 1);
-    currentY += 10;
+    y = addSectionTitle(doc, "Design Preferences", y);
+    y = addField(doc, "General Style", brief.generalStyle, y);
+    y = checkPageOverflow(doc, y);
     
+    if (brief.colorPreferences) {
+      y = addField(doc, "Color Preferences", brief.colorPreferences, y);
+      y = checkPageOverflow(doc, y);
+    }
+    
+    if (brief.fontPreferences) {
+      y = addField(doc, "Font Preferences", brief.fontPreferences, y);
+      y = checkPageOverflow(doc, y);
+    }
+    
+    if (brief.existingBrandAssets) {
+      y = addField(doc, "Existing Brand Assets", brief.existingBrandAssets, y);
+      y = checkPageOverflow(doc, y);
+    }
+    
+    if (brief.stylePreferences) {
+      y = addField(doc, "Style Preferences", brief.stylePreferences, y);
+      y = checkPageOverflow(doc, y);
+    }
+    
+    if (brief.responsiveRequirements) {
+      y = addField(doc, "Responsive Requirements", brief.responsiveRequirements, y);
+      y = checkPageOverflow(doc, y);
+    }
+
     // References
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("References:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    let references = "";
-    if (brief.reference1) references += brief.reference1 + ", ";
-    if (brief.reference2) references += brief.reference2 + ", ";
-    if (brief.reference3) references += brief.reference3 + ", ";
-    if (brief.reference4) references += brief.reference4;
-    if (references.endsWith(", ")) references = references.slice(0, -2);
-    if (!references) references = "N/A";
-    
-    const referencesTextLines = pdf.splitTextToSize(references, contentWidth);
-    pdf.text(referencesTextLines, margin, currentY);
-    currentY += referencesTextLines.length * 5 + 5;
-    
-    // General Style
-    pdf.setFont("helvetica", "bold");
-    pdf.text("General Style:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.generalStyle || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    // Color & Font Preferences
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Color Preferences:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.colorPreferences || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Font Preferences:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.fontPreferences || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    // Brand Guidelines & Wireframe
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Has Brand Guidelines:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.hasBrandGuidelines || "N/A", margin + 50, currentY);
-    currentY += 8;
-    
-    if (brief.hasBrandGuidelines === "Yes" && brief.brandGuidelinesDetails) {
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Brand Guidelines Details:", margin, currentY);
-      currentY += 8;
-      pdf.setFont("helvetica", "normal");
-      
-      const guidelinesDetailsLines = pdf.splitTextToSize(brief.brandGuidelinesDetails, contentWidth);
-      pdf.text(guidelinesDetailsLines, margin, currentY);
-      currentY += guidelinesDetailsLines.length * 5 + 5;
+    if (brief.reference1 || brief.reference2 || brief.reference3 || brief.reference4) {
+      y = addSectionTitle(doc, "References", y);
+      if (brief.reference1) y = addField(doc, "Reference 1", brief.reference1, y);
+      if (brief.reference2) y = addField(doc, "Reference 2", brief.reference2, y);
+      if (brief.reference3) y = addField(doc, "Reference 3", brief.reference3, y);
+      if (brief.reference4) y = addField(doc, "Reference 4", brief.reference4, y);
+      y = checkPageOverflow(doc, y);
     }
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Has Wireframe:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.hasWireframe || "N/A", margin + 50, currentY);
-    currentY += 8;
-    
-    if (brief.hasWireframe === "Yes" && brief.wireframeDetails) {
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Wireframe Details:", margin, currentY);
-      currentY += 8;
-      pdf.setFont("helvetica", "normal");
+
+    // Brand Guidelines and Wireframes
+    if (brief.hasBrandGuidelines || brief.hasWireframe) {
+      y = addSectionTitle(doc, "Additional Information", y);
       
-      const wireframeDetailsLines = pdf.splitTextToSize(brief.wireframeDetails, contentWidth);
-      pdf.text(wireframeDetailsLines, margin, currentY);
-      currentY += wireframeDetailsLines.length * 5 + 5;
-    }
-    
-    // Check if we need a new page
-    if (currentY > 250) {
-      pdf.addPage();
-      currentY = margin;
-    }
-    
-    // Project Scope
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Project Scope", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 40, currentY + 1);
-    currentY += 10;
-    
-    // Page Count
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Page Count:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.pageCount?.toString() || "N/A", margin + 40, currentY);
-    currentY += 10;
-    
-    // Print each page detail
-    if (brief.pageDetails && brief.pageDetails.length > 0) {
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Page Details:", margin, currentY);
-      currentY += 8;
-      pdf.setFont("helvetica", "normal");
+      if (brief.hasBrandGuidelines) {
+        y = addField(doc, "Has Brand Guidelines", brief.hasBrandGuidelines, y);
+        y = checkPageOverflow(doc, y);
+        
+        if (brief.brandGuidelinesDetails) {
+          y = addField(doc, "Brand Guidelines Details", brief.brandGuidelinesDetails, y);
+          y = checkPageOverflow(doc, y);
+        }
+      }
       
-      brief.pageDetails.forEach((detail: string, index: number) => {
-        if (detail && detail.trim()) {
-          pdf.setFont("helvetica", "bold");
-          pdf.text(`Page ${index + 1}:`, margin, currentY);
-          currentY += 6;
-          pdf.setFont("helvetica", "normal");
+      if (brief.hasWireframe) {
+        y = addField(doc, "Has Wireframes", brief.hasWireframe, y);
+        y = checkPageOverflow(doc, y);
+        
+        if (brief.wireframeDetails) {
+          y = addField(doc, "Wireframe Details", brief.wireframeDetails, y);
+          y = checkPageOverflow(doc, y);
+        }
+      }
+    }
+
+    // Page Details
+    if (brief.pageCount && brief.pageDetails && brief.pageDetails.length > 0) {
+      y = addSectionTitle(doc, "Page Details", y);
+      y = addField(doc, "Number of Pages", brief.pageCount.toString(), y);
+      y = checkPageOverflow(doc, y);
+      
+      brief.pageDetails.forEach((page: any, index: number) => {
+        if (page && (page.name || page.description)) {
+          doc.setFont("helvetica", "bold");
+          doc.text(`Page ${index + 1}:`, 20, y);
+          doc.setFont("helvetica", "normal");
+          y += 5;
           
-          const detailLines = pdf.splitTextToSize(detail, contentWidth);
-          pdf.text(detailLines, margin, currentY);
-          currentY += detailLines.length * 5 + 5;
-          
-          // Check if we need a new page
-          if (currentY > 250 && index < brief.pageDetails.length - 1) {
-            pdf.addPage();
-            currentY = margin;
+          if (page.name) {
+            y = addField(doc, "Name", page.name, y);
           }
+          
+          if (page.description) {
+            y = addField(doc, "Description", page.description, y);
+          }
+          
+          y = checkPageOverflow(doc, y);
         }
       });
     }
     
-    // Website Content
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Website Content:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const contentTextLines = pdf.splitTextToSize(brief.websiteContent || "N/A", contentWidth);
-    pdf.text(contentTextLines, margin, currentY);
-    currentY += contentTextLines.length * 5 + 5;
-    
-    // Development Service
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Development Service:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.developmentService || "N/A", margin + 50, currentY);
-    currentY += 8;
-    
-    // Completion Deadline
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Completion Deadline:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    
-    let deadlineText = "N/A";
-    if (brief.completionDeadline) {
-      try {
-        deadlineText = format(new Date(brief.completionDeadline), "yyyy-MM-dd");
-      } catch (e) {
-        deadlineText = brief.completionDeadline;
+    // Implementation Details
+    if (brief.websiteContent || brief.developmentService) {
+      y = addSectionTitle(doc, "Implementation Details", y);
+      
+      if (brief.websiteContent) {
+        y = addField(doc, "Website Content", brief.websiteContent, y);
+        y = checkPageOverflow(doc, y);
+      }
+      
+      if (brief.developmentService) {
+        y = addField(doc, "Development Service", brief.developmentService, y);
+        y = checkPageOverflow(doc, y);
       }
     }
-    
-    pdf.text(deadlineText, margin + 50, currentY);
-    
-    // Add page numbers
-    const pageCount = pdf.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      pdf.setPage(i);
-      pdf.setFontSize(10);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(`Page ${i} of ${pageCount}`, pageWidth - margin, 287, { align: "right" });
-    }
-    
-    // Add the current date to the PDF
-    const currentDate = format(new Date(), "yyyy-MM-dd");
-    pdf.setPage(1);
-    pdf.setFontSize(10);
-    pdf.text(`Generated on: ${currentDate}`, pageWidth - margin, margin - 5, { align: "right" });
-    
+
+    // Deadline
+    y = addSectionTitle(doc, "Deadline", y);
+    const deadlineValue = brief.completionDeadline 
+      ? format(new Date(brief.completionDeadline), "MMMM dd, yyyy") 
+      : "Not specified";
+    y = addField(doc, "Completion Deadline", deadlineValue, y);
+
     // Save the PDF
-    pdf.save(`UI_Design_Brief_${brief.companyName || 'Unnamed'}.pdf`);
+    doc.save(`UI_Design_Brief_${brief.id}.pdf`);
     
-    return Promise.resolve();
+    return true;
   } catch (error) {
-    console.error('Error generating UI brief PDF:', error);
-    return Promise.reject(error);
+    console.error("Error generating UI brief PDF:", error);
+    throw error;
   }
 };
 
-export const generateGraphicDesignBriefPDF = async (brief: any): Promise<void> => {
+export const generateGraphicDesignBriefPDF = async (brief: any) => {
   try {
-    // Initialize PDF document
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
-    
-    // Document constants
-    const pageWidth = 210;
-    const margin = 20;
-    const contentWidth = pageWidth - (margin * 2);
-    
-    // Use helvetica font
-    pdf.setFont("helvetica");
-    
+    const doc = new jsPDF();
+    let y = 20;
+
     // Add title
-    pdf.setFontSize(20);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Graphic Design Brief", margin, margin);
-    
-    let currentY = margin + 20;
-    
-    // Contact Information
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Contact Information", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 60, currentY + 1);
-    currentY += 10;
-    
-    // Name and Email
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Name:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.name || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Email:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.email || "N/A", margin + 40, currentY);
-    currentY += 15;
-    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Graphic Design Brief", 105, y, { align: "center" });
+    y += 15;
+
+    // Client Information
+    y = addSectionTitle(doc, "Client Information", y);
+    y = addField(doc, "Name", brief.name, y);
+    y = addField(doc, "Email", brief.email, y);
+    y = addField(doc, "Company", brief.companyName, y);
+    y = checkPageOverflow(doc, y);
+
+    // Brief Information
+    y = addSectionTitle(doc, "Brief Information", y);
+    y = addField(doc, "Submission Date", format(new Date(brief.submissionDate), "MMMM dd, yyyy"), y);
+    y = addField(doc, "Status", brief.status, y);
+    y = checkPageOverflow(doc, y);
+
     // Company Information
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Company Information", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 70, currentY + 1);
-    currentY += 10;
-    
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Company Name:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.companyName || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("About Company:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const aboutTextLines = pdf.splitTextToSize(brief.aboutCompany || "N/A", contentWidth);
-    pdf.text(aboutTextLines, margin, currentY);
-    currentY += aboutTextLines.length * 5 + 5;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Vision & Mission:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const visionTextLines = pdf.splitTextToSize(brief.visionMission || "N/A", contentWidth);
-    pdf.text(visionTextLines, margin, currentY);
-    currentY += visionTextLines.length * 5 + 5;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Slogan/Tagline:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.slogan || "N/A", margin + 40, currentY);
-    currentY += 15;
-    
-    // Check if we need a new page
-    if (currentY > 250) {
-      pdf.addPage();
-      currentY = margin;
-    }
-    
-    // Logo Feelings
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Logo Preferences", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 50, currentY + 1);
-    currentY += 10;
-    
+    y = addSectionTitle(doc, "Company Information", y);
+    y = addField(doc, "About Company", brief.aboutCompany, y);
+    y = checkPageOverflow(doc, y);
+    y = addField(doc, "Vision & Mission", brief.visionMission, y);
+    y = checkPageOverflow(doc, y);
+    y = addField(doc, "Slogan", brief.slogan, y);
+    y = checkPageOverflow(doc, y);
+
+    // Logo Preferences
     if (brief.logoFeelings) {
-      pdf.setFontSize(12);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Style:", margin, currentY);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(brief.logoFeelings.style || "N/A", margin + 40, currentY);
-      currentY += 8;
+      y = addSectionTitle(doc, "Logo Preferences", y);
       
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Pricing:", margin, currentY);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(brief.logoFeelings.pricing || "N/A", margin + 40, currentY);
-      currentY += 8;
+      if (brief.logoFeelings.style) y = addField(doc, "Style", brief.logoFeelings.style, y);
+      if (brief.logoFeelings.pricing) y = addField(doc, "Pricing", brief.logoFeelings.pricing, y);
+      if (brief.logoFeelings.era) y = addField(doc, "Era", brief.logoFeelings.era, y);
+      if (brief.logoFeelings.tone) y = addField(doc, "Tone", brief.logoFeelings.tone, y);
+      if (brief.logoFeelings.complexity) y = addField(doc, "Complexity", brief.logoFeelings.complexity, y);
+      if (brief.logoFeelings.gender) y = addField(doc, "Gender", brief.logoFeelings.gender, y);
       
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Era:", margin, currentY);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(brief.logoFeelings.era || "N/A", margin + 40, currentY);
-      currentY += 8;
-      
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Tone:", margin, currentY);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(brief.logoFeelings.tone || "N/A", margin + 40, currentY);
-      currentY += 8;
-      
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Complexity:", margin, currentY);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(brief.logoFeelings.complexity || "N/A", margin + 40, currentY);
-      currentY += 8;
-      
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Gender:", margin, currentY);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(brief.logoFeelings.gender || "N/A", margin + 40, currentY);
-      currentY += 15;
+      y = checkPageOverflow(doc, y);
     }
-    
+
+    // Logo Type
+    if (brief.logoType) {
+      y = addField(doc, "Logo Type", brief.logoType, y);
+      y = checkPageOverflow(doc, y);
+    }
+
     // Tone
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Brand Tone:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    let toneText = "";
-    if (brief.tone && Array.isArray(brief.tone)) {
-      toneText = brief.tone.join(", ");
-    } else {
-      toneText = "N/A";
+    if (brief.tone && brief.tone.length > 0) {
+      y = addField(doc, "Tone", brief.tone.join(", "), y);
+      y = checkPageOverflow(doc, y);
     }
-    
-    const toneTextLines = pdf.splitTextToSize(toneText, contentWidth);
-    pdf.text(toneTextLines, margin, currentY);
-    currentY += toneTextLines.length * 5 + 5;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Logo Type:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.logoType || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    // Check if we need a new page
-    if (currentY > 250) {
-      pdf.addPage();
-      currentY = margin;
-    }
-    
-    // References
-    pdf.setFont("helvetica", "bold");
-    pdf.text("References:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    let references = "";
-    if (brief.reference1) references += brief.reference1 + ", ";
-    if (brief.reference2) references += brief.reference2 + ", ";
-    if (brief.reference3) references += brief.reference3 + ", ";
-    if (brief.reference4) references += brief.reference4;
-    if (references.endsWith(", ")) references = references.slice(0, -2);
-    if (!references) references = "N/A";
-    
-    const referencesTextLines = pdf.splitTextToSize(references, contentWidth);
-    pdf.text(referencesTextLines, margin, currentY);
-    currentY += referencesTextLines.length * 5 + 15;
-    
+
     // Target Audience
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Target Audience", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 45, currentY + 1);
-    currentY += 10;
-    
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Target Age:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.targetAge || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Target Gender:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.targetGender || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Target Demography:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.targetDemography || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Target Profession:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.targetProfession || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Target Personality:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.targetPersonality || "N/A", margin + 40, currentY);
-    currentY += 15;
-    
-    // Check if we need a new page
-    if (currentY > 250) {
-      pdf.addPage();
-      currentY = margin;
-    }
-    
-    // Market Information
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Market Information", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 50, currentY + 1);
-    currentY += 10;
-    
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Products/Services:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const productsTextLines = pdf.splitTextToSize(brief.productsServices || "N/A", contentWidth);
-    pdf.text(productsTextLines, margin, currentY);
-    currentY += productsTextLines.length * 5 + 5;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Features & Benefits:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const featuresTextLines = pdf.splitTextToSize(brief.featuresAndBenefits || "N/A", contentWidth);
-    pdf.text(featuresTextLines, margin, currentY);
-    currentY += featuresTextLines.length * 5 + 5;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Market Category:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(brief.marketCategory || "N/A", margin + 40, currentY);
-    currentY += 8;
-    
+    y = addSectionTitle(doc, "Target Audience", y);
+    if (brief.targetAge) y = addField(doc, "Age Range", brief.targetAge, y);
+    if (brief.targetGender) y = addField(doc, "Gender", brief.targetGender, y);
+    if (brief.targetDemography) y = addField(doc, "Demography", brief.targetDemography, y);
+    if (brief.targetProfession) y = addField(doc, "Profession", brief.targetProfession, y);
+    if (brief.targetPersonality) y = addField(doc, "Personality", brief.targetPersonality, y);
+    y = checkPageOverflow(doc, y);
+
+    // Product Information
+    y = addSectionTitle(doc, "Product Information", y);
+    if (brief.productsServices) y = addField(doc, "Products/Services", brief.productsServices, y);
+    y = checkPageOverflow(doc, y);
+    if (brief.featuresAndBenefits) y = addField(doc, "Features & Benefits", brief.featuresAndBenefits, y);
+    y = checkPageOverflow(doc, y);
+    if (brief.marketCategory) y = addField(doc, "Market Category", brief.marketCategory, y);
+    y = checkPageOverflow(doc, y);
+
     // Competitors
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Competitors:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    let competitors = "";
-    if (brief.competitor1) competitors += brief.competitor1 + ", ";
-    if (brief.competitor2) competitors += brief.competitor2 + ", ";
-    if (brief.competitor3) competitors += brief.competitor3 + ", ";
-    if (brief.competitor4) competitors += brief.competitor4;
-    if (competitors.endsWith(", ")) competitors = competitors.slice(0, -2);
-    if (!competitors) competitors = "N/A";
-    
-    const competitorsTextLines = pdf.splitTextToSize(competitors, contentWidth);
-    pdf.text(competitorsTextLines, margin, currentY);
-    currentY += competitorsTextLines.length * 5 + 5;
-    
-    // Check if we need a new page
-    if (currentY > 250) {
-      pdf.addPage();
-      currentY = margin;
+    if (brief.competitor1 || brief.competitor2 || brief.competitor3 || brief.competitor4) {
+      y = addSectionTitle(doc, "Competitors", y);
+      if (brief.competitor1) y = addField(doc, "Competitor 1", brief.competitor1, y);
+      if (brief.competitor2) y = addField(doc, "Competitor 2", brief.competitor2, y);
+      if (brief.competitor3) y = addField(doc, "Competitor 3", brief.competitor3, y);
+      if (brief.competitor4) y = addField(doc, "Competitor 4", brief.competitor4, y);
+      y = checkPageOverflow(doc, y);
     }
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Brand Positioning:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const positioningTextLines = pdf.splitTextToSize(brief.brandPositioning || "N/A", contentWidth);
-    pdf.text(positioningTextLines, margin, currentY);
-    currentY += positioningTextLines.length * 5 + 5;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Barrier to Entry:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const barrierTextLines = pdf.splitTextToSize(brief.barrierToEntry || "N/A", contentWidth);
-    pdf.text(barrierTextLines, margin, currentY);
-    currentY += barrierTextLines.length * 5 + 5;
-    
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Specific Imagery:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    const imageryTextLines = pdf.splitTextToSize(brief.specificImagery || "N/A", contentWidth);
-    pdf.text(imageryTextLines, margin, currentY);
-    currentY += imageryTextLines.length * 5 + 15;
-    
-    // Check if we need a new page
-    if (currentY > 250) {
-      pdf.addPage();
-      currentY = margin;
+
+    // References
+    if (brief.reference1 || brief.reference2 || brief.reference3 || brief.reference4) {
+      y = addSectionTitle(doc, "References", y);
+      if (brief.reference1) y = addField(doc, "Reference 1", brief.reference1, y);
+      if (brief.reference2) y = addField(doc, "Reference 2", brief.reference2, y);
+      if (brief.reference3) y = addField(doc, "Reference 3", brief.reference3, y);
+      if (brief.reference4) y = addField(doc, "Reference 4", brief.reference4, y);
+      y = checkPageOverflow(doc, y);
     }
-    
-    // Services & Deliverables
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Services & Deliverables", margin, currentY);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 1, margin + 65, currentY + 1);
-    currentY += 10;
-    
-    // Services requested
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Services Requested:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    let services = "";
-    if (brief.services && Array.isArray(brief.services)) {
-      services = brief.services.join(", ");
-    } else {
-      services = "N/A";
+
+    // Additional Information
+    y = addSectionTitle(doc, "Additional Information", y);
+    if (brief.brandPositioning) y = addField(doc, "Brand Positioning", brief.brandPositioning, y);
+    y = checkPageOverflow(doc, y);
+    if (brief.barrierToEntry) y = addField(doc, "Barrier to Entry", brief.barrierToEntry, y);
+    y = checkPageOverflow(doc, y);
+    if (brief.specificImagery) y = addField(doc, "Specific Imagery", brief.specificImagery, y);
+    y = checkPageOverflow(doc, y);
+
+    // Services Required
+    if (brief.services && brief.services.length > 0) {
+      y = addSectionTitle(doc, "Services Required", y);
+      y = addField(doc, "Services", brief.services.join(", "), y);
+      y = checkPageOverflow(doc, y);
     }
-    
-    const servicesTextLines = pdf.splitTextToSize(services, contentWidth);
-    pdf.text(servicesTextLines, margin, currentY);
-    currentY += servicesTextLines.length * 5 + 5;
-    
+
     // Print Media
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Print Media:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    let printMedia = "";
-    if (brief.printMedia && Array.isArray(brief.printMedia)) {
-      printMedia = brief.printMedia.join(", ");
-    } else {
-      printMedia = "N/A";
+    if (brief.printMedia && brief.printMedia.length > 0) {
+      y = addSectionTitle(doc, "Print Media", y);
+      y = addField(doc, "Print Media Items", brief.printMedia.join(", "), y);
+      y = checkPageOverflow(doc, y);
     }
-    
-    const printMediaTextLines = pdf.splitTextToSize(printMedia, contentWidth);
-    pdf.text(printMediaTextLines, margin, currentY);
-    currentY += printMediaTextLines.length * 5 + 5;
-    
+
     // Digital Media
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Digital Media:", margin, currentY);
-    currentY += 8;
-    pdf.setFont("helvetica", "normal");
-    
-    let digitalMedia = "";
-    if (brief.digitalMedia && Array.isArray(brief.digitalMedia)) {
-      digitalMedia = brief.digitalMedia.join(", ");
-    } else {
-      digitalMedia = "N/A";
+    if (brief.digitalMedia && brief.digitalMedia.length > 0) {
+      y = addSectionTitle(doc, "Digital Media", y);
+      y = addField(doc, "Digital Media Items", brief.digitalMedia.join(", "), y);
+      y = checkPageOverflow(doc, y);
     }
-    
-    const digitalMediaTextLines = pdf.splitTextToSize(digitalMedia, contentWidth);
-    pdf.text(digitalMediaTextLines, margin, currentY);
-    currentY += digitalMediaTextLines.length * 5 + 5;
-    
-    // Add page numbers
-    const pageCount = pdf.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      pdf.setPage(i);
-      pdf.setFontSize(10);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(`Page ${i} of ${pageCount}`, pageWidth - margin, 287, { align: "right" });
-    }
-    
-    // Add the current date to the PDF
-    const currentDate = format(new Date(), "yyyy-MM-dd");
-    pdf.setPage(1);
-    pdf.setFontSize(10);
-    pdf.text(`Generated on: ${currentDate}`, pageWidth - margin, margin - 5, { align: "right" });
-    
+
     // Save the PDF
-    pdf.save(`Graphic_Design_Brief_${brief.companyName || 'Unnamed'}.pdf`);
+    doc.save(`Graphic_Design_Brief_${brief.id}.pdf`);
     
-    return Promise.resolve();
+    return true;
   } catch (error) {
-    console.error('Error generating graphic brief PDF:', error);
-    return Promise.reject(error);
+    console.error("Error generating graphic design brief PDF:", error);
+    throw error;
   }
 };

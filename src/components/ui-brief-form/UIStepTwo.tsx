@@ -29,6 +29,8 @@ const UIStepTwo = ({ onNext, onPrevious }: UIStepTwoProps) => {
     const isValid = await trigger([
       "targetAudience", 
       "websitePurpose", 
+      "projectDescription",
+      "keyFeatures",
       "generalStyle"
     ]);
     
@@ -71,6 +73,46 @@ const UIStepTwo = ({ onNext, onPrevious }: UIStepTwoProps) => {
               <FormControl>
                 <Textarea 
                   placeholder="What is the main purpose of your website/app? What do you want visitors to do?" 
+                  className="min-h-[100px]"
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <FormField
+          control={control}
+          name="projectDescription"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Project Description*</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Describe your project in detail, including its goals and objectives" 
+                  className="min-h-[100px]"
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <FormField
+          control={control}
+          name="keyFeatures"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Key Features*</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="List the key features or functionality you need in your website/app" 
                   className="min-h-[100px]"
                   {...field} 
                 />
@@ -207,6 +249,26 @@ const UIStepTwo = ({ onNext, onPrevious }: UIStepTwoProps) => {
       <div className="space-y-2">
         <FormField
           control={control}
+          name="existingBrandAssets"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Existing Brand Assets</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Describe any existing brand assets you have (logo, colors, fonts, etc.)" 
+                  className="min-h-[80px]"
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <FormField
+          control={control}
           name="hasBrandGuidelines"
           render={({ field }) => (
             <FormItem>
@@ -300,6 +362,46 @@ const UIStepTwo = ({ onNext, onPrevious }: UIStepTwoProps) => {
               <FormControl>
                 <Textarea 
                   placeholder="If you have wireframes or mockups, please provide details or a link to access them" 
+                  className="min-h-[80px]"
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <FormField
+          control={control}
+          name="stylePreferences"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Style Preferences</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Describe any specific style preferences or design elements you'd like to include" 
+                  className="min-h-[80px]"
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <FormField
+          control={control}
+          name="responsiveRequirements"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Responsive Requirements</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Describe your requirements for responsive design (mobile, tablet, desktop)" 
                   className="min-h-[80px]"
                   {...field} 
                 />
