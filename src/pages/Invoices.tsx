@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { format } from "date-fns";
-import { Plus, Eye, Edit, Trash, FileText } from "lucide-react";
+import { Plus, Eye, Edit, Trash, FileText, Download, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -20,11 +20,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { clients } from "@/mockData";
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
 import { Invoice } from "@/types";
+import { generateInvoicePDF } from "@/utils/pdfGenerator";
 
 const Invoices = () => {
   const navigate = useNavigate();
@@ -82,6 +89,23 @@ const Invoices = () => {
 
     setDeleteConfirmOpen(false);
     setInvoiceToDelete(null);
+  };
+
+  const handleDownload = async (invoice: Invoice) => {
+    try {
+      await generateInvoicePDF(invoice);
+      toast({
+        title: "PDF Generated",
+        description: "The invoice PDF has been successfully generated.",
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getClientName = (clientId: string) => {
@@ -147,24 +171,45 @@ const Invoices = () => {
                           <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => navigate(`/invoices/${invoice.id}`)}
+                            onClick={() => handleDownload(invoice)}
+                            title="Download PDF"
                           >
-                            <Eye className="h-4 w-4" />
+                            <Download className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => navigate(`/invoices/${invoice.id}/edit`)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => confirmDelete(invoice.id)}
-                          >
-                            <Trash className="h-4 w-4" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                title="More actions"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem 
+                                onClick={() => navigate(`/invoices/${invoice.id}`)}
+                                className="cursor-pointer"
+                              >
+                                <Eye className="mr-2 h-4 w-4" />
+                                View
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => navigate(`/invoices/${invoice.id}/edit`)}
+                                className="cursor-pointer"
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => confirmDelete(invoice.id)}
+                                className="cursor-pointer text-destructive focus:text-destructive"
+                              >
+                                <Trash className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))
