@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -21,27 +22,39 @@ export function useInvoiceForm() {
 
   // Initialize with empty invoice
   const [invoice, setInvoice] = useState<Invoice>(createNewInvoice());
+  const [isLoading, setIsLoading] = useState(isEditing);
   
-  // Load invoice data when in edit mode - do this first before initializing items
-  useEffect(() => {
-    if (isEditing && invoiceId) {
-      console.log("Loading existing invoice data for editing, ID:", invoiceId);
-      const loadedInvoice = loadInvoice(invoiceId);
-      if (loadedInvoice) {
-        console.log("Setting invoice from loaded data:", loadedInvoice);
-        setInvoice(loadedInvoice);
-      }
-    }
-  }, [isEditing, invoiceId, loadInvoice]);
-
-  // Initialize items hook after invoice is loaded
+  // Initialize items hook with empty array first
   const { 
     items, 
     setItems, 
     addItem, 
     removeItem, 
     updateItem 
-  } = useInvoiceItems(invoice.items);
+  } = useInvoiceItems([]);
+
+  // Load invoice data when in edit mode
+  useEffect(() => {
+    if (isEditing && invoiceId) {
+      setIsLoading(true);
+      console.log("Loading existing invoice data for editing, ID:", invoiceId);
+      const loadedInvoice = loadInvoice(invoiceId);
+      if (loadedInvoice) {
+        console.log("Setting invoice from loaded data:", loadedInvoice);
+        setInvoice(loadedInvoice);
+        
+        // Explicitly set the items after loading the invoice
+        if (Array.isArray(loadedInvoice.items) && loadedInvoice.items.length > 0) {
+          console.log("Setting items directly after loading invoice:", loadedInvoice.items);
+          setItems(loadedInvoice.items);
+        }
+      }
+      setIsLoading(false);
+    } else {
+      // For new invoices, make sure we have at least one empty item
+      addItem();
+    }
+  }, [isEditing, invoiceId, loadInvoice, setItems, addItem]);
 
   // Sync items with invoice
   useEffect(() => {
@@ -54,6 +67,8 @@ export function useInvoiceForm() {
 
   // Calculate totals whenever relevant invoice fields change
   useEffect(() => {
+    if (!invoice || !Array.isArray(invoice.items)) return;
+    
     const { 
       subtotal, 
       taxAmount, 
@@ -75,9 +90,9 @@ export function useInvoiceForm() {
       total
     }));
   }, [
-    invoice.items,
-    invoice.taxPercentage,
-    invoice.discountPercentage
+    invoice?.items,
+    invoice?.taxPercentage,
+    invoice?.discountPercentage
   ]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -121,6 +136,7 @@ export function useInvoiceForm() {
     invoice,
     setInvoice,
     isEditing,
+    isLoading,
     addItem,
     removeItem,
     updateItem,

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { clients } from '@/mockData';
 import InvoiceHeader from '@/components/invoice/InvoiceHeader';
 import InvoiceItems from '@/components/invoice/InvoiceItems';
@@ -14,6 +14,7 @@ interface InvoiceFormContainerProps {
   invoice: Invoice;
   setInvoice: React.Dispatch<React.SetStateAction<Invoice>>;
   isEditing: boolean;
+  isLoading?: boolean;
   addItem: () => void;
   removeItem: (id: string) => void;
   updateItem: (id: string, field: keyof InvoiceItem, value: any) => void;
@@ -27,6 +28,7 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
   invoice,
   setInvoice,
   isEditing,
+  isLoading = false,
   addItem,
   removeItem,
   updateItem,
@@ -45,6 +47,15 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
   React.useEffect(() => {
     console.log("InvoiceFormContainer: Current invoice items:", invoice.items);
   }, [invoice.items]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <p className="text-muted-foreground">Loading invoice data...</p>
+      </div>
+    );
+  }
 
   return (
     <>

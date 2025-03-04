@@ -16,9 +16,9 @@ export function useInvoiceStorage() {
       if (existingInvoice) {
         console.log("Found existing invoice:", existingInvoice);
         
-        // Ensure items are properly processed and have all required fields
+        // Properly process items to ensure they're in the correct format
         const processedItems = Array.isArray(existingInvoice.items) 
-          ? existingInvoice.items.map(item => ({
+          ? existingInvoice.items.map((item: any) => ({
               id: item.id || crypto.randomUUID(),
               description: item.description || "",
               quantity: Number(item.quantity) || 1,

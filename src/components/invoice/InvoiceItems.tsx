@@ -1,6 +1,6 @@
 
 import React, { useEffect } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import InvoiceItem from "./InvoiceItem";
 import { Invoice, InvoiceItem as InvoiceItemType } from "@/types";
@@ -38,8 +38,8 @@ const InvoiceItems: React.FC<InvoiceItemsProps> = ({
   console.log("Rendering InvoiceItems with items:", items);
 
   return (
-    <div>
-      <h3 className="mb-4 text-lg font-medium">Invoice Items</h3>
+    <div className="space-y-4">
+      <h3 className="text-lg font-medium">Invoice Items</h3>
       
       <div className="mb-3 grid grid-cols-12 gap-2 rounded-t-md bg-muted/50 p-3 font-medium">
         <div className="col-span-5">Item</div>
@@ -50,29 +50,44 @@ const InvoiceItems: React.FC<InvoiceItemsProps> = ({
       </div>
       
       {items.length > 0 ? (
-        items.map((item) => (
-          <InvoiceItem
-            key={item.id}
-            item={item}
-            onUpdate={onUpdateItem}
-            onRemove={onRemoveItem}
-            formatCurrency={formatCurrency}
-          />
-        ))
+        <div className="space-y-2">
+          {items.map((item) => (
+            <InvoiceItem
+              key={item.id}
+              item={item}
+              onUpdate={onUpdateItem}
+              onRemove={onRemoveItem}
+              formatCurrency={formatCurrency}
+            />
+          ))}
+        </div>
       ) : (
-        <div className="p-4 text-center text-muted-foreground">No items added yet</div>
+        <div className="p-6 text-center border rounded-md bg-muted/10">
+          <p className="text-muted-foreground mb-2">No items added yet</p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleAddItem}
+          >
+            <Plus className="mr-1 h-4 w-4" />
+            Add First Item
+          </Button>
+        </div>
       )}
       
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="mt-2"
-        onClick={handleAddItem}
-      >
-        <Plus className="mr-1 h-4 w-4" />
-        Add Line Item
-      </Button>
+      {items.length > 0 && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="mt-2"
+          onClick={handleAddItem}
+        >
+          <Plus className="mr-1 h-4 w-4" />
+          Add Another Item
+        </Button>
+      )}
     </div>
   );
 };

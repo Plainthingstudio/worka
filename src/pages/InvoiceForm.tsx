@@ -4,12 +4,14 @@ import { clients } from '@/mockData';
 import Sidebar from '@/components/Sidebar';
 import InvoiceFormContainer from '@/components/invoice/InvoiceFormContainer';
 import { useInvoiceForm } from '@/hooks/useInvoiceForm';
+import InvoiceLoading from '@/components/invoice-details/InvoiceLoading';
 
 const InvoiceForm = () => {
   const {
     invoice,
     setInvoice,
     isEditing,
+    isLoading,
     addItem,
     removeItem,
     updateItem,
@@ -28,6 +30,10 @@ const InvoiceForm = () => {
     }
   }, [invoice, isEditing]);
 
+  if (isLoading) {
+    return <InvoiceLoading />;
+  }
+
   return (
     <div className="flex h-screen bg-muted/10">
       <Sidebar />
@@ -37,6 +43,7 @@ const InvoiceForm = () => {
             invoice={invoice}
             setInvoice={setInvoice}
             isEditing={isEditing}
+            isLoading={isLoading}
             addItem={addItem}
             removeItem={removeItem}
             updateItem={updateItem}
