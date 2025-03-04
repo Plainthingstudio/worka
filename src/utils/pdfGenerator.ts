@@ -36,19 +36,19 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     pdf.text("Private Limited", margin, margin + 16);
     
     // Add INVOICE header (top right)
-    pdf.setFontSize(36);
+    pdf.setFontSize(24);
     pdf.setFont("helvetica", "bold");
     pdf.text("Invoice", pageWidth - margin, margin + 5, { align: "right" });
     
-    // Add invoice details (top right, below INVOICE)
+    // Add invoice details (top right, below INVOICE) - Fixed layout issues here
     pdf.setFontSize(10);
     pdf.setFont("helvetica", "bold");
-    pdf.text("Invoice#", pageWidth - margin, margin + 20, { align: "right" });
-    pdf.text("Date:", pageWidth - margin, margin + 27, { align: "right" });
+    pdf.text("Invoice#:", pageWidth - margin - 55, margin + 20);
+    pdf.text("Date:", pageWidth - margin - 55, margin + 27);
     
     pdf.setFont("helvetica", "normal");
-    pdf.text(invoice.invoiceNumber, pageWidth - margin - 30, margin + 20);
-    pdf.text(format(new Date(invoice.date), "dd/MMMM/yyyy"), pageWidth - margin - 30, margin + 27);
+    pdf.text(invoice.invoiceNumber, pageWidth - margin, margin + 20, { align: "right" });
+    pdf.text(format(new Date(invoice.date), "dd/MMMM/yyyy"), pageWidth - margin, margin + 27, { align: "right" });
     
     // Add "Total Due:" section
     pdf.setFontSize(12);

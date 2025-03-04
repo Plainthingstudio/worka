@@ -9,6 +9,7 @@ import InvoiceSummary from '@/components/invoice/InvoiceSummary';
 import InvoiceNotes from '@/components/invoice/InvoiceNotes';
 import InvoiceActions from '@/components/invoice/InvoiceActions';
 import { Invoice, InvoiceItem } from '@/types';
+import { generateInvoicePDF } from '@/utils/pdfGenerator';
 
 interface InvoiceFormContainerProps {
   invoice: Invoice;

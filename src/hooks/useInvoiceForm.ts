@@ -11,6 +11,7 @@ import {
   createNewInvoice, 
   formatCurrency 
 } from '@/utils/invoiceCalculations';
+import { generateInvoicePDF } from '@/utils/pdfGenerator';
 
 export function useInvoiceForm() {
   const navigate = useNavigate();
@@ -130,11 +131,21 @@ export function useInvoiceForm() {
   }, [invoice, isEditing, validateInvoice, saveInvoice, navigate]);
 
   const generatePDF = useCallback(() => {
-    toast({
-      title: "PDF Generated",
-      description: "In a production app, this would generate and download a PDF.",
-    });
-  }, [toast]);
+    try {
+      generateInvoicePDF(invoice);
+      toast({
+        title: "PDF Generated",
+        description: "Invoice PDF has been created and downloaded.",
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to generate PDF. Please try again.",
+      });
+    }
+  }, [invoice, toast]);
 
   return {
     invoice,
