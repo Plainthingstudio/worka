@@ -35,7 +35,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
     <div className="mb-2 grid grid-cols-12 gap-2 rounded-md border p-2">
       <div className="col-span-5">
         <Input
-          value={item.description}
+          value={item.description || ""}
           onChange={(e) => onUpdate(item.id, "description", e.target.value)}
           placeholder="Item description"
         />
@@ -44,7 +44,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
         <Input
           type="number"
           min="1"
-          value={item.quantity}
+          value={item.quantity || 1}
           onChange={handleQuantityChange}
           className="text-center"
         />
@@ -56,7 +56,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
             type="number"
             min="0"
             step="0.01"
-            value={item.rate}
+            value={item.rate || 0}
             onChange={handleRateChange}
             className="pl-8 text-center"
           />

@@ -47,23 +47,28 @@ export function useInvoiceForm() {
         const existingInvoice = storedInvoices.find((inv) => inv.id === invoiceId);
         
         if (existingInvoice) {
+          console.log("Loading existing invoice:", existingInvoice);
+          
           // Convert date strings back to Date objects
           const processedInvoice = {
             ...existingInvoice,
             date: new Date(existingInvoice.date),
             dueDate: new Date(existingInvoice.dueDate),
             createdAt: new Date(existingInvoice.createdAt),
-            // Ensure items have all required properties
-            items: existingInvoice.items.map(item => ({
-              ...item,
-              id: item.id || uuidv4(), // Ensure each item has an ID
-              quantity: Number(item.quantity),
-              rate: Number(item.rate),
-              amount: Number(item.quantity) * Number(item.rate)
-            }))
+            // Process items with correct types and ensure they have IDs
+            items: existingInvoice.items && existingInvoice.items.length > 0 
+              ? existingInvoice.items.map(item => ({
+                  id: item.id || uuidv4(),
+                  description: item.description || "",
+                  quantity: Number(item.quantity) || 1,
+                  rate: Number(item.rate) || 0,
+                  amount: Number(item.quantity || 1) * Number(item.rate || 0)
+                }))
+              : [emptyItem]
           };
           
           setInvoice(processedInvoice);
+          console.log("Processed invoice for editing:", processedInvoice);
         }
       } catch (error) {
         console.error("Error loading invoice:", error);
@@ -74,7 +79,7 @@ export function useInvoiceForm() {
         });
       }
     }
-  }, [isEditing, invoiceId, toast]);
+  }, [isEditing, invoiceId, toast, emptyItem]);
 
   // Recalculate totals when items, tax or discount change
   useEffect(() => {
@@ -196,9 +201,9 @@ export function useInvoiceForm() {
       // Prepare invoice for saving with explicitly calculated values
       const finalItems = invoice.items.map(item => ({
         id: item.id,
-        description: item.description,
-        quantity: Number(item.quantity),
-        rate: Number(item.rate),
+        description: item.description || "",
+        quantity: Number(item.quantity) || 1,
+        rate: Number(item.rate) || 0,
         amount: Number(item.quantity) * Number(item.rate)
       }));
       
@@ -215,6 +220,8 @@ export function useInvoiceForm() {
         discountAmount,
         total
       };
+      
+      console.log("Saving invoice with items:", invoiceToSave.items);
       
       let updatedInvoices: Invoice[];
 
