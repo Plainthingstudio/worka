@@ -20,6 +20,11 @@ const InvoiceItems: React.FC<InvoiceItemsProps> = ({
   onUpdateItem,
   formatCurrency 
 }) => {
+  const handleAddItem = () => {
+    console.log("Add item button clicked");
+    onAddItem();
+  };
+
   return (
     <div>
       <h3 className="mb-4 text-lg font-medium">Invoice Items</h3>
@@ -47,7 +52,7 @@ const InvoiceItems: React.FC<InvoiceItemsProps> = ({
         variant="outline"
         size="sm"
         className="mt-2"
-        onClick={onAddItem}
+        onClick={handleAddItem}
       >
         <Plus className="mr-1 h-4 w-4" />
         Add Line Item

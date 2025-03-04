@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -39,7 +38,6 @@ export function useInvoiceForm() {
     status: "Draft",
   });
 
-  // Load existing invoice for editing
   useEffect(() => {
     if (isEditing && invoiceId) {
       try {
@@ -49,13 +47,11 @@ export function useInvoiceForm() {
         if (existingInvoice) {
           console.log("Loading existing invoice:", existingInvoice);
           
-          // Convert date strings back to Date objects
           const processedInvoice = {
             ...existingInvoice,
             date: new Date(existingInvoice.date),
             dueDate: new Date(existingInvoice.dueDate),
             createdAt: new Date(existingInvoice.createdAt),
-            // Process items with correct types and ensure they have IDs
             items: existingInvoice.items && existingInvoice.items.length > 0 
               ? existingInvoice.items.map(item => ({
                   id: item.id || uuidv4(),
@@ -81,9 +77,7 @@ export function useInvoiceForm() {
     }
   }, [isEditing, invoiceId, toast, emptyItem]);
 
-  // Recalculate totals when items, tax or discount change
   useEffect(() => {
-    // Create a new copy of items with updated amounts
     const updatedItems = invoice.items.map(item => ({
       ...item,
       quantity: Number(item.quantity),
@@ -91,19 +85,14 @@ export function useInvoiceForm() {
       amount: Number(item.quantity) * Number(item.rate)
     }));
 
-    // Calculate subtotal from item amounts
     const subtotal = updatedItems.reduce((sum, item) => sum + item.amount, 0);
     
-    // Calculate tax amount
     const taxAmount = (subtotal * invoice.taxPercentage) / 100;
     
-    // Calculate discount amount
     const discountAmount = (subtotal * invoice.discountPercentage) / 100;
     
-    // Calculate total
     const total = subtotal + taxAmount - discountAmount;
 
-    // Update invoice state with new calculations
     setInvoice(prev => ({
       ...prev,
       items: updatedItems,
@@ -120,11 +109,26 @@ export function useInvoiceForm() {
   ]);
 
   const addItem = useCallback(() => {
-    setInvoice(prev => ({
-      ...prev,
-      items: [...prev.items, { ...emptyItem, id: uuidv4() }]
-    }));
-  }, [emptyItem]);
+    const newItem: InvoiceItem = {
+      id: uuidv4(),
+      description: "",
+      quantity: 1,
+      rate: 0,
+      amount: 0,
+    };
+
+    console.log("Adding new item:", newItem);
+    console.log("Current items:", invoice.items);
+
+    setInvoice(prev => {
+      const updatedInvoice = {
+        ...prev,
+        items: [...prev.items, newItem]
+      };
+      console.log("Updated invoice items:", updatedInvoice.items);
+      return updatedInvoice;
+    });
+  }, [invoice.items]);
 
   const removeItem = useCallback((itemId: string) => {
     if (invoice.items.length === 1) {
@@ -195,10 +199,8 @@ export function useInvoiceForm() {
     }
 
     try {
-      // Get existing invoices from localStorage
       const storedInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
       
-      // Prepare invoice for saving with explicitly calculated values
       const finalItems = invoice.items.map(item => ({
         id: item.id,
         description: item.description || "",
@@ -226,7 +228,6 @@ export function useInvoiceForm() {
       let updatedInvoices: Invoice[];
 
       if (isEditing) {
-        // Update existing invoice
         updatedInvoices = storedInvoices.map(inv => 
           inv.id === invoice.id ? invoiceToSave : inv
         );
@@ -236,7 +237,6 @@ export function useInvoiceForm() {
           description: "The invoice has been successfully updated."
         });
       } else {
-        // Add new invoice
         updatedInvoices = [...storedInvoices, invoiceToSave];
         
         toast({
@@ -245,10 +245,8 @@ export function useInvoiceForm() {
         });
       }
       
-      // Save to localStorage
       localStorage.setItem("invoices", JSON.stringify(updatedInvoices));
       
-      // Navigate back to invoices list
       navigate("/invoices");
     } catch (error) {
       console.error("Error saving invoice:", error);

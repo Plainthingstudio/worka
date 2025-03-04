@@ -30,6 +30,12 @@ const InvoiceForm = () => {
     console.log("Current invoice state:", invoice);
   }, [invoice]);
 
+  // Debug when adding item
+  const handleAddItem = () => {
+    console.log("Add item called from InvoiceForm");
+    addItem();
+  };
+
   return (
     <div className="flex h-screen bg-muted/10">
       <Sidebar />
@@ -55,7 +61,7 @@ const InvoiceForm = () => {
 
             <InvoiceItems 
               invoice={invoice}
-              onAddItem={addItem}
+              onAddItem={handleAddItem}
               onRemoveItem={removeItem}
               onUpdateItem={updateItem}
               formatCurrency={formatCurrency}

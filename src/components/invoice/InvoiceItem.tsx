@@ -28,15 +28,19 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
     onUpdate(item.id, "quantity", value > 0 ? value : 1);
   };
 
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onUpdate(item.id, "description", e.target.value);
+  };
+
   // Calculate the current amount based on quantity and rate
-  const amount = Number(item.quantity) * Number(item.rate);
+  const amount = Number(item.quantity || 1) * Number(item.rate || 0);
 
   return (
     <div className="mb-2 grid grid-cols-12 gap-2 rounded-md border p-2">
       <div className="col-span-5">
         <Input
           value={item.description || ""}
-          onChange={(e) => onUpdate(item.id, "description", e.target.value)}
+          onChange={handleDescriptionChange}
           placeholder="Item description"
         />
       </div>
