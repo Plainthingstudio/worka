@@ -62,19 +62,20 @@ const InvoiceDetailsHeader: React.FC<InvoiceDetailsHeaderProps> = ({
             Delete
           </Button>
           <Button
-            variant="outline"
-            size="sm"
-            onClick={handleGeneratePDF}
-          >
-            <Download className="mr-1 h-4 w-4" />
-            Download PDF
-          </Button>
-          <Button
+            variant="secondary"
             size="sm"
             onClick={() => navigate(`/invoices/${invoice.id}/edit`)}
           >
             <Edit className="mr-1 h-4 w-4" />
             Edit Invoice
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleGeneratePDF}
+          >
+            <Download className="mr-1 h-4 w-4" />
+            Download PDF
           </Button>
         </div>
       </div>
