@@ -11,8 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
-import { generateIllustrationBriefPDF } from "@/utils/briefPdfGenerator";
+import { generateIllustrationBriefPDF, generateUIDesignBriefPDF, generateGraphicDesignBriefPDF } from "@/utils/briefPdfGenerator";
 import { toast } from "sonner";
+
 interface Brief {
   id: number;
   name: string;
@@ -22,6 +23,7 @@ interface Brief {
   status: string;
   submissionDate: string;
 }
+
 const Briefs = () => {
   const navigate = useNavigate();
   const [briefs, setBriefs] = useState<Brief[]>([]);
@@ -31,13 +33,14 @@ const Briefs = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [briefDetails, setBriefDetails] = useState<any>(null);
+
   useEffect(() => {
-    // Fetch briefs from localStorage
     const storedBriefs = localStorage.getItem("briefs");
     if (storedBriefs) {
       setBriefs(JSON.parse(storedBriefs));
     }
   }, []);
+
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "UI Design":
@@ -51,6 +54,7 @@ const Briefs = () => {
         return <ImageIcon className="h-4 w-4" />;
     }
   };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "New":
@@ -65,6 +69,7 @@ const Briefs = () => {
         return <CircleDashed className="h-4 w-4" />;
     }
   };
+
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case "New":
@@ -79,8 +84,8 @@ const Briefs = () => {
         return "bg-gray-50 text-gray-600 ring-gray-500/10 ring-inset";
     }
   };
+
   const viewBriefDetails = (brief: Brief) => {
-    // Fetch full brief data from localStorage
     const storedBriefs = localStorage.getItem("briefs");
     if (storedBriefs) {
       const briefs = JSON.parse(storedBriefs);
@@ -91,10 +96,12 @@ const Briefs = () => {
       }
     }
   };
+
   const handleDeleteBrief = (brief: Brief) => {
     setSelectedBrief(brief);
     setIsDeleteDialogOpen(true);
   };
+
   const confirmDelete = () => {
     if (selectedBrief) {
       const updatedBriefs = briefs.filter(brief => brief.id !== selectedBrief.id);
@@ -105,20 +112,25 @@ const Briefs = () => {
       toast.success("Brief deleted successfully!");
     }
   };
+
   const downloadBrief = async (brief: Brief) => {
     try {
-      // Fetch full brief data from localStorage
       const storedBriefs = localStorage.getItem("briefs");
       if (storedBriefs) {
         const briefs = JSON.parse(storedBriefs);
         const fullBrief = briefs.find((b: any) => b.id === brief.id);
         if (fullBrief) {
-          // Generate PDF with the full brief data
           if (fullBrief.type === "Illustration Design" || fullBrief.type === "Illustrations") {
             await generateIllustrationBriefPDF(fullBrief);
             toast.success("Illustration brief downloaded successfully");
+          } else if (fullBrief.type === "UI Design") {
+            await generateUIDesignBriefPDF(fullBrief);
+            toast.success("UI Design brief downloaded successfully");
+          } else if (fullBrief.type === "Graphic Design") {
+            await generateGraphicDesignBriefPDF(fullBrief);
+            toast.success("Graphic Design brief downloaded successfully");
           } else {
-            toast.error("Download not supported for this brief type yet");
+            toast.error("Download not supported for this brief type");
           }
         }
       }
@@ -127,6 +139,7 @@ const Briefs = () => {
       toast.error("Failed to download brief. Please try again.");
     }
   };
+
   const filteredBriefs = briefs.filter(brief => {
     if (filter === "all") return true;
     return brief.type === filter;
@@ -135,16 +148,18 @@ const Briefs = () => {
     const searchLower = search.toLowerCase();
     return brief.name.toLowerCase().includes(searchLower) || brief.email.toLowerCase().includes(searchLower) || brief.companyName?.toLowerCase().includes(searchLower);
   }).sort((a, b) => {
-    // Sort by date (newest first)
     return new Date(b.submissionDate).getTime() - new Date(a.submissionDate).getTime();
   });
+
   const statCounts = {
     total: briefs.length,
     ui: briefs.filter(b => b.type === "UI Design").length,
     graphic: briefs.filter(b => b.type === "Graphic Design").length,
     illustrations: briefs.filter(b => ["Illustrations", "Illustration Design"].includes(b.type)).length
   };
-  return <div className="min-h-screen bg-background">
+
+  return (
+    <div className="min-h-screen bg-background">
       <Sidebar />
       <div className="pl-14 md:pl-56">
         <Navbar title="Briefs" />
@@ -483,6 +498,8 @@ const Briefs = () => {
             </div>}
         </DialogContent>
       </Dialog>
-    </div>;
+    </div>
+  );
 };
+
 export default Briefs;
