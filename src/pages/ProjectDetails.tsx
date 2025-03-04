@@ -10,6 +10,7 @@ import {
   Plus,
   X,
   Tag,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +37,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -56,11 +64,13 @@ const ProjectDetails = () => {
   const [client, setClient] = useState<Client | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [currentPayment, setCurrentPayment] = useState<Payment | null>(null);
   const [isEditPaymentDialogOpen, setIsEditPaymentDialogOpen] = useState(false);
   const [isDeletePaymentDialogOpen, setIsDeletePaymentDialogOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<ProjectStatus>("In progress");
 
   useEffect(() => {
     const handleSidebarChange = () => {
@@ -132,6 +142,20 @@ const ProjectDetails = () => {
       
       setProject(updatedProject);
       toast.success("Project marked as completed");
+    }
+  };
+
+  const handleChangeStatus = () => {
+    if (!project) return;
+
+    const projectIndex = projects.findIndex((p) => p.id === project.id);
+    if (projectIndex !== -1) {
+      const updatedProject = { ...project, status: selectedStatus };
+      projects[projectIndex] = updatedProject;
+      
+      setProject(updatedProject);
+      setIsStatusDialogOpen(false);
+      toast.success(`Project status changed to ${selectedStatus}`);
     }
   };
 
@@ -308,13 +332,24 @@ const ProjectDetails = () => {
               >
                 <Trash className="h-4 w-4" /> Delete
               </Button>
-              {project.status !== "Completed" && (
+              {project.status !== "Completed" ? (
                 <Button
                   variant="outline"
                   className="gap-2"
                   onClick={handleMarkAsCompleted}
                 >
                   <CheckCircle className="h-4 w-4" /> Mark as Completed
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => {
+                    setSelectedStatus("In progress");
+                    setIsStatusDialogOpen(true);
+                  }}
+                >
+                  <RotateCcw className="h-4 w-4" /> Change Status
                 </Button>
               )}
             </div>
@@ -558,6 +593,46 @@ const ProjectDetails = () => {
               Cancel
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Change Project Status</DialogTitle>
+            <DialogDescription>
+              Select a new status for this project.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Select 
+              value={selectedStatus} 
+              onValueChange={(value) => setSelectedStatus(value as ProjectStatus)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Planning">Planning</SelectItem>
+                <SelectItem value="In progress">In progress</SelectItem>
+                <SelectItem value="Paused">Paused</SelectItem>
+                <SelectItem value="Cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsStatusDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleChangeStatus}
+            >
+              Save
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
