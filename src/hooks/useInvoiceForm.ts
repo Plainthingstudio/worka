@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
@@ -28,7 +28,7 @@ export function useInvoiceForm() {
     paymentTerms: "Net 30",
     items: [emptyItem],
     subtotal: 0,
-    taxPercentage: 0,
+    taxPercentage:.0,
     taxAmount: 0,
     discountPercentage: 0,
     discountAmount: 0,
@@ -52,7 +52,14 @@ export function useInvoiceForm() {
             ...existingInvoice,
             date: new Date(existingInvoice.date),
             dueDate: new Date(existingInvoice.dueDate),
-            createdAt: new Date(existingInvoice.createdAt)
+            createdAt: new Date(existingInvoice.createdAt),
+            // Ensure items have all required properties
+            items: existingInvoice.items.map(item => ({
+              ...item,
+              quantity: Number(item.quantity),
+              rate: Number(item.rate),
+              amount: Number(item.quantity) * Number(item.rate)
+            }))
           };
           
           setInvoice(processedInvoice);
@@ -70,9 +77,11 @@ export function useInvoiceForm() {
 
   // Recalculate totals when items, tax or discount change
   useEffect(() => {
-    // Calculate item amounts
+    // Create a new copy of items with updated amounts
     const updatedItems = invoice.items.map(item => ({
       ...item,
+      quantity: Number(item.quantity),
+      rate: Number(item.rate),
       amount: Number(item.quantity) * Number(item.rate)
     }));
 
@@ -104,14 +113,14 @@ export function useInvoiceForm() {
     invoice.discountPercentage
   ]);
 
-  const addItem = () => {
+  const addItem = useCallback(() => {
     setInvoice(prev => ({
       ...prev,
       items: [...prev.items, { ...emptyItem, id: uuidv4() }]
     }));
-  };
+  }, [emptyItem]);
 
-  const removeItem = (itemId: string) => {
+  const removeItem = useCallback((itemId: string) => {
     if (invoice.items.length === 1) {
       toast({
         title: "Cannot remove item",
@@ -125,18 +134,18 @@ export function useInvoiceForm() {
       ...prev,
       items: prev.items.filter(item => item.id !== itemId)
     }));
-  };
+  }, [invoice.items.length, toast]);
 
-  const updateItem = (id: string, field: keyof InvoiceItem, value: any) => {
+  const updateItem = useCallback((id: string, field: keyof InvoiceItem, value: any) => {
     setInvoice(prev => ({
       ...prev,
       items: prev.items.map(item => 
         item.id === id ? { ...item, [field]: value } : item
       )
     }));
-  };
+  }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
     if (name === "taxPercentage" || name === "discountPercentage") {
@@ -150,9 +159,9 @@ export function useInvoiceForm() {
         [name]: value
       }));
     }
-  };
+  }, []);
 
-  const validateInvoice = (): boolean => {
+  const validateInvoice = useCallback((): boolean => {
     if (!invoice.clientId) {
       toast({
         title: "Missing client",
@@ -172,9 +181,9 @@ export function useInvoiceForm() {
     }
     
     return true;
-  };
+  }, [invoice.clientId, invoice.items, toast]);
 
-  const saveInvoice = () => {
+  const saveInvoice = useCallback(() => {
     if (!validateInvoice()) {
       return;
     }
@@ -183,26 +192,28 @@ export function useInvoiceForm() {
       // Get existing invoices from localStorage
       const storedInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
       
-      // Prepare invoice for saving - ensure all calculations are up-to-date
+      // Prepare invoice for saving with explicitly calculated values
+      const finalItems = invoice.items.map(item => ({
+        id: item.id,
+        description: item.description,
+        quantity: Number(item.quantity),
+        rate: Number(item.rate),
+        amount: Number(item.quantity) * Number(item.rate)
+      }));
+      
+      const subtotal = finalItems.reduce((sum, item) => sum + item.amount, 0);
+      const taxAmount = (subtotal * invoice.taxPercentage) / 100;
+      const discountAmount = (subtotal * invoice.discountPercentage) / 100;
+      const total = subtotal + taxAmount - discountAmount;
+      
       const invoiceToSave = {
         ...invoice,
-        // Make sure dates are serialized correctly
-        date: invoice.date,
-        dueDate: invoice.dueDate,
-        createdAt: invoice.createdAt,
-        // Ensure amount calculations are correct
-        items: invoice.items.map(item => ({
-          ...item,
-          amount: Number(item.quantity) * Number(item.rate)
-        })),
-        // Recalculate totals to be safe
-        subtotal: invoice.items.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.rate)), 0),
+        items: finalItems,
+        subtotal,
+        taxAmount,
+        discountAmount,
+        total
       };
-      
-      // Update tax, discount and total
-      invoiceToSave.taxAmount = (invoiceToSave.subtotal * invoiceToSave.taxPercentage) / 100;
-      invoiceToSave.discountAmount = (invoiceToSave.subtotal * invoiceToSave.discountPercentage) / 100;
-      invoiceToSave.total = invoiceToSave.subtotal + invoiceToSave.taxAmount - invoiceToSave.discountAmount;
       
       let updatedInvoices: Invoice[];
 
@@ -239,21 +250,21 @@ export function useInvoiceForm() {
         variant: "destructive"
       });
     }
-  };
+  }, [invoice, isEditing, navigate, toast, validateInvoice]);
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = useCallback((amount: number) => {
     return amount.toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
-  };
+  }, []);
 
-  const generatePDF = () => {
+  const generatePDF = useCallback(() => {
     toast({
       title: "PDF Generated",
       description: "In a production app, this would generate and download a PDF.",
     });
-  };
+  }, [toast]);
 
   return {
     invoice,

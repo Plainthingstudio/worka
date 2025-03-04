@@ -1,6 +1,6 @@
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { Plus, Eye, Edit, Trash, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,15 +25,20 @@ import { clients } from "@/mockData";
 import Sidebar from "@/components/Sidebar";
 import { Invoice } from "@/types";
 
-// Mock invoice data (in a real app, this would come from an API or database)
-const mockInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
-
 const Invoices = () => {
   const navigate = useNavigate();
-  const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
+  const location = useLocation();
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Load invoices from localStorage whenever the component mounts or location changes
+  // This ensures the list refreshes when returning from the edit page
+  useEffect(() => {
+    const storedInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
+    setInvoices(storedInvoices);
+  }, [location]);
 
   const confirmDelete = (invoiceId: string) => {
     setInvoiceToDelete(invoiceId);

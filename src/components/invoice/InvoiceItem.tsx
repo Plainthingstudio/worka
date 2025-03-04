@@ -19,13 +19,13 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
   formatCurrency 
 }) => {
   const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value === '' ? '0' : e.target.value;
-    onUpdate(item.id, "rate", parseFloat(value));
+    const value = parseFloat(e.target.value) || 0;
+    onUpdate(item.id, "rate", value);
   };
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value === '' ? '1' : e.target.value;
-    onUpdate(item.id, "quantity", parseInt(value) || 1);
+    const value = parseInt(e.target.value) || 1;
+    onUpdate(item.id, "quantity", value > 0 ? value : 1);
   };
 
   return (
@@ -60,7 +60,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
         </div>
       </div>
       <div className="col-span-2 flex items-center justify-end">
-        ${formatCurrency(item.quantity * item.rate)}
+        ${formatCurrency(Number(item.quantity) * Number(item.rate))}
       </div>
       <div className="col-span-1 flex items-center justify-center">
         <Button

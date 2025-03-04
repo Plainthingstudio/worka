@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, Link, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { ArrowLeft, Edit, Download, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,6 +29,7 @@ import { clients } from "@/mockData";
 const InvoiceDetails = () => {
   const { invoiceId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [client, setClient] = useState<any>(null);
@@ -54,7 +54,7 @@ const InvoiceDetails = () => {
       });
       navigate("/invoices");
     }
-  }, [invoiceId, navigate, toast]);
+  }, [invoiceId, navigate, toast, location]);
 
   const handleDelete = () => {
     if (!invoice) return;
