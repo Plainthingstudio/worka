@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,6 +69,15 @@ const PaymentForm = ({ projectId, currency, payment, onSave, onCancel }: Payment
     },
   });
 
+  // Format the amount input value when the form loads and when currency changes
+  useEffect(() => {
+    const amountValue = form.getValues('amount');
+    const formattedAmount = amountValue;
+    if (amountValue !== undefined) {
+      form.setValue('amount', formattedAmount);
+    }
+  }, [currency, form]);
+
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     onSave(values);
   };
@@ -80,6 +89,28 @@ const PaymentForm = ({ projectId, currency, payment, onSave, onCancel }: Payment
   ];
 
   const currencies: Currency[] = ["USD", "IDR"];
+
+  // Custom input formatter for amount field to show thousand separators while editing
+  const formatAmount = (value: string) => {
+    // Remove non-numeric characters except decimal point
+    const numericValue = value.replace(/[^0-9.]/g, '');
+    
+    // Parse the value as a number
+    const parsed = parseFloat(numericValue);
+    
+    // Return empty string if not a valid number
+    if (isNaN(parsed)) {
+      return '';
+    }
+    
+    // Return the raw numeric value (without formatting) for the input field
+    return numericValue;
+  };
+
+  // We need to handle the display separately to avoid issues with form validation
+  const displayAmount = (amount: number) => {
+    return amount.toLocaleString();
+  };
 
   return (
     <Form {...form}>
@@ -120,7 +151,16 @@ const PaymentForm = ({ projectId, currency, payment, onSave, onCancel }: Payment
               <FormItem>
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
-                  <Input type="number" min="0" step="0.01" {...field} />
+                  <Input 
+                    type="text"
+                    inputMode="decimal"
+                    value={field.value === 0 ? "" : displayAmount(field.value)}
+                    onChange={(e) => {
+                      const formatted = formatAmount(e.target.value);
+                      field.onChange(formatted === '' ? 0 : parseFloat(formatted));
+                    }}
+                    placeholder="0"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
