@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { format } from "date-fns";
@@ -42,24 +41,19 @@ const Invoices = () => {
   const { toast } = useToast();
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
-  // Load invoices from localStorage whenever the component mounts or location changes
-  // This ensures the list refreshes when returning from the edit page
   useEffect(() => {
     const storedInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
     setInvoices(storedInvoices);
   }, [location]);
 
-  // Listen for sidebar state changes
   useEffect(() => {
     const handleSidebarChange = () => {
       const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
       setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
     };
 
-    // Initial check
     handleSidebarChange();
 
-    // Set up mutation observer to watch for class changes on the sidebar
     const observer = new MutationObserver(handleSidebarChange);
     const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
     
@@ -173,15 +167,17 @@ const Invoices = () => {
                             size="sm"
                             onClick={() => handleDownload(invoice)}
                             title="Download PDF"
+                            className="h-9 px-4"
                           >
-                            <Download className="h-4 w-4" />
+                            <Download className="h-4 w-4 mr-1" />
                             Download
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
                                 variant="outline"
-                                size="icon"
+                                size="sm"
+                                className="h-9 w-9 p-0"
                                 title="More actions"
                               >
                                 <MoreVertical className="h-4 w-4" />
