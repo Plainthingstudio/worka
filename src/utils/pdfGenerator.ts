@@ -24,7 +24,9 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     const margin = 20;
     const contentWidth = pageWidth - (margin * 2);
     
-    // Set font
+    // Use default sans-serif font to match project's modern look
+    // jsPDF standard fonts include: helvetica (default), courier, times, symbol, zapfdingbats
+    // We'll use helvetica as it most closely resembles the modern sans-serif in the UI
     pdf.setFont("helvetica");
     
     // Add company name (top left) - removed the logo
