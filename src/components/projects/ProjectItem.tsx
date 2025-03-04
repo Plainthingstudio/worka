@@ -80,7 +80,7 @@ const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) =>
       <TableCell>
         <Badge 
           variant={getProjectTypeBadgeVariant(project.projectType)}
-          className="flex items-center gap-1"
+          className="inline-flex items-center gap-1 w-fit"
         >
           <Tag className="h-3.5 w-3.5" />
           {project.projectType}

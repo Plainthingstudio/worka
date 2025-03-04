@@ -52,7 +52,7 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
             </Badge>
             <Badge 
               variant={getProjectTypeBadgeVariant(project.projectType)}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 w-fit"
             >
               <Tag className="h-3 w-3" />
               <span>{project.projectType}</span>
