@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -57,6 +58,9 @@ const ProjectDetails = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [currentPayment, setCurrentPayment] = useState<Payment | null>(null);
+  const [isEditPaymentDialogOpen, setIsEditPaymentDialogOpen] = useState(false);
+  const [isDeletePaymentDialogOpen, setIsDeletePaymentDialogOpen] = useState(false);
 
   // Listen for sidebar state changes
   useEffect(() => {
@@ -169,6 +173,82 @@ const ProjectDetails = () => {
       setIsPaymentDialogOpen(false);
       toast.success("Payment added successfully");
     }
+  };
+
+  const handleEditPayment = (data: any) => {
+    if (!project || !currentPayment) return;
+
+    // Find the project index and payment index
+    const projectIndex = projects.findIndex((p) => p.id === project.id);
+    if (projectIndex !== -1) {
+      const paymentIndex = project.payments.findIndex((p) => p.id === currentPayment.id);
+      if (paymentIndex !== -1) {
+        // Update the payment
+        const updatedPayment = {
+          ...currentPayment,
+          paymentType: data.paymentType,
+          amount: data.amount,
+          date: data.date,
+          notes: data.notes,
+        };
+
+        // Update the project with the new payment
+        const updatedPayments = [...project.payments];
+        updatedPayments[paymentIndex] = updatedPayment;
+        
+        const updatedProject = {
+          ...project,
+          payments: updatedPayments,
+        };
+        
+        // Update the projects array
+        projects[projectIndex] = updatedProject;
+        
+        // Update local state
+        setProject(updatedProject);
+        setCurrentPayment(null);
+        setIsEditPaymentDialogOpen(false);
+        toast.success("Payment updated successfully");
+      }
+    }
+  };
+
+  const handleDeletePayment = () => {
+    if (!project || !currentPayment) return;
+
+    // Find the project index
+    const projectIndex = projects.findIndex((p) => p.id === project.id);
+    if (projectIndex !== -1) {
+      // Filter out the payment to delete
+      const updatedPayments = project.payments.filter(
+        (payment) => payment.id !== currentPayment.id
+      );
+      
+      // Update the project with the filtered payments
+      const updatedProject = {
+        ...project,
+        payments: updatedPayments,
+      };
+      
+      // Update the projects array
+      projects[projectIndex] = updatedProject;
+      
+      // Update local state
+      setProject(updatedProject);
+      setCurrentPayment(null);
+      setIsDeletePaymentDialogOpen(false);
+      toast.success("Payment deleted successfully");
+    }
+  };
+
+  const openEditPaymentDialog = (payment: Payment) => {
+    setCurrentPayment(payment);
+    setIsEditPaymentDialogOpen(true);
+  };
+
+  const openDeletePaymentDialog = (payment: Payment) => {
+    setCurrentPayment(payment);
+    setIsDeletePaymentDialogOpen(true);
   };
 
   const getStatusBadgeClass = (status: ProjectStatus) => {
@@ -391,6 +471,7 @@ const ProjectDetails = () => {
                           <TableHead>Amount</TableHead>
                           <TableHead>Date</TableHead>
                           <TableHead>Notes</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -412,6 +493,27 @@ const ProjectDetails = () => {
                               </TableCell>
                               <TableCell className="max-w-[200px] truncate">
                                 {payment.notes || "-"}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end gap-2">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => openEditPaymentDialog(payment)}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                    <span className="sr-only">Edit</span>
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="text-destructive hover:text-destructive/90"
+                                    onClick={() => openDeletePaymentDialog(payment)}
+                                  >
+                                    <Trash className="h-4 w-4" />
+                                    <span className="sr-only">Delete</span>
+                                  </Button>
+                                </div>
                               </TableCell>
                             </TableRow>
                           ))}
@@ -486,6 +588,61 @@ const ProjectDetails = () => {
             onSave={handleAddPayment}
             onCancel={() => setIsPaymentDialogOpen(false)}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Payment Dialog */}
+      <Dialog open={isEditPaymentDialogOpen} onOpenChange={setIsEditPaymentDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Edit Payment</DialogTitle>
+            <DialogDescription>
+              Update payment details.
+            </DialogDescription>
+          </DialogHeader>
+          {currentPayment && (
+            <PaymentForm
+              projectId={project.id}
+              currency={project.currency}
+              payment={currentPayment}
+              onSave={handleEditPayment}
+              onCancel={() => {
+                setCurrentPayment(null);
+                setIsEditPaymentDialogOpen(false);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Payment Confirmation Dialog */}
+      <Dialog open={isDeletePaymentDialogOpen} onOpenChange={setIsDeletePaymentDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirm Payment Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this payment? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 pt-4">
+            <Button
+              variant="destructive"
+              onClick={handleDeletePayment}
+              className="flex-1"
+            >
+              Delete
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCurrentPayment(null);
+                setIsDeletePaymentDialogOpen(false);
+              }}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -31,7 +31,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Currency, PaymentType } from "@/types";
+import { Currency, PaymentType, Payment } from "@/types";
 
 const formSchema = z.object({
   paymentType: z.enum(["Down Payment", "Final Payment", "Milestone Payment"], {
@@ -52,19 +52,20 @@ const formSchema = z.object({
 interface PaymentFormProps {
   projectId: string;
   currency: Currency;
+  payment?: Payment;
   onSave: (values: z.infer<typeof formSchema>) => void;
   onCancel: () => void;
 }
 
-const PaymentForm = ({ projectId, currency, onSave, onCancel }: PaymentFormProps) => {
+const PaymentForm = ({ projectId, currency, payment, onSave, onCancel }: PaymentFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      paymentType: "Down Payment",
-      amount: 0,
+      paymentType: payment?.paymentType || "Down Payment",
+      amount: payment?.amount || 0,
       currency: currency,
-      date: new Date(),
-      notes: "",
+      date: payment?.date ? new Date(payment.date) : new Date(),
+      notes: payment?.notes || "",
     },
   });
 
@@ -207,7 +208,7 @@ const PaymentForm = ({ projectId, currency, onSave, onCancel }: PaymentFormProps
 
         <div className="flex gap-2 pt-4">
           <Button type="submit" className="flex-1">
-            Add Payment
+            {payment ? "Update" : "Add"} Payment
           </Button>
           <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
             Cancel
