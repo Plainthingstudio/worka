@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Plus } from "lucide-react";
@@ -109,10 +110,11 @@ const Invoices = () => {
       invoice.invoiceNumber.toLowerCase().includes(search.toLowerCase()) ||
       getClientName(invoice.clientId).toLowerCase().includes(search.toLowerCase());
     
-    const matchesStatus = statusFilter === "all" || 
-      (statusFilter === "paid" && invoice.isPaid) ||
-      (statusFilter === "unpaid" && !invoice.isPaid) ||
-      (statusFilter === "overdue" && !invoice.isPaid && new Date(invoice.dueDate) < new Date());
+    const matchesStatus = 
+      statusFilter === "all" || 
+      (statusFilter === "paid" && invoice.status === "Paid") ||
+      (statusFilter === "unpaid" && invoice.status !== "Paid") ||
+      (statusFilter === "overdue" && invoice.status === "Overdue");
     
     return matchesSearch && matchesStatus;
   });
