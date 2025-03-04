@@ -18,26 +18,34 @@ export function useInvoiceForm() {
   const { toast } = useToast();
   const isEditing = Boolean(invoiceId);
   const { loadInvoice, saveInvoice } = useInvoiceStorage();
-
   const { validateInvoice } = useInvoiceValidation();
 
   // Initialize with empty invoice
   const [invoice, setInvoice] = useState<Invoice>(createNewInvoice());
   const [isLoading, setIsLoading] = useState(isEditing);
+  const [initialInvoiceItems, setInitialInvoiceItems] = useState(invoice.items);
   
   // Load invoice data when in edit mode
   useEffect(() => {
     if (isEditing && invoiceId) {
       setIsLoading(true);
       console.log("Loading existing invoice data for editing, ID:", invoiceId);
-      const loadedInvoice = loadInvoice(invoiceId);
-      
-      if (loadedInvoice) {
-        console.log("Setting invoice from loaded data:", loadedInvoice);
-        setInvoice(loadedInvoice);
+      try {
+        const loadedInvoice = loadInvoice(invoiceId);
+        
+        if (loadedInvoice) {
+          console.log("Setting invoice from loaded data:", loadedInvoice);
+          setInvoice(loadedInvoice);
+          
+          if (Array.isArray(loadedInvoice.items)) {
+            setInitialInvoiceItems(loadedInvoice.items);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading invoice:", error);
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
     }
   }, [isEditing, invoiceId, loadInvoice]);
   
@@ -48,7 +56,7 @@ export function useInvoiceForm() {
     addItem, 
     removeItem, 
     updateItem 
-  } = useInvoiceItems(invoice.items);
+  } = useInvoiceItems(initialInvoiceItems);
   
   // Sync items with invoice
   useEffect(() => {

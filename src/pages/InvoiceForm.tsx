@@ -31,7 +31,16 @@ const InvoiceForm = () => {
   }, [invoice, isEditing]);
 
   if (isLoading) {
-    return <InvoiceLoading />;
+    return (
+      <div className="flex h-screen bg-muted/10">
+        <Sidebar />
+        <div className="flex-1 overflow-auto pl-14 md:pl-56">
+          <main className="container mx-auto py-8">
+            <InvoiceLoading />
+          </main>
+        </div>
+      </div>
+    );
   }
 
   return (
