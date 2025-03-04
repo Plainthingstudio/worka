@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -28,23 +29,33 @@ export function useInvoiceForm() {
     updateItem 
   } = useInvoiceItems(invoice.items);
 
+  // Load invoice data when in edit mode
   useEffect(() => {
     if (isEditing && invoiceId) {
+      console.log("Loading existing invoice data for editing, ID:", invoiceId);
       const loadedInvoice = loadInvoice(invoiceId);
       if (loadedInvoice) {
+        console.log("Setting invoice from loaded data:", loadedInvoice);
         setInvoice(loadedInvoice);
-        setItems(loadedInvoice.items);
+        
+        if (Array.isArray(loadedInvoice.items) && loadedInvoice.items.length > 0) {
+          console.log("Setting items from loaded invoice:", loadedInvoice.items);
+          setItems(loadedInvoice.items);
+        }
       }
     }
   }, [isEditing, invoiceId, loadInvoice, setItems]);
 
+  // Sync items with invoice
   useEffect(() => {
+    console.log("Syncing items with invoice:", items);
     setInvoice(prev => ({
       ...prev,
       items
     }));
   }, [items]);
 
+  // Calculate totals whenever relevant invoice fields change
   useEffect(() => {
     const { 
       subtotal, 

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import InvoiceItem from "./InvoiceItem";
@@ -20,13 +20,20 @@ const InvoiceItems: React.FC<InvoiceItemsProps> = ({
   onUpdateItem,
   formatCurrency 
 }) => {
+  // Check and log the invoice items when the component mounts and whenever they change
+  useEffect(() => {
+    console.log("InvoiceItems component received invoice items:", invoice.items);
+  }, [invoice.items]);
+
   const handleAddItem = () => {
     console.log("Add item button clicked from InvoiceItems component");
     onAddItem();
   };
 
   // Ensure we always have an array of items to work with
-  const items = Array.isArray(invoice.items) ? invoice.items : [];
+  const items = Array.isArray(invoice.items) && invoice.items.length > 0 
+    ? invoice.items 
+    : [];
   
   console.log("Rendering InvoiceItems with items:", items);
 
@@ -42,15 +49,19 @@ const InvoiceItems: React.FC<InvoiceItemsProps> = ({
         <div className="col-span-1"></div>
       </div>
       
-      {items.map((item) => (
-        <InvoiceItem
-          key={item.id}
-          item={item}
-          onUpdate={onUpdateItem}
-          onRemove={onRemoveItem}
-          formatCurrency={formatCurrency}
-        />
-      ))}
+      {items.length > 0 ? (
+        items.map((item) => (
+          <InvoiceItem
+            key={item.id}
+            item={item}
+            onUpdate={onUpdateItem}
+            onRemove={onRemoveItem}
+            formatCurrency={formatCurrency}
+          />
+        ))
+      ) : (
+        <div className="p-4 text-center text-muted-foreground">No items added yet</div>
+      )}
       
       <Button
         type="button"

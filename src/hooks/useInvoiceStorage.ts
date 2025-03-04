@@ -14,8 +14,9 @@ export function useInvoiceStorage() {
       const existingInvoice = storedInvoices.find((inv) => inv.id === invoiceId);
       
       if (existingInvoice) {
-        console.log("Loading existing invoice:", existingInvoice);
+        console.log("Found existing invoice:", existingInvoice);
         
+        // Ensure items are properly processed and have all required fields
         const processedItems = Array.isArray(existingInvoice.items) 
           ? existingInvoice.items.map(item => ({
               id: item.id || crypto.randomUUID(),
@@ -28,7 +29,8 @@ export function useInvoiceStorage() {
         
         console.log("Processed items for editing:", processedItems);
         
-        const processedInvoice = {
+        // Create proper Date objects for all date fields
+        const processedInvoice: Invoice = {
           ...existingInvoice,
           date: existingInvoice.date instanceof Date 
             ? existingInvoice.date 

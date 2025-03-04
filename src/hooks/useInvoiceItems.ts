@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { InvoiceItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -7,9 +7,34 @@ import { createEmptyItem } from '@/utils/invoiceCalculations';
 
 export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
   const [items, setItems] = useState<InvoiceItem[]>(
-    Array.isArray(initialItems) && initialItems.length > 0 ? initialItems : [createEmptyItem()]
+    Array.isArray(initialItems) && initialItems.length > 0 
+      ? initialItems.map(item => ({
+          ...item,
+          id: item.id || uuidv4(),
+          description: item.description || "",
+          quantity: Number(item.quantity) || 1,
+          rate: Number(item.rate) || 0,
+          amount: Number(item.amount) || 0
+        }))
+      : [createEmptyItem()]
   );
+  
   const { toast } = useToast();
+
+  // Update items when initialItems changes (e.g., when loading an invoice for editing)
+  useEffect(() => {
+    if (Array.isArray(initialItems) && initialItems.length > 0) {
+      console.log("Updating items from initialItems in useInvoiceItems:", initialItems);
+      setItems(initialItems.map(item => ({
+        ...item,
+        id: item.id || uuidv4(),
+        description: item.description || "",
+        quantity: Number(item.quantity) || 1,
+        rate: Number(item.rate) || 0,
+        amount: Number(item.amount) || 0
+      })));
+    }
+  }, [initialItems]);
 
   const addItem = useCallback(() => {
     const newItem = createEmptyItem();
