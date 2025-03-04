@@ -20,7 +20,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
 }) => {
   const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value === '' ? '0' : e.target.value;
-    onUpdate(item.id, "rate", parseFloat(value) || 0);
+    onUpdate(item.id, "rate", parseFloat(value));
   };
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {

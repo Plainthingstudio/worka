@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -46,32 +47,56 @@ const InvoiceForm = () => {
     status: "Draft",
   });
 
+  // Load existing invoice for editing
   useEffect(() => {
     if (isEditing && invoiceId) {
-      const storedInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
-      const existingInvoice = storedInvoices.find((inv) => inv.id === invoiceId);
-      
-      if (existingInvoice) {
-        existingInvoice.date = new Date(existingInvoice.date);
-        existingInvoice.dueDate = new Date(existingInvoice.dueDate);
-        existingInvoice.createdAt = new Date(existingInvoice.createdAt);
+      try {
+        const storedInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
+        const existingInvoice = storedInvoices.find((inv) => inv.id === invoiceId);
         
-        setInvoice(existingInvoice);
+        if (existingInvoice) {
+          // Convert date strings back to Date objects
+          const processedInvoice = {
+            ...existingInvoice,
+            date: new Date(existingInvoice.date),
+            dueDate: new Date(existingInvoice.dueDate),
+            createdAt: new Date(existingInvoice.createdAt)
+          };
+          
+          setInvoice(processedInvoice);
+        }
+      } catch (error) {
+        console.error("Error loading invoice:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load invoice data",
+          variant: "destructive"
+        });
       }
     }
-  }, [isEditing, invoiceId]);
+  }, [isEditing, invoiceId, toast]);
 
+  // Recalculate totals when items, tax or discount change
   useEffect(() => {
+    // Calculate item amounts
     const updatedItems = invoice.items.map(item => ({
       ...item,
-      amount: item.quantity * item.rate
+      amount: Number(item.quantity) * Number(item.rate)
     }));
 
-    const subtotal = updatedItems.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
+    // Calculate subtotal from item amounts
+    const subtotal = updatedItems.reduce((sum, item) => sum + item.amount, 0);
+    
+    // Calculate tax amount
     const taxAmount = (subtotal * invoice.taxPercentage) / 100;
+    
+    // Calculate discount amount
     const discountAmount = (subtotal * invoice.discountPercentage) / 100;
+    
+    // Calculate total
     const total = subtotal + taxAmount - discountAmount;
 
+    // Update invoice state with new calculations
     setInvoice(prev => ({
       ...prev,
       items: updatedItems,
@@ -81,7 +106,8 @@ const InvoiceForm = () => {
       total
     }));
   }, [
-    invoice.items,
+    invoice.items.map(item => item.quantity).join(','),
+    invoice.items.map(item => item.rate).join(','),
     invoice.taxPercentage,
     invoice.discountPercentage
   ]);
@@ -135,6 +161,7 @@ const InvoiceForm = () => {
   };
 
   const handleSubmit = () => {
+    // Validate invoice data
     if (!invoice.clientId) {
       toast({
         title: "Missing client",
@@ -153,36 +180,66 @@ const InvoiceForm = () => {
       return;
     }
 
-    const storedInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
-    let updatedInvoices: Invoice[];
-
-    const invoiceToSave = {
-      ...invoice,
-      date: new Date(invoice.date),
-      dueDate: new Date(invoice.dueDate),
-      createdAt: new Date(invoice.createdAt)
-    };
-
-    if (isEditing) {
-      updatedInvoices = storedInvoices.map(inv => 
-        inv.id === invoice.id ? invoiceToSave : inv
-      );
+    try {
+      // Get existing invoices from localStorage
+      const storedInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
       
-      toast({
-        title: "Invoice updated",
-        description: "The invoice has been successfully updated."
-      });
-    } else {
-      updatedInvoices = [...storedInvoices, invoiceToSave];
+      // Prepare invoice for saving - ensure all calculations are up-to-date
+      const invoiceToSave = {
+        ...invoice,
+        // Make sure dates are serialized correctly
+        date: invoice.date,
+        dueDate: invoice.dueDate,
+        createdAt: invoice.createdAt,
+        // Ensure amount calculations are correct
+        items: invoice.items.map(item => ({
+          ...item,
+          amount: Number(item.quantity) * Number(item.rate)
+        })),
+        // Recalculate totals to be safe
+        subtotal: invoice.items.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.rate)), 0),
+      };
       
+      // Update tax, discount and total
+      invoiceToSave.taxAmount = (invoiceToSave.subtotal * invoiceToSave.taxPercentage) / 100;
+      invoiceToSave.discountAmount = (invoiceToSave.subtotal * invoiceToSave.discountPercentage) / 100;
+      invoiceToSave.total = invoiceToSave.subtotal + invoiceToSave.taxAmount - invoiceToSave.discountAmount;
+      
+      let updatedInvoices: Invoice[];
+
+      if (isEditing) {
+        // Update existing invoice
+        updatedInvoices = storedInvoices.map(inv => 
+          inv.id === invoice.id ? invoiceToSave : inv
+        );
+        
+        toast({
+          title: "Invoice updated",
+          description: "The invoice has been successfully updated."
+        });
+      } else {
+        // Add new invoice
+        updatedInvoices = [...storedInvoices, invoiceToSave];
+        
+        toast({
+          title: "Invoice created",
+          description: "The invoice has been successfully created."
+        });
+      }
+      
+      // Save to localStorage
+      localStorage.setItem("invoices", JSON.stringify(updatedInvoices));
+      
+      // Navigate back to invoices list
+      navigate("/invoices");
+    } catch (error) {
+      console.error("Error saving invoice:", error);
       toast({
-        title: "Invoice created",
-        description: "The invoice has been successfully created."
+        title: "Error",
+        description: "Failed to save invoice. Please try again.",
+        variant: "destructive"
       });
     }
-    
-    localStorage.setItem("invoices", JSON.stringify(updatedInvoices));
-    navigate("/invoices");
   };
 
   const generatePDF = () => {

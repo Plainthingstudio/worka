@@ -43,11 +43,8 @@ const InvoiceActions: React.FC<InvoiceActionsProps> = ({
         Generate PDF
       </Button>
       <Button
-        type="submit"
-        onClick={(e) => {
-          e.preventDefault();
-          onSubmit();
-        }}
+        type="button"
+        onClick={onSubmit}
       >
         {isEditing ? "Update Invoice" : "Save Invoice"}
       </Button>
