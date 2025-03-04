@@ -1,7 +1,7 @@
 
 import React from "react";
 import { format } from "date-fns";
-import { Mail, Phone, Pencil, Trash } from "lucide-react";
+import { Mail, Phone, Pencil, Trash, MapPin } from "lucide-react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Client } from "@/types";
@@ -22,7 +22,15 @@ const ClientItem = ({ client, onEdit, onDelete }: ClientItemProps) => {
   return (
     <TableRow key={client.id}>
       <TableCell className="font-medium">
-        {client.name}
+        <div>
+          {client.name}
+          {client.address && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+              <MapPin className="h-3 w-3" />
+              <span className="truncate max-w-[200px]">{client.address}</span>
+            </div>
+          )}
+        </div>
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">

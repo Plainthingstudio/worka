@@ -1,3 +1,4 @@
+
 import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -13,6 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -26,7 +28,6 @@ import {
   DialogHeader,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -38,6 +39,7 @@ const formSchema = z.object({
   phone: z.string().min(5, {
     message: "Phone must be at least 5 characters.",
   }),
+  address: z.string().optional(),
   leadSource: z.enum(["Dribbble", "Website", "LinkedIn", "Behance", "Direct Email", "Other"], {
     required_error: "Please select a lead source.",
   }),
@@ -56,6 +58,7 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
       name: client?.name || "",
       email: client?.email || "",
       phone: client?.phone || "",
+      address: client?.address || "",
       leadSource: client?.leadSource || "Other",
     },
   });
@@ -125,6 +128,24 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
                 <FormLabel>Phone</FormLabel>
                 <FormControl>
                   <Input placeholder="+1 (555) 123-4567" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Address</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="123 Main St, City, State, ZIP" 
+                    className="resize-none min-h-[80px]"
+                    {...field} 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

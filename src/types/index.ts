@@ -16,6 +16,7 @@ export interface Client {
   name: string;
   email: string;
   phone: string;
+  address?: string;
   leadSource: LeadSource;
   createdAt: Date;
 }

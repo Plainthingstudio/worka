@@ -13,6 +13,7 @@ import DeleteConfirmationDialog from "@/components/clients/DeleteConfirmationDia
 
 // Import and modify the clients from mockData
 import { clients as mockClients } from "@/mockData";
+
 const Clients = () => {
   // Initialize state with the mockClients but allow it to be updated
   const [clients, setClients] = useState<Client[]>(mockClients);
@@ -44,23 +45,27 @@ const Clients = () => {
     }
     return () => observer.disconnect();
   }, []);
+
   const filteredClients = clients.filter(client => {
     const matchesSearch = client.name.toLowerCase().includes(search.toLowerCase()) || client.email.toLowerCase().includes(search.toLowerCase()) || client.phone.toLowerCase().includes(search.toLowerCase());
     const matchesSource = sourceFilter === "all" || client.leadSource === sourceFilter;
     return matchesSearch && matchesSource;
   });
+
   const openAddClientDialog = () => setIsAddingClient(true);
   const closeAddClientDialog = () => setIsAddingClient(false);
   const openEditClientDialog = (client: Client) => setEditingClient(client);
   const closeEditClientDialog = () => setEditingClient(null);
   const openDeleteDialog = (id: string) => setIsDeleting(id);
   const closeDeleteDialog = () => setIsDeleting(null);
+
   const handleAddClient = (data: any) => {
     const newClient: Client = {
       id: `client-${Date.now()}`,
       name: data.name,
       email: data.email,
       phone: data.phone,
+      address: data.address,
       leadSource: data.leadSource,
       createdAt: new Date()
     };
@@ -76,6 +81,7 @@ const Clients = () => {
     setIsAddingClient(false);
     toast.success("Client created successfully");
   };
+
   const handleEditClient = (data: any) => {
     if (!editingClient) return;
     const updatedClients = clients.map(client => client.id === editingClient.id ? {
@@ -92,6 +98,7 @@ const Clients = () => {
     setEditingClient(null);
     toast.success("Client updated successfully");
   };
+
   const handleDeleteClient = (id: string) => {
     const updatedClients = clients.filter(client => client.id !== id);
 
@@ -104,7 +111,9 @@ const Clients = () => {
     setIsDeleting(null);
     toast.success("Client deleted successfully");
   };
+
   const leadSources: LeadSource[] = ["Dribbble", "Website", "LinkedIn", "Behance", "Direct Email", "Other"];
+
   return <div className="flex min-h-screen bg-background">
       <Sidebar />
       <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
@@ -153,4 +162,5 @@ const Clients = () => {
       {isDeleting && <DeleteConfirmationDialog isOpen={!!isDeleting} onClose={closeDeleteDialog} onConfirm={() => isDeleting && handleDeleteClient(isDeleting)} />}
     </div>;
 };
+
 export default Clients;
