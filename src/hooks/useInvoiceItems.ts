@@ -26,14 +26,18 @@ export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
   useEffect(() => {
     if (Array.isArray(initialItems) && initialItems.length > 0) {
       console.log("Updating items from initialItems in useInvoiceItems:", initialItems);
-      setItems(initialItems.map(item => ({
+      
+      const processedItems = initialItems.map(item => ({
         ...item,
         id: item.id || uuidv4(),
         description: item.description || "",
         quantity: Number(item.quantity) || 1,
         rate: Number(item.rate) || 0,
         amount: Number(item.amount) || 0
-      })));
+      }));
+      
+      console.log("Processed items:", processedItems);
+      setItems(processedItems);
     }
   }, [initialItems]);
 

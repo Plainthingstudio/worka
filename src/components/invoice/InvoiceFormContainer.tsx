@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { clients } from '@/mockData';
@@ -44,7 +44,7 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
   };
 
   // Ensure invoice.items is always an array
-  React.useEffect(() => {
+  useEffect(() => {
     console.log("InvoiceFormContainer: Current invoice items:", invoice.items);
   }, [invoice.items]);
 
@@ -56,6 +56,9 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
       </div>
     );
   }
+
+  // Ensure items is always an array
+  const items = Array.isArray(invoice.items) ? invoice.items : [];
 
   return (
     <>
@@ -78,7 +81,7 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
         />
 
         <InvoiceItems 
-          invoice={invoice}
+          invoice={{...invoice, items}}
           onAddItem={handleAddItem}
           onRemoveItem={removeItem}
           onUpdateItem={updateItem}

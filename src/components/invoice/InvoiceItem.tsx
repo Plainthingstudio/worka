@@ -28,7 +28,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
   const description = item?.description || '';
   const quantity = Number(item?.quantity) || 1;
   const rate = Number(item?.rate) || 0;
-  const amount = quantity * rate;
+  const amount = Number(item?.amount) || (quantity * rate);
 
   console.log("Rendering InvoiceItem:", { id: itemId, description, quantity, rate, amount });
 

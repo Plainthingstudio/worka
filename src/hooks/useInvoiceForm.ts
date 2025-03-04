@@ -18,51 +18,47 @@ export function useInvoiceForm() {
   const { toast } = useToast();
   const isEditing = Boolean(invoiceId);
   const { loadInvoice, saveInvoice } = useInvoiceStorage();
+
   const { validateInvoice } = useInvoiceValidation();
 
   // Initialize with empty invoice
   const [invoice, setInvoice] = useState<Invoice>(createNewInvoice());
   const [isLoading, setIsLoading] = useState(isEditing);
   
-  // Initialize items hook with empty array first
-  const { 
-    items, 
-    setItems, 
-    addItem, 
-    removeItem, 
-    updateItem 
-  } = useInvoiceItems([]);
-
   // Load invoice data when in edit mode
   useEffect(() => {
     if (isEditing && invoiceId) {
       setIsLoading(true);
       console.log("Loading existing invoice data for editing, ID:", invoiceId);
       const loadedInvoice = loadInvoice(invoiceId);
+      
       if (loadedInvoice) {
         console.log("Setting invoice from loaded data:", loadedInvoice);
         setInvoice(loadedInvoice);
-        
-        // Explicitly set the items after loading the invoice
-        if (Array.isArray(loadedInvoice.items) && loadedInvoice.items.length > 0) {
-          console.log("Setting items directly after loading invoice:", loadedInvoice.items);
-          setItems(loadedInvoice.items);
-        }
       }
+      
       setIsLoading(false);
-    } else {
-      // For new invoices, make sure we have at least one empty item
-      addItem();
     }
-  }, [isEditing, invoiceId, loadInvoice, setItems, addItem]);
-
+  }, [isEditing, invoiceId, loadInvoice]);
+  
+  // Initialize items hook with invoice items
+  const { 
+    items, 
+    setItems, 
+    addItem, 
+    removeItem, 
+    updateItem 
+  } = useInvoiceItems(invoice.items);
+  
   // Sync items with invoice
   useEffect(() => {
-    console.log("Syncing items with invoice:", items);
-    setInvoice(prev => ({
-      ...prev,
-      items
-    }));
+    if (Array.isArray(items) && items.length > 0) {
+      console.log("Syncing items with invoice:", items);
+      setInvoice(prev => ({
+        ...prev,
+        items
+      }));
+    }
   }, [items]);
 
   // Calculate totals whenever relevant invoice fields change
