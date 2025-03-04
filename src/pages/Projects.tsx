@@ -9,6 +9,7 @@ import {
   Trash,
   EyeIcon,
   DollarSign,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,11 +47,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import ProjectForm from "@/components/ProjectForm";
-import { Client, Project, ProjectStatus } from "@/types";
+import { Client, Project, ProjectStatus, ProjectType } from "@/types";
 
 // Import clients and projects from the centralized mockData
 import { clients, projects as mockProjects } from "@/mockData";
@@ -186,6 +188,19 @@ const Projects = () => {
     }
   };
 
+  const getProjectTypeBadgeClass = (type: ProjectType) => {
+    switch (type) {
+      case "Project Based":
+        return "bg-blue-100 text-blue-800 hover:bg-blue-100/80";
+      case "Monthly Retainer":
+        return "bg-purple-100 text-purple-800 hover:bg-purple-100/80";
+      case "Monthly Pay as you go":
+        return "bg-amber-100 text-amber-800 hover:bg-amber-100/80";
+      default:
+        return "bg-gray-100 text-gray-800 hover:bg-gray-100/80";
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
@@ -291,9 +306,10 @@ const Projects = () => {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <span className="text-xs text-muted-foreground">
-                              {project.projectType}
-                            </span>
+                            <Badge className={`flex items-center gap-1 ${getProjectTypeBadgeClass(project.projectType)}`}>
+                              <Tag className="h-3 w-3" />
+                              <span>{project.projectType}</span>
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1">

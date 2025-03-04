@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -10,6 +9,7 @@ import {
   DollarSign,
   Plus,
   X,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,7 +44,7 @@ import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import ProjectForm from "@/components/ProjectForm";
 import PaymentForm from "@/components/PaymentForm";
-import { Project, Payment, Client, ProjectStatus } from "@/types";
+import { Project, Payment, Client, ProjectStatus, ProjectType } from "@/types";
 
 // Import from the centralized mockData
 import { projects, clients } from "@/mockData";
@@ -62,17 +62,14 @@ const ProjectDetails = () => {
   const [isEditPaymentDialogOpen, setIsEditPaymentDialogOpen] = useState(false);
   const [isDeletePaymentDialogOpen, setIsDeletePaymentDialogOpen] = useState(false);
 
-  // Listen for sidebar state changes
   useEffect(() => {
     const handleSidebarChange = () => {
       const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
       setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
     };
 
-    // Initial check
     handleSidebarChange();
 
-    // Set up mutation observer to watch for class changes on the sidebar
     const observer = new MutationObserver(handleSidebarChange);
     const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
     
@@ -83,7 +80,6 @@ const ProjectDetails = () => {
     return () => observer.disconnect();
   }, []);
 
-  // Fetch project and client data
   useEffect(() => {
     if (projectId) {
       const foundProject = projects.find((p) => p.id === projectId);
@@ -103,14 +99,11 @@ const ProjectDetails = () => {
   const handleEditProject = (data: any) => {
     if (!project) return;
 
-    // Find the project index
     const projectIndex = projects.findIndex((p) => p.id === project.id);
     if (projectIndex !== -1) {
-      // Update the project in the array
       const updatedProject = { ...project, ...data };
       projects[projectIndex] = updatedProject;
       
-      // Update local state
       setProject(updatedProject);
       setIsEditDialogOpen(false);
       toast.success("Project updated successfully");
@@ -120,7 +113,6 @@ const ProjectDetails = () => {
   const handleDeleteProject = () => {
     if (!project) return;
 
-    // Remove the project from the array
     const projectIndex = projects.findIndex((p) => p.id === project.id);
     if (projectIndex !== -1) {
       projects.splice(projectIndex, 1);
@@ -133,14 +125,11 @@ const ProjectDetails = () => {
   const handleMarkAsCompleted = () => {
     if (!project) return;
 
-    // Find the project index
     const projectIndex = projects.findIndex((p) => p.id === project.id);
     if (projectIndex !== -1) {
-      // Update the project status
       const updatedProject = { ...project, status: "Completed" as ProjectStatus };
       projects[projectIndex] = updatedProject;
       
-      // Update local state
       setProject(updatedProject);
       toast.success("Project marked as completed");
     }
@@ -158,17 +147,14 @@ const ProjectDetails = () => {
       notes: data.notes,
     };
 
-    // Find the project index
     const projectIndex = projects.findIndex((p) => p.id === project.id);
     if (projectIndex !== -1) {
-      // Add the payment to the project
       const updatedProject = { 
         ...project, 
         payments: [...project.payments, newPayment]
       };
       projects[projectIndex] = updatedProject;
       
-      // Update local state
       setProject(updatedProject);
       setIsPaymentDialogOpen(false);
       toast.success("Payment added successfully");
@@ -178,12 +164,10 @@ const ProjectDetails = () => {
   const handleEditPayment = (data: any) => {
     if (!project || !currentPayment) return;
 
-    // Find the project index and payment index
     const projectIndex = projects.findIndex((p) => p.id === project.id);
     if (projectIndex !== -1) {
       const paymentIndex = project.payments.findIndex((p) => p.id === currentPayment.id);
       if (paymentIndex !== -1) {
-        // Update the payment
         const updatedPayment = {
           ...currentPayment,
           paymentType: data.paymentType,
@@ -192,7 +176,6 @@ const ProjectDetails = () => {
           notes: data.notes,
         };
 
-        // Update the project with the new payment
         const updatedPayments = [...project.payments];
         updatedPayments[paymentIndex] = updatedPayment;
         
@@ -201,10 +184,8 @@ const ProjectDetails = () => {
           payments: updatedPayments,
         };
         
-        // Update the projects array
         projects[projectIndex] = updatedProject;
         
-        // Update local state
         setProject(updatedProject);
         setCurrentPayment(null);
         setIsEditPaymentDialogOpen(false);
@@ -216,24 +197,19 @@ const ProjectDetails = () => {
   const handleDeletePayment = () => {
     if (!project || !currentPayment) return;
 
-    // Find the project index
     const projectIndex = projects.findIndex((p) => p.id === project.id);
     if (projectIndex !== -1) {
-      // Filter out the payment to delete
       const updatedPayments = project.payments.filter(
         (payment) => payment.id !== currentPayment.id
       );
       
-      // Update the project with the filtered payments
       const updatedProject = {
         ...project,
         payments: updatedPayments,
       };
       
-      // Update the projects array
       projects[projectIndex] = updatedProject;
       
-      // Update local state
       setProject(updatedProject);
       setCurrentPayment(null);
       setIsDeletePaymentDialogOpen(false);
@@ -263,6 +239,19 @@ const ProjectDetails = () => {
         return "bg-purple-100 text-purple-800 hover:bg-purple-100/80";
       case "Cancelled":
         return "bg-red-100 text-red-800 hover:bg-red-100/80";
+      default:
+        return "bg-gray-100 text-gray-800 hover:bg-gray-100/80";
+    }
+  };
+
+  const getProjectTypeBadgeClass = (type: ProjectType) => {
+    switch (type) {
+      case "Project Based":
+        return "bg-blue-100 text-blue-800 hover:bg-blue-100/80";
+      case "Monthly Retainer":
+        return "bg-purple-100 text-purple-800 hover:bg-purple-100/80";
+      case "Monthly Pay as you go":
+        return "bg-amber-100 text-amber-800 hover:bg-amber-100/80";
       default:
         return "bg-gray-100 text-gray-800 hover:bg-gray-100/80";
     }
@@ -342,9 +331,10 @@ const ProjectDetails = () => {
                     <Badge className={getStatusBadgeClass(project.status)}>
                       {project.status}
                     </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      Project Type: {project.projectType}
-                    </span>
+                    <Badge className={`flex items-center gap-1 ${getProjectTypeBadgeClass(project.projectType)}`}>
+                      <Tag className="h-3 w-3" />
+                      <span>{project.projectType}</span>
+                    </Badge>
                   </div>
                 </div>
 
@@ -527,7 +517,6 @@ const ProjectDetails = () => {
         </main>
       </div>
 
-      {/* Edit Project Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
@@ -545,7 +534,6 @@ const ProjectDetails = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -573,7 +561,6 @@ const ProjectDetails = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Add Payment Dialog */}
       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -591,7 +578,6 @@ const ProjectDetails = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Payment Dialog */}
       <Dialog open={isEditPaymentDialogOpen} onOpenChange={setIsEditPaymentDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -615,7 +601,6 @@ const ProjectDetails = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Payment Confirmation Dialog */}
       <Dialog open={isDeletePaymentDialogOpen} onOpenChange={setIsDeletePaymentDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

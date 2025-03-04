@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { ArrowRight, Users, Briefcase, DollarSign, Activity } from "lucide-react";
+import { ArrowRight, Users, Briefcase, DollarSign, Activity, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -12,8 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import StatCard from "@/components/StatCard";
-import { Client, Project } from "@/types";
+import { Client, Project, ProjectType } from "@/types";
 
 // Import mock data
 import { clients, projects } from "@/mockData";
@@ -50,6 +51,19 @@ const Dashboard = () => {
     .filter(p => p.status === "In progress")
     .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
     .slice(0, 5);
+
+  const getProjectTypeBadgeClass = (type: ProjectType) => {
+    switch (type) {
+      case "Project Based":
+        return "bg-blue-100 text-blue-800 hover:bg-blue-100/80";
+      case "Monthly Retainer":
+        return "bg-purple-100 text-purple-800 hover:bg-purple-100/80";
+      case "Monthly Pay as you go":
+        return "bg-amber-100 text-amber-800 hover:bg-amber-100/80";
+      default:
+        return "bg-gray-100 text-gray-800 hover:bg-gray-100/80";
+    }
+  };
 
   return (
     <div className="w-full max-w-screen-2xl mx-auto">
@@ -156,6 +170,7 @@ const Dashboard = () => {
                 <TableHead>Client</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Deadline</TableHead>
+                <TableHead>Type</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -174,12 +189,18 @@ const Dashboard = () => {
                       <TableCell>
                         {format(new Date(project.deadline), "yyyy-MM-dd")}
                       </TableCell>
+                      <TableCell>
+                        <Badge className={`flex items-center gap-1 ${getProjectTypeBadgeClass(project.projectType)}`}>
+                          <Tag className="h-3 w-3" />
+                          <span>{project.projectType}</span>
+                        </Badge>
+                      </TableCell>
                     </TableRow>
                   );
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-4">
+                  <TableCell colSpan={5} className="text-center py-4">
                     No active projects found
                   </TableCell>
                 </TableRow>
