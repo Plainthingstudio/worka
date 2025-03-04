@@ -169,7 +169,7 @@ const Invoices = () => {
                         </TableCell>
                         <TableCell className="flex justify-end gap-2">
                           <Button
-                            variant="outline"
+                            variant="default"
                             size="icon"
                             onClick={() => handleDownload(invoice)}
                             title="Download PDF"
