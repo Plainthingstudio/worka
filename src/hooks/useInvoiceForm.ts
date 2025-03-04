@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -20,16 +19,10 @@ export function useInvoiceForm() {
   const { loadInvoice, saveInvoice } = useInvoiceStorage();
   const { validateInvoice } = useInvoiceValidation();
 
+  // Initialize with empty invoice
   const [invoice, setInvoice] = useState<Invoice>(createNewInvoice());
-  const { 
-    items, 
-    setItems, 
-    addItem, 
-    removeItem, 
-    updateItem 
-  } = useInvoiceItems(invoice.items);
-
-  // Load invoice data when in edit mode
+  
+  // Load invoice data when in edit mode - do this first before initializing items
   useEffect(() => {
     if (isEditing && invoiceId) {
       console.log("Loading existing invoice data for editing, ID:", invoiceId);
@@ -37,14 +30,18 @@ export function useInvoiceForm() {
       if (loadedInvoice) {
         console.log("Setting invoice from loaded data:", loadedInvoice);
         setInvoice(loadedInvoice);
-        
-        if (Array.isArray(loadedInvoice.items) && loadedInvoice.items.length > 0) {
-          console.log("Setting items from loaded invoice:", loadedInvoice.items);
-          setItems(loadedInvoice.items);
-        }
       }
     }
-  }, [isEditing, invoiceId, loadInvoice, setItems]);
+  }, [isEditing, invoiceId, loadInvoice]);
+
+  // Initialize items hook after invoice is loaded
+  const { 
+    items, 
+    setItems, 
+    addItem, 
+    removeItem, 
+    updateItem 
+  } = useInvoiceItems(invoice.items);
 
   // Sync items with invoice
   useEffect(() => {

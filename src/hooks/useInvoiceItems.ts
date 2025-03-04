@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createEmptyItem } from '@/utils/invoiceCalculations';
 
 export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
+  // Initialize items with either the provided items or a single empty item
   const [items, setItems] = useState<InvoiceItem[]>(
     Array.isArray(initialItems) && initialItems.length > 0 
       ? initialItems.map(item => ({

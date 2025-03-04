@@ -41,6 +41,11 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
     addItem();
   };
 
+  // Ensure invoice.items is always an array
+  React.useEffect(() => {
+    console.log("InvoiceFormContainer: Current invoice items:", invoice.items);
+  }, [invoice.items]);
+
   return (
     <>
       <div className="mb-6">
