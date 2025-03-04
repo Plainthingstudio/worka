@@ -1,64 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
-import {
-  CalendarIcon,
-  Plus,
-  Search,
-  Pencil,
-  Trash,
-  EyeIcon,
-  DollarSign,
-  Tag,
-} from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import ProjectForm from "@/components/ProjectForm";
-import { Client, Project, ProjectStatus, ProjectType } from "@/types";
+import { Project } from "@/types";
+import ProjectsFilter from "@/components/projects/ProjectsFilter";
+import ProjectsTable from "@/components/projects/ProjectsTable";
+import DeleteConfirmationDialog from "@/components/projects/DeleteConfirmationDialog";
 
 // Import clients and projects from the centralized mockData
 import { clients, projects as mockProjects } from "@/mockData";
 
 const Projects = () => {
-  const navigate = useNavigate();
   // Initialize state with the mockProjects but keep track of the reference to mockProjects
   const [projects, setProjects] = useState<Project[]>(mockProjects);
   const [search, setSearch] = useState("");
@@ -171,36 +130,6 @@ const Projects = () => {
     toast.success("Project deleted successfully");
   };
 
-  const getStatusBadgeClass = (status: ProjectStatus) => {
-    switch (status) {
-      case "Planning":
-        return "status-badge status-planning";
-      case "In progress":
-        return "status-badge status-in-progress";
-      case "Completed":
-        return "status-badge status-completed";
-      case "Paused":
-        return "status-badge status-paused";
-      case "Cancelled":
-        return "status-badge status-cancelled";
-      default:
-        return "status-badge";
-    }
-  };
-
-  const getProjectTypeBadgeVariant = (type: ProjectType) => {
-    switch (type) {
-      case "Project Based":
-        return "project-based";
-      case "Monthly Retainer":
-        return "monthly-retainer";
-      case "Monthly Pay as you go":
-        return "monthly-pay";
-      default:
-        return "secondary";
-    }
-  };
-
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
@@ -226,160 +155,21 @@ const Projects = () => {
             </Button>
           </div>
 
-          <div className="glass-card mb-6 rounded-xl border shadow-sm animate-fade-in">
-            <div className="flex flex-col gap-4 p-4 sm:flex-row">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search projects..."
-                  className="pl-9"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <div className="w-full sm:w-48">
-                <Select
-                  value={statusFilter}
-                  onValueChange={setStatusFilter}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="Planning">Planning</SelectItem>
-                    <SelectItem value="In progress">In Progress</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                    <SelectItem value="Paused">Paused</SelectItem>
-                    <SelectItem value="Cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="overflow-x-auto p-4 pt-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Project Name</TableHead>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Deadline</TableHead>
-                    <TableHead>Fee</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredProjects.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={7}
-                        className="h-24 text-center text-muted-foreground"
-                      >
-                        No projects found.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredProjects.map((project) => {
-                      const client = clients.find(c => c.id === project.clientId);
-                      return (
-                        <TableRow key={project.id}>
-                          <TableCell className="font-medium">
-                            {project.name}
-                          </TableCell>
-                          <TableCell>
-                            {client?.name || "Unknown Client"}
-                          </TableCell>
-                          <TableCell>
-                            <span className={getStatusBadgeClass(project.status)}>
-                              {project.status}
-                            </span>
-                          </TableCell>
-                          <TableCell className="flex items-center gap-1 text-muted-foreground">
-                            <CalendarIcon className="h-3.5 w-3.5" />
-                            {format(new Date(project.deadline), "MMM dd, yyyy")}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
-                              {project.fee.toLocaleString()} {project.currency}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant={getProjectTypeBadgeVariant(project.projectType)}
-                              className="flex items-center gap-1"
-                            >
-                              <Tag className="h-3.5 w-3.5" />
-                              {project.projectType}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-1">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8"
-                                      onClick={() => navigate(`/projects/${project.id}`)}
-                                    >
-                                      <EyeIcon className="h-4 w-4" />
-                                      <span className="sr-only">View</span>
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>View Details</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                              
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8"
-                                      onClick={() => openEditProjectDialog(project)}
-                                    >
-                                      <Pencil className="h-4 w-4" />
-                                      <span className="sr-only">Edit</span>
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Edit Project</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                              
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8 text-destructive"
-                                      onClick={() => openDeleteDialog(project.id)}
-                                    >
-                                      <Trash className="h-4 w-4" />
-                                      <span className="sr-only">Delete</span>
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Delete Project</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
+          <ProjectsFilter 
+            search={search}
+            setSearch={setSearch}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+          />
+
+          <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
+            <div className="overflow-x-auto p-4">
+              <ProjectsTable 
+                projects={filteredProjects}
+                clients={clients}
+                onEdit={openEditProjectDialog}
+                onDelete={openDeleteDialog}
+              />
             </div>
           </div>
         </main>
@@ -420,33 +210,11 @@ const Projects = () => {
 
       {/* Delete Confirmation Dialog */}
       {isDeleting && (
-        <Dialog
-          open={!!isDeleting}
-          onOpenChange={closeDeleteDialog}
-        >
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Confirm Deletion</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete this project? This action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button
-                variant="outline"
-                onClick={closeDeleteDialog}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => isDeleting && handleDeleteProject(isDeleting)}
-              >
-                Delete
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <DeleteConfirmationDialog
+          isOpen={!!isDeleting}
+          onClose={closeDeleteDialog}
+          onConfirm={() => isDeleting && handleDeleteProject(isDeleting)}
+        />
       )}
     </div>
   );
