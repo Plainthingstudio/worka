@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 import { Invoice } from '@/types';
 import { clients } from '@/mockData';
@@ -142,27 +143,8 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     pdf.text("Grand Total", totalsX, currentY);
     pdf.text(`$${invoice.total.toFixed(2)}`, valuesX, currentY, { align: "right" });
     
-    // Add payment method section
-    const paymentY = currentY + 20;
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Payment Method", margin, paymentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text("Payment via Credit Card", margin, paymentY + 7);
-    pdf.text("We accept Cheque", margin, paymentY + 14);
-    pdf.text("Paypal: pay@company.com", margin, paymentY + 21);
-    
-    // Add contact section
-    const contactY = paymentY + 40;
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Contact", margin, contactY);
-    pdf.setFont("helvetica", "normal");
-    // Using default address since client.address doesn't exist in the type
-    pdf.text("123 Street, Town Postal, Country", margin, contactY + 7);
-    pdf.text(client.phone, margin, contactY + 14);
-    pdf.text(client.email, margin, contactY + 21);
-    
-    // Add terms and conditions
-    const termsY = contactY + 40;
+    // Add terms and conditions (Skip payment method and contact sections)
+    const termsY = currentY + 40;
     pdf.setFont("helvetica", "bold");
     pdf.text("Terms & Condition", margin, termsY);
     pdf.setFont("helvetica", "normal");
@@ -174,12 +156,17 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     const splitTerms = pdf.splitTextToSize(termsText, contentWidth);
     pdf.text(splitTerms, margin, termsY + 7);
     
-    // Add signature (if needed)
-    pdf.setFont("helvetica", "italic");
-    pdf.text("Mark Williams", pageWidth - margin, termsY, { align: "right" });
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(8);
-    pdf.text("Manager", pageWidth - margin, termsY + 7, { align: "right" });
+    // Add notes if available
+    if (invoice.notes && invoice.notes.trim().length > 0) {
+      const notesY = termsY + 30;
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Notes", margin, notesY);
+      pdf.setFont("helvetica", "normal");
+      
+      const notesText = invoice.notes;
+      const splitNotes = pdf.splitTextToSize(notesText, contentWidth);
+      pdf.text(splitNotes, margin, notesY + 7);
+    }
     
     // Add very light shadow effect to the whole document
     pdf.setDrawColor(200, 200, 200);
