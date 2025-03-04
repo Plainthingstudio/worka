@@ -25,7 +25,8 @@ const GraphicDesignBrief = () => {
         pricing: "",
         era: "",
         tone: "",
-        complexity: ""
+        complexity: "",
+        gender: ""
       },
       tone: {},
       logoType: "",
@@ -83,7 +84,8 @@ const GraphicDesignBrief = () => {
         pricing: data.logoFeelings?.pricing || "",
         era: data.logoFeelings?.era || "",
         tone: data.logoFeelings?.tone || "",
-        complexity: data.logoFeelings?.complexity || ""
+        complexity: data.logoFeelings?.complexity || "",
+        gender: data.logoFeelings?.gender || ""
       },
       tone: processCheckboxGroup(data.tone || {}),
       services: processCheckboxGroup(data.services || {}),
