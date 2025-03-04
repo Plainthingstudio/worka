@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { clients } from '@/mockData';
 import Sidebar from '@/components/Sidebar';
+import Navbar from '@/components/Navbar';
 import InvoiceFormContainer from '@/components/invoice/InvoiceFormContainer';
 import { useInvoiceForm } from '@/hooks/useInvoiceForm';
 import InvoiceLoading from '@/components/invoice-details/InvoiceLoading';
@@ -35,6 +36,7 @@ const InvoiceForm = () => {
       <div className="flex h-screen bg-muted/10">
         <Sidebar />
         <div className="flex-1 overflow-auto pl-14 md:pl-56">
+          <Navbar title={isEditing ? "Edit Invoice" : "New Invoice"} />
           <main className="container mx-auto py-8">
             <InvoiceLoading />
           </main>
@@ -47,6 +49,7 @@ const InvoiceForm = () => {
     <div className="flex h-screen bg-muted/10">
       <Sidebar />
       <div className="flex-1 overflow-auto pl-14 md:pl-56">
+        <Navbar title={isEditing ? "Edit Invoice" : "New Invoice"} />
         <main className="container mx-auto py-8">
           <InvoiceFormContainer 
             invoice={invoice}

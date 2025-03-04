@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Sidebar from "@/components/Sidebar";
+import Navbar from "@/components/Navbar";
 import { Invoice } from "@/types";
 import { clients } from "@/mockData";
 
@@ -76,13 +77,24 @@ const InvoiceDetails = () => {
 
   // If invoice is not loaded yet
   if (!invoice || !client) {
-    return <InvoiceLoading />;
+    return (
+      <div className="flex h-screen bg-muted/10">
+        <Sidebar />
+        <div className="flex-1 overflow-auto pl-14 md:pl-56">
+          <Navbar title="Invoice Details" />
+          <main className="container mx-auto py-8">
+            <InvoiceLoading />
+          </main>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="flex h-screen bg-muted/10">
       <Sidebar />
       <div className="flex-1 overflow-auto pl-14 md:pl-56">
+        <Navbar title="Invoice Details" />
         <main className="container mx-auto py-8">
           <InvoiceDetailsHeader 
             invoice={invoice}

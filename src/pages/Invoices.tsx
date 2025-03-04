@@ -23,6 +23,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { clients } from "@/mockData";
 import Sidebar from "@/components/Sidebar";
+import Navbar from "@/components/Navbar";
 import { Invoice } from "@/types";
 
 const Invoices = () => {
@@ -70,6 +71,7 @@ const Invoices = () => {
     <div className="flex h-screen bg-muted/10">
       <Sidebar />
       <div className="flex-1 overflow-auto pl-14 md:pl-56">
+        <Navbar title="Invoices" />
         <main className="container mx-auto py-8">
           <div className="mb-8 flex items-center justify-between">
             <h1 className="text-2xl font-semibold tracking-tight">Invoices</h1>
