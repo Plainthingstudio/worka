@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import { Invoice } from '@/types';
 import { clients } from '@/mockData';
@@ -27,139 +26,165 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     // Set font
     pdf.setFont("helvetica");
     
-    // Remove company name and logo as requested
-    
-    // Add INVOICE header (top left)
-    pdf.setFontSize(28);
+    // Add company name (top left) - removed the logo
+    pdf.setFontSize(16);
     pdf.setFont("helvetica", "bold");
-    pdf.text("INVOICE", margin, margin + 10);
-    
-    // Add invoice date (under INVOICE)
+    pdf.text("Pin Box", margin, margin + 10);
     pdf.setFontSize(10);
     pdf.setFont("helvetica", "normal");
-    pdf.text(format(new Date(invoice.date), "MMMM dd, yyyy"), margin, margin + 20);
+    pdf.text("Private Limited", margin, margin + 16);
     
-    // Add bill to section
+    // Add INVOICE header (top right)
+    pdf.setFontSize(36);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Invoice", pageWidth - margin, margin + 5, { align: "right" });
+    
+    // Add invoice details (top right, below INVOICE)
     pdf.setFontSize(10);
     pdf.setFont("helvetica", "bold");
-    pdf.text("To:", margin, margin + 40);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(client.name, margin, margin + 48);
-    // Using default address
-    pdf.text("Main street, Your Loc.", margin, margin + 56);
-    pdf.text(`${client.phone}`, margin, margin + 64);
+    pdf.text("Invoice#", pageWidth - margin, margin + 20, { align: "right" });
+    pdf.text("Date:", pageWidth - margin, margin + 27, { align: "right" });
     
-    // Add office address section (right aligned)
+    pdf.setFont("helvetica", "normal");
+    pdf.text(invoice.invoiceNumber, pageWidth - margin - 30, margin + 20);
+    pdf.text(format(new Date(invoice.date), "dd/MMMM/yyyy"), pageWidth - margin - 30, margin + 27);
+    
+    // Add "Total Due:" section
+    pdf.setFontSize(12);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Total Due:", pageWidth - margin, margin + 40, { align: "right" });
+    pdf.text(`USD: $ ${invoice.total.toFixed(2)}`, pageWidth - margin, margin + 47, { align: "right" });
+    
+    // Add billed to section (left)
     pdf.setFontSize(10);
     pdf.setFont("helvetica", "bold");
-    pdf.text("Office Address", pageWidth - margin, margin + 40, { align: "right" });
+    pdf.text("Bill To:", margin, margin + 40);
     pdf.setFont("helvetica", "normal");
-    pdf.text("Main street, Number 06/B,", pageWidth - margin, margin + 48, { align: "right" });
-    pdf.text("South Mountain, YK", pageWidth - margin, margin + 56, { align: "right" });
-    pdf.text("(+62) 123 456 7890", pageWidth - margin, margin + 64, { align: "right" });
-    
-    // Add separator line
-    pdf.setDrawColor(0, 0, 0);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, margin + 80, pageWidth - margin, margin + 80);
+    pdf.text(client.name, margin, margin + 47);
+    // Since 'address' doesn't exist on the Client type, use a default address
+    pdf.text("123 Street, Town/City, Country", margin, margin + 54);
+    pdf.text(client.phone, margin, margin + 61);
     
     // Add table headers
-    const tableTop = margin + 95;
-    pdf.setFontSize(10);
+    const tableTop = margin + 80;
+    pdf.setFontSize(9);
     pdf.setFont("helvetica", "bold");
     
     // Table headers
     pdf.text("ITEM DESCRIPTION", margin, tableTop);
-    pdf.text("UNIT PRICE", pageWidth - margin - 105, tableTop);
-    pdf.text("QNT", pageWidth - margin - 50, tableTop);
+    pdf.text("PRICE", pageWidth - margin - 80, tableTop);
+    pdf.text("QTY", pageWidth - margin - 45, tableTop);
     pdf.text("TOTAL", pageWidth - margin, tableTop, { align: "right" });
+    
+    // Table header underline
+    pdf.setDrawColor(0, 0, 0);
+    pdf.setLineWidth(0.5);
+    pdf.line(margin, tableTop + 2, pageWidth - margin, tableTop + 2);
     
     // Draw table rows
     pdf.setFont("helvetica", "normal");
-    let currentY = tableTop + 20;
+    let currentY = tableTop + 10;
     
     invoice.items.forEach((item, index) => {
       // Check if we need a new page
-      if (currentY > 230) {
+      if (currentY > 250) {
         pdf.addPage();
         currentY = 30;
       }
       
-      // Draw the item's description with bold title
-      pdf.setFont("helvetica", "bold");
+      // Draw the item's details
       pdf.text(item.description, margin, currentY);
+      pdf.text(`$${item.rate.toFixed(2)}`, pageWidth - margin - 80, currentY);
+      pdf.text(item.quantity.toString(), pageWidth - margin - 45, currentY);
+      pdf.text(`$${item.amount.toFixed(2)}`, pageWidth - margin, currentY, { align: "right" });
       
-      // Add placeholder description text if no description
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(8);
-      const descriptionText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed diam nonummy nibh.";
-      pdf.text(descriptionText, margin, currentY + 6);
+      // Draw thin line between items
+      if (index < invoice.items.length - 1) {
+        pdf.setDrawColor(200, 200, 200);
+        pdf.setLineWidth(0.1);
+        pdf.line(margin, currentY + 4, pageWidth - margin, currentY + 4);
+      }
       
-      // Draw price, quantity and total
-      pdf.setFontSize(10);
-      pdf.text(`${item.rate.toFixed(2)} USD`, pageWidth - margin - 105, currentY);
-      pdf.text(item.quantity.toString(), pageWidth - margin - 50, currentY);
-      pdf.text(`${item.amount.toFixed(2)} USD`, pageWidth - margin, currentY, { align: "right" });
-      
-      // Add space between items
-      currentY += 25;
+      currentY += 12; // Increment Y position for next item
     });
     
-    // Add separator line
+    // Draw line before totals
+    currentY += 5;
     pdf.setDrawColor(0, 0, 0);
     pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY + 5, pageWidth - margin, currentY + 5);
-    currentY += 20;
-    
-    // Add totals section with right alignment
-    pdf.setFontSize(10);
-    pdf.setFont("helvetica", "normal");
-    
-    pdf.text("SUBTOTAL", pageWidth - margin - 80, currentY);
-    pdf.text(`${invoice.subtotal.toFixed(2)} USD`, pageWidth - margin, currentY, { align: "right" });
+    pdf.line(margin, currentY, pageWidth - margin, currentY);
     currentY += 10;
     
-    pdf.text(`Tax VAT ${invoice.taxPercentage}%`, pageWidth - margin - 80, currentY);
-    pdf.text(`${invoice.taxAmount.toFixed(2)} USD`, pageWidth - margin, currentY, { align: "right" });
+    // Add totals section
+    const totalsX = pageWidth - margin - 70;
+    const valuesX = pageWidth - margin;
+    
+    pdf.text("SUB TOTAL", totalsX, currentY);
+    pdf.text(`$${invoice.subtotal.toFixed(2)}`, valuesX, currentY, { align: "right" });
+    currentY += 8;
+    
+    pdf.text(`Tax Vat ${invoice.taxPercentage}%`, totalsX, currentY);
+    pdf.text(`$${invoice.taxAmount.toFixed(2)}`, valuesX, currentY, { align: "right" });
+    currentY += 8;
+    
+    pdf.text(`Discount ${invoice.discountPercentage}%`, totalsX, currentY);
+    pdf.text(`- $${invoice.discountAmount.toFixed(2)}`, valuesX, currentY, { align: "right" });
+    currentY += 8;
+    
+    // Draw line before grand total
+    pdf.setDrawColor(0, 0, 0);
+    pdf.setLineWidth(0.5);
+    pdf.line(totalsX - 20, currentY, valuesX, currentY);
     currentY += 10;
     
+    // Grand total
     pdf.setFont("helvetica", "bold");
-    pdf.text("TOTAL DUE", pageWidth - margin - 80, currentY);
-    pdf.text(`${invoice.total.toFixed(2)} USD`, pageWidth - margin, currentY, { align: "right" });
+    pdf.text("Grand Total", totalsX, currentY);
+    pdf.text(`$${invoice.total.toFixed(2)}`, valuesX, currentY, { align: "right" });
     
-    // Add footer with dark background
-    const footerHeight = 40;
-    const footerTop = 257 - footerHeight;
-    
-    pdf.setFillColor(50, 50, 50);
-    pdf.rect(0, footerTop, pageWidth, footerHeight, 'F');
-    
-    // Add terms and payment info in the footer
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(10);
+    // Add payment method section
+    const paymentY = currentY + 20;
     pdf.setFont("helvetica", "bold");
-    
-    // Terms on left
-    pdf.text("Terms & Conditions.", margin, footerTop + 15);
+    pdf.text("Payment Method", margin, paymentY);
     pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(8);
+    pdf.text("Payment via Credit Card", margin, paymentY + 7);
+    pdf.text("We accept Cheque", margin, paymentY + 14);
+    pdf.text("Paypal: pay@company.com", margin, paymentY + 21);
+    
+    // Add contact section
+    const contactY = paymentY + 40;
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Contact", margin, contactY);
+    pdf.setFont("helvetica", "normal");
+    // Using default address since client.address doesn't exist in the type
+    pdf.text("123 Street, Town Postal, Country", margin, contactY + 7);
+    pdf.text(client.phone, margin, contactY + 14);
+    pdf.text(client.email, margin, contactY + 21);
+    
+    // Add terms and conditions
+    const termsY = contactY + 40;
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Terms & Condition", margin, termsY);
+    pdf.setFont("helvetica", "normal");
+    
     const termsText = invoice.termsAndConditions || 
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed diam nonummy nibh euismod tincidunt.";
+      "Payment is due within the specified term. Please make the payment to the specified account.";
     
-    const splitTerms = pdf.splitTextToSize(termsText, contentWidth / 2 - 10);
-    pdf.text(splitTerms, margin, footerTop + 22);
+    // Split terms into lines
+    const splitTerms = pdf.splitTextToSize(termsText, contentWidth);
+    pdf.text(splitTerms, margin, termsY + 7);
     
-    // Payment method on right
-    pdf.setFontSize(10);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Payment Method", pageWidth - margin, footerTop + 15, { align: "right" });
+    // Add signature (if needed)
+    pdf.setFont("helvetica", "italic");
+    pdf.text("Mark Williams", pageWidth - margin, termsY, { align: "right" });
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(8);
-    pdf.text("Paypal", pageWidth - margin, footerTop + 22, { align: "right" });
-    pdf.text("clientname@email.com", pageWidth - margin, footerTop + 28, { align: "right" });
+    pdf.text("Manager", pageWidth - margin, termsY + 7, { align: "right" });
     
-    // Reset text color for future text
-    pdf.setTextColor(0, 0, 0);
+    // Add very light shadow effect to the whole document
+    pdf.setDrawColor(200, 200, 200);
+    pdf.setLineWidth(0.1);
+    pdf.rect(5, 5, pageWidth - 10, 287, 'S');
     
     // Save the PDF
     pdf.save(`Invoice_${invoice.invoiceNumber}.pdf`);
