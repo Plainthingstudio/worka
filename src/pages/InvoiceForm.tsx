@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -49,8 +48,8 @@ const InvoiceForm = () => {
 
   useEffect(() => {
     if (isEditing && invoiceId) {
-      const invoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
-      const existingInvoice = invoices.find((inv) => inv.id === invoiceId);
+      const storedInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
+      const existingInvoice = storedInvoices.find((inv) => inv.id === invoiceId);
       
       if (existingInvoice) {
         existingInvoice.date = new Date(existingInvoice.date);
@@ -68,12 +67,9 @@ const InvoiceForm = () => {
       amount: item.quantity * item.rate
     }));
 
-    const subtotal = updatedItems.reduce((sum, item) => sum + item.amount, 0);
-    
+    const subtotal = updatedItems.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
     const taxAmount = (subtotal * invoice.taxPercentage) / 100;
-    
     const discountAmount = (subtotal * invoice.discountPercentage) / 100;
-    
     const total = subtotal + taxAmount - discountAmount;
 
     setInvoice(prev => ({
@@ -85,8 +81,7 @@ const InvoiceForm = () => {
       total
     }));
   }, [
-    invoice.items.map(item => item.quantity).join(','),
-    invoice.items.map(item => item.rate).join(','),
+    invoice.items,
     invoice.taxPercentage,
     invoice.discountPercentage
   ]);
@@ -118,7 +113,7 @@ const InvoiceForm = () => {
     setInvoice(prev => ({
       ...prev,
       items: prev.items.map(item => 
-        item.id === id ? { ...item, [field]: field === "quantity" || field === "rate" ? Number(value) : value } : item
+        item.id === id ? { ...item, [field]: value } : item
       )
     }));
   };
@@ -158,14 +153,19 @@ const InvoiceForm = () => {
       return;
     }
 
-    // Get existing invoices from localStorage
-    const existingInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
-    
+    const storedInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
     let updatedInvoices: Invoice[];
+
+    const invoiceToSave = {
+      ...invoice,
+      date: new Date(invoice.date),
+      dueDate: new Date(invoice.dueDate),
+      createdAt: new Date(invoice.createdAt)
+    };
+
     if (isEditing) {
-      // Update existing invoice
-      updatedInvoices = existingInvoices.map(inv => 
-        inv.id === invoice.id ? invoice : inv
+      updatedInvoices = storedInvoices.map(inv => 
+        inv.id === invoice.id ? invoiceToSave : inv
       );
       
       toast({
@@ -173,8 +173,7 @@ const InvoiceForm = () => {
         description: "The invoice has been successfully updated."
       });
     } else {
-      // Add new invoice
-      updatedInvoices = [...existingInvoices, invoice];
+      updatedInvoices = [...storedInvoices, invoiceToSave];
       
       toast({
         title: "Invoice created",
@@ -182,10 +181,7 @@ const InvoiceForm = () => {
       });
     }
     
-    // Save to localStorage
     localStorage.setItem("invoices", JSON.stringify(updatedInvoices));
-    
-    // Navigate back to invoices list
     navigate("/invoices");
   };
 

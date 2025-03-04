@@ -18,6 +18,16 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
   onRemove, 
   formatCurrency 
 }) => {
+  const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value === '' ? '0' : e.target.value;
+    onUpdate(item.id, "rate", parseFloat(value) || 0);
+  };
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value === '' ? '1' : e.target.value;
+    onUpdate(item.id, "quantity", parseInt(value) || 1);
+  };
+
   return (
     <div className="mb-2 grid grid-cols-12 gap-2 rounded-md border p-2">
       <div className="col-span-5">
@@ -32,7 +42,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
           type="number"
           min="1"
           value={item.quantity}
-          onChange={(e) => onUpdate(item.id, "quantity", e.target.value)}
+          onChange={handleQuantityChange}
           className="text-center"
         />
       </div>
@@ -41,17 +51,16 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
           <span className="absolute left-3 top-1/2 -translate-y-1/2">$</span>
           <Input
             type="number"
-            inputMode="decimal"
             min="0"
             step="0.01"
             value={item.rate}
-            onChange={(e) => onUpdate(item.id, "rate", parseFloat(e.target.value) || 0)}
+            onChange={handleRateChange}
             className="pl-8 text-center"
           />
         </div>
       </div>
       <div className="col-span-2 flex items-center justify-end">
-        ${formatCurrency(item.amount)}
+        ${formatCurrency(item.quantity * item.rate)}
       </div>
       <div className="col-span-1 flex items-center justify-center">
         <Button
