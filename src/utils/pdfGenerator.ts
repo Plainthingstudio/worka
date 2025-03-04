@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import { Invoice } from '@/types';
 import { clients } from '@/mockData';
@@ -27,33 +26,13 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     // Set font
     pdf.setFont("helvetica");
     
-    // Add company logo and name (top left)
+    // Add company name (top left) - removed the logo
     pdf.setFontSize(16);
     pdf.setFont("helvetica", "bold");
     pdf.text("Pin Box", margin, margin + 10);
     pdf.setFontSize(10);
     pdf.setFont("helvetica", "normal");
     pdf.text("Private Limited", margin, margin + 16);
-    
-    // Draw three dots logo (simplified)
-    const dotSize = 3;
-    const dotSpacing = 2;
-    const startX = margin;
-    const startY = margin - 2;
-    
-    pdf.setFillColor(0, 0, 0);
-    // First row
-    pdf.circle(startX, startY, dotSize, 'F');
-    pdf.circle(startX + dotSize*2 + dotSpacing, startY, dotSize, 'F');
-    pdf.circle(startX + (dotSize*2 + dotSpacing)*2, startY, dotSize, 'F');
-    // Second row
-    pdf.circle(startX, startY + dotSize*2 + dotSpacing, dotSize, 'F');
-    pdf.circle(startX + dotSize*2 + dotSpacing, startY + dotSize*2 + dotSpacing, dotSize, 'F');
-    pdf.circle(startX + (dotSize*2 + dotSpacing)*2, startY + dotSize*2 + dotSpacing, dotSize, 'F');
-    // Third row
-    pdf.circle(startX, startY + (dotSize*2 + dotSpacing)*2, dotSize, 'F');
-    pdf.circle(startX + dotSize*2 + dotSpacing, startY + (dotSize*2 + dotSpacing)*2, dotSize, 'F');
-    pdf.circle(startX + (dotSize*2 + dotSpacing)*2, startY + (dotSize*2 + dotSpacing)*2, dotSize, 'F');
     
     // Add INVOICE header (top right)
     pdf.setFontSize(36);
