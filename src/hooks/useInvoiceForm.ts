@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -49,7 +48,6 @@ export function useInvoiceForm() {
         if (existingInvoice) {
           console.log("Loading existing invoice:", existingInvoice);
           
-          // Ensure items array is properly processed
           const processedItems = Array.isArray(existingInvoice.items) 
             ? existingInvoice.items.map(item => ({
                 id: item.id || uuidv4(),
@@ -62,7 +60,6 @@ export function useInvoiceForm() {
           
           console.log("Processed items for editing:", processedItems);
           
-          // Convert date strings to Date objects
           const processedInvoice = {
             ...existingInvoice,
             date: existingInvoice.date instanceof Date 
@@ -93,7 +90,6 @@ export function useInvoiceForm() {
     }
   }, [isEditing, invoiceId, toast, emptyItem]);
 
-  // Ensure calculations are updated whenever relevant fields change
   useEffect(() => {
     console.log("Recalculating invoice totals based on items:", invoice.items);
     
@@ -143,7 +139,6 @@ export function useInvoiceForm() {
     console.log("Current items:", invoice.items);
 
     setInvoice(prev => {
-      // Ensure the items array is properly handled
       const currentItems = Array.isArray(prev.items) ? prev.items : [];
       const updatedInvoice = {
         ...prev,
@@ -239,9 +234,8 @@ export function useInvoiceForm() {
     }
 
     try {
-      const storedInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
+      const storedInvoices: any[] = JSON.parse(localStorage.getItem("invoices") || "[]");
       
-      // Ensure items are properly formatted for storage
       const finalItems = Array.isArray(invoice.items) ? invoice.items.map(item => ({
         id: item.id,
         description: item.description || "",
@@ -255,7 +249,6 @@ export function useInvoiceForm() {
       const discountAmount = (subtotal * (Number(invoice.discountPercentage) || 0)) / 100;
       const total = subtotal + taxAmount - discountAmount;
       
-      // Convert Date objects to strings when saving
       const invoiceToSave = {
         ...invoice,
         date: invoice.date instanceof Date ? invoice.date.toISOString() : invoice.date,
@@ -270,7 +263,7 @@ export function useInvoiceForm() {
       
       console.log("Saving invoice with items:", invoiceToSave.items);
       
-      let updatedInvoices: Invoice[];
+      let updatedInvoices: any[];
 
       if (isEditing) {
         updatedInvoices = storedInvoices.map(inv => 
