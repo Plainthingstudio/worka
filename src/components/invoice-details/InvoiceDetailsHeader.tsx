@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Edit, Download, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Invoice } from "@/types";
+import { generateInvoicePDF } from "@/utils/pdfGenerator";
+import { useToast } from "@/hooks/use-toast";
 
 interface InvoiceDetailsHeaderProps {
   invoice: Invoice;
@@ -17,6 +19,24 @@ const InvoiceDetailsHeader: React.FC<InvoiceDetailsHeaderProps> = ({
   onGeneratePDF,
 }) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleGeneratePDF = async () => {
+    try {
+      // Call our actual PDF generation function
+      await generateInvoicePDF(invoice);
+      
+      // Also call the original onGeneratePDF for any additional logic
+      onGeneratePDF();
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <>
@@ -44,7 +64,7 @@ const InvoiceDetailsHeader: React.FC<InvoiceDetailsHeaderProps> = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={onGeneratePDF}
+            onClick={handleGeneratePDF}
           >
             <Download className="mr-1 h-4 w-4" />
             Download PDF

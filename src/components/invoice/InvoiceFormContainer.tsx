@@ -102,7 +102,8 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
         <InvoiceActions 
           isEditing={isEditing} 
           onSubmit={saveInvoice} 
-          onGeneratePDF={generatePDF} 
+          onGeneratePDF={generatePDF}
+          invoice={invoice}
         />
       </div>
     </>
