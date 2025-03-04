@@ -220,7 +220,7 @@ const Projects = () => {
                 Track and manage all your client projects.
               </p>
             </div>
-            <Button onClick={openAddProjectDialog}>
+            <Button onClick={openAddProjectDialog} className="whitespace-nowrap">
               <Plus className="mr-2 h-4 w-4" />
               Create Project
             </Button>
@@ -428,20 +428,18 @@ const Projects = () => {
                 Are you sure you want to delete this project? This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
-            <div className="flex gap-2 pt-4">
-              <Button
-                variant="destructive"
-                onClick={() => isDeleting && handleDeleteProject(isDeleting)}
-                className="flex-1"
-              >
-                Delete
-              </Button>
+            <div className="flex justify-end gap-2 pt-4">
               <Button
                 variant="outline"
                 onClick={closeDeleteDialog}
-                className="flex-1"
               >
                 Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => isDeleting && handleDeleteProject(isDeleting)}
+              >
+                Delete
               </Button>
             </div>
           </DialogContent>
