@@ -1,17 +1,17 @@
 
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { v4 as uuidv4 } from "uuid";
-import { Invoice, InvoiceItem, Client } from "@/types";
-import { clients } from "@/mockData";
-import Sidebar from "@/components/Sidebar";
-import InvoiceHeader from "@/components/invoice/InvoiceHeader";
-import InvoiceItems from "@/components/invoice/InvoiceItems";
-import InvoiceSummary from "@/components/invoice/InvoiceSummary";
-import InvoiceNotes from "@/components/invoice/InvoiceNotes";
-import InvoiceActions from "@/components/invoice/InvoiceActions";
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { v4 as uuidv4 } from 'uuid';
+import { Invoice, InvoiceItem, Client } from '@/types';
+import { clients } from '@/mockData';
+import Sidebar from '@/components/Sidebar';
+import InvoiceHeader from '@/components/invoice/InvoiceHeader';
+import InvoiceItems from '@/components/invoice/InvoiceItems';
+import InvoiceSummary from '@/components/invoice/InvoiceSummary';
+import InvoiceNotes from '@/components/invoice/InvoiceNotes';
+import InvoiceActions from '@/components/invoice/InvoiceActions';
 
 const InvoiceForm = () => {
   const navigate = useNavigate();
@@ -158,21 +158,23 @@ const InvoiceForm = () => {
       return;
     }
 
-    const invoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
+    // Get existing invoices from localStorage
+    const existingInvoices: Invoice[] = JSON.parse(localStorage.getItem("invoices") || "[]");
     
+    let updatedInvoices: Invoice[];
     if (isEditing) {
-      const updatedInvoices = invoices.map(inv => 
+      // Update existing invoice
+      updatedInvoices = existingInvoices.map(inv => 
         inv.id === invoice.id ? invoice : inv
       );
-      localStorage.setItem("invoices", JSON.stringify(updatedInvoices));
       
       toast({
         title: "Invoice updated",
         description: "The invoice has been successfully updated."
       });
     } else {
-      const newInvoices = [...invoices, invoice];
-      localStorage.setItem("invoices", JSON.stringify(newInvoices));
+      // Add new invoice
+      updatedInvoices = [...existingInvoices, invoice];
       
       toast({
         title: "Invoice created",
@@ -180,6 +182,10 @@ const InvoiceForm = () => {
       });
     }
     
+    // Save to localStorage
+    localStorage.setItem("invoices", JSON.stringify(updatedInvoices));
+    
+    // Navigate back to invoices list
     navigate("/invoices");
   };
 
