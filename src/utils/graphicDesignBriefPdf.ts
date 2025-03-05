@@ -44,12 +44,11 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
     if (brief.logoFeelings) {
       y = addSectionTitle(doc, "Logo Preferences", y);
       
-      if (brief.logoFeelings.style) y = addField(doc, "Style", brief.logoFeelings.style, y);
-      if (brief.logoFeelings.pricing) y = addField(doc, "Pricing", brief.logoFeelings.pricing, y);
-      if (brief.logoFeelings.era) y = addField(doc, "Era", brief.logoFeelings.era, y);
-      if (brief.logoFeelings.tone) y = addField(doc, "Tone", brief.logoFeelings.tone, y);
-      if (brief.logoFeelings.complexity) y = addField(doc, "Complexity", brief.logoFeelings.complexity, y);
-      if (brief.logoFeelings.gender) y = addField(doc, "Gender", brief.logoFeelings.gender, y);
+      if (brief.logoFeelings.gender) y = addField(doc, "Feminine vs Masculine", brief.logoFeelings.gender, y);
+      if (brief.logoFeelings.pricing) y = addField(doc, "Economical vs Luxury", brief.logoFeelings.pricing, y);
+      if (brief.logoFeelings.era) y = addField(doc, "Modern vs Classic", brief.logoFeelings.era, y);
+      if (brief.logoFeelings.tone) y = addField(doc, "Serious vs Playful", brief.logoFeelings.tone, y);
+      if (brief.logoFeelings.complexity) y = addField(doc, "Simple vs Complex", brief.logoFeelings.complexity, y);
       
       y = checkPageOverflow(doc, y);
     }

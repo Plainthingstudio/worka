@@ -93,7 +93,7 @@ const StepTwo = ({ onNext, onPrevious }: StepTwoProps) => {
                     className="flex items-center gap-8"
                   >
                     <div className="flex items-center gap-2">
-                      <RadioGroupItem value="Budget" id="pricing-budget" />
+                      <RadioGroupItem value="Economical" id="pricing-budget" />
                       <FormLabel htmlFor="pricing-budget" className="font-normal cursor-pointer">
                         Economical
                       </FormLabel>
@@ -126,13 +126,13 @@ const StepTwo = ({ onNext, onPrevious }: StepTwoProps) => {
                     className="flex items-center gap-8"
                   >
                     <div className="flex items-center gap-2">
-                      <RadioGroupItem value="Contemporary" id="era-contemporary" />
+                      <RadioGroupItem value="Modern" id="era-contemporary" />
                       <FormLabel htmlFor="era-contemporary" className="font-normal cursor-pointer">
                         Modern
                       </FormLabel>
                     </div>
                     <div className="flex items-center gap-2">
-                      <RadioGroupItem value="Vintage" id="era-vintage" />
+                      <RadioGroupItem value="Classic" id="era-vintage" />
                       <FormLabel htmlFor="era-vintage" className="font-normal cursor-pointer">
                         Classic
                       </FormLabel>
@@ -165,7 +165,7 @@ const StepTwo = ({ onNext, onPrevious }: StepTwoProps) => {
                       </FormLabel>
                     </div>
                     <div className="flex items-center gap-2">
-                      <RadioGroupItem value="Fun" id="tone-fun" />
+                      <RadioGroupItem value="Playful" id="tone-fun" />
                       <FormLabel htmlFor="tone-fun" className="font-normal cursor-pointer">
                         Playful
                       </FormLabel>

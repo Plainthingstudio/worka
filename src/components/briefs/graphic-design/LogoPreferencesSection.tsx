@@ -27,27 +27,27 @@ const LogoPreferencesSection: React.FC<LogoPreferencesSectionProps> = ({
           {logoFeelings && (
             <>
               <div>
-                <h5 className="text-sm font-medium">Gender</h5>
+                <h5 className="text-sm font-medium">Feminine vs Masculine</h5>
                 <p>{logoFeelings.gender || "Not provided"}</p>
               </div>
               
               <div>
-                <h5 className="text-sm font-medium">Price Point</h5>
+                <h5 className="text-sm font-medium">Economical vs Luxury</h5>
                 <p>{logoFeelings.pricing || "Not provided"}</p>
               </div>
               
               <div>
-                <h5 className="text-sm font-medium">Era</h5>
+                <h5 className="text-sm font-medium">Modern vs Classic</h5>
                 <p>{logoFeelings.era || "Not provided"}</p>
               </div>
               
               <div>
-                <h5 className="text-sm font-medium">Tone</h5>
+                <h5 className="text-sm font-medium">Serious vs Playful</h5>
                 <p>{logoFeelings.tone || "Not provided"}</p>
               </div>
               
               <div>
-                <h5 className="text-sm font-medium">Complexity</h5>
+                <h5 className="text-sm font-medium">Simple vs Complex</h5>
                 <p>{logoFeelings.complexity || "Not provided"}</p>
               </div>
             </>

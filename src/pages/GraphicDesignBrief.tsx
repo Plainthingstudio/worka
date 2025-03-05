@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Card } from "@/components/ui/card";
@@ -83,6 +82,7 @@ const GraphicDesignBrief = () => {
     console.log("Processed print media:", printMedia);
     console.log("Processed digital media:", digitalMedia);
 
+    // Important: Keep the exact terminology as selected in the form
     const briefData = {
       ...data,
       id: Date.now(),
