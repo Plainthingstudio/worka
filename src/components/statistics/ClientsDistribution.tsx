@@ -2,8 +2,20 @@
 import React from "react";
 import { Pie, PieChart } from "recharts";
 import { DONUT_COLORS } from "@/lib/chart-styles";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
 interface ClientsDistributionProps {
   data: Record<string, number>;
@@ -15,6 +27,9 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
     value,
     fill: DONUT_COLORS[index % DONUT_COLORS.length],
   }));
+  
+  // Calculate total clients
+  const totalClients = chartData.reduce((sum, item) => sum + item.value, 0);
   
   // Create chart config
   const chartConfig: ChartConfig = {
@@ -31,10 +46,7 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
       ])
     ),
   };
-  
-  // Calculate total clients
-  const totalClients = chartData.reduce((sum, item) => sum + item.value, 0);
-  
+
   return (
     <Card className="h-full">
       <CardHeader>

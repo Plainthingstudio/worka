@@ -1,13 +1,26 @@
 
 import React from "react";
-import { Line, LineChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from "recharts";
+import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { projects } from "@/mockData";
 import { DateRange } from "@/types";
 import { format, subMonths } from "date-fns";
-import { createChartConfig } from "@/lib/chart-styles";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Check } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+} from "@/components/ui/chart";
 
 interface ProjectCompletionChartProps {
   dateRange: DateRange;
@@ -78,7 +91,18 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
   };
 
   const data = getMonthlyCompletionData();
-  const chartConfig = createChartConfig(['started', 'completed']);
+  
+  // Create chart config
+  const chartConfig: ChartConfig = {
+    started: {
+      label: "Started",
+      color: "hsl(var(--chart-1))",
+    },
+    completed: {
+      label: "Completed", 
+      color: "hsl(var(--chart-2))",
+    },
+  };
   
   // Calculate completion rate
   const totalStarted = data.reduce((sum, item) => sum + item.started, 0);
@@ -91,7 +115,7 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
         <CardTitle>Project Completion</CardTitle>
         <CardDescription>Started vs. completed projects timeline</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pb-0">
         <ChartContainer config={chartConfig}>
           <LineChart
             data={data}
@@ -136,7 +160,7 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
           </LineChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
+      <CardFooter className="flex-col items-start gap-2 text-sm pt-6">
         <div className="flex gap-2 font-medium leading-none">
           {completionRate.toFixed(1)}% completion rate overall <Check className="h-4 w-4 text-green-500" />
         </div>

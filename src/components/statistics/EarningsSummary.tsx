@@ -4,10 +4,21 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { projects } from "@/mockData";
 import { DateRange } from "@/types";
 import { format, subMonths } from "date-fns";
-import { createChartConfig } from "@/lib/chart-styles";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
 interface EarningsSummaryProps {
   dateRange: DateRange;
