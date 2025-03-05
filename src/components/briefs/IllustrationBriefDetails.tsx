@@ -36,6 +36,24 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
         <p className="mt-1">{briefDetails.targetAudience || "Not provided"}</p>
       </div>
       
+      {/* Competitors section */}
+      <div>
+        <h4 className="font-medium">Competitors</h4>
+        <div className="space-y-2 mt-1">
+          {briefDetails.competitor1 && <p>1. {briefDetails.competitor1}</p>}
+          {briefDetails.competitor2 && <p>2. {briefDetails.competitor2}</p>}
+          {briefDetails.competitor3 && <p>3. {briefDetails.competitor3}</p>}
+          {briefDetails.competitor4 && <p>4. {briefDetails.competitor4}</p>}
+          {!briefDetails.competitor1 && !briefDetails.competitor2 && 
+            !briefDetails.competitor3 && !briefDetails.competitor4 && <p>Not provided</p>}
+        </div>
+      </div>
+      
+      <div>
+        <h4 className="font-medium">Brand Guidelines</h4>
+        <p className="mt-1">{briefDetails.brandGuidelines || "Not provided"}</p>
+      </div>
+      
       <div className="space-y-2">
         <h4 className="font-medium">Illustrations Details</h4>
         <p><span className="font-medium">Count:</span> {briefDetails.illustrationsCount || "Not provided"}</p>
@@ -52,6 +70,34 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
             )}
           </div>
         )}
+      </div>
+      
+      {/* Reference section */}
+      <div>
+        <h4 className="font-medium">Design References</h4>
+        <div className="space-y-2 mt-1">
+          {briefDetails.reference1 && <p>1. {briefDetails.reference1}</p>}
+          {briefDetails.reference2 && <p>2. {briefDetails.reference2}</p>}
+          {briefDetails.reference3 && <p>3. {briefDetails.reference3}</p>}
+          {briefDetails.reference4 && <p>4. {briefDetails.reference4}</p>}
+          {!briefDetails.reference1 && !briefDetails.reference2 && 
+            !briefDetails.reference3 && !briefDetails.reference4 && <p>Not provided</p>}
+        </div>
+      </div>
+      
+      <div>
+        <h4 className="font-medium">General Style</h4>
+        <p className="mt-1">{briefDetails.generalStyle || "Not provided"}</p>
+      </div>
+      
+      <div>
+        <h4 className="font-medium">Color Preferences</h4>
+        <p className="mt-1">{briefDetails.colorPreferences || "Not provided"}</p>
+      </div>
+      
+      <div>
+        <h4 className="font-medium">Likes/Dislikes in Design</h4>
+        <p className="mt-1">{briefDetails.likeDislikeDesign || "Not provided"}</p>
       </div>
       
       <div>

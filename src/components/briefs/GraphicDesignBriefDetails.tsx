@@ -25,35 +25,38 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       </div>
       
       {briefDetails.logoFeelings && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <h4 className="font-medium">Logo Style</h4>
-            <p className="mt-1">{briefDetails.logoFeelings.style || "Not provided"}</p>
-          </div>
-          
-          <div>
-            <h4 className="font-medium">Logo Pricing</h4>
-            <p className="mt-1">{briefDetails.logoFeelings.pricing || "Not provided"}</p>
-          </div>
-          
-          <div>
-            <h4 className="font-medium">Logo Era</h4>
-            <p className="mt-1">{briefDetails.logoFeelings.era || "Not provided"}</p>
-          </div>
-          
-          <div>
-            <h4 className="font-medium">Logo Tone</h4>
-            <p className="mt-1">{briefDetails.logoFeelings.tone || "Not provided"}</p>
-          </div>
-          
-          <div>
-            <h4 className="font-medium">Logo Complexity</h4>
-            <p className="mt-1">{briefDetails.logoFeelings.complexity || "Not provided"}</p>
-          </div>
-          
-          <div>
-            <h4 className="font-medium">Logo Gender</h4>
-            <p className="mt-1">{briefDetails.logoFeelings.gender || "Not provided"}</p>
+        <div>
+          <h4 className="font-medium">Logo Feelings</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+            <div>
+              <h5 className="text-sm font-medium">Style</h5>
+              <p>{briefDetails.logoFeelings.style || "Not provided"}</p>
+            </div>
+            
+            <div>
+              <h5 className="text-sm font-medium">Pricing</h5>
+              <p>{briefDetails.logoFeelings.pricing || "Not provided"}</p>
+            </div>
+            
+            <div>
+              <h5 className="text-sm font-medium">Era</h5>
+              <p>{briefDetails.logoFeelings.era || "Not provided"}</p>
+            </div>
+            
+            <div>
+              <h5 className="text-sm font-medium">Tone</h5>
+              <p>{briefDetails.logoFeelings.tone || "Not provided"}</p>
+            </div>
+            
+            <div>
+              <h5 className="text-sm font-medium">Complexity</h5>
+              <p>{briefDetails.logoFeelings.complexity || "Not provided"}</p>
+            </div>
+            
+            <div>
+              <h5 className="text-sm font-medium">Gender</h5>
+              <p>{briefDetails.logoFeelings.gender || "Not provided"}</p>
+            </div>
           </div>
         </div>
       )}
@@ -62,6 +65,14 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
         <h4 className="font-medium">Logo Type</h4>
         <p className="mt-1">{briefDetails.logoType || "Not provided"}</p>
       </div>
+
+      {/* Logo Tone section */}
+      {briefDetails.tone && briefDetails.tone.length > 0 && (
+        <div>
+          <h4 className="font-medium">Logo Tone</h4>
+          <p className="mt-1">{briefDetails.tone.join(", ")}</p>
+        </div>
+      )}
 
       {/* Target audience section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -132,6 +143,19 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       <div>
         <h4 className="font-medium">Specific Imagery</h4>
         <p className="mt-1">{briefDetails.specificImagery || "Not provided"}</p>
+      </div>
+      
+      {/* References section */}
+      <div>
+        <h4 className="font-medium">Design References</h4>
+        <div className="space-y-2 mt-1">
+          {briefDetails.reference1 && <p>1. {briefDetails.reference1}</p>}
+          {briefDetails.reference2 && <p>2. {briefDetails.reference2}</p>}
+          {briefDetails.reference3 && <p>3. {briefDetails.reference3}</p>}
+          {briefDetails.reference4 && <p>4. {briefDetails.reference4}</p>}
+          {!briefDetails.reference1 && !briefDetails.reference2 && 
+            !briefDetails.reference3 && !briefDetails.reference4 && <p>Not provided</p>}
+        </div>
       </div>
           
       {/* Services section */}

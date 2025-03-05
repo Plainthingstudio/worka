@@ -38,6 +38,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
                 <p><span className="font-medium">Name:</span> {briefDetails.name}</p>
                 <p><span className="font-medium">Email:</span> {briefDetails.email}</p>
                 <p><span className="font-medium">Company:</span> {briefDetails.companyName}</p>
+                {briefDetails.phone && <p><span className="font-medium">Phone:</span> {briefDetails.phone}</p>}
               </div>
             </div>
             <div>
