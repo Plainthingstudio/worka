@@ -69,17 +69,9 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
   const chartConfig: ChartConfig = {
     earnings: {
       label: "Earnings",
-      color: CHART_COLORS.blue,
+      color: CHART_COLORS.primary,
     },
   };
-  
-  // Calculate total earnings for this period and growth percentage
-  const currentMonthEarnings = data[data.length - 1]?.earnings || 0;
-  const previousMonthEarnings = data[data.length - 2]?.earnings || 0;
-  const growthPercentage = previousMonthEarnings > 0 
-    ? ((currentMonthEarnings - previousMonthEarnings) / previousMonthEarnings) * 100 
-    : 0;
-  const growthIsPositive = growthPercentage >= 0;
 
   return (
     <Card>
@@ -92,10 +84,10 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
           <BarChart
             data={data}
             margin={{
-              top: 20,
-              right: 10,
-              left: 10,
-              bottom: 10,
+              top: 16,
+              right: 16,
+              left: 16,
+              bottom: 16,
             }}
           >
             <CartesianGrid vertical={false} />
@@ -115,9 +107,10 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
               cursor={false}
               content={<ChartTooltipContent formatter={(value: number) => [`$${value.toLocaleString()}`, 'Earnings']} hideLabel />}
             />
-            <Bar 
-              dataKey="earnings" 
+            <Bar
+              dataKey="earnings"
               radius={[4, 4, 0, 0]}
+              fill={CHART_COLORS.primary}
             />
           </BarChart>
         </ChartContainer>

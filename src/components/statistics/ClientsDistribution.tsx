@@ -1,7 +1,7 @@
 
 import React from "react";
-import { Pie, PieChart } from "recharts";
-import { DONUT_COLORS } from "@/lib/chart-styles";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { CHART_COLORS } from "@/lib/chart-styles";
 import {
   Card,
   CardContent,
@@ -23,10 +23,9 @@ interface ClientsDistributionProps {
 
 const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
   // Transform data for the chart
-  const chartData = Object.entries(data).map(([name, value], index) => ({
+  const chartData = Object.entries(data).map(([name, value]) => ({
     name,
     value,
-    fill: DONUT_COLORS[index % DONUT_COLORS.length],
   }));
   
   // Calculate total clients
@@ -36,16 +35,8 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
   const chartConfig: ChartConfig = {
     value: {
       label: "Clients",
+      color: CHART_COLORS.primary,
     },
-    ...Object.fromEntries(
-      Object.keys(data).map((key, index) => [
-        key,
-        {
-          label: key,
-          color: DONUT_COLORS[index % DONUT_COLORS.length],
-        },
-      ])
-    ),
   };
 
   return (
@@ -57,9 +48,29 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
       <CardContent className="pb-0">
         <ChartContainer 
           config={chartConfig}
-          className="mx-auto aspect-square max-h-[250px]"
+          className="aspect-[1.2/1] h-[300px]"
         >
-          <PieChart>
+          <BarChart
+            data={chartData}
+            margin={{
+              top: 16,
+              right: 16,
+              left: 16,
+              bottom: 16,
+            }}
+          >
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="name"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+            />
+            <YAxis
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+            />
             <ChartTooltip
               content={
                 <ChartTooltipContent 
@@ -71,15 +82,12 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
                 />
               } 
             />
-            <Pie
-              data={chartData}
+            <Bar
               dataKey="value"
-              nameKey="name"
-              innerRadius={60}
-              outerRadius={80}
-              paddingAngle={4}
+              radius={[4, 4, 0, 0]}
+              fill={CHART_COLORS.primary}
             />
-          </PieChart>
+          </BarChart>
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm pt-6">

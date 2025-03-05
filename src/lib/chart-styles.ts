@@ -1,13 +1,13 @@
 
 // Define default chart colors for consistency across the application
 export const CHART_COLORS = {
-  primary: "hsl(var(--chart-1))",
+  primary: "#0EA5E9", // Ocean Blue as primary color
   secondary: "hsl(var(--chart-2))",
   tertiary: "hsl(var(--chart-3))",
   quaternary: "hsl(var(--chart-4))",
   quinary: "hsl(var(--chart-5))",
-  blue: "hsl(217, 91%, 60%)",
-  lightBlue: "hsl(213, 94%, 68%)",
+  blue: "#0EA5E9", // Ocean Blue
+  lightBlue: "#38BDF8", // Lighter blue for secondary elements
   gray: "hsl(220, 13%, 91%)"
 };
 

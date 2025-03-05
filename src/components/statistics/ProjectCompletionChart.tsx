@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { projects } from "@/mockData";
 import { DateRange } from "@/types";
 import { format, subMonths } from "date-fns";
@@ -96,7 +96,7 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
   const chartConfig: ChartConfig = {
     started: {
       label: "Started",
-      color: CHART_COLORS.blue,
+      color: CHART_COLORS.primary,
     },
     completed: {
       label: "Completed", 
@@ -112,13 +112,13 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
       </CardHeader>
       <CardContent className="pb-0">
         <ChartContainer config={chartConfig}>
-          <LineChart
+          <BarChart
             data={data}
             margin={{
-              top: 20,
-              right: 10,
-              left: 10,
-              bottom: 10,
+              top: 16,
+              right: 16,
+              left: 16,
+              bottom: 16,
             }}
           >
             <CartesianGrid vertical={false} />
@@ -136,22 +136,20 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
             <ChartTooltip 
               content={<ChartTooltipContent />} 
             />
-            <Line
-              type="monotone"
+            <Bar
               dataKey="started"
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 6 }}
+              radius={[4, 4, 0, 0]}
+              fill={CHART_COLORS.primary}
+              name="Started"
             />
-            <Line
-              type="monotone"
+            <Bar
               dataKey="completed"
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 6 }}
+              radius={[4, 4, 0, 0]}
+              fill={CHART_COLORS.lightBlue}
+              name="Completed"
             />
             <ChartLegend content={<ChartLegendContent />} />
-          </LineChart>
+          </BarChart>
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm pt-6">
