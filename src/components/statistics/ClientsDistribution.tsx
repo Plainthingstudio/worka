@@ -22,6 +22,7 @@ interface ClientsDistributionProps {
 }
 
 const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
+  // Transform data for the chart
   const chartData = Object.entries(data).map(([name, value], index) => ({
     name,
     value,
@@ -65,7 +66,8 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
                   formatter={(value: number, name: string) => [
                     `${value} clients (${((value / totalClients) * 100).toFixed(1)}%)`, 
                     name
-                  ]} 
+                  ]}
+                  hideLabel
                 />
               } 
             />

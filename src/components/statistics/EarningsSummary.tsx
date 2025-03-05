@@ -115,7 +115,7 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
             />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent formatter={(value: number) => [`$${value.toLocaleString()}`, 'Earnings']} />}
+              content={<ChartTooltipContent formatter={(value: number) => [`$${value.toLocaleString()}`, 'Earnings']} hideLabel />}
             />
             <Bar 
               dataKey="earnings" 

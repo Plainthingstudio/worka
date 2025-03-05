@@ -117,6 +117,7 @@ const StatisticsCharts: React.FC<StatisticsChartsProps> = ({ dateRange }) => {
               content={
                 <ChartTooltipContent 
                   formatter={(value: number) => [`${value} clients`, 'Total Clients']} 
+                  hideLabel
                 />
               } 
             />
@@ -124,7 +125,6 @@ const StatisticsCharts: React.FC<StatisticsChartsProps> = ({ dateRange }) => {
               type="monotone"
               dataKey="clients"
               strokeWidth={2}
-              stroke="var(--color-clients)"
               dot={false}
               activeDot={{ r: 6, fill: "var(--color-clients)" }}
             />
