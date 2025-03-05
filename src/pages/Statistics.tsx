@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -19,7 +18,6 @@ import {
   Users,
   TrendingUp,
   Gauge,
-  Filter,
   Calendar as CalendarIcon,
 } from "lucide-react";
 import { format } from "date-fns";
@@ -98,7 +96,7 @@ const Statistics = () => {
         from = new Date(now.getFullYear(), currentQuarter * 3, 1);
         break;
       case "this-year":
-        from = new Date(now.getFullYear(), 0, 1); // Fixed: Added 0 (January) as the month parameter
+        from = new Date(now.getFullYear(), 0, 1);
         break;
       case "last-year":
         from = new Date(now.getFullYear() - 1, 0, 1);
@@ -119,7 +117,7 @@ const Statistics = () => {
         }`}
       >
         <Navbar title="Statistics" />
-        <main className="container py-6">
+        <main className="container py-6 px-4">
           <div className="mb-8">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
@@ -229,42 +227,18 @@ const Statistics = () => {
             </Card>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
-            <Card className="col-span-2">
-              <CardHeader>
-                <CardTitle>Earnings Over Time</CardTitle>
-              </CardHeader>
-              <CardContent className="h-80">
-                <EarningsSummary dateRange={dateRange} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Lead Sources</CardTitle>
-              </CardHeader>
-              <CardContent className="h-80">
-                <ClientsDistribution data={leadSources} />
-              </CardContent>
-            </Card>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-6">
+            <div className="col-span-2">
+              <EarningsSummary dateRange={dateRange} />
+            </div>
+            <div>
+              <ClientsDistribution data={leadSources} />
+            </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 mb-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>Project Completion</CardTitle>
-              </CardHeader>
-              <CardContent className="h-80">
-                <ProjectCompletionChart dateRange={dateRange} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Client Growth</CardTitle>
-              </CardHeader>
-              <CardContent className="h-80">
-                <StatisticsCharts dateRange={dateRange} />
-              </CardContent>
-            </Card>
+          <div className="grid gap-6 md:grid-cols-2 mb-6">
+            <ProjectCompletionChart dateRange={dateRange} />
+            <StatisticsCharts dateRange={dateRange} />
           </div>
         </main>
       </div>

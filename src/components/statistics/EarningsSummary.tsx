@@ -1,9 +1,13 @@
+
 import React from "react";
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { projects } from "@/mockData";
 import { DateRange } from "@/types";
 import { format, subMonths } from "date-fns";
-import { baseChartStyles, chartColors } from "@/lib/chart-styles";
+import { baseChartStyles, chartColors, createChartConfig } from "@/lib/chart-styles";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingUp } from "lucide-react";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 interface EarningsSummaryProps {
   dateRange: DateRange;
@@ -43,46 +47,76 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
     // Create data array
     return months.map(month => ({
       month,
-      earnings: monthlyEarnings[month],
+      earnings: Math.round(monthlyEarnings[month]),
     }));
   };
 
   const data = getMonthlyData();
+  const chartConfig = createChartConfig(['earnings']);
+  
+  // Calculate total earnings for this period and growth percentage
+  const currentMonthEarnings = data[data.length - 1]?.earnings || 0;
+  const previousMonthEarnings = data[data.length - 2]?.earnings || 0;
+  const growthPercentage = previousMonthEarnings > 0 
+    ? ((currentMonthEarnings - previousMonthEarnings) / previousMonthEarnings) * 100 
+    : 0;
+  const growthIsPositive = growthPercentage >= 0;
   
   return (
-    <ResponsiveContainer width="100%" height={baseChartStyles.height}>
-      <BarChart data={data}>
-        <XAxis
-          dataKey="month"
-          stroke={chartColors.muted}
-          fontSize={12}
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={(value) => value.split(' ')[0]}
-        />
-        <YAxis
-          stroke={chartColors.muted}
-          fontSize={12}
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={(value) => `$${value.toLocaleString()}`}
-        />
-        <Bar
-          dataKey="earnings"
-          fill={chartColors.primary}
-          radius={[4, 4, 0, 0]}
-        />
-        <Tooltip
-          cursor={{ fill: chartColors.accent }}
-          contentStyle={{
-            backgroundColor: chartColors.background,
-            border: `1px solid ${chartColors.border}`,
-          }}
-          formatter={(value: number) => [`$${value.toLocaleString()}`, 'Earnings']}
-          labelFormatter={(label) => `${label}`}
-        />
-      </BarChart>
-    </ResponsiveContainer>
+    <Card className="h-full">
+      <CardHeader>
+        <CardTitle>Earnings Over Time</CardTitle>
+        <CardDescription>
+          {format(subMonths(new Date(), 11), "MMM yyyy")} - {format(new Date(), "MMM yyyy")}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig}>
+          <BarChart
+            data={data}
+            margin={{
+              top: 20,
+              right: 10,
+              left: 10,
+              bottom: 10,
+            }}
+          >
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              tickFormatter={(value) => value.split(' ')[0]}
+            />
+            <YAxis
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              tickFormatter={(value) => `$${value.toLocaleString()}`}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent formatter={(value: number) => [`$${value.toLocaleString()}`, 'Earnings']} />}
+            />
+            <Bar 
+              dataKey="earnings" 
+              fill="var(--color-earnings)" 
+              radius={[4, 4, 0, 0]}
+            />
+          </BarChart>
+        </ChartContainer>
+      </CardContent>
+      <CardFooter className="flex-col items-start gap-2 text-sm">
+        <div className="flex gap-2 font-medium leading-none">
+          {growthIsPositive ? 'Trending up' : 'Trending down'} by {Math.abs(growthPercentage).toFixed(1)}% this month
+          <TrendingUp className={`h-4 w-4 ${growthIsPositive ? 'text-green-500' : 'text-red-500 transform rotate-180'}`} />
+        </div>
+        <div className="leading-none text-muted-foreground">
+          Showing total earnings for the last 12 months
+        </div>
+      </CardFooter>
+    </Card>
   );
 };
 
