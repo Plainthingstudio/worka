@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -797,4 +798,36 @@ const Briefs = () => {
                     
                     <div>
                       <h4 className="font-medium">Development Service</h4>
-                      <p className="mt-1">{brief
+                      <p className="mt-1">{briefDetails.developmentService || "Not provided"}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium">Completion Deadline</h4>
+                      <p className="mt-1">
+                        {briefDetails.completionDeadline 
+                          ? format(new Date(briefDetails.completionDeadline), "MMMM d, yyyy") 
+                          : "Not provided"}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
+                  Close
+                </Button>
+                <Button onClick={() => downloadBrief(briefDetails)}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Download PDF
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default Briefs;
