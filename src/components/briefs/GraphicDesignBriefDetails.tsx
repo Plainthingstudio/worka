@@ -6,6 +6,9 @@ interface GraphicDesignBriefDetailsProps {
 }
 
 const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ briefDetails }) => {
+  // Debug the received data
+  console.log("GraphicDesignBriefDetails received:", briefDetails);
+  
   return (
     <div className="space-y-4">
       <div>
@@ -64,7 +67,7 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       </div>
       
       {/* Logo Tone section */}
-      {briefDetails.tone && briefDetails.tone.length > 0 && (
+      {Array.isArray(briefDetails.tone) && briefDetails.tone.length > 0 && (
         <div>
           <h4 className="font-medium">Logo Tone</h4>
           <p className="mt-1">{briefDetails.tone.join(", ")}</p>
@@ -156,40 +159,46 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       </div>
           
       {/* Services section */}
-      {Array.isArray(briefDetails.services) && briefDetails.services.length > 0 && (
-        <div>
-          <h4 className="font-medium">Services Required</h4>
-          <div className="space-y-1 mt-1">
-            {briefDetails.services.map((service: string, index: number) => (
+      <div>
+        <h4 className="font-medium">Services Required</h4>
+        <div className="space-y-1 mt-1">
+          {Array.isArray(briefDetails.services) && briefDetails.services.length > 0 ? (
+            briefDetails.services.map((service: string, index: number) => (
               <p key={index}>• {service}</p>
-            ))}
-          </div>
+            ))
+          ) : (
+            <p>Not provided</p>
+          )}
         </div>
-      )}
+      </div>
       
       {/* Print Media section */}
-      {Array.isArray(briefDetails.printMedia) && briefDetails.printMedia.length > 0 && (
-        <div>
-          <h4 className="font-medium">Print Media</h4>
-          <div className="space-y-1 mt-1">
-            {briefDetails.printMedia.map((item: string, index: number) => (
+      <div>
+        <h4 className="font-medium">Print Media</h4>
+        <div className="space-y-1 mt-1">
+          {Array.isArray(briefDetails.printMedia) && briefDetails.printMedia.length > 0 ? (
+            briefDetails.printMedia.map((item: string, index: number) => (
               <p key={index}>• {item}</p>
-            ))}
-          </div>
+            ))
+          ) : (
+            <p>Not provided</p>
+          )}
         </div>
-      )}
+      </div>
       
       {/* Digital Media section */}
-      {Array.isArray(briefDetails.digitalMedia) && briefDetails.digitalMedia.length > 0 && (
-        <div>
-          <h4 className="font-medium">Digital Media</h4>
-          <div className="space-y-1 mt-1">
-            {briefDetails.digitalMedia.map((item: string, index: number) => (
+      <div>
+        <h4 className="font-medium">Digital Media</h4>
+        <div className="space-y-1 mt-1">
+          {Array.isArray(briefDetails.digitalMedia) && briefDetails.digitalMedia.length > 0 ? (
+            briefDetails.digitalMedia.map((item: string, index: number) => (
               <p key={index}>• {item}</p>
-            ))}
-          </div>
+            ))
+          ) : (
+            <p>Not provided</p>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

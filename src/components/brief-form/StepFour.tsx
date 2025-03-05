@@ -10,7 +10,15 @@ interface StepFourProps {
 }
 
 const StepFour = ({ onPrevious, onSubmit }: StepFourProps) => {
-  const { register } = useFormContext();
+  const { register, watch } = useFormContext();
+  const watchedServices = watch("services") || {};
+  const watchedPrintMedia = watch("printMedia") || {};
+  const watchedDigitalMedia = watch("digitalMedia") || {};
+
+  // For debugging purposes
+  console.log("Services in form:", watchedServices);
+  console.log("Print Media in form:", watchedPrintMedia);
+  console.log("Digital Media in form:", watchedDigitalMedia);
 
   const services = [
     { value: "logo_design", label: "Logo Design" },

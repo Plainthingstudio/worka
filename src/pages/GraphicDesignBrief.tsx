@@ -72,6 +72,11 @@ const GraphicDesignBrief = () => {
     // Store the ISO string directly - we'll format it when displaying
     const submissionDate = now.toISOString();
 
+    // Process the services, printMedia, and digitalMedia arrays properly
+    const services = processCheckboxGroup(data.services || {});
+    const printMedia = processCheckboxGroup(data.printMedia || {});
+    const digitalMedia = processCheckboxGroup(data.digitalMedia || {});
+
     const briefData = {
       ...data,
       id: Date.now(),
@@ -89,10 +94,12 @@ const GraphicDesignBrief = () => {
         gender: data.logoFeelings?.gender || ""
       },
       tone: processCheckboxGroup(data.tone || {}),
-      services: processCheckboxGroup(data.services || {}),
-      printMedia: processCheckboxGroup(data.printMedia || {}),
-      digitalMedia: processCheckboxGroup(data.digitalMedia || {})
+      services: services,
+      printMedia: printMedia,
+      digitalMedia: digitalMedia
     };
+
+    console.log("Processed brief data:", briefData);
 
     const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
     

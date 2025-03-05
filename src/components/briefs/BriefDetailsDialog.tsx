@@ -1,8 +1,8 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { format } from "date-fns";
 import { Download } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import UIDesignBriefDetails from "./UIDesignBriefDetails";
 import GraphicDesignBriefDetails from "./GraphicDesignBriefDetails";
@@ -31,6 +31,9 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Brief Details</DialogTitle>
+          <DialogDescription>
+            View detailed information about the client brief
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6">
