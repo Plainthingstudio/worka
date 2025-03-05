@@ -1,16 +1,17 @@
+
 import jsPDF from "jspdf";
 import { format } from "date-fns";
 
 // Helper function to add a section title
 const addSectionTitle = (doc: jsPDF, text: string, y: number) => {
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
+  doc.setFontSize(14); // Increased from 12
   doc.text(text, 20, y);
-  doc.setLineWidth(0.2);
-  doc.line(20, y + 1, 190, y + 1);
+  doc.setLineWidth(0.5); // Increased from 0.2
+  doc.line(20, y + 2, 190, y + 2); // Adjusted line position
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  return y + 10;
+  doc.setFontSize(11); // Increased from 10
+  return y + 12; // Increased from 10 for better spacing
 };
 
 // Helper function to add a field
@@ -22,19 +23,19 @@ const addField = (doc: jsPDF, label: string, value: string | null | undefined, y
   doc.setFont("helvetica", "normal");
   
   // Check if we need to wrap text
-  if (safeValue && safeValue.length > 80) {
-    const textLines = doc.splitTextToSize(safeValue, 150);
-    doc.text(textLines, 40, y);
-    return y + (textLines.length * 5);
+  if (safeValue && safeValue.length > 70) { // Reduced from 80 to improve readability
+    const textLines = doc.splitTextToSize(safeValue, 140); // Reduced from 150
+    doc.text(textLines, 70, y); // Increased label-value gap from 40 to 70
+    return y + (textLines.length * 6) + 2; // Increased line height and added extra spacing
   } else {
-    doc.text(safeValue, 40, y);
-    return y + 6;
+    doc.text(safeValue, 70, y); // Increased label-value gap from 40 to 70
+    return y + 8; // Increased from 6 for better spacing
   }
 };
 
 // Helper function to check page overflow and add a new page if needed
 const checkPageOverflow = (doc: jsPDF, y: number, margin: number = 20) => {
-  if (y > 270) {
+  if (y > 250) { // Reduced from 270 to leave more whitespace at bottom
     doc.addPage();
     return margin;
   }
@@ -48,9 +49,9 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
 
     // Add title
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
+    doc.setFontSize(20); // Increased from 18
     doc.text("Illustration Design Brief", 105, y, { align: "center" });
-    y += 15;
+    y += 20; // Increased from 15
 
     // Client Information
     y = addSectionTitle(doc, "Client Information", y);
@@ -133,9 +134,9 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
 
     // Add title
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
+    doc.setFontSize(20); // Increased from 18
     doc.text("UI Design Brief", 105, y, { align: "center" });
-    y += 15;
+    y += 20; // Increased from 15
 
     // Client Information
     y = addSectionTitle(doc, "Client Information", y);
@@ -261,7 +262,7 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
           doc.setFont("helvetica", "bold");
           doc.text(`Page ${index + 1}:`, 20, y);
           doc.setFont("helvetica", "normal");
-          y += 5;
+          y += 6; // Increased from 5
           
           if (page.name) {
             y = addField(doc, "Name", page.name, y);
@@ -315,9 +316,9 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
 
     // Add title
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
+    doc.setFontSize(20); // Increased from 18
     doc.text("Graphic Design Brief", 105, y, { align: "center" });
-    y += 15;
+    y += 20; // Increased from 15
 
     // Client Information
     y = addSectionTitle(doc, "Client Information", y);
