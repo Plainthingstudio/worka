@@ -23,11 +23,11 @@ const GraphicDesignBrief = () => {
       slogan: "",
       logoFeelings: {
         style: "",
-        pricing: "",
-        era: "",
-        tone: "",
-        complexity: "",
-        gender: ""
+        pricing: "",  // Will be "Economical" or "Luxury"
+        era: "",      // Will be "Modern" or "Classic"
+        tone: "",     // Will be "Serious" or "Playful"
+        complexity: "", // Will be "Simple" or "Complex"
+        gender: ""    // Will be "Feminine" or "Masculine"
       },
       tone: {},
       logoType: "",
@@ -83,7 +83,7 @@ const GraphicDesignBrief = () => {
     console.log("Processed print media:", printMedia);
     console.log("Processed digital media:", digitalMedia);
 
-    // Important: Keep the exact terminology as selected in the form
+    // Preserve the exact values for logo preferences
     const briefData = {
       ...data,
       id: Date.now(),
@@ -92,14 +92,14 @@ const GraphicDesignBrief = () => {
       type: "Graphic Design",
       name: data.name || "",
       email: data.email || "",
-      // Preserve the exact values for logoFeelings
+      // Preserve the exact values selected for logoFeelings
       logoFeelings: {
         style: data.logoFeelings?.style || "",
-        pricing: data.logoFeelings?.pricing || "",
-        era: data.logoFeelings?.era || "",
-        tone: data.logoFeelings?.tone || "",
-        complexity: data.logoFeelings?.complexity || "",
-        gender: data.logoFeelings?.gender || ""
+        pricing: data.logoFeelings?.pricing || "", // "Economical" or "Luxury"
+        era: data.logoFeelings?.era || "",       // "Modern" or "Classic"
+        tone: data.logoFeelings?.tone || "",     // "Serious" or "Playful"
+        complexity: data.logoFeelings?.complexity || "", // "Simple" or "Complex"
+        gender: data.logoFeelings?.gender || ""  // "Feminine" or "Masculine"
       },
       tone: processCheckboxGroup(data.tone || {}),
       services: services,

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
@@ -32,6 +31,7 @@ const StepTwo = ({ onNext, onPrevious }: StepTwoProps) => {
       "logoFeelings.era",
       "logoFeelings.tone",
       "logoFeelings.complexity",
+      "logoFeelings.gender",
       "logoType"
     ]);
     
@@ -93,8 +93,8 @@ const StepTwo = ({ onNext, onPrevious }: StepTwoProps) => {
                     className="flex items-center gap-8"
                   >
                     <div className="flex items-center gap-2">
-                      <RadioGroupItem value="Economical" id="pricing-budget" />
-                      <FormLabel htmlFor="pricing-budget" className="font-normal cursor-pointer">
+                      <RadioGroupItem value="Economical" id="pricing-economical" />
+                      <FormLabel htmlFor="pricing-economical" className="font-normal cursor-pointer">
                         Economical
                       </FormLabel>
                     </div>
@@ -126,14 +126,14 @@ const StepTwo = ({ onNext, onPrevious }: StepTwoProps) => {
                     className="flex items-center gap-8"
                   >
                     <div className="flex items-center gap-2">
-                      <RadioGroupItem value="Modern" id="era-contemporary" />
-                      <FormLabel htmlFor="era-contemporary" className="font-normal cursor-pointer">
+                      <RadioGroupItem value="Modern" id="era-modern" />
+                      <FormLabel htmlFor="era-modern" className="font-normal cursor-pointer">
                         Modern
                       </FormLabel>
                     </div>
                     <div className="flex items-center gap-2">
-                      <RadioGroupItem value="Classic" id="era-vintage" />
-                      <FormLabel htmlFor="era-vintage" className="font-normal cursor-pointer">
+                      <RadioGroupItem value="Classic" id="era-classic" />
+                      <FormLabel htmlFor="era-classic" className="font-normal cursor-pointer">
                         Classic
                       </FormLabel>
                     </div>
@@ -165,8 +165,8 @@ const StepTwo = ({ onNext, onPrevious }: StepTwoProps) => {
                       </FormLabel>
                     </div>
                     <div className="flex items-center gap-2">
-                      <RadioGroupItem value="Playful" id="tone-fun" />
-                      <FormLabel htmlFor="tone-fun" className="font-normal cursor-pointer">
+                      <RadioGroupItem value="Playful" id="tone-playful" />
+                      <FormLabel htmlFor="tone-playful" className="font-normal cursor-pointer">
                         Playful
                       </FormLabel>
                     </div>
@@ -212,6 +212,7 @@ const StepTwo = ({ onNext, onPrevious }: StepTwoProps) => {
         </div>
       </div>
       
+      {/* Logo Type */}
       <div className="space-y-4">
         <FormField
           control={control}
@@ -263,6 +264,7 @@ const StepTwo = ({ onNext, onPrevious }: StepTwoProps) => {
         />
       </div>
       
+      {/* Design References */}
       <h3 className="text-lg font-medium">Design References</h3>
       <p className="text-sm text-muted-foreground mb-4">
         Share links to logos or designs you like
@@ -287,6 +289,7 @@ const StepTwo = ({ onNext, onPrevious }: StepTwoProps) => {
         ))}
       </div>
       
+      {/* Navigation Buttons */}
       <div className="flex justify-between">
         <Button type="button" variant="outline" onClick={onPrevious}>
           Back
