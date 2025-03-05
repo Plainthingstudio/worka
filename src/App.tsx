@@ -18,6 +18,7 @@ import UIDesignBrief from "./pages/UIDesignBrief";
 import GraphicDesignBrief from "./pages/GraphicDesignBrief";
 import IllustrationsBrief from "./pages/IllustrationsBrief";
 import ThankYou from "./pages/ThankYou";
+import Statistics from "./pages/Statistics";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/briefs/ui-design" element={<UIDesignBrief />} />
           <Route path="/briefs/graphic-design" element={<GraphicDesignBrief />} />
           <Route path="/briefs/illustrations" element={<IllustrationsBrief />} />
+          <Route path="/statistics" element={<Statistics />} />
           <Route path="/thank-you" element={<ThankYou />} />
           <Route path="/auth" element={<Auth />} />
           {/* 404 catch-all route */}

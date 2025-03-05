@@ -11,6 +11,11 @@ export type PaymentType = 'Down Payment' | 'Final Payment' | 'Milestone Payment'
 
 export type PaymentTerms = 'Due on Receipt' | 'Net 15' | 'Net 30' | 'Net 45' | 'Net 60' | 'Custom';
 
+export interface DateRange {
+  from: Date;
+  to: Date;
+}
+
 export interface Client {
   id: string;
   name: string;

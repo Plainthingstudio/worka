@@ -10,6 +10,7 @@ import {
   Users,
   FileText,
   FileEdit,
+  BarChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +47,11 @@ const Sidebar = () => {
       icon: FileEdit,
       label: "Briefs",
       href: "/briefs",
+    },
+    {
+      icon: BarChart,
+      label: "Statistics",
+      href: "/statistics",
     },
   ];
 
