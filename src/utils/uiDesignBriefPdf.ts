@@ -1,7 +1,14 @@
 
 import jsPDF from "jspdf";
 import { format } from "date-fns";
-import { addSectionTitle, addField, checkPageOverflow, addPdfTitle } from "./pdfUtils";
+import { 
+  addSectionTitle, 
+  addField, 
+  checkPageOverflow, 
+  addPdfTitle, 
+  addMultiParagraphField,
+  addSeparator 
+} from "./pdfUtils";
 
 export const generateUIDesignBriefPDF = async (brief: any) => {
   try {
@@ -26,7 +33,7 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
 
     // Project Overview
     y = addSectionTitle(doc, "Project Overview", y);
-    y = addField(doc, "About Company", brief.aboutCompany, y);
+    y = addMultiParagraphField(doc, "About Company", brief.aboutCompany, y);
     y = checkPageOverflow(doc, y);
     y = addField(doc, "Project Type", brief.projectType, y);
     y = checkPageOverflow(doc, y);
@@ -35,11 +42,11 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
     
     // Project Details
     y = addSectionTitle(doc, "Project Details", y);
-    y = addField(doc, "Target Audience", brief.targetAudience, y);
+    y = addMultiParagraphField(doc, "Target Audience", brief.targetAudience, y);
     y = checkPageOverflow(doc, y);
-    y = addField(doc, "Website/App Purpose", brief.websitePurpose, y);
+    y = addMultiParagraphField(doc, "Website/App Purpose", brief.websitePurpose, y);
     y = checkPageOverflow(doc, y);
-    y = addField(doc, "Project Description", brief.projectDescription, y);
+    y = addMultiParagraphField(doc, "Project Description", brief.projectDescription, y);
     y = checkPageOverflow(doc, y);
     
     // Website Type Interest
@@ -66,26 +73,26 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
 
     // Design Preferences
     y = addSectionTitle(doc, "Design Preferences", y);
-    y = addField(doc, "General Style", brief.generalStyle, y);
+    y = addMultiParagraphField(doc, "General Style", brief.generalStyle, y);
     y = checkPageOverflow(doc, y);
     
     if (brief.colorPreferences) {
-      y = addField(doc, "Color Preferences", brief.colorPreferences, y);
+      y = addMultiParagraphField(doc, "Color Preferences", brief.colorPreferences, y);
       y = checkPageOverflow(doc, y);
     }
     
     if (brief.fontPreferences) {
-      y = addField(doc, "Font Preferences", brief.fontPreferences, y);
+      y = addMultiParagraphField(doc, "Font Preferences", brief.fontPreferences, y);
       y = checkPageOverflow(doc, y);
     }
     
     if (brief.existingBrandAssets) {
-      y = addField(doc, "Existing Brand Assets", brief.existingBrandAssets, y);
+      y = addMultiParagraphField(doc, "Existing Brand Assets", brief.existingBrandAssets, y);
       y = checkPageOverflow(doc, y);
     }
     
     if (brief.stylePreferences) {
-      y = addField(doc, "Style Preferences", brief.stylePreferences, y);
+      y = addMultiParagraphField(doc, "Style Preferences", brief.stylePreferences, y);
       y = checkPageOverflow(doc, y);
     }
     
@@ -108,7 +115,7 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
         y = checkPageOverflow(doc, y);
         
         if (brief.brandGuidelinesDetails) {
-          y = addField(doc, "Brand Guidelines Details", brief.brandGuidelinesDetails, y);
+          y = addMultiParagraphField(doc, "Brand Guidelines Details", brief.brandGuidelinesDetails, y);
           y = checkPageOverflow(doc, y);
         }
       }
@@ -118,7 +125,7 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
         y = checkPageOverflow(doc, y);
         
         if (brief.wireframeDetails) {
-          y = addField(doc, "Wireframe Details", brief.wireframeDetails, y);
+          y = addMultiParagraphField(doc, "Wireframe Details", brief.wireframeDetails, y);
           y = checkPageOverflow(doc, y);
         }
       }
@@ -133,6 +140,7 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
       brief.pageDetails.forEach((page: any, index: number) => {
         if (page && (page.name || page.description)) {
           doc.setFont("helvetica", "bold");
+          doc.setFontSize(12);
           doc.text(`Page ${index + 1}:`, 20, y);
           doc.setFont("helvetica", "normal");
           y += 6;
@@ -142,7 +150,7 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
           }
           
           if (page.description) {
-            y = addField(doc, "Description", page.description, y);
+            y = addMultiParagraphField(doc, "Description", page.description, y);
           }
           
           y = checkPageOverflow(doc, y);
@@ -155,7 +163,7 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
       y = addSectionTitle(doc, "Implementation Details", y);
       
       if (brief.websiteContent) {
-        y = addField(doc, "Website Content", brief.websiteContent, y);
+        y = addMultiParagraphField(doc, "Website Content", brief.websiteContent, y);
         y = checkPageOverflow(doc, y);
       }
       

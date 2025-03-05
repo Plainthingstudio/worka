@@ -1,7 +1,14 @@
 
 import jsPDF from "jspdf";
 import { format } from "date-fns";
-import { addSectionTitle, addField, checkPageOverflow, addPdfTitle } from "./pdfUtils";
+import { 
+  addSectionTitle, 
+  addField, 
+  checkPageOverflow, 
+  addPdfTitle, 
+  addMultiParagraphField,
+  addSeparator 
+} from "./pdfUtils";
 
 export const generateIllustrationBriefPDF = async (brief: any) => {
   try {
@@ -26,15 +33,15 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
 
     // Project Details
     y = addSectionTitle(doc, "Project Details", y);
-    y = addField(doc, "About Company", brief.aboutCompany, y);
+    y = addMultiParagraphField(doc, "About Company", brief.aboutCompany, y);
     y = checkPageOverflow(doc, y);
-    y = addField(doc, "Illustrations Purpose", brief.illustrationsPurpose, y);
+    y = addMultiParagraphField(doc, "Illustrations Purpose", brief.illustrationsPurpose, y);
     y = checkPageOverflow(doc, y);
     y = addField(doc, "Illustrations For", brief.illustrationsFor, y);
     y = checkPageOverflow(doc, y);
     y = addField(doc, "Illustrations Style", brief.illustrationsStyle, y);
     y = checkPageOverflow(doc, y);
-    y = addField(doc, "Target Audience", brief.targetAudience, y);
+    y = addMultiParagraphField(doc, "Target Audience", brief.targetAudience, y);
     y = checkPageOverflow(doc, y);
 
     // References
@@ -55,7 +62,7 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
       
       brief.illustrationDetails.forEach((detail: string, index: number) => {
         if (detail) {
-          y = addField(doc, `Illustration ${index + 1}`, detail, y);
+          y = addMultiParagraphField(doc, `Illustration ${index + 1}`, detail, y);
           y = checkPageOverflow(doc, y);
         }
       });

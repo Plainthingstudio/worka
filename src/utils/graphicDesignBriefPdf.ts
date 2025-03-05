@@ -1,7 +1,14 @@
 
 import jsPDF from "jspdf";
 import { format } from "date-fns";
-import { addSectionTitle, addField, checkPageOverflow, addPdfTitle } from "./pdfUtils";
+import { 
+  addSectionTitle, 
+  addField, 
+  checkPageOverflow, 
+  addPdfTitle, 
+  addMultiParagraphField,
+  addSeparator 
+} from "./pdfUtils";
 
 export const generateGraphicDesignBriefPDF = async (brief: any) => {
   try {
@@ -26,11 +33,11 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
 
     // Company Information
     y = addSectionTitle(doc, "Company Information", y);
-    y = addField(doc, "About Company", brief.aboutCompany, y);
+    y = addMultiParagraphField(doc, "About Company", brief.aboutCompany, y);
     y = checkPageOverflow(doc, y);
-    y = addField(doc, "Vision & Mission", brief.visionMission, y);
+    y = addMultiParagraphField(doc, "Vision & Mission", brief.visionMission, y);
     y = checkPageOverflow(doc, y);
-    y = addField(doc, "Slogan", brief.slogan, y);
+    y = addMultiParagraphField(doc, "Slogan", brief.slogan, y);
     y = checkPageOverflow(doc, y);
 
     // Logo Preferences
@@ -70,11 +77,11 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
 
     // Product Information
     y = addSectionTitle(doc, "Product Information", y);
-    if (brief.productsServices) y = addField(doc, "Products/Services", brief.productsServices, y);
+    if (brief.productsServices) y = addMultiParagraphField(doc, "Products/Services", brief.productsServices, y);
     y = checkPageOverflow(doc, y);
-    if (brief.featuresAndBenefits) y = addField(doc, "Features & Benefits", brief.featuresAndBenefits, y);
+    if (brief.featuresAndBenefits) y = addMultiParagraphField(doc, "Features & Benefits", brief.featuresAndBenefits, y);
     y = checkPageOverflow(doc, y);
-    if (brief.marketCategory) y = addField(doc, "Market Category", brief.marketCategory, y);
+    if (brief.marketCategory) y = addMultiParagraphField(doc, "Market Category", brief.marketCategory, y);
     y = checkPageOverflow(doc, y);
 
     // Competitors
@@ -99,11 +106,11 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
 
     // Additional Information
     y = addSectionTitle(doc, "Additional Information", y);
-    if (brief.brandPositioning) y = addField(doc, "Brand Positioning", brief.brandPositioning, y);
+    if (brief.brandPositioning) y = addMultiParagraphField(doc, "Brand Positioning", brief.brandPositioning, y);
     y = checkPageOverflow(doc, y);
-    if (brief.barrierToEntry) y = addField(doc, "Barrier to Entry", brief.barrierToEntry, y);
+    if (brief.barrierToEntry) y = addMultiParagraphField(doc, "Barrier to Entry", brief.barrierToEntry, y);
     y = checkPageOverflow(doc, y);
-    if (brief.specificImagery) y = addField(doc, "Specific Imagery", brief.specificImagery, y);
+    if (brief.specificImagery) y = addMultiParagraphField(doc, "Specific Imagery", brief.specificImagery, y);
     y = checkPageOverflow(doc, y);
 
     // Services Required
