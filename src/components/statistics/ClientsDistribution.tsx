@@ -1,19 +1,19 @@
 
 import React from "react";
-import { 
-  PieChart, 
-  Pie, 
-  Cell, 
-  ResponsiveContainer, 
-  Legend, 
-  Tooltip 
-} from "recharts";
+import { Pie, PieChart, ResponsiveContainer, Cell, Legend, Tooltip } from "recharts";
+import { baseChartStyles, chartColors } from "@/lib/chart-styles";
 
 interface ClientsDistributionProps {
   data: Record<string, number>;
 }
 
-const COLORS = ['#8884d8', '#83a6ed', '#8dd1e1', '#82ca9d', '#a4de6c', '#d0ed57'];
+const COLORS = [
+  chartColors.primary,
+  "hsl(var(--primary) / 0.8)",
+  "hsl(var(--primary) / 0.6)",
+  "hsl(var(--primary) / 0.4)",
+  "hsl(var(--primary) / 0.2)",
+];
 
 const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
   const chartData = Object.entries(data).map(([name, value]) => ({
@@ -22,26 +22,33 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
   }));
   
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <ResponsiveContainer width="100%" height={baseChartStyles.height}>
       <PieChart>
         <Pie
           data={chartData}
           cx="50%"
-          cy="45%"
-          labelLine={false}
-          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+          cy="50%"
+          innerRadius={60}
           outerRadius={80}
-          fill="#8884d8"
+          paddingAngle={4}
           dataKey="value"
         >
-          {chartData.map((entry, index) => (
+          {chartData.map((_, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
-        <Tooltip 
+        <Tooltip
+          contentStyle={{
+            backgroundColor: chartColors.background,
+            border: `1px solid ${chartColors.border}`,
+          }}
           formatter={(value) => [`${value} clients`, '']}
         />
-        <Legend layout="vertical" verticalAlign="bottom" align="center" />
+        <Legend
+          verticalAlign="bottom"
+          height={36}
+          formatter={(value) => <span style={{ color: chartColors.muted }}>{value}</span>}
+        />
       </PieChart>
     </ResponsiveContainer>
   );

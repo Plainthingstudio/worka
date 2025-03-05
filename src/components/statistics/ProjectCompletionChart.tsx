@@ -1,18 +1,9 @@
-
 import React from "react";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  Legend
-} from "recharts";
+import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { projects } from "@/mockData";
 import { DateRange } from "@/types";
-import { format, isWithinInterval, subMonths } from "date-fns";
+import { format, subMonths } from "date-fns";
+import { baseChartStyles, chartColors } from "@/lib/chart-styles";
 
 interface ProjectCompletionChartProps {
   dateRange: DateRange;
@@ -85,43 +76,43 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
   const data = getMonthlyCompletionData();
   
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart
-        data={data}
-        margin={{
-          top: 5,
-          right: 30,
-          left: 20,
-          bottom: 5,
-        }}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis 
-          dataKey="month" 
-          tick={{ fontSize: 12 }}
-          tickFormatter={(value) => value.split(' ')[0]} // Show only month abbreviation
+    <ResponsiveContainer width="100%" height={baseChartStyles.height}>
+      <LineChart data={data}>
+        <XAxis
+          dataKey="month"
+          stroke={chartColors.muted}
+          fontSize={12}
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={(value) => value.split(' ')[0]}
         />
-        <YAxis tick={{ fontSize: 12 }} />
-        <Tooltip 
-          formatter={(value, name) => [value, name === 'started' ? 'Projects Started' : 'Projects Completed']}
-          labelFormatter={(label) => `${label}`}
+        <YAxis
+          stroke={chartColors.muted}
+          fontSize={12}
+          tickLine={false}
+          axisLine={false}
         />
-        <Legend />
         <Line
           type="monotone"
           dataKey="started"
-          name="Started"
-          stroke="#8884d8"
+          stroke={chartColors.primary}
           strokeWidth={2}
-          activeDot={{ r: 8 }}
+          dot={false}
         />
         <Line
           type="monotone"
           dataKey="completed"
-          name="Completed"
-          stroke="#82ca9d"
+          stroke="hsl(var(--primary) / 0.5)"
           strokeWidth={2}
-          activeDot={{ r: 8 }}
+          dot={false}
+        />
+        <Tooltip
+          contentStyle={{
+            backgroundColor: chartColors.background,
+            border: `1px solid ${chartColors.border}`,
+          }}
+          formatter={(value, name) => [value, name === 'started' ? 'Projects Started' : 'Projects Completed']}
+          labelFormatter={(label) => `${label}`}
         />
       </LineChart>
     </ResponsiveContainer>

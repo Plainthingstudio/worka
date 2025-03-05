@@ -1,18 +1,9 @@
-
 import React from "react";
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  Legend
-} from "recharts";
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { projects } from "@/mockData";
 import { DateRange } from "@/types";
-import { format, isWithinInterval, subMonths } from "date-fns";
+import { format, subMonths } from "date-fns";
+import { baseChartStyles, chartColors } from "@/lib/chart-styles";
 
 interface EarningsSummaryProps {
   dateRange: DateRange;
@@ -59,32 +50,37 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
   const data = getMonthlyData();
   
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart
-        data={data}
-        margin={{
-          top: 20,
-          right: 30,
-          left: 20,
-          bottom: 5,
-        }}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis 
-          dataKey="month" 
-          tick={{ fontSize: 12 }}
-          tickFormatter={(value) => value.split(' ')[0]} // Show only month abbreviation
+    <ResponsiveContainer width="100%" height={baseChartStyles.height}>
+      <BarChart data={data}>
+        <XAxis
+          dataKey="month"
+          stroke={chartColors.muted}
+          fontSize={12}
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={(value) => value.split(' ')[0]}
         />
-        <YAxis 
-          tick={{ fontSize: 12 }}
+        <YAxis
+          stroke={chartColors.muted}
+          fontSize={12}
+          tickLine={false}
+          axisLine={false}
           tickFormatter={(value) => `$${value.toLocaleString()}`}
         />
-        <Tooltip 
+        <Bar
+          dataKey="earnings"
+          fill={chartColors.primary}
+          radius={[4, 4, 0, 0]}
+        />
+        <Tooltip
+          cursor={{ fill: chartColors.accent }}
+          contentStyle={{
+            backgroundColor: chartColors.background,
+            border: `1px solid ${chartColors.border}`,
+          }}
           formatter={(value: number) => [`$${value.toLocaleString()}`, 'Earnings']}
           labelFormatter={(label) => `${label}`}
         />
-        <Legend />
-        <Bar dataKey="earnings" name="Monthly Earnings" fill="#8884d8" />
       </BarChart>
     </ResponsiveContainer>
   );
