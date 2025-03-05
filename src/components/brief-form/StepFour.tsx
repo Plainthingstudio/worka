@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,15 +10,17 @@ interface StepFourProps {
 }
 
 const StepFour = ({ onPrevious, onSubmit }: StepFourProps) => {
-  const { register, watch } = useFormContext();
+  const { register, watch, setValue } = useFormContext();
   const watchedServices = watch("services") || {};
   const watchedPrintMedia = watch("printMedia") || {};
   const watchedDigitalMedia = watch("digitalMedia") || {};
 
   // For debugging purposes
-  console.log("Services in form:", watchedServices);
-  console.log("Print Media in form:", watchedPrintMedia);
-  console.log("Digital Media in form:", watchedDigitalMedia);
+  useEffect(() => {
+    console.log("Services in form:", watchedServices);
+    console.log("Print Media in form:", watchedPrintMedia);
+    console.log("Digital Media in form:", watchedDigitalMedia);
+  }, [watchedServices, watchedPrintMedia, watchedDigitalMedia]);
 
   const services = [
     { value: "logo_design", label: "Logo Design" },
@@ -71,7 +73,10 @@ const StepFour = ({ onPrevious, onSubmit }: StepFourProps) => {
               <div key={service.value} className="flex items-center space-x-2">
                 <Checkbox 
                   id={`service-${service.value}`} 
-                  {...register(`services.${service.value}`)} 
+                  {...register(`services.${service.value}`)}
+                  onCheckedChange={(checked) => {
+                    setValue(`services.${service.value}`, checked);
+                  }}
                 />
                 <label 
                   htmlFor={`service-${service.value}`}
@@ -95,7 +100,10 @@ const StepFour = ({ onPrevious, onSubmit }: StepFourProps) => {
               <div key={item.value} className="flex items-center space-x-2">
                 <Checkbox 
                   id={`printMedia-${item.value}`} 
-                  {...register(`printMedia.${item.value}`)} 
+                  {...register(`printMedia.${item.value}`)}
+                  onCheckedChange={(checked) => {
+                    setValue(`printMedia.${item.value}`, checked);
+                  }}
                 />
                 <label 
                   htmlFor={`printMedia-${item.value}`}
@@ -119,7 +127,10 @@ const StepFour = ({ onPrevious, onSubmit }: StepFourProps) => {
               <div key={item.value} className="flex items-center space-x-2">
                 <Checkbox 
                   id={`digitalMedia-${item.value}`} 
-                  {...register(`digitalMedia.${item.value}`)} 
+                  {...register(`digitalMedia.${item.value}`)}
+                  onCheckedChange={(checked) => {
+                    setValue(`digitalMedia.${item.value}`, checked);
+                  }}
                 />
                 <label 
                   htmlFor={`digitalMedia-${item.value}`}
