@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -36,36 +35,29 @@ const Statistics = () => {
   });
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   
-  // Calculate total earnings from projects
   const totalEarnings = projects.reduce((sum, project) => {
     const amountInUSD = project.currency === 'IDR' ? project.fee / 15000 : project.fee;
     return sum + amountInUSD;
   }, 0);
   
-  // Calculate average payment value
   const averagePayment = totalEarnings / projects.length;
   
-  // Get completed projects count
   const completedProjects = projects.filter(p => p.status === 'Completed').length;
   
-  // Get lead sources distribution
   const leadSources = clients.reduce((acc: Record<string, number>, client) => {
     const source = client.leadSource;
     acc[source] = (acc[source] || 0) + 1;
     return acc;
   }, {});
 
-  // Listen for sidebar state changes
   React.useEffect(() => {
     const handleSidebarChange = () => {
       const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
       setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
     };
 
-    // Initial check
     handleSidebarChange();
 
-    // Set up mutation observer to watch for class changes on the sidebar
     const observer = new MutationObserver(handleSidebarChange);
     const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
     
@@ -76,7 +68,6 @@ const Statistics = () => {
     return () => observer.disconnect();
   }, []);
 
-  // Handle time filter changes
   const handleTimeFilterChange = (value: string) => {
     setTimeFilter(value);
     
@@ -226,16 +217,9 @@ const Statistics = () => {
             </Card>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-6">
-            <div className="col-span-2">
-              <EarningsSummary dateRange={dateRange} />
-            </div>
-            <div>
-              <ClientsDistribution data={leadSources} />
-            </div>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2 mb-6">
+          <div className="flex flex-col gap-6 mb-6">
+            <EarningsSummary dateRange={dateRange} />
+            <ClientsDistribution data={leadSources} />
             <ProjectCompletionChart dateRange={dateRange} />
             <StatisticsCharts dateRange={dateRange} />
           </div>
