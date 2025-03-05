@@ -98,7 +98,7 @@ const Statistics = () => {
         from = new Date(now.getFullYear(), currentQuarter * 3, 1);
         break;
       case "this-year":
-        from = new Date(now.getFullYear(),, 1);
+        from = new Date(now.getFullYear(), 0, 1); // Fixed: Added 0 (January) as the month parameter
         break;
       case "last-year":
         from = new Date(now.getFullYear() - 1, 0, 1);
