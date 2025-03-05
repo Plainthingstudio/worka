@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { projects } from "@/mockData";
 import { DateRange } from "@/types";
 import { format, subMonths } from "date-fns";
@@ -13,12 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { CHART_COLORS } from "@/lib/chart-styles";
 
 interface EarningsSummaryProps {
@@ -81,7 +76,7 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
       </CardHeader>
       <CardContent>
         <div className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ChartContainer config={chartConfig}>
             <BarChart
               data={data}
               margin={{
@@ -107,14 +102,24 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
                 tickFormatter={(value) => `$${value.toLocaleString()}`}
                 dx={-5}
               />
-              <ChartTooltip
+              <Tooltip
                 cursor={{ fill: 'rgba(200, 200, 200, 0.1)' }}
-                content={
-                  <ChartTooltipContent 
-                    formatter={(value: number) => [`$${value.toLocaleString()}`, 'Earnings']} 
-                    hideLabel 
-                  />
-                }
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0].payload;
+                    return (
+                      <div className="rounded-lg border bg-card p-2 shadow-sm">
+                        <div className="flex flex-col">
+                          <span className="text-xs text-muted-foreground">{data.month}</span>
+                          <span className="text-sm font-bold">
+                            ${data.earnings.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
               />
               <Bar
                 dataKey="earnings"
@@ -122,7 +127,7 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
                 fill={CHART_COLORS.primary}
               />
             </BarChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </div>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm pt-2">

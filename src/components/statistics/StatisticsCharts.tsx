@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
 import { clients } from "@/mockData";
 import { DateRange } from "@/types";
 import { format, subMonths } from "date-fns";
@@ -14,12 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 
 interface StatisticsChartsProps {
   dateRange: DateRange;
@@ -104,13 +99,23 @@ const StatisticsCharts: React.FC<StatisticsChartsProps> = ({ dateRange }) => {
               tickMargin={10}
               axisLine={false}
             />
-            <ChartTooltip 
-              content={
-                <ChartTooltipContent 
-                  formatter={(value: number) => [`${value} clients`, 'Total Clients']} 
-                  hideLabel
-                />
-              } 
+            <Tooltip
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const data = payload[0].payload;
+                  return (
+                    <div className="rounded-lg border bg-card p-2 shadow-sm">
+                      <div className="flex flex-col">
+                        <span className="text-xs text-muted-foreground">{data.month}</span>
+                        <span className="text-sm font-bold">
+                          {data.clients} total clients
+                        </span>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              }}
             />
             <Bar
               dataKey="clients"
