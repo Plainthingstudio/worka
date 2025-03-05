@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { projects } from "@/mockData";
 import { DateRange } from "@/types";
 import { format, subMonths } from "date-fns";
@@ -18,8 +18,6 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from "@/components/ui/chart";
 
 interface ProjectCompletionChartProps {
@@ -34,7 +32,6 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
     // Initialize monthly counts
     const months: string[] = [];
     const monthlyCompletions: { [key: string]: number } = {};
-    const monthlyStarts: { [key: string]: number } = {};
     
     // Initialize past 6 months
     for (let i = 0; i < 6; i++) {
@@ -43,35 +40,13 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
       const monthKey = format(date, "MMM");
       months.push(monthKey);
       monthlyCompletions[monthKey] = 0;
-      monthlyStarts[monthKey] = 0;
     }
     
-    // Count project starts and completions by month
+    // Count completed projects by month
     projects.forEach(project => {
-      const creationDate = new Date(project.createdAt);
-      
-      // Count project starts
-      if (creationDate >= startDate && creationDate <= endDate) {
-        const startMonthKey = format(creationDate, "MMM");
-        if (monthlyStarts[startMonthKey] !== undefined) {
-          monthlyStarts[startMonthKey]++;
-        }
-      }
-      
-      // Count completed projects
       if (project.status === 'Completed') {
-        // For this mock data, let's assume completion date is either:
-        // 1. The project deadline if status is completed
-        // 2. Or a random date between creation and deadline
-        let completionDate;
-        if (project.status === 'Completed') {
-          completionDate = new Date(project.deadline);
-        } else {
-          const creationTime = creationDate.getTime();
-          const deadlineTime = new Date(project.deadline).getTime();
-          const randomTime = creationTime + Math.random() * (deadlineTime - creationTime);
-          completionDate = new Date(randomTime);
-        }
+        // For this mock data, let's assume completion date is the project deadline if status is completed
+        const completionDate = new Date(project.deadline);
         
         if (completionDate >= startDate && completionDate <= endDate) {
           const completionMonthKey = format(completionDate, "MMM");
@@ -85,7 +60,6 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
     // Create data array
     return months.map(month => ({
       month,
-      started: monthlyStarts[month],
       completed: monthlyCompletions[month],
     }));
   };
@@ -94,10 +68,6 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
   
   // Create chart config
   const chartConfig: ChartConfig = {
-    started: {
-      label: "Started",
-      color: CHART_COLORS.primary,
-    },
     completed: {
       label: "Completed", 
       color: CHART_COLORS.lightBlue,
@@ -105,59 +75,63 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
   };
 
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader>
         <CardTitle className="text-base font-medium">Project Completion</CardTitle>
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
-      <CardContent className="pb-0">
-        <ChartContainer config={chartConfig}>
-          <BarChart
-            data={data}
-            margin={{
-              top: 16,
-              right: 16,
-              left: 16,
-              bottom: 16,
-            }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="month"
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-            />
-            <YAxis
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-            />
-            <ChartTooltip 
-              content={<ChartTooltipContent />} 
-            />
-            <Bar
-              dataKey="started"
-              radius={[4, 4, 0, 0]}
-              fill={CHART_COLORS.primary}
-              name="Started"
-            />
-            <Bar
-              dataKey="completed"
-              radius={[4, 4, 0, 0]}
-              fill={CHART_COLORS.lightBlue}
-              name="Completed"
-            />
-            <ChartLegend content={<ChartLegendContent />} />
-          </BarChart>
-        </ChartContainer>
+      <CardContent>
+        <div className="h-[300px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={data}
+              margin={{
+                top: 20,
+                right: 25,
+                left: 25,
+                bottom: 30,
+              }}
+              barSize={32}
+            >
+              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke={CHART_COLORS.gray} opacity={0.3} />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: '#6B7280', fontSize: 12 }}
+                dy={10}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: '#6B7280', fontSize: 12 }}
+                dx={-5}
+              />
+              <ChartTooltip
+                cursor={{ fill: 'rgba(200, 200, 200, 0.1)' }}
+                content={
+                  <ChartTooltipContent 
+                    formatter={(value: number) => [`${value} projects`, 'Completed']} 
+                    hideLabel 
+                  />
+                }
+              />
+              <Bar
+                dataKey="completed"
+                radius={[4, 4, 0, 0]}
+                fill={CHART_COLORS.lightBlue}
+                name="Completed"
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm pt-6">
+      <CardFooter className="flex-col items-start gap-2 text-sm pt-2">
         <div className="flex items-center gap-2 font-medium leading-none">
           Trending up by 5.2% this month
         </div>
         <div className="text-muted-foreground">
-          Comparing project starts and completions over time
+          Showing completed projects over time
         </div>
       </CardFooter>
     </Card>

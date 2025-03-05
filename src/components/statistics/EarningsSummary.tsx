@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { projects } from "@/mockData";
 import { DateRange } from "@/types";
 import { format, subMonths } from "date-fns";
@@ -74,48 +74,58 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
   };
 
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader>
         <CardTitle className="text-base font-medium">Earnings Over Time</CardTitle>
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
-      <CardContent className="pb-0">
-        <ChartContainer config={chartConfig}>
-          <BarChart
-            data={data}
-            margin={{
-              top: 16,
-              right: 16,
-              left: 16,
-              bottom: 16,
-            }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="month"
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-            />
-            <YAxis
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-              tickFormatter={(value) => `$${value.toLocaleString()}`}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent formatter={(value: number) => [`$${value.toLocaleString()}`, 'Earnings']} hideLabel />}
-            />
-            <Bar
-              dataKey="earnings"
-              radius={[4, 4, 0, 0]}
-              fill={CHART_COLORS.primary}
-            />
-          </BarChart>
-        </ChartContainer>
+      <CardContent>
+        <div className="h-[300px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={data}
+              margin={{
+                top: 20,
+                right: 25,
+                left: 25,
+                bottom: 30,
+              }}
+              barSize={32}
+            >
+              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke={CHART_COLORS.gray} opacity={0.3} />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: '#6B7280', fontSize: 12 }}
+                dy={10}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: '#6B7280', fontSize: 12 }}
+                tickFormatter={(value) => `$${value.toLocaleString()}`}
+                dx={-5}
+              />
+              <ChartTooltip
+                cursor={{ fill: 'rgba(200, 200, 200, 0.1)' }}
+                content={
+                  <ChartTooltipContent 
+                    formatter={(value: number) => [`$${value.toLocaleString()}`, 'Earnings']} 
+                    hideLabel 
+                  />
+                }
+              />
+              <Bar
+                dataKey="earnings"
+                radius={[4, 4, 0, 0]}
+                fill={CHART_COLORS.primary}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm pt-6">
+      <CardFooter className="flex-col items-start gap-2 text-sm pt-2">
         <div className="flex items-center gap-2 font-medium leading-none">
           Trending up by 5.2% this month
           <TrendingUp className="h-4 w-4" />
