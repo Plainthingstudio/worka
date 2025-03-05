@@ -9,6 +9,9 @@ interface Brief {
   type: string;
   status: string;
   submissionDate: string;
+  services?: string[] | null;
+  printMedia?: string[] | null;
+  digitalMedia?: string[] | null;
 }
 
 export const useBriefs = () => {

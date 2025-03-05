@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { format } from "date-fns";
 import { Download } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -25,6 +25,10 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
 
   // Log briefDetails to debug
   console.log("Brief details in dialog:", briefDetails);
+  console.log("Brief type:", briefDetails.type);
+  console.log("Services data:", briefDetails.services);
+  console.log("Print Media data:", briefDetails.printMedia);
+  console.log("Digital Media data:", briefDetails.digitalMedia);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -8,6 +8,9 @@ interface GraphicDesignBriefDetailsProps {
 const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ briefDetails }) => {
   // Debug the received data
   console.log("GraphicDesignBriefDetails received:", briefDetails);
+  console.log("Services:", briefDetails.services);
+  console.log("Print Media:", briefDetails.printMedia);
+  console.log("Digital Media:", briefDetails.digitalMedia);
   
   return (
     <div className="space-y-4">

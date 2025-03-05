@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Card } from "@/components/ui/card";
@@ -64,18 +63,24 @@ const GraphicDesignBrief = () => {
       
       return Object.entries(group)
         .filter(([_, checked]) => checked === true)
-        .map(([key]) => key.replace(/_/g, ' '));
+        .map(([key]) => {
+          return key
+            .split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        });
     };
 
-    // Get current date and time
     const now = new Date();
-    // Store the ISO string directly - we'll format it when displaying
     const submissionDate = now.toISOString();
 
-    // Process the services, printMedia, and digitalMedia arrays properly
     const services = processCheckboxGroup(data.services || {});
     const printMedia = processCheckboxGroup(data.printMedia || {});
     const digitalMedia = processCheckboxGroup(data.digitalMedia || {});
+
+    console.log("Processed services:", services);
+    console.log("Processed print media:", printMedia);
+    console.log("Processed digital media:", digitalMedia);
 
     const briefData = {
       ...data,
@@ -99,7 +104,7 @@ const GraphicDesignBrief = () => {
       digitalMedia: digitalMedia
     };
 
-    console.log("Processed brief data:", briefData);
+    console.log("Final brief data to be saved:", briefData);
 
     const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
     
@@ -107,7 +112,6 @@ const GraphicDesignBrief = () => {
     
     localStorage.setItem("lastSubmittedBriefType", "Graphic Design");
 
-    console.log("Submitted brief data:", briefData);
     toast.success("Brief submitted successfully!");
     navigate("/thank-you");
   };
