@@ -5,8 +5,8 @@ import jsPDF from "jspdf";
 const PAGE_MARGINS = {
   left: 20,
   right: 20,
-  top: 20,
-  bottom: 30, // Increased bottom margin to prevent content from being cut off
+  top: 15,  // Reduced from 20
+  bottom: 20, // Reduced from 30
 };
 
 // Document width after applying margins
@@ -15,16 +15,16 @@ const CONTENT_WIDTH = 210 - PAGE_MARGINS.left - PAGE_MARGINS.right;
 // Helper function to add a section title
 export const addSectionTitle = (doc: jsPDF, text: string, y: number) => {
   // Check if we need to add a new page before adding the section title
-  y = checkPageOverflow(doc, y + 20); // Add extra space to ensure section title fits
+  y = checkPageOverflow(doc, y + 12); // Reduced from 20
   
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(16); // Increased from 14
+  doc.setFontSize(14); // Reduced from 16
   doc.text(text, PAGE_MARGINS.left, y);
-  doc.setLineWidth(0.8); // Increased from 0.5 for better visibility
-  doc.line(PAGE_MARGINS.left, y + 3, 210 - PAGE_MARGINS.right, y + 3);
+  doc.setLineWidth(0.6); // Reduced from 0.8
+  doc.line(PAGE_MARGINS.left, y + 2, 210 - PAGE_MARGINS.right, y + 2); // Reduced from y + 3
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(12); // Increased from 11
-  return y + 15; // Increased spacing after section title
+  doc.setFontSize(11); // Reduced from 12
+  return y + 10; // Reduced from 15
 };
 
 // Helper function to add a field
@@ -32,12 +32,12 @@ export const addField = (doc: jsPDF, label: string, value: string | null | undef
   const safeValue = typeof value === 'string' ? value.trim() : (value || "Not provided");
   
   // Calculate the height this field will take (for page overflow check)
-  let estimatedHeight = 12; // Default height for single line
+  let estimatedHeight = 9; // Reduced from 12
   const valueMaxWidth = CONTENT_WIDTH - 50;
   
   if (safeValue && safeValue.length > 50) {
     const textLines = doc.splitTextToSize(safeValue, valueMaxWidth);
-    estimatedHeight = Math.max((textLines.length * 7), 10) + 5;
+    estimatedHeight = Math.max((textLines.length * 6), 8) + 3; // Reduced from (textLines.length * 7), 10) + 5
   }
   
   // Check if we need a new page before adding this field
@@ -46,7 +46,7 @@ export const addField = (doc: jsPDF, label: string, value: string | null | undef
   }
   
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12); // Set consistent font size
+  doc.setFontSize(11); // Reduced from 12
   doc.text(`${label}:`, PAGE_MARGINS.left, y);
   doc.setFont("helvetica", "normal");
   
@@ -60,11 +60,11 @@ export const addField = (doc: jsPDF, label: string, value: string | null | undef
     doc.text(textLines, PAGE_MARGINS.left + 50, y);
     
     // Calculate vertical space needed based on number of lines
-    // Add a minimum space of 10 points between fields
-    return y + Math.max((textLines.length * 7), 10) + 5;
+    // Add a minimum space between fields
+    return y + Math.max((textLines.length * 6), 8) + 3; // Reduced from (textLines.length * 7), 10) + 5
   } else {
     doc.text(safeValue, PAGE_MARGINS.left + 50, y);
-    return y + 12; // Increased from 8 for better spacing between single line fields
+    return y + 9; // Reduced from 12
   }
 };
 
@@ -80,16 +80,16 @@ export const checkPageOverflow = (doc: jsPDF, y: number, margin: number = PAGE_M
 // Helper function to add a PDF title
 export const addPdfTitle = (doc: jsPDF, title: string, y: number) => {
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(22); // Increased from 20
+  doc.setFontSize(18); // Reduced from 22
   doc.text(title, 105, y, { align: "center" });
-  return y + 25; // Increased spacing after title
+  return y + 18; // Reduced from 25
 };
 
 // Helper function to add a separator line
 export const addSeparator = (doc: jsPDF, y: number) => {
   doc.setLineWidth(0.5);
   doc.line(PAGE_MARGINS.left, y, 210 - PAGE_MARGINS.right, y);
-  return y + 10; // Return position after separator with added spacing
+  return y + 7; // Reduced from 10
 };
 
 // Helper function to properly format multi-paragraph text
@@ -103,9 +103,9 @@ export const addMultiParagraphField = (doc: jsPDF, label: string, value: string 
   let estimatedHeight = 0;
   for (let i = 0; i < paragraphs.length; i++) {
     const textLines = doc.splitTextToSize(paragraphs[i], valueMaxWidth);
-    estimatedHeight += (textLines.length * 7) + (i > 0 ? 5 : 0);
+    estimatedHeight += (textLines.length * 6) + (i > 0 ? 3 : 0); // Reduced from (textLines.length * 7) + (i > 0 ? 5 : 0)
   }
-  estimatedHeight += 8; // Additional spacing
+  estimatedHeight += 5; // Reduced from 8
   
   // Check if we need a new page
   if (y + estimatedHeight > (297 - PAGE_MARGINS.bottom)) {
@@ -113,7 +113,7 @@ export const addMultiParagraphField = (doc: jsPDF, label: string, value: string 
   }
   
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
+  doc.setFontSize(11); // Reduced from 12
   doc.text(`${label}:`, PAGE_MARGINS.left, y);
   doc.setFont("helvetica", "normal");
   
@@ -128,18 +128,18 @@ export const addMultiParagraphField = (doc: jsPDF, label: string, value: string 
     const textLines = doc.splitTextToSize(paragraphs[i], valueMaxWidth);
     
     // Check if this paragraph will fit on current page
-    if (currentY + (textLines.length * 7) > (297 - PAGE_MARGINS.bottom)) {
+    if (currentY + (textLines.length * 6) > (297 - PAGE_MARGINS.bottom)) { // Reduced from (textLines.length * 7)
       doc.addPage();
       currentY = PAGE_MARGINS.top;
     }
     
     // Add some extra space between paragraphs, but not for the first one
-    if (i > 0) currentY += 5;
+    if (i > 0) currentY += 3; // Reduced from 5
     
     doc.text(textLines, xPos, currentY);
-    currentY += (textLines.length * 7); // Advance based on number of lines
+    currentY += (textLines.length * 6); // Reduced from (textLines.length * 7)
   }
   
   // Return position after all paragraphs with added spacing
-  return currentY + 8;
+  return currentY + 5; // Reduced from 8
 };
