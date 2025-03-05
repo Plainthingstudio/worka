@@ -74,18 +74,18 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
         <CardTitle className="text-base font-medium">Earnings Over Time</CardTitle>
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="h-[300px] w-full">
+      <CardContent className="flex-1">
+        <div className="h-[280px] w-full">
           <ChartContainer config={chartConfig}>
             <BarChart
               data={data}
               margin={{
                 top: 20,
-                right: 25,
-                left: 25,
-                bottom: 30,
+                right: 20,
+                left: 20,
+                bottom: 20,
               }}
-              barSize={32}
+              barSize={28}
             >
               <CartesianGrid vertical={false} strokeDasharray="3 3" stroke={CHART_COLORS.gray} opacity={0.3} />
               <XAxis
@@ -93,7 +93,8 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
                 tickLine={false}
                 axisLine={false}
                 tick={{ fill: '#6B7280', fontSize: 12 }}
-                dy={10}
+                dy={8}
+                padding={{ left: 10, right: 10 }}
               />
               <YAxis
                 tickLine={false}
@@ -130,7 +131,7 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
           </ChartContainer>
         </div>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm pt-2">
+      <CardFooter className="flex-col items-start gap-2 text-sm pt-2 pb-4">
         <div className="flex items-center gap-2 font-medium leading-none">
           Trending up by 5.2% this month
           <TrendingUp className="h-4 w-4" />
