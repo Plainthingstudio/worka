@@ -18,6 +18,8 @@ const LogoPreferencesSection: React.FC<LogoPreferencesSectionProps> = ({
   logoType,
   tone
 }) => {
+  console.log("Logo preferences received in section:", logoFeelings);
+  
   return (
     <>
       {/* Logo Preferences section */}

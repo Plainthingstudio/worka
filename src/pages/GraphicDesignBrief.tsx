@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Card } from "@/components/ui/card";
@@ -108,6 +107,7 @@ const GraphicDesignBrief = () => {
     };
 
     console.log("Final brief data to be saved:", briefData);
+    console.log("Logo feelings being saved:", briefData.logoFeelings);
 
     const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
     
