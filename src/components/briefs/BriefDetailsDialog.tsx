@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useEffect } from "react";
 import { format } from "date-fns";
 import { Download } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -23,13 +22,30 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
 }) => {
   if (!briefDetails) return null;
 
-  // Log briefDetails to debug
+  // Enhanced logging for debugging
   console.log("Brief details in dialog:", briefDetails);
   console.log("Brief type:", briefDetails.type);
   console.log("Logo feelings:", briefDetails.logoFeelings);
+  
+  if (briefDetails.logoFeelings) {
+    console.log("Logo feelings complexity:", briefDetails.logoFeelings.complexity);
+    console.log("Logo feelings gender:", briefDetails.logoFeelings.gender);
+    console.log("Logo feelings pricing:", briefDetails.logoFeelings.pricing);
+    console.log("Logo feelings era:", briefDetails.logoFeelings.era);
+    console.log("Logo feelings tone:", briefDetails.logoFeelings.tone);
+  }
+  
   console.log("Services data:", briefDetails.services);
   console.log("Print Media data:", briefDetails.printMedia);
   console.log("Digital Media data:", briefDetails.digitalMedia);
+  
+  // Add effect to log when the dialog opens/closes
+  useEffect(() => {
+    if (open && briefDetails) {
+      console.log("Dialog opened with brief details:", briefDetails);
+      console.log("Logo feelings in dialog open effect:", briefDetails.logoFeelings);
+    }
+  }, [open, briefDetails]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -83,7 +99,11 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Close
             </Button>
-            <Button onClick={() => onDownload(briefDetails)}>
+            <Button onClick={() => {
+              console.log("Download button clicked with brief:", briefDetails);
+              console.log("Logo feelings at download time:", briefDetails.logoFeelings);
+              onDownload(briefDetails);
+            }}>
               <Download className="mr-2 h-4 w-4" />
               Download PDF
             </Button>

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 
 interface LogoPreferencesSectionProps {
   logoFeelings: {
@@ -19,6 +19,11 @@ const LogoPreferencesSection: React.FC<LogoPreferencesSectionProps> = ({
   tone
 }) => {
   console.log("Logo preferences received in section:", logoFeelings);
+  
+  // Add effect to log whenever logoFeelings changes
+  useEffect(() => {
+    console.log("LogoPreferencesSection updated with logoFeelings:", logoFeelings);
+  }, [logoFeelings]);
   
   return (
     <>
@@ -48,6 +53,7 @@ const LogoPreferencesSection: React.FC<LogoPreferencesSectionProps> = ({
                 <p>{logoFeelings.tone || "Not provided"}</p>
               </div>
               
+              {/* Explicitly check for complexity and ensure it's displayed */}
               <div>
                 <h5 className="text-sm font-medium">Simple vs Complex</h5>
                 <p>{logoFeelings.complexity || "Not provided"}</p>

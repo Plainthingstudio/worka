@@ -12,6 +12,10 @@ import {
 
 export const generateGraphicDesignBriefPDF = async (brief: any) => {
   try {
+    // Log the incoming brief data for debugging
+    console.log("Generating PDF with brief data:", brief);
+    console.log("Logo feelings data for PDF:", brief.logoFeelings);
+    
     const doc = new jsPDF();
     let y = 20;
 
@@ -48,7 +52,12 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
       if (brief.logoFeelings.pricing) y = addField(doc, "Economical vs Luxury", brief.logoFeelings.pricing, y);
       if (brief.logoFeelings.era) y = addField(doc, "Modern vs Classic", brief.logoFeelings.era, y);
       if (brief.logoFeelings.tone) y = addField(doc, "Serious vs Playful", brief.logoFeelings.tone, y);
-      if (brief.logoFeelings.complexity) y = addField(doc, "Simple vs Complex", brief.logoFeelings.complexity, y);
+      
+      // Ensure complexity is always included if available
+      if (brief.logoFeelings.complexity) {
+        console.log("Adding complexity to PDF:", brief.logoFeelings.complexity);
+        y = addField(doc, "Simple vs Complex", brief.logoFeelings.complexity, y);
+      }
       
       y = checkPageOverflow(doc, y);
     }
