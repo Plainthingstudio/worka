@@ -1,5 +1,11 @@
 
 import React from "react";
+import CompanyInfoSection from "./graphic-design/CompanyInfoSection";
+import LogoPreferencesSection from "./graphic-design/LogoPreferencesSection";
+import TargetAudienceSection from "./graphic-design/TargetAudienceSection";
+import MarketInformationSection from "./graphic-design/MarketInformationSection";
+import CompetitorsReferencesSection from "./graphic-design/CompetitorsReferencesSection";
+import ServicesMediaSection from "./graphic-design/ServicesMediaSection";
 
 interface GraphicDesignBriefDetailsProps {
   briefDetails: any;
@@ -14,194 +20,51 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
   
   return (
     <div className="space-y-4">
-      <div>
-        <h4 className="font-medium">About Company</h4>
-        <p className="mt-1">{briefDetails.aboutCompany || "Not provided"}</p>
-      </div>
+      <CompanyInfoSection 
+        aboutCompany={briefDetails.aboutCompany}
+        visionMission={briefDetails.visionMission}
+        slogan={briefDetails.slogan}
+      />
       
-      <div>
-        <h4 className="font-medium">Vision and Mission</h4>
-        <p className="mt-1">{briefDetails.visionMission || "Not provided"}</p>
-      </div>
-
-      <div>
-        <h4 className="font-medium">Slogan</h4>
-        <p className="mt-1">{briefDetails.slogan || "Not provided"}</p>
-      </div>
+      <LogoPreferencesSection 
+        logoFeelings={briefDetails.logoFeelings}
+        logoType={briefDetails.logoType}
+        tone={briefDetails.tone}
+      />
       
-      {/* Logo Preferences section */}
-      <div>
-        <h4 className="font-medium">Logo Preferences</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
-          {briefDetails.logoFeelings && (
-            <>
-              <div>
-                <h5 className="text-sm font-medium">Gender</h5>
-                <p>{briefDetails.logoFeelings.gender || "Not provided"}</p>
-              </div>
-              
-              <div>
-                <h5 className="text-sm font-medium">Price Point</h5>
-                <p>{briefDetails.logoFeelings.pricing || "Not provided"}</p>
-              </div>
-              
-              <div>
-                <h5 className="text-sm font-medium">Era</h5>
-                <p>{briefDetails.logoFeelings.era || "Not provided"}</p>
-              </div>
-              
-              <div>
-                <h5 className="text-sm font-medium">Tone</h5>
-                <p>{briefDetails.logoFeelings.tone || "Not provided"}</p>
-              </div>
-              
-              <div>
-                <h5 className="text-sm font-medium">Complexity</h5>
-                <p>{briefDetails.logoFeelings.complexity || "Not provided"}</p>
-              </div>
-            </>
-          )}
-          
-          <div>
-            <h5 className="text-sm font-medium">Logo Type</h5>
-            <p>{briefDetails.logoType || "Not provided"}</p>
-          </div>
-        </div>
-      </div>
+      <TargetAudienceSection 
+        targetAge={briefDetails.targetAge}
+        targetGender={briefDetails.targetGender}
+        targetDemography={briefDetails.targetDemography}
+        targetProfession={briefDetails.targetProfession}
+        targetPersonality={briefDetails.targetPersonality}
+      />
       
-      {/* Logo Tone section */}
-      {Array.isArray(briefDetails.tone) && briefDetails.tone.length > 0 && (
-        <div>
-          <h4 className="font-medium">Logo Tone</h4>
-          <p className="mt-1">{briefDetails.tone.join(", ")}</p>
-        </div>
-      )}
-
-      {/* Target audience section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <h4 className="font-medium">Target Age</h4>
-          <p className="mt-1">{briefDetails.targetAge || "Not provided"}</p>
-        </div>
-        
-        <div>
-          <h4 className="font-medium">Target Gender</h4>
-          <p className="mt-1">{briefDetails.targetGender || "Not provided"}</p>
-        </div>
-        
-        <div>
-          <h4 className="font-medium">Target Demography</h4>
-          <p className="mt-1">{briefDetails.targetDemography || "Not provided"}</p>
-        </div>
-        
-        <div>
-          <h4 className="font-medium">Target Profession</h4>
-          <p className="mt-1">{briefDetails.targetProfession || "Not provided"}</p>
-        </div>
-      </div>
-
-      <div>
-        <h4 className="font-medium">Target Personality</h4>
-        <p className="mt-1">{briefDetails.targetPersonality || "Not provided"}</p>
-      </div>
+      <MarketInformationSection 
+        productsServices={briefDetails.productsServices}
+        featuresAndBenefits={briefDetails.featuresAndBenefits}
+        marketCategory={briefDetails.marketCategory}
+        brandPositioning={briefDetails.brandPositioning}
+        barrierToEntry={briefDetails.barrierToEntry}
+      />
       
-      <div>
-        <h4 className="font-medium">Products/Services</h4>
-        <p className="mt-1">{briefDetails.productsServices || "Not provided"}</p>
-      </div>
+      <CompetitorsReferencesSection 
+        competitor1={briefDetails.competitor1}
+        competitor2={briefDetails.competitor2}
+        competitor3={briefDetails.competitor3}
+        competitor4={briefDetails.competitor4}
+        reference1={briefDetails.reference1}
+        reference2={briefDetails.reference2}
+        reference3={briefDetails.reference3}
+        reference4={briefDetails.reference4}
+        specificImagery={briefDetails.specificImagery}
+      />
       
-      <div>
-        <h4 className="font-medium">Features & Benefits</h4>
-        <p className="mt-1">{briefDetails.featuresAndBenefits || "Not provided"}</p>
-      </div>
-      
-      <div>
-        <h4 className="font-medium">Market Category</h4>
-        <p className="mt-1">{briefDetails.marketCategory || "Not provided"}</p>
-      </div>
-
-      {/* Competitors section */}
-      <div>
-        <h4 className="font-medium">Competitors</h4>
-        <div className="space-y-2 mt-1">
-          {briefDetails.competitor1 && <p>1. {briefDetails.competitor1}</p>}
-          {briefDetails.competitor2 && <p>2. {briefDetails.competitor2}</p>}
-          {briefDetails.competitor3 && <p>3. {briefDetails.competitor3}</p>}
-          {briefDetails.competitor4 && <p>4. {briefDetails.competitor4}</p>}
-          {!briefDetails.competitor1 && !briefDetails.competitor2 && 
-            !briefDetails.competitor3 && !briefDetails.competitor4 && <p>Not provided</p>}
-        </div>
-      </div>
-      
-      <div>
-        <h4 className="font-medium">Brand Positioning</h4>
-        <p className="mt-1">{briefDetails.brandPositioning || "Not provided"}</p>
-      </div>
-
-      <div>
-        <h4 className="font-medium">Barrier to Entry</h4>
-        <p className="mt-1">{briefDetails.barrierToEntry || "Not provided"}</p>
-      </div>
-      
-      <div>
-        <h4 className="font-medium">Specific Imagery</h4>
-        <p className="mt-1">{briefDetails.specificImagery || "Not provided"}</p>
-      </div>
-      
-      {/* References section */}
-      <div>
-        <h4 className="font-medium">Design References</h4>
-        <div className="space-y-2 mt-1">
-          {briefDetails.reference1 && <p>1. {briefDetails.reference1}</p>}
-          {briefDetails.reference2 && <p>2. {briefDetails.reference2}</p>}
-          {briefDetails.reference3 && <p>3. {briefDetails.reference3}</p>}
-          {briefDetails.reference4 && <p>4. {briefDetails.reference4}</p>}
-          {!briefDetails.reference1 && !briefDetails.reference2 && 
-            !briefDetails.reference3 && !briefDetails.reference4 && <p>Not provided</p>}
-        </div>
-      </div>
-          
-      {/* Services section */}
-      <div>
-        <h4 className="font-medium">Services Required</h4>
-        <div className="space-y-1 mt-1">
-          {Array.isArray(briefDetails.services) && briefDetails.services.length > 0 ? (
-            briefDetails.services.map((service: string, index: number) => (
-              <p key={index}>• {service}</p>
-            ))
-          ) : (
-            <p>Not provided</p>
-          )}
-        </div>
-      </div>
-      
-      {/* Print Media section */}
-      <div>
-        <h4 className="font-medium">Print Media</h4>
-        <div className="space-y-1 mt-1">
-          {Array.isArray(briefDetails.printMedia) && briefDetails.printMedia.length > 0 ? (
-            briefDetails.printMedia.map((item: string, index: number) => (
-              <p key={index}>• {item}</p>
-            ))
-          ) : (
-            <p>Not provided</p>
-          )}
-        </div>
-      </div>
-      
-      {/* Digital Media section */}
-      <div>
-        <h4 className="font-medium">Digital Media</h4>
-        <div className="space-y-1 mt-1">
-          {Array.isArray(briefDetails.digitalMedia) && briefDetails.digitalMedia.length > 0 ? (
-            briefDetails.digitalMedia.map((item: string, index: number) => (
-              <p key={index}>• {item}</p>
-            ))
-          ) : (
-            <p>Not provided</p>
-          )}
-        </div>
-      </div>
+      <ServicesMediaSection 
+        services={briefDetails.services}
+        printMedia={briefDetails.printMedia}
+        digitalMedia={briefDetails.digitalMedia}
+      />
     </div>
   );
 };
