@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -23,6 +22,11 @@ interface Brief {
   type: string;
   status: string;
   submissionDate: string;
+}
+
+interface PageDetail {
+  name: string;
+  description: string;
 }
 
 const Briefs = () => {
@@ -707,8 +711,9 @@ const Briefs = () => {
                         {briefDetails.competitor1 && <p>1. {briefDetails.competitor1}</p>}
                         {briefDetails.competitor2 && <p>2. {briefDetails.competitor2}</p>}
                         {briefDetails.competitor3 && <p>3. {briefDetails.competitor3}</p>}
+                        {briefDetails.competitor4 && <p>4. {briefDetails.competitor4}</p>}
                         {!briefDetails.competitor1 && !briefDetails.competitor2 && 
-                         !briefDetails.competitor3 && <p>Not provided</p>}
+                         !briefDetails.competitor3 && !briefDetails.competitor4 && <p>Not provided</p>}
                       </div>
                     </div>
                     
@@ -775,14 +780,12 @@ const Briefs = () => {
                       <div>
                         <h4 className="font-medium">Page Details</h4>
                         <div className="space-y-2 mt-1">
-                          {briefDetails.pageDetails.map((detail: string, index: number) => 
-                            detail && (
-                              <div key={index} className="border p-3 rounded-md">
-                                <p className="font-medium">Page {index + 1}</p>
-                                <p>{detail}</p>
-                              </div>
-                            )
-                          )}
+                          {briefDetails.pageDetails.map((detail: PageDetail, index: number) => (
+                            <div key={index} className="border p-3 rounded-md">
+                              <p className="font-medium">Page {index + 1}: {detail.name}</p>
+                              <p>{detail.description}</p>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
@@ -794,36 +797,4 @@ const Briefs = () => {
                     
                     <div>
                       <h4 className="font-medium">Development Service</h4>
-                      <p className="mt-1">{briefDetails.developmentService || "Not provided"}</p>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-medium">Completion Deadline</h4>
-                      <p className="mt-1">
-                        {briefDetails.completionDeadline 
-                          ? format(new Date(briefDetails.completionDeadline), "MMMM d, yyyy") 
-                          : "Not provided"}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
-                  Close
-                </Button>
-                <Button onClick={() => downloadBrief(briefDetails)}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Download PDF
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-};
-
-export default Briefs;
+                      <p className="mt-1">{brief
