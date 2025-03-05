@@ -48,18 +48,33 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
     if (brief.logoFeelings) {
       y = addSectionTitle(doc, "Logo Preferences", y);
       
-      if (brief.logoFeelings.gender) y = addField(doc, "Feminine vs Masculine", brief.logoFeelings.gender, y);
-      if (brief.logoFeelings.pricing) y = addField(doc, "Economical vs Luxury", brief.logoFeelings.pricing, y);
-      if (brief.logoFeelings.era) y = addField(doc, "Modern vs Classic", brief.logoFeelings.era, y);
-      if (brief.logoFeelings.tone) y = addField(doc, "Serious vs Playful", brief.logoFeelings.tone, y);
+      // Process each logo feeling attribute individually with page break checking after each
+      if (brief.logoFeelings.gender) {
+        y = addField(doc, "Feminine vs Masculine", brief.logoFeelings.gender, y);
+        y = checkPageOverflow(doc, y);
+      }
       
-      // Ensure complexity is always included if available
+      if (brief.logoFeelings.pricing) {
+        y = addField(doc, "Economical vs Luxury", brief.logoFeelings.pricing, y);
+        y = checkPageOverflow(doc, y);
+      }
+      
+      if (brief.logoFeelings.era) {
+        y = addField(doc, "Modern vs Classic", brief.logoFeelings.era, y);
+        y = checkPageOverflow(doc, y);
+      }
+      
+      if (brief.logoFeelings.tone) {
+        y = addField(doc, "Serious vs Playful", brief.logoFeelings.tone, y);
+        y = checkPageOverflow(doc, y);
+      }
+      
+      // Explicitly check for complexity and add with page break check
       if (brief.logoFeelings.complexity) {
         console.log("Adding complexity to PDF:", brief.logoFeelings.complexity);
         y = addField(doc, "Simple vs Complex", brief.logoFeelings.complexity, y);
+        y = checkPageOverflow(doc, y);
       }
-      
-      y = checkPageOverflow(doc, y);
     }
 
     // Logo Type
@@ -76,50 +91,101 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
 
     // Target Audience
     y = addSectionTitle(doc, "Target Audience", y);
-    if (brief.targetAge) y = addField(doc, "Age Range", brief.targetAge, y);
-    if (brief.targetGender) y = addField(doc, "Gender", brief.targetGender, y);
-    if (brief.targetDemography) y = addField(doc, "Demography", brief.targetDemography, y);
-    if (brief.targetProfession) y = addField(doc, "Profession", brief.targetProfession, y);
-    if (brief.targetPersonality) y = addField(doc, "Personality", brief.targetPersonality, y);
-    y = checkPageOverflow(doc, y);
+    if (brief.targetAge) {
+      y = addField(doc, "Age Range", brief.targetAge, y);
+      y = checkPageOverflow(doc, y);
+    }
+    if (brief.targetGender) {
+      y = addField(doc, "Gender", brief.targetGender, y);
+      y = checkPageOverflow(doc, y);
+    }
+    if (brief.targetDemography) {
+      y = addField(doc, "Demography", brief.targetDemography, y);
+      y = checkPageOverflow(doc, y);
+    }
+    if (brief.targetProfession) {
+      y = addField(doc, "Profession", brief.targetProfession, y);
+      y = checkPageOverflow(doc, y);
+    }
+    if (brief.targetPersonality) {
+      y = addField(doc, "Personality", brief.targetPersonality, y);
+      y = checkPageOverflow(doc, y);
+    }
 
     // Product Information
     y = addSectionTitle(doc, "Product Information", y);
-    if (brief.productsServices) y = addMultiParagraphField(doc, "Products/Services", brief.productsServices, y);
-    y = checkPageOverflow(doc, y);
-    if (brief.featuresAndBenefits) y = addMultiParagraphField(doc, "Features & Benefits", brief.featuresAndBenefits, y);
-    y = checkPageOverflow(doc, y);
-    if (brief.marketCategory) y = addMultiParagraphField(doc, "Market Category", brief.marketCategory, y);
-    y = checkPageOverflow(doc, y);
+    if (brief.productsServices) {
+      y = addMultiParagraphField(doc, "Products/Services", brief.productsServices, y);
+      y = checkPageOverflow(doc, y);
+    }
+    if (brief.featuresAndBenefits) {
+      y = addMultiParagraphField(doc, "Features & Benefits", brief.featuresAndBenefits, y);
+      y = checkPageOverflow(doc, y);
+    }
+    if (brief.marketCategory) {
+      y = addMultiParagraphField(doc, "Market Category", brief.marketCategory, y);
+      y = checkPageOverflow(doc, y);
+    }
 
     // Competitors
     if (brief.competitor1 || brief.competitor2 || brief.competitor3 || brief.competitor4) {
       y = addSectionTitle(doc, "Competitors", y);
-      if (brief.competitor1) y = addField(doc, "Competitor 1", brief.competitor1, y);
-      if (brief.competitor2) y = addField(doc, "Competitor 2", brief.competitor2, y);
-      if (brief.competitor3) y = addField(doc, "Competitor 3", brief.competitor3, y);
-      if (brief.competitor4) y = addField(doc, "Competitor 4", brief.competitor4, y);
-      y = checkPageOverflow(doc, y);
+      
+      if (brief.competitor1) {
+        y = addField(doc, "Competitor 1", brief.competitor1, y);
+        y = checkPageOverflow(doc, y);
+      }
+      if (brief.competitor2) {
+        y = addField(doc, "Competitor 2", brief.competitor2, y);
+        y = checkPageOverflow(doc, y);
+      }
+      if (brief.competitor3) {
+        y = addField(doc, "Competitor 3", brief.competitor3, y);
+        y = checkPageOverflow(doc, y);
+      }
+      if (brief.competitor4) {
+        y = addField(doc, "Competitor 4", brief.competitor4, y);
+        y = checkPageOverflow(doc, y);
+      }
     }
 
     // References
     if (brief.reference1 || brief.reference2 || brief.reference3 || brief.reference4) {
       y = addSectionTitle(doc, "References", y);
-      if (brief.reference1) y = addField(doc, "Reference 1", brief.reference1, y);
-      if (brief.reference2) y = addField(doc, "Reference 2", brief.reference2, y);
-      if (brief.reference3) y = addField(doc, "Reference 3", brief.reference3, y);
-      if (brief.reference4) y = addField(doc, "Reference 4", brief.reference4, y);
-      y = checkPageOverflow(doc, y);
+      
+      if (brief.reference1) {
+        y = addField(doc, "Reference 1", brief.reference1, y);
+        y = checkPageOverflow(doc, y);
+      }
+      if (brief.reference2) {
+        y = addField(doc, "Reference 2", brief.reference2, y);
+        y = checkPageOverflow(doc, y);
+      }
+      if (brief.reference3) {
+        y = addField(doc, "Reference 3", brief.reference3, y);
+        y = checkPageOverflow(doc, y);
+      }
+      if (brief.reference4) {
+        y = addField(doc, "Reference 4", brief.reference4, y);
+        y = checkPageOverflow(doc, y);
+      }
     }
 
     // Additional Information
     y = addSectionTitle(doc, "Additional Information", y);
-    if (brief.brandPositioning) y = addMultiParagraphField(doc, "Brand Positioning", brief.brandPositioning, y);
-    y = checkPageOverflow(doc, y);
-    if (brief.barrierToEntry) y = addMultiParagraphField(doc, "Barrier to Entry", brief.barrierToEntry, y);
-    y = checkPageOverflow(doc, y);
-    if (brief.specificImagery) y = addMultiParagraphField(doc, "Specific Imagery", brief.specificImagery, y);
-    y = checkPageOverflow(doc, y);
+    
+    if (brief.brandPositioning) {
+      y = addMultiParagraphField(doc, "Brand Positioning", brief.brandPositioning, y);
+      y = checkPageOverflow(doc, y);
+    }
+    if (brief.barrierToEntry) {
+      y = addMultiParagraphField(doc, "Barrier to Entry", brief.barrierToEntry, y);
+      y = checkPageOverflow(doc, y);
+    }
+    if (brief.specificImagery) {
+      y = addMultiParagraphField(doc, "Specific Imagery", brief.specificImagery, y);
+      y = checkPageOverflow(doc, y);
+    }
 
     // Services Required
     if (brief.services && brief.services.length > 0) {
