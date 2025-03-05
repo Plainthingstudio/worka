@@ -1,4 +1,5 @@
-import React from "react";
+
+import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import BriefsHeader from "@/components/briefs/BriefsHeader";
@@ -22,6 +23,28 @@ const Briefs = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
   const [briefDetails, setBriefDetails] = React.useState<any>(null);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+
+  // Listen for sidebar state changes
+  useEffect(() => {
+    const handleSidebarChange = () => {
+      const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
+      setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
+    };
+
+    // Initial check
+    handleSidebarChange();
+
+    // Set up mutation observer to watch for class changes on the sidebar
+    const observer = new MutationObserver(handleSidebarChange);
+    const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
+    
+    if (sidebarElement) {
+      observer.observe(sidebarElement, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const viewBriefDetails = (brief: any) => {
     const storedBriefs = localStorage.getItem("briefs");
@@ -81,7 +104,11 @@ const Briefs = () => {
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
-      <div className="pl-14 md:pl-56">
+      <div 
+        className={`flex-1 w-full transition-all duration-300 ease-in-out ${
+          isSidebarExpanded ? "pl-56" : "pl-14"
+        }`}
+      >
         <Navbar title="Briefs" />
         <main className="container py-6">
           <BriefsHeader />
