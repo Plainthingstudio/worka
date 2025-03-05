@@ -23,6 +23,9 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
 }) => {
   if (!briefDetails) return null;
 
+  // Log briefDetails to debug
+  console.log("Brief details in dialog:", briefDetails);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">

@@ -156,7 +156,7 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       </div>
           
       {/* Services section */}
-      {briefDetails.services && briefDetails.services.length > 0 && (
+      {Array.isArray(briefDetails.services) && briefDetails.services.length > 0 && (
         <div>
           <h4 className="font-medium">Services Required</h4>
           <div className="space-y-1 mt-1">
@@ -168,7 +168,7 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       )}
       
       {/* Print Media section */}
-      {briefDetails.printMedia && briefDetails.printMedia.length > 0 && (
+      {Array.isArray(briefDetails.printMedia) && briefDetails.printMedia.length > 0 && (
         <div>
           <h4 className="font-medium">Print Media</h4>
           <div className="space-y-1 mt-1">
@@ -180,7 +180,7 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       )}
       
       {/* Digital Media section */}
-      {briefDetails.digitalMedia && briefDetails.digitalMedia.length > 0 && (
+      {Array.isArray(briefDetails.digitalMedia) && briefDetails.digitalMedia.length > 0 && (
         <div>
           <h4 className="font-medium">Digital Media</h4>
           <div className="space-y-1 mt-1">
