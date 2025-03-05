@@ -1,6 +1,5 @@
 
 import React from "react";
-import { format } from "date-fns";
 
 interface GraphicDesignBriefDetailsProps {
   briefDetails: any;
@@ -160,7 +159,11 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       {briefDetails.services && briefDetails.services.length > 0 && (
         <div>
           <h4 className="font-medium">Services Required</h4>
-          <p className="mt-1">{briefDetails.services.join(", ")}</p>
+          <div className="space-y-1 mt-1">
+            {briefDetails.services.map((service: string, index: number) => (
+              <p key={index}>• {service}</p>
+            ))}
+          </div>
         </div>
       )}
       
@@ -168,7 +171,11 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       {briefDetails.printMedia && briefDetails.printMedia.length > 0 && (
         <div>
           <h4 className="font-medium">Print Media</h4>
-          <p className="mt-1">{briefDetails.printMedia.join(", ")}</p>
+          <div className="space-y-1 mt-1">
+            {briefDetails.printMedia.map((item: string, index: number) => (
+              <p key={index}>• {item}</p>
+            ))}
+          </div>
         </div>
       )}
       
@@ -176,7 +183,11 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       {briefDetails.digitalMedia && briefDetails.digitalMedia.length > 0 && (
         <div>
           <h4 className="font-medium">Digital Media</h4>
-          <p className="mt-1">{briefDetails.digitalMedia.join(", ")}</p>
+          <div className="space-y-1 mt-1">
+            {briefDetails.digitalMedia.map((item: string, index: number) => (
+              <p key={index}>• {item}</p>
+            ))}
+          </div>
         </div>
       )}
     </div>
