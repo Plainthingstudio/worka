@@ -49,12 +49,12 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
   };
 
   return (
-    <Card className="h-full">
+    <Card>
       <CardHeader>
-        <CardTitle>Lead Sources</CardTitle>
-        <CardDescription>Distribution of client acquisition channels</CardDescription>
+        <CardTitle className="text-base font-medium">Lead Sources</CardTitle>
+        <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 pb-0">
+      <CardContent className="pb-0">
         <ChartContainer 
           config={chartConfig}
           className="mx-auto aspect-square max-h-[250px]"
@@ -83,7 +83,10 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm pt-6">
-        <div className="leading-none text-muted-foreground">
+        <div className="flex items-center gap-2 font-medium leading-none">
+          Trending up by 5.2% this month
+        </div>
+        <div className="text-muted-foreground">
           Showing distribution across {Object.keys(data).length} acquisition channels
         </div>
       </CardFooter>

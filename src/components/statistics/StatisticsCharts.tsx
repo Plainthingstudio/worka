@@ -4,7 +4,8 @@ import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { clients } from "@/mockData";
 import { DateRange } from "@/types";
 import { format, subMonths } from "date-fns";
-import { Users } from "lucide-react";
+import { TrendingUp } from "lucide-react";
+import { CHART_COLORS } from "@/lib/chart-styles";
 import {
   Card,
   CardContent,
@@ -26,13 +27,13 @@ interface StatisticsChartsProps {
 
 const StatisticsCharts: React.FC<StatisticsChartsProps> = ({ dateRange }) => {
   const getMonthlyData = () => {
-    const startDate = subMonths(new Date(), 11); // Last 12 months
+    const startDate = subMonths(new Date(), 5); // Last 6 months
     const endDate = new Date();
     
     const months: string[] = [];
     const monthlyCounts: { [key: string]: number } = {};
     
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 6; i++) {
       const date = new Date(startDate);
       date.setMonth(startDate.getMonth() + i);
       const monthKey = format(date, "MMM");
@@ -70,25 +71,15 @@ const StatisticsCharts: React.FC<StatisticsChartsProps> = ({ dateRange }) => {
   const chartConfig: ChartConfig = {
     clients: {
       label: "Clients",
-      color: "hsl(var(--chart-1))",
+      color: CHART_COLORS.blue,
     },
   };
-  
-  // Calculate growth metrics
-  const totalClients = data[data.length - 1]?.clients || 0;
-  const growthThisYear = totalClients - (data[0]?.clients || 0);
-  const growthPercentage = (data[0]?.clients || 0) > 0 
-    ? (growthThisYear / (data[0]?.clients || 1)) * 100 
-    : 100;
-  
-  // Date range display
-  const dateRangeText = `${format(subMonths(new Date(), 11), "MMM yyyy")} - ${format(new Date(), "MMM yyyy")}`;
-  
+
   return (
-    <Card className="h-full">
+    <Card>
       <CardHeader>
-        <CardTitle>Client Growth</CardTitle>
-        <CardDescription>Cumulative client acquisition over time</CardDescription>
+        <CardTitle className="text-base font-medium">Client Growth</CardTitle>
+        <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
       <CardContent className="pb-0">
         <ChartContainer config={chartConfig}>
@@ -126,18 +117,18 @@ const StatisticsCharts: React.FC<StatisticsChartsProps> = ({ dateRange }) => {
               dataKey="clients"
               strokeWidth={2}
               dot={false}
-              activeDot={{ r: 6, fill: "var(--color-clients)" }}
+              activeDot={{ r: 6 }}
             />
           </LineChart>
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm pt-6">
-        <div className="flex gap-2 font-medium leading-none">
-          {growthPercentage > 0 ? `+${growthPercentage.toFixed(1)}%` : `${growthPercentage.toFixed(1)}%`} growth this year
-          <Users className="h-4 w-4 text-primary" />
+        <div className="flex items-center gap-2 font-medium leading-none">
+          Trending up by 5.2% this month
+          <TrendingUp className="h-4 w-4" />
         </div>
-        <div className="leading-none text-muted-foreground">
-          Added {growthThisYear} new clients in the past 12 months
+        <div className="text-muted-foreground">
+          Showing total clients growth for the last 6 months
         </div>
       </CardFooter>
     </Card>

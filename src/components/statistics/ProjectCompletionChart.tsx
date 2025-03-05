@@ -4,7 +4,7 @@ import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { projects } from "@/mockData";
 import { DateRange } from "@/types";
 import { format, subMonths } from "date-fns";
-import { Check } from "lucide-react";
+import { CHART_COLORS } from "@/lib/chart-styles";
 import {
   Card,
   CardContent,
@@ -28,7 +28,7 @@ interface ProjectCompletionChartProps {
 
 const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRange }) => {
   const getMonthlyCompletionData = () => {
-    const startDate = subMonths(new Date(), 11); // Last 12 months
+    const startDate = subMonths(new Date(), 5); // Last 6 months
     const endDate = new Date();
     
     // Initialize monthly counts
@@ -36,11 +36,11 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
     const monthlyCompletions: { [key: string]: number } = {};
     const monthlyStarts: { [key: string]: number } = {};
     
-    // Initialize past 12 months
-    for (let i = 0; i < 12; i++) {
+    // Initialize past 6 months
+    for (let i = 0; i < 6; i++) {
       const date = new Date(startDate);
       date.setMonth(startDate.getMonth() + i);
-      const monthKey = format(date, "MMM yyyy");
+      const monthKey = format(date, "MMM");
       months.push(monthKey);
       monthlyCompletions[monthKey] = 0;
       monthlyStarts[monthKey] = 0;
@@ -52,7 +52,7 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
       
       // Count project starts
       if (creationDate >= startDate && creationDate <= endDate) {
-        const startMonthKey = format(creationDate, "MMM yyyy");
+        const startMonthKey = format(creationDate, "MMM");
         if (monthlyStarts[startMonthKey] !== undefined) {
           monthlyStarts[startMonthKey]++;
         }
@@ -74,7 +74,7 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
         }
         
         if (completionDate >= startDate && completionDate <= endDate) {
-          const completionMonthKey = format(completionDate, "MMM yyyy");
+          const completionMonthKey = format(completionDate, "MMM");
           if (monthlyCompletions[completionMonthKey] !== undefined) {
             monthlyCompletions[completionMonthKey]++;
           }
@@ -96,24 +96,19 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
   const chartConfig: ChartConfig = {
     started: {
       label: "Started",
-      color: "hsl(var(--chart-1))",
+      color: CHART_COLORS.blue,
     },
     completed: {
       label: "Completed", 
-      color: "hsl(var(--chart-2))",
+      color: CHART_COLORS.lightBlue,
     },
   };
-  
-  // Calculate completion rate
-  const totalStarted = data.reduce((sum, item) => sum + item.started, 0);
-  const totalCompleted = data.reduce((sum, item) => sum + item.completed, 0);
-  const completionRate = totalStarted > 0 ? (totalCompleted / totalStarted) * 100 : 0;
-  
+
   return (
-    <Card className="h-full">
+    <Card>
       <CardHeader>
-        <CardTitle>Project Completion</CardTitle>
-        <CardDescription>Started vs. completed projects timeline</CardDescription>
+        <CardTitle className="text-base font-medium">Project Completion</CardTitle>
+        <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
       <CardContent className="pb-0">
         <ChartContainer config={chartConfig}>
@@ -132,7 +127,6 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(value) => value.split(' ')[0]}
             />
             <YAxis
               tickLine={false}
@@ -161,10 +155,10 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm pt-6">
-        <div className="flex gap-2 font-medium leading-none">
-          {completionRate.toFixed(1)}% completion rate overall <Check className="h-4 w-4 text-green-500" />
+        <div className="flex items-center gap-2 font-medium leading-none">
+          Trending up by 5.2% this month
         </div>
-        <div className="leading-none text-muted-foreground">
+        <div className="text-muted-foreground">
           Comparing project starts and completions over time
         </div>
       </CardFooter>

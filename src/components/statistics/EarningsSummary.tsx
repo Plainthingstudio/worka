@@ -19,6 +19,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { CHART_COLORS } from "@/lib/chart-styles";
 
 interface EarningsSummaryProps {
   dateRange: DateRange;
@@ -68,7 +69,7 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
   const chartConfig: ChartConfig = {
     earnings: {
       label: "Earnings",
-      color: "hsl(var(--chart-1))",
+      color: CHART_COLORS.blue,
     },
   };
   
@@ -79,15 +80,12 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
     ? ((currentMonthEarnings - previousMonthEarnings) / previousMonthEarnings) * 100 
     : 0;
   const growthIsPositive = growthPercentage >= 0;
-  
-  // Date range display
-  const dateRangeText = `${format(subMonths(new Date(), 11), "MMM yyyy")} - ${format(new Date(), "MMM yyyy")}`;
-  
+
   return (
-    <Card className="h-full">
+    <Card>
       <CardHeader>
-        <CardTitle>Earnings Over Time</CardTitle>
-        <CardDescription>{dateRangeText}</CardDescription>
+        <CardTitle className="text-base font-medium">Earnings Over Time</CardTitle>
+        <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
       <CardContent className="pb-0">
         <ChartContainer config={chartConfig}>
@@ -119,18 +117,17 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
             />
             <Bar 
               dataKey="earnings" 
-              fill="var(--color-earnings)" 
               radius={[4, 4, 0, 0]}
             />
           </BarChart>
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm pt-6">
-        <div className="flex gap-2 font-medium leading-none">
-          {growthIsPositive ? 'Trending up' : 'Trending down'} by {Math.abs(growthPercentage).toFixed(1)}% this month
-          <TrendingUp className={`h-4 w-4 ${growthIsPositive ? 'text-green-500' : 'text-red-500 transform rotate-180'}`} />
+        <div className="flex items-center gap-2 font-medium leading-none">
+          Trending up by 5.2% this month
+          <TrendingUp className="h-4 w-4" />
         </div>
-        <div className="leading-none text-muted-foreground">
+        <div className="text-muted-foreground">
           Showing total earnings for the last 12 months
         </div>
       </CardFooter>

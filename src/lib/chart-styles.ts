@@ -5,7 +5,10 @@ export const CHART_COLORS = {
   secondary: "hsl(var(--chart-2))",
   tertiary: "hsl(var(--chart-3))",
   quaternary: "hsl(var(--chart-4))",
-  quinary: "hsl(var(--chart-5))"
+  quinary: "hsl(var(--chart-5))",
+  blue: "hsl(217, 91%, 60%)",
+  lightBlue: "hsl(213, 94%, 68%)",
+  gray: "hsl(220, 13%, 91%)"
 };
 
 // For donut charts
