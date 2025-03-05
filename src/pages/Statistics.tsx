@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -217,7 +218,7 @@ const Statistics = () => {
             </Card>
           </div>
 
-          <div className="flex flex-col gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <EarningsSummary dateRange={dateRange} />
             <ClientsDistribution data={leadSources} />
             <ProjectCompletionChart dateRange={dateRange} />
