@@ -1,13 +1,13 @@
 
 import React from "react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { projects } from "@/mockData";
 import { DateRange } from "@/types";
 import { format, subMonths } from "date-fns";
-import { baseChartStyles, chartColors, createChartConfig } from "@/lib/chart-styles";
+import { createChartConfig } from "@/lib/chart-styles";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 interface EarningsSummaryProps {
   dateRange: DateRange;
@@ -26,7 +26,7 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
     for (let i = 0; i < 12; i++) {
       const date = new Date(startDate);
       date.setMonth(startDate.getMonth() + i);
-      const monthKey = format(date, "MMM yyyy");
+      const monthKey = format(date, "MMM");
       months.push(monthKey);
       monthlyEarnings[monthKey] = 0;
     }
@@ -35,7 +35,7 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
     projects.forEach(project => {
       const creationDate = new Date(project.createdAt);
       if (creationDate >= startDate && creationDate <= endDate) {
-        const monthKey = format(creationDate, "MMM yyyy");
+        const monthKey = format(creationDate, "MMM");
         if (monthlyEarnings[monthKey] !== undefined) {
           // Convert to USD if needed
           const amountInUSD = project.currency === 'IDR' ? project.fee / 15000 : project.fee;
@@ -52,7 +52,14 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
   };
 
   const data = getMonthlyData();
-  const chartConfig = createChartConfig(['earnings']);
+  
+  // Create chart config
+  const chartConfig: ChartConfig = {
+    earnings: {
+      label: "Earnings",
+      color: "hsl(var(--chart-1))",
+    },
+  };
   
   // Calculate total earnings for this period and growth percentage
   const currentMonthEarnings = data[data.length - 1]?.earnings || 0;
@@ -62,15 +69,16 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
     : 0;
   const growthIsPositive = growthPercentage >= 0;
   
+  // Date range display
+  const dateRangeText = `${format(subMonths(new Date(), 11), "MMM yyyy")} - ${format(new Date(), "MMM yyyy")}`;
+  
   return (
     <Card className="h-full">
       <CardHeader>
         <CardTitle>Earnings Over Time</CardTitle>
-        <CardDescription>
-          {format(subMonths(new Date(), 11), "MMM yyyy")} - {format(new Date(), "MMM yyyy")}
-        </CardDescription>
+        <CardDescription>{dateRangeText}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pb-0">
         <ChartContainer config={chartConfig}>
           <BarChart
             data={data}
@@ -87,7 +95,6 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(value) => value.split(' ')[0]}
             />
             <YAxis
               tickLine={false}
@@ -107,7 +114,7 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({ dateRange }) => {
           </BarChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
+      <CardFooter className="flex-col items-start gap-2 text-sm pt-6">
         <div className="flex gap-2 font-medium leading-none">
           {growthIsPositive ? 'Trending up' : 'Trending down'} by {Math.abs(growthPercentage).toFixed(1)}% this month
           <TrendingUp className={`h-4 w-4 ${growthIsPositive ? 'text-green-500' : 'text-red-500 transform rotate-180'}`} />

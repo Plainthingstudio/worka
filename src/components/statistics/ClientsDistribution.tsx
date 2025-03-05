@@ -1,28 +1,36 @@
 
 import React from "react";
-import { Pie, PieChart, ResponsiveContainer, Cell, Legend, Tooltip } from "recharts";
-import { CHART_COLORS, chartColors } from "@/lib/chart-styles";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Pie, PieChart } from "recharts";
+import { DONUT_COLORS } from "@/lib/chart-styles";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 interface ClientsDistributionProps {
   data: Record<string, number>;
 }
 
 const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
-  const chartData = Object.entries(data).map(([name, value]) => ({
+  const chartData = Object.entries(data).map(([name, value], index) => ({
     name,
     value,
+    fill: DONUT_COLORS[index % DONUT_COLORS.length],
   }));
   
   // Create chart config
-  const chartConfig = chartData.reduce((acc, item, index) => {
-    acc[item.name] = {
-      label: item.name,
-      color: CHART_COLORS[index % CHART_COLORS.length]
-    };
-    return acc;
-  }, {} as Record<string, { label: string, color: string }>);
+  const chartConfig: ChartConfig = {
+    value: {
+      label: "Clients",
+    },
+    ...Object.fromEntries(
+      Object.keys(data).map((key, index) => [
+        key,
+        {
+          label: key,
+          color: DONUT_COLORS[index % DONUT_COLORS.length],
+        },
+      ])
+    ),
+  };
   
   // Calculate total clients
   const totalClients = chartData.reduce((sum, item) => sum + item.value, 0);
@@ -33,27 +41,13 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
         <CardTitle>Lead Sources</CardTitle>
         <CardDescription>Distribution of client acquisition channels</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
+      <CardContent className="flex-1 pb-0">
+        <ChartContainer 
+          config={chartConfig}
+          className="mx-auto aspect-square max-h-[250px]"
+        >
           <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={80}
-              paddingAngle={4}
-              dataKey="value"
-              nameKey="name"
-            >
-              {chartData.map((entry, index) => (
-                <Cell 
-                  key={`cell-${index}`} 
-                  fill={`var(--color-${entry.name.replace(/\s+/g, '-').toLowerCase()})`} 
-                />
-              ))}
-            </Pie>
-            <ChartTooltip 
+            <ChartTooltip
               content={
                 <ChartTooltipContent 
                   formatter={(value: number, name: string) => [
@@ -63,15 +57,22 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
                 />
               } 
             />
-            <Legend 
-              content={<ChartLegendContent />} 
-              layout="horizontal" 
-              verticalAlign="bottom" 
-              align="center" 
+            <Pie
+              data={chartData}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={60}
+              outerRadius={80}
+              paddingAngle={4}
             />
           </PieChart>
         </ChartContainer>
       </CardContent>
+      <CardFooter className="flex-col items-start gap-2 text-sm pt-6">
+        <div className="leading-none text-muted-foreground">
+          Showing distribution across {Object.keys(data).length} acquisition channels
+        </div>
+      </CardFooter>
     </Card>
   );
 };
