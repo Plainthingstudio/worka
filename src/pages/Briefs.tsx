@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -404,7 +405,8 @@ const Briefs = () => {
             <DialogTitle>Brief Details</DialogTitle>
           </DialogHeader>
           
-          {briefDetails && <div className="space-y-6">
+          {briefDetails && (
+            <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Client Information</h3>
@@ -430,7 +432,8 @@ const Briefs = () => {
               <div className="border-t pt-4">
                 <h3 className="text-sm font-medium text-muted-foreground mb-3">Project Details</h3>
                 
-                {briefDetails.type === "Illustration Design" && <div className="space-y-4">
+                {briefDetails.type === "Illustration Design" && (
+                  <div className="space-y-4">
                     <div>
                       <h4 className="font-medium">About Company</h4>
                       <p className="mt-1">{briefDetails.aboutCompany || "Not provided"}</p>
@@ -462,30 +465,42 @@ const Briefs = () => {
                       <h4 className="font-medium">Illustrations Details</h4>
                       <p><span className="font-medium">Count:</span> {briefDetails.illustrationsCount || "Not provided"}</p>
                       
-                      {briefDetails.illustrationDetails && briefDetails.illustrationDetails.length > 0 && <div className="space-y-2 mt-2">
-                          {briefDetails.illustrationDetails.map((detail: string, index: number) => detail && <div key={index} className="border p-3 rounded-md">
+                      {briefDetails.illustrationDetails && briefDetails.illustrationDetails.length > 0 && (
+                        <div className="space-y-2 mt-2">
+                          {briefDetails.illustrationDetails.map((detail: string, index: number) => 
+                            detail && (
+                              <div key={index} className="border p-3 rounded-md">
                                 <p className="font-medium">Illustration {index + 1}</p>
                                 <p>{detail}</p>
-                              </div>)}
-                        </div>}
+                              </div>
+                            )
+                          )}
+                        </div>
+                      )}
                     </div>
                     
                     <div>
                       <h4 className="font-medium">Deliverables</h4>
                       <p className="mt-1">
-                        {briefDetails.deliverables && briefDetails.deliverables.length ? briefDetails.deliverables.join(", ") : "Not provided"}
+                        {briefDetails.deliverables && briefDetails.deliverables.length 
+                          ? briefDetails.deliverables.join(", ") 
+                          : "Not provided"}
                       </p>
                     </div>
                     
                     <div>
                       <h4 className="font-medium">Completion Deadline</h4>
                       <p className="mt-1">
-                        {briefDetails.completionDeadline ? format(new Date(briefDetails.completionDeadline), "MMMM d, yyyy") : "Not provided"}
+                        {briefDetails.completionDeadline 
+                          ? format(new Date(briefDetails.completionDeadline), "MMMM d, yyyy") 
+                          : "Not provided"}
                       </p>
                     </div>
-                  </div>}
+                  </div>
+                )}
 
-                {briefDetails.type === "Graphic Design" && <div className="space-y-4">
+                {briefDetails.type === "Graphic Design" && (
+                  <div className="space-y-4">
                     <div>
                       <h4 className="font-medium">About Company</h4>
                       <p className="mt-1">{briefDetails.aboutCompany || "Not provided"}</p>
@@ -501,37 +516,39 @@ const Briefs = () => {
                       <p className="mt-1">{briefDetails.slogan || "Not provided"}</p>
                     </div>
                     
-                    {briefDetails.logoFeelings && <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <h4 className="font-medium">Logo Style</h4>
-                        <p className="mt-1">{briefDetails.logoFeelings.style || "Not provided"}</p>
+                    {briefDetails.logoFeelings && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <h4 className="font-medium">Logo Style</h4>
+                          <p className="mt-1">{briefDetails.logoFeelings.style || "Not provided"}</p>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium">Logo Pricing</h4>
+                          <p className="mt-1">{briefDetails.logoFeelings.pricing || "Not provided"}</p>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium">Logo Era</h4>
+                          <p className="mt-1">{briefDetails.logoFeelings.era || "Not provided"}</p>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium">Logo Tone</h4>
+                          <p className="mt-1">{briefDetails.logoFeelings.tone || "Not provided"}</p>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium">Logo Complexity</h4>
+                          <p className="mt-1">{briefDetails.logoFeelings.complexity || "Not provided"}</p>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium">Logo Gender</h4>
+                          <p className="mt-1">{briefDetails.logoFeelings.gender || "Not provided"}</p>
+                        </div>
                       </div>
-                      
-                      <div>
-                        <h4 className="font-medium">Logo Pricing</h4>
-                        <p className="mt-1">{briefDetails.logoFeelings.pricing || "Not provided"}</p>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-medium">Logo Era</h4>
-                        <p className="mt-1">{briefDetails.logoFeelings.era || "Not provided"}</p>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-medium">Logo Tone</h4>
-                        <p className="mt-1">{briefDetails.logoFeelings.tone || "Not provided"}</p>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-medium">Logo Complexity</h4>
-                        <p className="mt-1">{briefDetails.logoFeelings.complexity || "Not provided"}</p>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-medium">Logo Gender</h4>
-                        <p className="mt-1">{briefDetails.logoFeelings.gender || "Not provided"}</p>
-                      </div>
-                    </div>}
+                    )}
                     
                     <div>
                       <h4 className="font-medium">Logo Type</h4>
@@ -610,25 +627,33 @@ const Briefs = () => {
                     </div>
                        
                     {/* Services section */}
-                    {briefDetails.services && briefDetails.services.length > 0 && <div>
-                      <h4 className="font-medium">Services</h4>
-                      <p className="mt-1">{briefDetails.services.join(", ")}</p>
-                    </div>}
+                    {briefDetails.services && briefDetails.services.length > 0 && (
+                      <div>
+                        <h4 className="font-medium">Services</h4>
+                        <p className="mt-1">{briefDetails.services.join(", ")}</p>
+                      </div>
+                    )}
                     
                     {/* Print Media section */}
-                    {briefDetails.printMedia && briefDetails.printMedia.length > 0 && <div>
-                      <h4 className="font-medium">Print Media</h4>
-                      <p className="mt-1">{briefDetails.printMedia.join(", ")}</p>
-                    </div>}
+                    {briefDetails.printMedia && briefDetails.printMedia.length > 0 && (
+                      <div>
+                        <h4 className="font-medium">Print Media</h4>
+                        <p className="mt-1">{briefDetails.printMedia.join(", ")}</p>
+                      </div>
+                    )}
                     
                     {/* Digital Media section */}
-                    {briefDetails.digitalMedia && briefDetails.digitalMedia.length > 0 && <div>
-                      <h4 className="font-medium">Digital Media</h4>
-                      <p className="mt-1">{briefDetails.digitalMedia.join(", ")}</p>
-                    </div>}
-                 </div>}
+                    {briefDetails.digitalMedia && briefDetails.digitalMedia.length > 0 && (
+                      <div>
+                        <h4 className="font-medium">Digital Media</h4>
+                        <p className="mt-1">{briefDetails.digitalMedia.join(", ")}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
-                {briefDetails.type === "UI Design" && <div className="space-y-4">
+                {briefDetails.type === "UI Design" && (
+                  <div className="space-y-4">
                     <div>
                       <h4 className="font-medium">About Company</h4>
                       <p className="mt-1">{briefDetails.aboutCompany || "Not provided"}</p>
@@ -694,7 +719,7 @@ const Briefs = () => {
                     
                     <div>
                       <h4 className="font-medium">Brand Guidelines</h4>
-                      <p className="mt-1">{briefDetails.hasBrandGuidelines ? "Yes" : "No"}</p>
+                      <p className="mt-1">{briefDetails.hasBrandGuidelines || "Not provided"}</p>
                       {briefDetails.hasBrandGuidelines === "Yes" && briefDetails.brandGuidelinesDetails && (
                         <p className="mt-1">{briefDetails.brandGuidelinesDetails}</p>
                       )}
@@ -702,7 +727,7 @@ const Briefs = () => {
                     
                     <div>
                       <h4 className="font-medium">Wireframe</h4>
-                      <p className="mt-1">{briefDetails.hasWireframe ? "Yes" : "No"}</p>
+                      <p className="mt-1">{briefDetails.hasWireframe || "Not provided"}</p>
                       {briefDetails.hasWireframe === "Yes" && briefDetails.wireframeDetails && (
                         <p className="mt-1">{briefDetails.wireframeDetails}</p>
                       )}
@@ -746,19 +771,21 @@ const Briefs = () => {
                       <p className="mt-1">{briefDetails.pageCount || "Not provided"}</p>
                     </div>
                     
-                    {briefDetails.pageDetails && briefDetails.pageDetails.length > 0 && 
+                    {briefDetails.pageDetails && briefDetails.pageDetails.length > 0 && (
                       <div>
                         <h4 className="font-medium">Page Details</h4>
                         <div className="space-y-2 mt-1">
                           {briefDetails.pageDetails.map((detail: string, index: number) => 
-                            detail && <div key={index} className="border p-3 rounded-md">
-                              <p className="font-medium">Page {index + 1}</p>
-                              <p>{detail}</p>
-                            </div>
+                            detail && (
+                              <div key={index} className="border p-3 rounded-md">
+                                <p className="font-medium">Page {index + 1}</p>
+                                <p>{detail}</p>
+                              </div>
+                            )
                           )}
                         </div>
                       </div>
-                    }
+                    )}
                     
                     <div>
                       <h4 className="font-medium">Website Content</h4>
@@ -773,10 +800,13 @@ const Briefs = () => {
                     <div>
                       <h4 className="font-medium">Completion Deadline</h4>
                       <p className="mt-1">
-                        {briefDetails.completionDeadline ? format(new Date(briefDetails.completionDeadline), "MMMM d, yyyy") : "Not provided"}
+                        {briefDetails.completionDeadline 
+                          ? format(new Date(briefDetails.completionDeadline), "MMMM d, yyyy") 
+                          : "Not provided"}
                       </p>
                     </div>
-                  </div>}
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
@@ -788,7 +818,8 @@ const Briefs = () => {
                   Download PDF
                 </Button>
               </div>
-            </div>}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
