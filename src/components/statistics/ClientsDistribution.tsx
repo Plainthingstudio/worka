@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { CHART_COLORS } from "@/lib/chart-styles";
 import {
   Card,
@@ -23,9 +23,10 @@ interface ClientsDistributionProps {
 
 const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
   // Transform data for the chart
-  const chartData = Object.entries(data).map(([name, value]) => ({
+  const chartData = Object.entries(data).map(([name, value], index) => ({
     name,
     value,
+    fill: index % 2 === 0 ? CHART_COLORS.blue : CHART_COLORS.lightBlue,
   }));
   
   // Calculate total clients
@@ -39,63 +40,80 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
     },
   };
 
+  // Sort data by value in descending order
+  chartData.sort((a, b) => b.value - a.value);
+
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader>
         <CardTitle className="text-base font-medium">Lead Sources</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardDescription>Distribution of client acquisition channels</CardDescription>
       </CardHeader>
       <CardContent className="pb-0">
-        <ChartContainer 
-          config={chartConfig}
-          className="aspect-[1.2/1] h-[300px]"
-        >
+        <ResponsiveContainer width="100%" height={300}>
           <BarChart
             data={chartData}
             margin={{
-              top: 16,
-              right: 16,
-              left: 16,
-              bottom: 16,
+              top: 5,
+              right: 5,
+              left: 5,
+              bottom: 24,
             }}
+            barSize={36}
           >
-            <CartesianGrid vertical={false} />
-            <XAxis
+            <CartesianGrid vertical={false} strokeDasharray="3 3" stroke={CHART_COLORS.gray} opacity={0.3} />
+            <XAxis 
               dataKey="name"
               tickLine={false}
-              tickMargin={10}
               axisLine={false}
+              tick={{ fill: '#6B7280', fontSize: 12 }}
+              dy={10}
             />
-            <YAxis
+            <YAxis 
               tickLine={false}
-              tickMargin={10}
-              axisLine={false}
+              axisLine={false} 
+              tick={{ fill: '#6B7280', fontSize: 12 }}
+              dx={-5}
             />
-            <ChartTooltip
-              content={
-                <ChartTooltipContent 
-                  formatter={(value: number, name: string) => [
-                    `${value} clients (${((value / totalClients) * 100).toFixed(1)}%)`, 
-                    name
-                  ]}
-                  hideLabel
-                />
-              } 
+            <Tooltip
+              cursor={{ fill: 'rgba(200, 200, 200, 0.1)' }}
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const data = payload[0].payload;
+                  return (
+                    <div className="rounded-lg border bg-card p-2 shadow-sm">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-foreground">{data.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {data.value} clients ({((data.value / totalClients) * 100).toFixed(1)}%)
+                        </span>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              }}
             />
-            <Bar
-              dataKey="value"
+            <Bar 
+              dataKey="value" 
               radius={[4, 4, 0, 0]}
-              fill={CHART_COLORS.primary}
-            />
+            >
+              {chartData.map((entry, index) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={entry.fill}
+                />
+              ))}
+            </Bar>
           </BarChart>
-        </ChartContainer>
+        </ResponsiveContainer>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm pt-6">
         <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month
+          {chartData.length} active acquisition channels
         </div>
         <div className="text-muted-foreground">
-          Showing distribution across {Object.keys(data).length} acquisition channels
+          Top source: {chartData[0]?.name || 'N/A'} ({chartData[0]?.value || 0} clients)
         </div>
       </CardFooter>
     </Card>
