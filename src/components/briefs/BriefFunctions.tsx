@@ -1,26 +1,32 @@
 
-import React from "react";
-import Navbar from "@/components/Navbar";
-import Sidebar from "@/components/Sidebar";
-import BriefsHeader from "@/components/briefs/BriefsHeader";
-import BriefStats from "@/components/briefs/BriefStats";
-import BriefsFilter from "@/components/briefs/BriefsFilter";
-import BriefsTable from "@/components/briefs/BriefsTable";
-import BriefTypeCards from "@/components/briefs/BriefTypeCards";
-import BriefDetailsDialog from "@/components/briefs/BriefDetailsDialog";
-import DeleteBriefDialog from "@/components/briefs/DeleteBriefDialog";
-import { useBriefs } from "@/hooks/useBriefs";
+import React, { useState } from "react";
 import { toast } from "sonner";
 import { generateIllustrationBriefPDF, generateUIDesignBriefPDF, generateGraphicDesignBriefPDF } from "@/utils/briefPdfGenerator";
+import BriefDetailsDialog from "./BriefDetailsDialog";
+import DeleteBriefDialog from "./DeleteBriefDialog";
 
-const Briefs = () => {
-  const { briefs, setBriefs, filter, setFilter, search, setSearch, filteredBriefs } = useBriefs();
-  const [selectedBrief, setSelectedBrief] = React.useState<any>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
-  const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
-  const [briefDetails, setBriefDetails] = React.useState<any>(null);
+interface Brief {
+  id: number;
+  name: string;
+  email: string;
+  companyName: string;
+  type: string;
+  status: string;
+  submissionDate: string;
+}
 
-  const viewBriefDetails = (brief: any) => {
+interface BriefFunctionsProps {
+  briefs: Brief[];
+  setBriefs: React.Dispatch<React.SetStateAction<Brief[]>>;
+}
+
+const BriefFunctions: React.FC<BriefFunctionsProps> = ({ briefs, setBriefs }) => {
+  const [selectedBrief, setSelectedBrief] = useState<Brief | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [briefDetails, setBriefDetails] = useState<any>(null);
+
+  const viewBriefDetails = (brief: Brief) => {
     const storedBriefs = localStorage.getItem("briefs");
     if (storedBriefs) {
       const allBriefs = JSON.parse(storedBriefs);
@@ -32,7 +38,7 @@ const Briefs = () => {
     }
   };
 
-  const handleDeleteBrief = (brief: any) => {
+  const handleDeleteBrief = (brief: Brief) => {
     setSelectedBrief(brief);
     setIsDeleteDialogOpen(true);
   };
@@ -48,7 +54,7 @@ const Briefs = () => {
     }
   };
 
-  const downloadBrief = async (brief: any) => {
+  const downloadBrief = async (brief: Brief) => {
     try {
       const storedBriefs = localStorage.getItem("briefs");
       if (storedBriefs) {
@@ -76,29 +82,7 @@ const Briefs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Sidebar />
-      <div className="pl-14 md:pl-56">
-        <Navbar title="Briefs" />
-        <main className="container py-6">
-          <BriefsHeader />
-          <BriefStats briefs={briefs} />
-          <BriefsFilter 
-            filter={filter}
-            setFilter={setFilter}
-            search={search}
-            setSearch={setSearch}
-          />
-          <BriefsTable 
-            briefs={filteredBriefs} 
-            onView={viewBriefDetails}
-            onDownload={downloadBrief}
-            onDelete={handleDeleteBrief}
-          />
-          <BriefTypeCards />
-        </main>
-      </div>
-
+    <>
       <DeleteBriefDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
@@ -111,8 +95,8 @@ const Briefs = () => {
         briefDetails={briefDetails}
         onDownload={downloadBrief}
       />
-    </div>
+    </>
   );
 };
 
-export default Briefs;
+export default BriefFunctions;
