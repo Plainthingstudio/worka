@@ -1,3 +1,4 @@
+
 import React from "react";
 import { format } from "date-fns";
 import { Download } from "lucide-react";
@@ -25,6 +26,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
   // Log briefDetails to debug
   console.log("Brief details in dialog:", briefDetails);
   console.log("Brief type:", briefDetails.type);
+  console.log("Logo feelings:", briefDetails.logoFeelings);
   console.log("Services data:", briefDetails.services);
   console.log("Print Media data:", briefDetails.printMedia);
   console.log("Digital Media data:", briefDetails.digitalMedia);
