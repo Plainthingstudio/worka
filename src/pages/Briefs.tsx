@@ -1,4 +1,3 @@
-
 import React from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -11,7 +10,11 @@ import BriefDetailsDialog from "@/components/briefs/BriefDetailsDialog";
 import DeleteBriefDialog from "@/components/briefs/DeleteBriefDialog";
 import { useBriefs } from "@/hooks/useBriefs";
 import { toast } from "sonner";
-import { generateIllustrationBriefPDF, generateUIDesignBriefPDF, generateGraphicDesignBriefPDF } from "@/utils/briefPdfGenerator";
+import { 
+  generateIllustrationBriefPDF, 
+  generateUIDesignBriefPDF, 
+  generateGraphicDesignBriefPDF 
+} from "@/utils/briefPdfGenerator";
 
 const Briefs = () => {
   const { briefs, setBriefs, filter, setFilter, search, setSearch, filteredBriefs } = useBriefs();
