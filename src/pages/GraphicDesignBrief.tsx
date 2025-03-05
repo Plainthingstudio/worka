@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Card } from "@/components/ui/card";
@@ -91,6 +92,7 @@ const GraphicDesignBrief = () => {
       type: "Graphic Design",
       name: data.name || "",
       email: data.email || "",
+      // Preserve the exact values for logoFeelings
       logoFeelings: {
         style: data.logoFeelings?.style || "",
         pricing: data.logoFeelings?.pricing || "",
