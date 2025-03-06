@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { projects } from "@/mockData";
@@ -19,9 +20,16 @@ interface ProjectCompletionChartProps {
 }
 
 const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRange }) => {
+  // Log projects data to debug
+  console.log("All projects:", projects);
+  console.log("Completed projects:", projects.filter(p => p.status === 'Completed'));
+
   const getMonthlyCompletionData = () => {
-    const endDate = new Date();
+    const today = new Date();
+    const endDate = today;
     const startDate = subMonths(endDate, 5);
+    
+    console.log("Date range for chart:", { startDate, endDate });
     
     const months: string[] = [];
     const monthlyCompletions: { [key: string]: number } = {};
@@ -36,17 +44,31 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
     }
     
     // Count actual completed projects by month
-    projects
-      .filter((project: Project) => project.status === 'Completed')
-      .forEach(project => {
-        const completionDate = new Date(project.deadline);
-        if (isWithinInterval(completionDate, { start: startDate, end: endDate })) {
-          const monthKey = format(completionDate, "MMM");
-          if (monthlyCompletions[monthKey] !== undefined) {
-            monthlyCompletions[monthKey]++;
-          }
+    // For this demo, we'll use the project's createdAt date to determine when it was completed
+    // In a real application, you might have a completedAt field
+    const completedProjects = projects.filter((project: Project) => project.status === 'Completed');
+    
+    console.log("Filtered completed projects:", completedProjects);
+    
+    completedProjects.forEach(project => {
+      // For demonstration purposes, we'll use the createdAt date as a proxy for completion date
+      // In a real app, you might have a separate completedAt date field
+      const completionDate = new Date(project.createdAt);
+      
+      console.log(`Project "${project.name}" created at:`, completionDate);
+      
+      // Check if within our 6-month window
+      if (isWithinInterval(completionDate, { start: startDate, end: endDate })) {
+        const monthKey = format(completionDate, "MMM");
+        console.log(`Project "${project.name}" completion falls in month:`, monthKey);
+        
+        if (monthlyCompletions[monthKey] !== undefined) {
+          monthlyCompletions[monthKey]++;
         }
-      });
+      }
+    });
+    
+    console.log("Monthly completions data:", monthlyCompletions);
 
     return months.map(month => ({
       month,
@@ -55,8 +77,13 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
   };
 
   const data = getMonthlyCompletionData();
+  console.log("Chart data:", data);
+  
   const totalCompleted = data.reduce((sum, item) => sum + item.completed, 0);
-  const completionRate = ((totalCompleted / projects.length) * 100).toFixed(0);
+  const completionRate = totalCompleted > 0 
+    ? ((totalCompleted / projects.length) * 100).toFixed(0) 
+    : "0";
+    
   const startMonth = format(subMonths(new Date(), 5), "MMMM");
   const endMonth = format(new Date(), "MMMM yyyy");
   const dateRangeText = `${startMonth} - ${endMonth}`;

@@ -1,4 +1,3 @@
-
 import { Client, Project, LeadSource, ProjectStatus, ProjectType, Currency, PaymentType } from "@/types";
 
 // Mock data for clients
@@ -103,7 +102,7 @@ export const projects: Project[] = [
     fee: 3500,
     currency: 'USD' as Currency,
     projectType: 'Project Based' as ProjectType,
-    createdAt: new Date('2023-04-10T13:45:00Z'),
+    createdAt: new Date(new Date().getFullYear(), new Date().getMonth() - 2, 15),
     payments: [
       {
         id: '1',
@@ -162,6 +161,27 @@ export const projects: Project[] = [
         amount: 1000,
         date: new Date('2023-05-20T13:00:00Z'),
         notes: '50% down payment',
+      },
+    ],
+  },
+  {
+    id: '6',
+    name: 'Logo Design',
+    clientId: '2',
+    status: 'Completed' as ProjectStatus,
+    deadline: new Date('2023-07-30T23:59:59Z'),
+    fee: 1500,
+    currency: 'USD' as Currency,
+    projectType: 'Project Based' as ProjectType,
+    createdAt: new Date(new Date().getFullYear(), new Date().getMonth(), 5),
+    payments: [
+      {
+        id: '1',
+        projectId: '6',
+        paymentType: 'Full Payment' as PaymentType,
+        amount: 1500,
+        date: new Date(new Date().getFullYear(), new Date().getMonth(), 5),
+        notes: 'Payment in full',
       },
     ],
   },
