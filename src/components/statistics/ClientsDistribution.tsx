@@ -10,6 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
 interface ClientsDistributionProps {
   data: Record<string, number>;
@@ -26,24 +32,32 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
   // Calculate total clients
   const totalClients = chartData.reduce((sum, item) => sum + item.value, 0);
   
+  // Create chart config
+  const chartConfig: ChartConfig = {
+    value: {
+      label: "Clients",
+      color: CHART_COLORS.primary,
+    },
+  };
+
   // Sort data by value in descending order
   chartData.sort((a, b) => b.value - a.value);
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-2">
+    <Card className="h-full">
+      <CardHeader>
         <CardTitle className="text-base font-medium">Lead Sources</CardTitle>
         <CardDescription>Distribution of client acquisition channels</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 p-0">
-        <ResponsiveContainer width="100%" height="100%">
+      <CardContent className="pb-0">
+        <ResponsiveContainer width="100%" height={300}>
           <BarChart
             data={chartData}
             margin={{
-              top: 20,
-              right: 20,
-              left: 10,
-              bottom: 0
+              top: 5,
+              right: 5,
+              left: 5,
+              bottom: 24,
             }}
             barSize={36}
           >
@@ -53,19 +67,13 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
               tickLine={false}
               axisLine={false}
               tick={{ fill: '#6B7280', fontSize: 12 }}
-              dy={8}
-              padding={{
-                left: 10,
-                right: 10
-              }}
-              height={30}
+              dy={10}
             />
             <YAxis 
               tickLine={false}
               axisLine={false} 
               tick={{ fill: '#6B7280', fontSize: 12 }}
               dx={-5}
-              width={40}
             />
             <Tooltip
               cursor={{ fill: 'rgba(200, 200, 200, 0.1)' }}
@@ -100,7 +108,7 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({ data }) => {
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm pt-2 pb-4 px-6">
+      <CardFooter className="flex-col items-start gap-2 text-sm pt-6">
         <div className="flex items-center gap-2 font-medium leading-none">
           {chartData.length} active acquisition channels
         </div>
