@@ -3,7 +3,7 @@ import React from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { projects } from "@/mockData";
 import { DateRange } from "@/types";
-import { format, subMonths } from "date-fns";
+import { format, subMonths, isWithinInterval } from "date-fns";
 import { CHART_COLORS } from "@/lib/chart-styles";
 import {
   Card,
@@ -21,8 +21,8 @@ interface ProjectCompletionChartProps {
 
 const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRange }) => {
   const getMonthlyCompletionData = () => {
-    const startDate = subMonths(new Date(), 5); // Last 6 months
     const endDate = new Date();
+    const startDate = subMonths(endDate, 5); // Last 6 months (current + 5 previous)
     
     // Initialize monthly counts
     const months: string[] = [];
@@ -43,7 +43,7 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
         // For this mock data, let's assume completion date is the project deadline if status is completed
         const completionDate = new Date(project.deadline);
         
-        if (completionDate >= startDate && completionDate <= endDate) {
+        if (isWithinInterval(completionDate, { start: startDate, end: endDate })) {
           const completionMonthKey = format(completionDate, "MMM");
           if (monthlyCompletions[completionMonthKey] !== undefined) {
             monthlyCompletions[completionMonthKey]++;
@@ -60,12 +60,15 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
   };
 
   const data = getMonthlyCompletionData();
+  const startMonth = format(subMonths(new Date(), 5), "MMMM");
+  const endMonth = format(new Date(), "MMMM yyyy");
+  const dateRangeText = `${startMonth} - ${endMonth}`;
 
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium">Project Completion</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardDescription>{dateRangeText}</CardDescription>
       </CardHeader>
       <CardContent className="p-0 pl-4 pr-4 flex-1">
         <div className="h-[280px] w-full">

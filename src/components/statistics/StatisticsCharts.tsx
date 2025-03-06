@@ -3,7 +3,7 @@ import React from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { clients } from "@/mockData";
 import { DateRange } from "@/types";
-import { format, subMonths } from "date-fns";
+import { format, subMonths, isWithinInterval } from "date-fns";
 import { TrendingUp } from "lucide-react";
 import { CHART_COLORS } from "@/lib/chart-styles";
 import {
@@ -21,8 +21,8 @@ interface StatisticsChartsProps {
 
 const StatisticsCharts: React.FC<StatisticsChartsProps> = ({ dateRange }) => {
   const getMonthlyData = () => {
-    const startDate = subMonths(new Date(), 5); // Last 6 months
     const endDate = new Date();
+    const startDate = subMonths(endDate, 5); // Last 6 months (current + 5 previous)
     
     const months: string[] = [];
     const monthlyCounts: { [key: string]: number } = {};
@@ -37,7 +37,7 @@ const StatisticsCharts: React.FC<StatisticsChartsProps> = ({ dateRange }) => {
     
     clients.forEach(client => {
       const creationDate = new Date(client.createdAt);
-      if (creationDate >= startDate && creationDate <= endDate) {
+      if (isWithinInterval(creationDate, { start: startDate, end: endDate })) {
         const monthKey = format(creationDate, "MMM");
         if (monthlyCounts[monthKey] !== undefined) {
           monthlyCounts[monthKey]++;
@@ -60,12 +60,15 @@ const StatisticsCharts: React.FC<StatisticsChartsProps> = ({ dateRange }) => {
   };
 
   const data = getMonthlyData();
+  const startMonth = format(subMonths(new Date(), 5), "MMMM");
+  const endMonth = format(new Date(), "MMMM yyyy");
+  const dateRangeText = `${startMonth} - ${endMonth}`;
 
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium">Client Growth</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardDescription>{dateRangeText}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 px-0 py-0">
         <div className="h-[280px] w-full px-4">
