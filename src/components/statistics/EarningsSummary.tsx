@@ -37,12 +37,13 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({
     }
 
     // Extract all payments from all projects
-    const allPayments: Payment[] = [];
+    const allPayments: (Payment & { currency: string })[] = [];
     projects.forEach(project => {
       project.payments.forEach(payment => {
+        // Add the project currency to each payment
         allPayments.push({
           ...payment,
-          currency: project.currency // Add the project currency to the payment
+          currency: project.currency // Add the currency from the parent project
         });
       });
     });
