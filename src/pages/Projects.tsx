@@ -9,10 +9,12 @@ import ProjectForm from "@/components/ProjectForm";
 import { Project, ProjectCategory } from "@/types";
 import ProjectsFilter from "@/components/projects/ProjectsFilter";
 import ProjectsTable from "@/components/projects/ProjectsTable";
+import ProjectsStats from "@/components/projects/ProjectsStats";
 import DeleteConfirmationDialog from "@/components/projects/DeleteConfirmationDialog";
 
 // Import clients and projects from the centralized mockData
 import { clients, projects as mockProjects } from "@/mockData";
+
 const Projects = () => {
   // Initialize state with the mockProjects but keep track of the reference to mockProjects
   const [projects, setProjects] = useState<Project[]>(mockProjects);
@@ -44,17 +46,20 @@ const Projects = () => {
     }
     return () => observer.disconnect();
   }, []);
+
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(search.toLowerCase()) || clients.find(c => c.id === project.clientId)?.name.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === "all" || project.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
   const openAddProjectDialog = () => setIsAddingProject(true);
   const closeAddProjectDialog = () => setIsAddingProject(false);
   const openEditProjectDialog = (project: Project) => setEditingProject(project);
   const closeEditProjectDialog = () => setEditingProject(null);
   const openDeleteDialog = (id: string) => setIsDeleting(id);
   const closeDeleteDialog = () => setIsDeleting(null);
+
   const handleAddProject = (data: any) => {
     const newProject: Project = {
       id: `project-${Date.now()}`,
@@ -75,12 +80,13 @@ const Projects = () => {
     setProjects(updatedProjects);
 
     // Update the original array to make it available globally
-    mockProjects.length = 0; // Clear the array
-    mockProjects.push(...updatedProjects); // Add all projects back
+    mockProjects.length = 0;
+    mockProjects.push(...updatedProjects);
 
     setIsAddingProject(false);
     toast.success("Project created successfully");
   };
+
   const handleEditProject = (data: any) => {
     if (!editingProject) return;
     const updatedProjects = projects.map(project => project.id === editingProject.id ? {
@@ -97,6 +103,7 @@ const Projects = () => {
     setEditingProject(null);
     toast.success("Project updated successfully");
   };
+
   const handleDeleteProject = (id: string) => {
     const updatedProjects = projects.filter(project => project.id !== id);
 
@@ -109,6 +116,7 @@ const Projects = () => {
     setIsDeleting(null);
     toast.success("Project deleted successfully");
   };
+
   return <div className="flex min-h-screen bg-background">
       <Sidebar />
       <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
@@ -129,6 +137,8 @@ const Projects = () => {
             </Button>
           </div>
 
+          <ProjectsStats projects={projects} />
+
           <ProjectsFilter search={search} setSearch={setSearch} statusFilter={statusFilter} setStatusFilter={setStatusFilter} />
 
           <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
@@ -139,22 +149,20 @@ const Projects = () => {
         </main>
       </div>
 
-      {/* Add Project Dialog */}
       {isAddingProject && <Dialog open={isAddingProject} onOpenChange={closeAddProjectDialog}>
           <DialogContent className="sm:max-w-[600px]">
             <ProjectForm clients={clients} onSave={handleAddProject} onCancel={closeAddProjectDialog} />
           </DialogContent>
         </Dialog>}
 
-      {/* Edit Project Dialog */}
       {editingProject && <Dialog open={!!editingProject} onOpenChange={closeEditProjectDialog}>
           <DialogContent className="sm:max-w-[600px]">
             <ProjectForm project={editingProject} clients={clients} onSave={handleEditProject} onCancel={closeEditProjectDialog} />
           </DialogContent>
         </Dialog>}
 
-      {/* Delete Confirmation Dialog */}
       {isDeleting && <DeleteConfirmationDialog isOpen={!!isDeleting} onClose={closeDeleteDialog} onConfirm={() => isDeleting && handleDeleteProject(isDeleting)} />}
     </div>;
 };
+
 export default Projects;
