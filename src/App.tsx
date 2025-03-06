@@ -1,56 +1,66 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Index from "./pages/Index";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Toaster } from "@/components/ui/sonner";
+import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import Clients from "./pages/Clients";
 import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
-import Clients from "./pages/Clients";
-import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
 import Invoices from "./pages/Invoices";
-import InvoiceDetails from "./pages/InvoiceDetails";
 import InvoiceForm from "./pages/InvoiceForm";
+import InvoiceDetails from "./pages/InvoiceDetails";
 import Briefs from "./pages/Briefs";
 import UIDesignBrief from "./pages/UIDesignBrief";
 import GraphicDesignBrief from "./pages/GraphicDesignBrief";
 import IllustrationsBrief from "./pages/IllustrationsBrief";
 import ThankYou from "./pages/ThankYou";
 import Statistics from "./pages/Statistics";
+import NotFound from "./pages/NotFound";
+import Team from "./pages/Team";
+import "./App.css";
 
-const queryClient = new QueryClient();
+const isAuthenticated = () => {
+  return !!localStorage.getItem("isLoggedIn");
+};
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  return isAuthenticated() ? <>{children}</> : <Navigate to="/auth" />;
+};
+
+function App() {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  return (
+    <Router>
+      {isMounted && (
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/dashboard" element={<Navigate to="/" replace />} />
-          <Route path="/clients" element={<Clients />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/projects/:projectId" element={<ProjectDetails />} />
-          <Route path="/invoices" element={<Invoices />} />
-          <Route path="/invoices/new" element={<InvoiceForm />} />
-          <Route path="/invoices/:invoiceId" element={<InvoiceDetails />} />
-          <Route path="/invoices/:invoiceId/edit" element={<InvoiceForm />} />
-          <Route path="/briefs" element={<Briefs />} />
-          <Route path="/briefs/ui-design" element={<UIDesignBrief />} />
-          <Route path="/briefs/graphic-design" element={<GraphicDesignBrief />} />
-          <Route path="/briefs/illustrations" element={<IllustrationsBrief />} />
-          <Route path="/statistics" element={<Statistics />} />
-          <Route path="/thank-you" element={<ThankYou />} />
+          <Route path="/" element={<Navigate to="/auth" />} />
           <Route path="/auth" element={<Auth />} />
-          {/* 404 catch-all route */}
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+          <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+          <Route path="/projects/:projectId" element={<ProtectedRoute><ProjectDetails /></ProtectedRoute>} />
+          <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
+          <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
+          <Route path="/invoices/new" element={<ProtectedRoute><InvoiceForm /></ProtectedRoute>} />
+          <Route path="/invoices/:invoiceId" element={<ProtectedRoute><InvoiceDetails /></ProtectedRoute>} />
+          <Route path="/briefs" element={<ProtectedRoute><Briefs /></ProtectedRoute>} />
+          <Route path="/briefs/ui" element={<ProtectedRoute><UIDesignBrief /></ProtectedRoute>} />
+          <Route path="/briefs/graphic" element={<ProtectedRoute><GraphicDesignBrief /></ProtectedRoute>} />
+          <Route path="/briefs/illustration" element={<ProtectedRoute><IllustrationsBrief /></ProtectedRoute>} />
+          <Route path="/thank-you" element={<ProtectedRoute><ThankYou /></ProtectedRoute>} />
+          <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+      )}
+      <Toaster />
+    </Router>
+  );
+}
 
 export default App;

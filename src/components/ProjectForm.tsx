@@ -4,8 +4,8 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, X, Plus } from "lucide-react";
-import { Client, Currency, Project, ProjectStatus, ProjectType, ProjectCategory } from "@/types";
+import { Calendar as CalendarIcon, X, Plus, User } from "lucide-react";
+import { Client, Currency, Project, ProjectStatus, ProjectType, ProjectCategory, TeamMember } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -14,9 +14,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DialogTitle, DialogDescription, DialogHeader, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+// Updated schema to include teamMembers
 const formSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters."
@@ -41,12 +43,14 @@ const formSchema = z.object({
   }),
   categories: z.array(z.string()).min(1, {
     message: "Select at least one category."
-  })
+  }),
+  teamMembers: z.array(z.string()).optional()
 });
 
 interface ProjectFormProps {
   project?: Project;
   clients: Client[];
+  teamMembers?: TeamMember[];
   onSave: (values: z.infer<typeof formSchema>) => void;
   onCancel: () => void;
 }
@@ -54,12 +58,16 @@ interface ProjectFormProps {
 const ProjectForm = ({
   project,
   clients,
+  teamMembers = [],
   onSave,
   onCancel
 }: ProjectFormProps) => {
   const [categoryInput, setCategoryInput] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<ProjectCategory[]>(
     project?.categories || []
+  );
+  const [selectedTeamMembers, setSelectedTeamMembers] = useState<string[]>(
+    project?.teamMembers || []
   );
 
   // Predefined category options
@@ -88,14 +96,16 @@ const ProjectForm = ({
       fee: project?.fee || 0,
       currency: project?.currency || "USD",
       projectType: project?.projectType || "Project Based",
-      categories: project?.categories || []
+      categories: project?.categories || [],
+      teamMembers: project?.teamMembers || []
     }
   });
 
-  // Update form categories value when selectedCategories changes
+  // Update form categories and teamMembers values when they change
   useEffect(() => {
     form.setValue('categories', selectedCategories);
-  }, [selectedCategories, form]);
+    form.setValue('teamMembers', selectedTeamMembers);
+  }, [selectedCategories, selectedTeamMembers, form]);
 
   // Format the fee input value when the form loads and when currency changes
   useEffect(() => {
@@ -126,6 +136,15 @@ const ProjectForm = ({
 
   const removeCategory = (category: ProjectCategory) => {
     setSelectedCategories(selectedCategories.filter(c => c !== category));
+  };
+
+  // Team member management functions
+  const toggleTeamMember = (memberId: string) => {
+    if (selectedTeamMembers.includes(memberId)) {
+      setSelectedTeamMembers(selectedTeamMembers.filter(id => id !== memberId));
+    } else {
+      setSelectedTeamMembers([...selectedTeamMembers, memberId]);
+    }
   };
 
   // Custom input formatter for fee field to show thousand separators while editing
@@ -396,6 +415,45 @@ const ProjectForm = ({
             </FormItem>
           )} 
         />
+
+        {teamMembers.length > 0 && (
+          <FormField 
+            control={form.control} 
+            name="teamMembers" 
+            render={() => (
+              <FormItem>
+                <FormLabel>Assign Team Members</FormLabel>
+                <div className="border rounded-md p-4">
+                  <div className="space-y-3">
+                    {teamMembers.map(member => (
+                      <div key={member.id} className="flex items-center space-x-2">
+                        <Checkbox 
+                          id={`member-${member.id}`} 
+                          checked={selectedTeamMembers.includes(member.id)}
+                          onCheckedChange={() => toggleTeamMember(member.id)}
+                        />
+                        <label
+                          htmlFor={`member-${member.id}`}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
+                        >
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          {member.name} - <span className="text-muted-foreground text-xs">{member.position}</span>
+                        </label>
+                      </div>
+                    ))}
+                    
+                    {teamMembers.length === 0 && (
+                      <div className="text-sm text-muted-foreground">
+                        No team members available. Add team members from the Team page.
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )} 
+          />
+        )}
 
         <DialogFooter className="flex gap-2 pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>

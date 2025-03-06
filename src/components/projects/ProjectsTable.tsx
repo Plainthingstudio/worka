@@ -30,6 +30,7 @@ const ProjectsTable = ({ projects, clients, onEdit, onDelete }: ProjectsTablePro
           <TableHead>Deadline</TableHead>
           <TableHead>Fee</TableHead>
           <TableHead>Type</TableHead>
+          <TableHead>Team</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -37,7 +38,7 @@ const ProjectsTable = ({ projects, clients, onEdit, onDelete }: ProjectsTablePro
         {projects.length === 0 ? (
           <TableRow>
             <TableCell
-              colSpan={8}
+              colSpan={9}
               className="h-24 text-center text-muted-foreground"
             >
               No projects found.

@@ -2,7 +2,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { CalendarIcon, DollarSign, Tag, Pencil, Trash, EyeIcon } from "lucide-react";
+import { CalendarIcon, DollarSign, Tag, Pencil, Trash, EyeIcon, Users } from "lucide-react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+// Import the mockTeamMembers array
+import { mockTeamMembers } from "@/pages/Team";
+
 interface ProjectItemProps {
   project: Project;
   client: Client | undefined;
@@ -23,6 +26,11 @@ interface ProjectItemProps {
 
 const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) => {
   const navigate = useNavigate();
+
+  // Get assigned team members
+  const assignedTeamMembers = project.teamMembers ? 
+    mockTeamMembers.filter(member => project.teamMembers?.includes(member.id)) : 
+    [];
 
   const getStatusBadgeClass = (status: ProjectStatus) => {
     switch (status) {
@@ -105,11 +113,36 @@ const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) =>
       <TableCell>
         <Badge 
           variant={getProjectTypeBadgeVariant(project.projectType)}
-          className="inline-flex items-center gap-1 w-fit"
+          className="inline-flex items-center gap-1"
         >
           <Tag className="h-3.5 w-3.5" />
           {project.projectType}
         </Badge>
+      </TableCell>
+
+      <TableCell>
+        {assignedTeamMembers.length > 0 ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground cursor-help">
+                  <Users className="h-3.5 w-3.5" />
+                  {assignedTeamMembers.length}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="font-medium">Assigned Team Members:</p>
+                <ul className="text-xs mt-1">
+                  {assignedTeamMembers.map(member => (
+                    <li key={member.id}>• {member.name} ({member.position})</li>
+                  ))}
+                </ul>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          <span className="text-muted-foreground text-xs">None</span>
+        )}
       </TableCell>
       
       <TableCell className="text-right">

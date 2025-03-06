@@ -10,6 +10,19 @@ export type PaymentType = 'Down Payment' | 'Final Payment' | 'Milestone Payment'
 
 export type PaymentTerms = 'Due on Receipt' | 'Net 15' | 'Net 30' | 'Net 45' | 'Net 60' | 'Custom';
 
+export type TeamPosition = 
+  | 'Project Manager' 
+  | 'Account Executive' 
+  | 'UI Designer' 
+  | 'Senior UI Designer' 
+  | 'Design Director' 
+  | 'Lead UI Designer' 
+  | 'Lead Graphic Designer' 
+  | 'Lead Illustrator' 
+  | 'Illustrator' 
+  | 'Graphic Designer' 
+  | 'Co-Founder';
+
 export type ProjectCategory = 
   | 'Landing Page' 
   | 'Website Design' 
@@ -49,6 +62,15 @@ export interface Payment {
   notes?: string;
 }
 
+export interface TeamMember {
+  id: string;
+  name: string;
+  position: TeamPosition;
+  startDate: Date;
+  skills: string[];
+  createdAt: Date;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -61,6 +83,7 @@ export interface Project {
   projectType: ProjectType;
   categories: ProjectCategory[];
   payments: Payment[];
+  teamMembers?: string[]; // Array of team member IDs
   createdAt: Date;
 }
 

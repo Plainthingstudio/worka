@@ -11,6 +11,7 @@ import {
   FileText,
   FileEdit,
   BarChart,
+  UserRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +38,11 @@ const Sidebar = () => {
       icon: ListChecks,
       label: "Projects",
       href: "/projects",
+    },
+    {
+      icon: UserRound,
+      label: "Team",
+      href: "/team",
     },
     {
       icon: FileText,

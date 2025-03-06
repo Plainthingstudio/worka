@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import ProjectForm from "@/components/ProjectForm";
-import { Project, ProjectCategory } from "@/types";
+import { Project, ProjectCategory, TeamMember } from "@/types";
 import ProjectsFilter from "@/components/projects/ProjectsFilter";
 import ProjectsTable from "@/components/projects/ProjectsTable";
 import ProjectsStats from "@/components/projects/ProjectsStats";
@@ -15,15 +16,25 @@ import DeleteConfirmationDialog from "@/components/projects/DeleteConfirmationDi
 // Import clients and projects from the centralized mockData
 import { clients, projects as mockProjects } from "@/mockData";
 
+// Import the global team members array
+import { mockTeamMembers } from "@/pages/Team";
+
 const Projects = () => {
   // Initialize state with the mockProjects but keep track of the reference to mockProjects
   const [projects, setProjects] = useState<Project[]>(mockProjects);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isAddingProject, setIsAddingProject] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+
+  // Fetch team members on mount
+  useEffect(() => {
+    // In a real app, this would be an API call
+    setTeamMembers(mockTeamMembers || []);
+  }, []);
 
   // Listen for sidebar state changes
   useEffect(() => {
@@ -71,6 +82,7 @@ const Projects = () => {
       currency: data.currency,
       projectType: data.projectType,
       categories: data.categories || [],
+      teamMembers: data.teamMembers || [],
       payments: [],
       createdAt: new Date()
     };
@@ -151,13 +163,13 @@ const Projects = () => {
 
       {isAddingProject && <Dialog open={isAddingProject} onOpenChange={closeAddProjectDialog}>
           <DialogContent className="sm:max-w-[600px]">
-            <ProjectForm clients={clients} onSave={handleAddProject} onCancel={closeAddProjectDialog} />
+            <ProjectForm clients={clients} teamMembers={teamMembers} onSave={handleAddProject} onCancel={closeAddProjectDialog} />
           </DialogContent>
         </Dialog>}
 
       {editingProject && <Dialog open={!!editingProject} onOpenChange={closeEditProjectDialog}>
           <DialogContent className="sm:max-w-[600px]">
-            <ProjectForm project={editingProject} clients={clients} onSave={handleEditProject} onCancel={closeEditProjectDialog} />
+            <ProjectForm project={editingProject} clients={clients} teamMembers={teamMembers} onSave={handleEditProject} onCancel={closeEditProjectDialog} />
           </DialogContent>
         </Dialog>}
 
