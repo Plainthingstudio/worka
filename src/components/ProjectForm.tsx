@@ -1,11 +1,11 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { Client, Currency, Project, ProjectStatus, ProjectType } from "@/types";
+import { Calendar as CalendarIcon, X, Plus } from "lucide-react";
+import { Client, Currency, Project, ProjectStatus, ProjectType, ProjectCategory } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DialogTitle, DialogDescription, DialogHeader, DialogFooter } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -37,6 +38,9 @@ const formSchema = z.object({
   }),
   projectType: z.enum(["Project Based", "Monthly Retainer", "Monthly Pay as you go"], {
     required_error: "Please select a project type."
+  }),
+  categories: z.array(z.string()).min(1, {
+    message: "Select at least one category."
   })
 });
 
@@ -53,6 +57,27 @@ const ProjectForm = ({
   onSave,
   onCancel
 }: ProjectFormProps) => {
+  const [categoryInput, setCategoryInput] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<ProjectCategory[]>(
+    project?.categories || []
+  );
+
+  // Predefined category options
+  const categoryOptions: ProjectCategory[] = [
+    'Landing Page',
+    'Website Design',
+    'Mobile App Design',
+    'Dashboard Design',
+    'Framer Development',
+    'Webflow Development',
+    '2D Illustrations',
+    '3D Illustrations',
+    '2D Animations',
+    '3D Animations',
+    'Logo Design',
+    'Branding Design'
+  ];
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -62,9 +87,15 @@ const ProjectForm = ({
       deadline: project?.deadline ? new Date(project.deadline) : new Date(),
       fee: project?.fee || 0,
       currency: project?.currency || "USD",
-      projectType: project?.projectType || "Project Based"
+      projectType: project?.projectType || "Project Based",
+      categories: project?.categories || []
     }
   });
+
+  // Update form categories value when selectedCategories changes
+  useEffect(() => {
+    form.setValue('categories', selectedCategories);
+  }, [selectedCategories, form]);
 
   // Format the fee input value when the form loads and when currency changes
   useEffect(() => {
@@ -83,6 +114,19 @@ const ProjectForm = ({
   const projectStatuses: ProjectStatus[] = ["Planning", "In progress", "Completed", "Paused", "Cancelled"];
   const currencies: Currency[] = ["USD", "IDR"];
   const projectTypes: ProjectType[] = ["Project Based", "Monthly Retainer", "Monthly Pay as you go"];
+
+  // Category management functions
+  const addCategory = (category: ProjectCategory) => {
+    if (category.trim() === "") return;
+    if (!selectedCategories.includes(category)) {
+      setSelectedCategories([...selectedCategories, category]);
+    }
+    setCategoryInput("");
+  };
+
+  const removeCategory = (category: ProjectCategory) => {
+    setSelectedCategories(selectedCategories.filter(c => c !== category));
+  };
 
   // Custom input formatter for fee field to show thousand separators while editing
   const formatFee = (value: string) => {
@@ -278,6 +322,76 @@ const ProjectForm = ({
                   ))}
                 </SelectContent>
               </Select>
+              <FormMessage />
+            </FormItem>
+          )} 
+        />
+
+        <FormField 
+          control={form.control} 
+          name="categories" 
+          render={() => (
+            <FormItem>
+              <FormLabel>Project Categories</FormLabel>
+              <div className="flex flex-col space-y-3">
+                <div className="flex">
+                  <FormControl>
+                    <Input 
+                      placeholder="Add a category..." 
+                      value={categoryInput}
+                      onChange={e => setCategoryInput(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addCategory(categoryInput);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    className="ml-2"
+                    onClick={() => addCategory(categoryInput)}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2 pb-2">
+                  {selectedCategories.map(category => (
+                    <Badge key={category} variant="outline" className="flex items-center gap-1">
+                      {category}
+                      <button 
+                        type="button" 
+                        onClick={() => removeCategory(category)}
+                        className="rounded-full text-muted-foreground hover:text-foreground focus:outline-none"
+                      >
+                        <X className="h-3 w-3" />
+                        <span className="sr-only">Remove {category}</span>
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+                <div className="mt-2">
+                  <p className="text-sm font-medium mb-2">Suggested categories:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {categoryOptions
+                      .filter(cat => !selectedCategories.includes(cat))
+                      .map(category => (
+                        <Badge 
+                          key={category} 
+                          variant="secondary" 
+                          className="cursor-pointer hover:bg-secondary/80"
+                          onClick={() => addCategory(category)}
+                        >
+                          {category}
+                        </Badge>
+                      ))
+                    }
+                  </div>
+                </div>
+              </div>
               <FormMessage />
             </FormItem>
           )} 

@@ -1,4 +1,3 @@
-
 export type LeadSource = 'Dribbble' | 'Website' | 'LinkedIn' | 'Behance' | 'Direct Email' | 'Other';
 
 export type ProjectStatus = 'Planning' | 'In progress' | 'Completed' | 'Paused' | 'Cancelled';
@@ -10,6 +9,21 @@ export type Currency = 'USD' | 'IDR';
 export type PaymentType = 'Down Payment' | 'Final Payment' | 'Milestone Payment';
 
 export type PaymentTerms = 'Due on Receipt' | 'Net 15' | 'Net 30' | 'Net 45' | 'Net 60' | 'Custom';
+
+export type ProjectCategory = 
+  | 'Landing Page' 
+  | 'Website Design' 
+  | 'Mobile App Design' 
+  | 'Dashboard Design'
+  | 'Framer Development'
+  | 'Webflow Development'
+  | '2D Illustrations'
+  | '3D Illustrations'
+  | '2D Animations'
+  | '3D Animations'
+  | 'Logo Design'
+  | 'Branding Design'
+  | string; // Allow custom categories
 
 export interface DateRange {
   from: Date;
@@ -45,6 +59,7 @@ export interface Project {
   fee: number;
   currency: Currency;
   projectType: ProjectType;
+  categories: ProjectCategory[];
   payments: Payment[];
   createdAt: Date;
 }

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import ProjectForm from "@/components/ProjectForm";
 import PaymentForm from "@/components/PaymentForm";
-import { Client, Project, Payment, ProjectStatus } from "@/types";
+import { Client, Project, Payment, ProjectStatus, ProjectCategory } from "@/types";
 
 interface ProjectDialogsProps {
   project: Project;

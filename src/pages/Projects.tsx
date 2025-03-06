@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import ProjectForm from "@/components/ProjectForm";
-import { Project } from "@/types";
+import { Project, ProjectCategory } from "@/types";
 import ProjectsFilter from "@/components/projects/ProjectsFilter";
 import ProjectsTable from "@/components/projects/ProjectsTable";
 import DeleteConfirmationDialog from "@/components/projects/DeleteConfirmationDialog";
@@ -65,6 +65,7 @@ const Projects = () => {
       fee: data.fee,
       currency: data.currency,
       projectType: data.projectType,
+      categories: data.categories || [],
       payments: [],
       createdAt: new Date()
     };
