@@ -43,19 +43,22 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
       monthlyCompletions[monthKey] = 0;
     }
     
-    // Count actual completed projects by month
-    // For this demo, we'll use the project's createdAt date to determine when it was completed
-    // In a real application, you might have a completedAt field
+    // Count completed projects by month based on the project's status change date
+    // In a real app, we would have a separate field for when the project was marked as completed
+    // For now, we'll use the updatedAt field or fall back to the deadline if it's not available
     const completedProjects = projects.filter((project: Project) => project.status === 'Completed');
     
     console.log("Filtered completed projects:", completedProjects);
     
     completedProjects.forEach(project => {
-      // For demonstration purposes, we'll use the createdAt date as a proxy for completion date
-      // In a real app, you might have a separate completedAt date field
-      const completionDate = new Date(project.createdAt);
+      // In a real app, we would use a dedicated completedAt field
+      // For demonstration purposes, we'll use the updatedAt field or fall back to deadline
+      // Ideally this would be set when a user clicks "Mark as Completed"
+      const completionDate = project.updatedAt 
+        ? new Date(project.updatedAt) 
+        : new Date(project.deadline);
       
-      console.log(`Project "${project.name}" created at:`, completionDate);
+      console.log(`Project "${project.name}" completion date:`, completionDate);
       
       // Check if within our 6-month window
       if (isWithinInterval(completionDate, { start: startDate, end: endDate })) {

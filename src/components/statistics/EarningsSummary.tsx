@@ -1,7 +1,8 @@
+
 import React from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { projects } from "@/mockData";
-import { DateRange } from "@/types";
+import { DateRange, Payment } from "@/types";
 import { format, subMonths, isWithinInterval } from "date-fns";
 import { TrendingUp } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +18,8 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({
   const getMonthlyData = () => {
     const endDate = new Date();
     const startDate = subMonths(endDate, 5); // Last 6 months (current + 5 previous)
+    
+    console.log("Earnings date range:", { startDate, endDate });
 
     // Initialize monthly counts
     const months: string[] = [];
@@ -33,18 +36,33 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({
       monthlyEarnings[monthKey] = 0;
     }
 
-    // Sum earnings by project creation month
+    // Extract all payments from all projects
+    const allPayments: Payment[] = [];
     projects.forEach(project => {
-      const creationDate = new Date(project.createdAt);
-      if (isWithinInterval(creationDate, { start: startDate, end: endDate })) {
-        const monthKey = format(creationDate, "MMM");
+      project.payments.forEach(payment => {
+        allPayments.push({
+          ...payment,
+          currency: project.currency // Add the project currency to the payment
+        });
+      });
+    });
+    
+    console.log("All payments:", allPayments);
+
+    // Sum earnings by payment date
+    allPayments.forEach(payment => {
+      const paymentDate = new Date(payment.date);
+      if (isWithinInterval(paymentDate, { start: startDate, end: endDate })) {
+        const monthKey = format(paymentDate, "MMM");
         if (monthlyEarnings[monthKey] !== undefined) {
           // Convert to USD if needed
-          const amountInUSD = project.currency === 'IDR' ? project.fee / 15000 : project.fee;
+          const amountInUSD = payment.currency === 'IDR' ? payment.amount / 15000 : payment.amount;
           monthlyEarnings[monthKey] += amountInUSD;
         }
       }
     });
+    
+    console.log("Monthly earnings data:", monthlyEarnings);
 
     // Create data array
     return months.map(month => ({
@@ -54,6 +72,9 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({
   };
   
   const data = getMonthlyData();
+  console.log("Earnings chart data:", data);
+  
+  const totalEarnings = data.reduce((sum, item) => sum + item.earnings, 0);
   const startMonth = format(subMonths(new Date(), 5), "MMMM");
   const endMonth = format(new Date(), "MMMM yyyy");
   const dateRangeText = `${startMonth} - ${endMonth}`;
@@ -139,11 +160,11 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm pt-4 pb-4 px-6 mt-auto">
         <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month
+          ${totalEarnings.toLocaleString()} earned in the last 6 months
           <TrendingUp className="h-4 w-4" />
         </div>
         <div className="text-muted-foreground">
-          Showing total earnings for the last 6 months
+          Based on payment dates when clients paid
         </div>
       </CardFooter>
     </Card>
