@@ -78,7 +78,12 @@ const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) =>
                       +{project.categories.length - 2}
                     </Badge>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="p-2">
+                  <TooltipContent 
+                    side="top" 
+                    align="start" 
+                    className="p-2"
+                    sideOffset={5}
+                  >
                     <div className="flex flex-col gap-1">
                       {project.categories.slice(2).map((category, index) => (
                         <span key={index} className="text-xs whitespace-nowrap">{category}</span>
