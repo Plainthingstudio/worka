@@ -125,6 +125,16 @@
   .project-type-badge {
     @apply inline-flex items-center justify-center gap-1 rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset;
   }
+
+  /* Table styles for better alignment */
+  .table-container {
+    @apply w-full overflow-x-auto;
+  }
+
+  /* Responsive container adjustments */
+  .container {
+    @apply px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto;
+  }
 }
 
 /* Loading animations */
