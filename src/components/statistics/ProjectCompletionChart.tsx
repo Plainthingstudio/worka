@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { projects } from "@/mockData";
@@ -65,13 +64,13 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
   const dateRangeText = `${startMonth} - ${endMonth}`;
 
   return (
-    <Card className="h-full">
+    <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium">Project Completion</CardTitle>
         <CardDescription>{dateRangeText}</CardDescription>
       </CardHeader>
-      <CardContent className="p-0 pl-4 pr-4 flex-1">
-        <div className="h-[280px] w-full">
+      <CardContent className="flex-1 px-0 py-0">
+        <div className="h-[280px] w-full px-4">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
@@ -129,7 +128,7 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
           </ResponsiveContainer>
         </div>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm pt-2 pb-4 px-6">
+      <CardFooter className="flex-col items-start gap-2 text-sm pt-4 pb-4 px-6 mt-auto">
         <div className="flex items-center gap-2 font-medium leading-none">
           Trending up by 5.2% this month
           <TrendingUp className="h-4 w-4" />

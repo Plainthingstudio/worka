@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { projects } from "@/mockData";
@@ -65,8 +64,8 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({
         <CardTitle className="text-base font-medium">Earnings Over Time</CardTitle>
         <CardDescription>{dateRangeText}</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 p-0">
-        <div className="h-[280px] w-full">
+      <CardContent className="flex-1 px-0 py-0">
+        <div className="h-[280px] w-full px-4">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart 
               data={data} 
@@ -138,7 +137,7 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({
           </ResponsiveContainer>
         </div>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm pt-2 pb-4 px-6 mt-auto">
+      <CardFooter className="flex-col items-start gap-2 text-sm pt-4 pb-4 px-6 mt-auto">
         <div className="flex items-center gap-2 font-medium leading-none">
           Trending up by 5.2% this month
           <TrendingUp className="h-4 w-4" />
