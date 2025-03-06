@@ -62,13 +62,13 @@ const StatisticsCharts: React.FC<StatisticsChartsProps> = ({ dateRange }) => {
   const data = getMonthlyData();
 
   return (
-    <Card className="h-full">
+    <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium">Client Growth</CardTitle>
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
-      <CardContent className="p-0 pl-4 pr-4 flex-1">
-        <div className="h-[280px] w-full">
+      <CardContent className="flex-1 px-0 py-0">
+        <div className="h-[280px] w-full px-4">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
@@ -76,7 +76,7 @@ const StatisticsCharts: React.FC<StatisticsChartsProps> = ({ dateRange }) => {
                 top: 20,
                 right: 20,
                 left: 10,
-                bottom: 5,
+                bottom: 20,
               }}
               barSize={28}
             >
@@ -125,7 +125,7 @@ const StatisticsCharts: React.FC<StatisticsChartsProps> = ({ dateRange }) => {
           </ResponsiveContainer>
         </div>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm pt-2 pb-4 px-6">
+      <CardFooter className="flex-col items-start gap-2 text-sm pt-4 pb-4 px-6 mt-auto">
         <div className="flex items-center gap-2 font-medium leading-none">
           Trending up by 5.2% this month
           <TrendingUp className="h-4 w-4" />
