@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -62,11 +63,17 @@ const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) =>
       <TableCell>
         {project.categories && project.categories.length > 0 ? (
           <div className="flex flex-wrap gap-1">
-            {project.categories.map((category, index) => (
+            {project.categories.slice(0, 2).map((category, index) => (
               <Badge key={index} variant="outline" className="text-xs">
                 {category}
               </Badge>
             ))}
+            
+            {project.categories.length > 2 && (
+              <Badge variant="outline" className="text-xs">
+                +{project.categories.length - 2}
+              </Badge>
+            )}
           </div>
         ) : (
           <span className="text-muted-foreground text-xs">No categories</span>
