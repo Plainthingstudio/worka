@@ -13,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { TrendingUp } from "lucide-react";
 
 interface ProjectCompletionChartProps {
@@ -61,31 +60,23 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
   };
 
   const data = getMonthlyCompletionData();
-  
-  // Create chart config
-  const chartConfig: ChartConfig = {
-    completed: {
-      label: "Completed", 
-      color: CHART_COLORS.lightBlue,
-    },
-  };
 
   return (
     <Card className="h-full">
-      <CardHeader>
+      <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium">Project Completion</CardTitle>
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1">
+      <CardContent className="p-0 pl-4 pr-4 flex-1">
         <div className="h-[280px] w-full">
-          <ChartContainer config={chartConfig}>
+          <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
               margin={{
                 top: 20,
                 right: 20,
-                left: 20,
-                bottom: 20,
+                left: 10,
+                bottom: 5,
               }}
               barSize={28}
             >
@@ -97,12 +88,14 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
                 tick={{ fill: '#6B7280', fontSize: 12 }}
                 dy={8}
                 padding={{ left: 10, right: 10 }}
+                height={30}
               />
               <YAxis
                 tickLine={false}
                 axisLine={false}
                 tick={{ fill: '#6B7280', fontSize: 12 }}
                 dx={-5}
+                width={40}
               />
               <Tooltip 
                 cursor={{ fill: 'rgba(200, 200, 200, 0.1)' }}
@@ -130,10 +123,10 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
                 name="Completed"
               />
             </BarChart>
-          </ChartContainer>
+          </ResponsiveContainer>
         </div>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm pt-2 pb-4">
+      <CardFooter className="flex-col items-start gap-2 text-sm pt-2 pb-4 px-6">
         <div className="flex items-center gap-2 font-medium leading-none">
           Trending up by 5.2% this month
           <TrendingUp className="h-4 w-4" />
