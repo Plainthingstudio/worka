@@ -1,8 +1,8 @@
 import React from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { projects } from "@/mockData";
-import { DateRange } from "@/types";
-import { format, subMonths, isWithinInterval } from "date-fns";
+import { DateRange, Project } from "@/types";
+import { format, isWithinInterval, subMonths } from "date-fns";
 import { CHART_COLORS } from "@/lib/chart-styles";
 import {
   Card,
@@ -21,9 +21,8 @@ interface ProjectCompletionChartProps {
 const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRange }) => {
   const getMonthlyCompletionData = () => {
     const endDate = new Date();
-    const startDate = subMonths(endDate, 5); // Last 6 months (current + 5 previous)
+    const startDate = subMonths(endDate, 5);
     
-    // Initialize monthly counts
     const months: string[] = [];
     const monthlyCompletions: { [key: string]: number } = {};
     
@@ -36,22 +35,19 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
       monthlyCompletions[monthKey] = 0;
     }
     
-    // Count completed projects by month
-    projects.forEach(project => {
-      if (project.status === 'Completed') {
-        // For this mock data, let's assume completion date is the project deadline if status is completed
+    // Count actual completed projects by month
+    projects
+      .filter((project: Project) => project.status === 'Completed')
+      .forEach(project => {
         const completionDate = new Date(project.deadline);
-        
         if (isWithinInterval(completionDate, { start: startDate, end: endDate })) {
-          const completionMonthKey = format(completionDate, "MMM");
-          if (monthlyCompletions[completionMonthKey] !== undefined) {
-            monthlyCompletions[completionMonthKey]++;
+          const monthKey = format(completionDate, "MMM");
+          if (monthlyCompletions[monthKey] !== undefined) {
+            monthlyCompletions[monthKey]++;
           }
         }
-      }
-    });
-    
-    // Create data array
+      });
+
     return months.map(month => ({
       month,
       completed: monthlyCompletions[month],
@@ -59,6 +55,8 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
   };
 
   const data = getMonthlyCompletionData();
+  const totalCompleted = data.reduce((sum, item) => sum + item.completed, 0);
+  const completionRate = ((totalCompleted / projects.length) * 100).toFixed(0);
   const startMonth = format(subMonths(new Date(), 5), "MMMM");
   const endMonth = format(new Date(), "MMMM yyyy");
   const dateRangeText = `${startMonth} - ${endMonth}`;
@@ -130,11 +128,11 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm pt-4 pb-4 px-6 mt-auto">
         <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month
+          {totalCompleted} projects completed in the last 6 months
           <TrendingUp className="h-4 w-4" />
         </div>
         <div className="text-muted-foreground">
-          Showing completed projects over time
+          {completionRate}% overall completion rate
         </div>
       </CardFooter>
     </Card>
