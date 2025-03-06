@@ -104,6 +104,19 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
                   </span>{" "}
                   {format(new Date(project.createdAt), "MMMM dd, yyyy")}
                 </p>
+                
+                {project.categories && project.categories.length > 0 && (
+                  <div>
+                    <p className="text-sm mb-1 font-medium text-foreground">Categories:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {project.categories.map((category, index) => (
+                        <Badge key={index} variant="outline">
+                          {category}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

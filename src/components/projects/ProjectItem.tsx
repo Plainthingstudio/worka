@@ -58,6 +58,20 @@ const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) =>
     <TableRow key={project.id}>
       <TableCell className="font-medium">
         {project.name}
+        {project.categories && project.categories.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1">
+            {project.categories.slice(0, 2).map((category, index) => (
+              <Badge key={index} variant="outline" className="text-xs">
+                {category}
+              </Badge>
+            ))}
+            {project.categories.length > 2 && (
+              <Badge variant="outline" className="text-xs">
+                +{project.categories.length - 2}
+              </Badge>
+            )}
+          </div>
+        )}
       </TableCell>
       <TableCell>
         {client?.name || "Unknown Client"}
