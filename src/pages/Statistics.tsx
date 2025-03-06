@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -50,6 +49,26 @@ const Statistics = () => {
     acc[source] = (acc[source] || 0) + 1;
     return acc;
   }, {});
+
+  const getMonthlyTrendData = (metric: 'clients' | 'earnings' | 'projects') => {
+    const data = [];
+    for (let i = 0; i < 7; i++) {
+      let value;
+      switch (metric) {
+        case 'clients':
+          value = Math.floor(Math.random() * 10) + 5;
+          break;
+        case 'earnings':
+          value = Math.floor(Math.random() * 1000) + 500;
+          break;
+        case 'projects':
+          value = Math.floor(Math.random() * 5) + 2;
+          break;
+      }
+      data.push({ name: `Day ${i + 1}`, value });
+    }
+    return data;
+  };
 
   React.useEffect(() => {
     const handleSidebarChange = () => {
@@ -175,9 +194,16 @@ const Statistics = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{clients.length}</div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground mb-4">
                   +{Math.floor(Math.random() * 10) + 1}% from previous period
                 </p>
+                <div className="h-[64px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={getMonthlyTrendData('clients')}>
+                      <Bar dataKey="value" fill={CHART_COLORS.lightBlue} radius={[2, 2, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -187,9 +213,16 @@ const Statistics = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">${averagePayment.toFixed(2)}</div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground mb-4">
                   Per project average
                 </p>
+                <div className="h-[64px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={getMonthlyTrendData('earnings')}>
+                      <Bar dataKey="value" fill={CHART_COLORS.primary} radius={[2, 2, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -199,9 +232,16 @@ const Statistics = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">${totalEarnings.toFixed(2)}</div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground mb-4">
                   +{Math.floor(Math.random() * 15) + 5}% from previous period
                 </p>
+                <div className="h-[64px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={getMonthlyTrendData('earnings')}>
+                      <Bar dataKey="value" fill={CHART_COLORS.primary} radius={[2, 2, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -211,9 +251,16 @@ const Statistics = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{completedProjects}</div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground mb-4">
                   {((completedProjects / projects.length) * 100).toFixed(0)}% completion rate
                 </p>
+                <div className="h-[64px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={getMonthlyTrendData('projects')}>
+                      <Bar dataKey="value" fill={CHART_COLORS.lightBlue} radius={[2, 2, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </CardContent>
             </Card>
           </div>
