@@ -24,6 +24,7 @@ const ProjectsTable = ({ projects, clients, onEdit, onDelete }: ProjectsTablePro
       <TableHeader>
         <TableRow>
           <TableHead>Project Name</TableHead>
+          <TableHead>Categories</TableHead>
           <TableHead>Client</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Deadline</TableHead>
@@ -36,7 +37,7 @@ const ProjectsTable = ({ projects, clients, onEdit, onDelete }: ProjectsTablePro
         {projects.length === 0 ? (
           <TableRow>
             <TableCell
-              colSpan={7}
+              colSpan={8}
               className="h-24 text-center text-muted-foreground"
             >
               No projects found.

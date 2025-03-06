@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -58,39 +57,44 @@ const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) =>
     <TableRow key={project.id}>
       <TableCell className="font-medium">
         {project.name}
-        {project.categories && project.categories.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1">
-            {project.categories.slice(0, 2).map((category, index) => (
+      </TableCell>
+      
+      <TableCell>
+        {project.categories && project.categories.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            {project.categories.map((category, index) => (
               <Badge key={index} variant="outline" className="text-xs">
                 {category}
               </Badge>
             ))}
-            {project.categories.length > 2 && (
-              <Badge variant="outline" className="text-xs">
-                +{project.categories.length - 2}
-              </Badge>
-            )}
           </div>
+        ) : (
+          <span className="text-muted-foreground text-xs">No categories</span>
         )}
       </TableCell>
+      
       <TableCell>
         {client?.name || "Unknown Client"}
       </TableCell>
+      
       <TableCell>
         <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${getStatusBadgeClass(project.status)}`}>
           {project.status}
         </span>
       </TableCell>
+      
       <TableCell className="flex items-center gap-1 text-muted-foreground">
         <CalendarIcon className="h-3.5 w-3.5" />
         {format(new Date(project.deadline), "MMM dd, yyyy")}
       </TableCell>
+      
       <TableCell>
         <div className="flex items-center gap-1">
           <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
           {project.fee.toLocaleString()} {project.currency}
         </div>
       </TableCell>
+      
       <TableCell>
         <Badge 
           variant={getProjectTypeBadgeVariant(project.projectType)}
@@ -100,6 +104,7 @@ const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) =>
           {project.projectType}
         </Badge>
       </TableCell>
+      
       <TableCell className="text-right">
         <div className="flex justify-end gap-1">
           <TooltipProvider>
