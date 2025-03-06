@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -13,7 +12,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface ProjectItemProps {
   project: Project;
@@ -64,35 +62,11 @@ const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) =>
       <TableCell>
         {project.categories && project.categories.length > 0 ? (
           <div className="flex flex-wrap gap-1">
-            {project.categories.slice(0, 2).map((category, index) => (
+            {project.categories.map((category, index) => (
               <Badge key={index} variant="outline" className="text-xs">
                 {category}
               </Badge>
             ))}
-            
-            {project.categories.length > 2 && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge variant="outline" className="text-xs cursor-default">
-                      +{project.categories.length - 2}
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent 
-                    side="top" 
-                    align="center" 
-                    className="p-2"
-                    sideOffset={0}
-                  >
-                    <div className="flex flex-col gap-1">
-                      {project.categories.slice(2).map((category, index) => (
-                        <span key={index} className="text-xs whitespace-nowrap">{category}</span>
-                      ))}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
           </div>
         ) : (
           <span className="text-muted-foreground text-xs">No categories</span>
