@@ -80,9 +80,9 @@ const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) =>
                   </TooltipTrigger>
                   <TooltipContent 
                     side="top" 
-                    align="start" 
+                    align="center" 
                     className="p-2"
-                    sideOffset={5}
+                    sideOffset={0}
                   >
                     <div className="flex flex-col gap-1">
                       {project.categories.slice(2).map((category, index) => (
