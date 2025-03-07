@@ -1,9 +1,9 @@
 
 import React from "react";
 import { format } from "date-fns";
-import { CalendarIcon, DollarSign, UserCircle, Tag, Clock, ArrowRight, Users, X } from "lucide-react";
+import { CalendarIcon, DollarSign, UserCircle, Tag, Clock, ArrowRight, Users, Phone, Mail, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Client, Project } from "@/types";
 import { mockTeamMembers } from "@/pages/Team";
 
@@ -18,105 +18,153 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
     mockTeamMembers.filter(member => project.teamMembers?.includes(member.id)) : 
     [];
 
+  // Format status badge class
+  const getStatusClass = (status: string) => {
+    switch(status.toLowerCase()) {
+      case 'planning': return 'bg-blue-100 text-blue-700';
+      case 'in progress': return 'bg-yellow-100 text-yellow-700';
+      case 'completed': return 'bg-green-100 text-green-700';
+      case 'paused': return 'bg-purple-100 text-purple-700';
+      case 'cancelled': return 'bg-red-100 text-red-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
   return (
-    <div className="col-span-7 md:col-span-5 space-y-6">
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-medium">Project Details</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 pt-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-4">
-              <div className="flex items-start gap-2">
-                <Tag className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <div className="space-y-0.5">
-                  <p className="text-sm font-medium">Project Name</p>
-                  <p className="text-sm">{project.name}</p>
-                </div>
+    <div className="col-span-7 md:col-span-5">
+      <Card className="border rounded-xl shadow-sm overflow-hidden">
+        {/* Project Header */}
+        <div className="p-6 border-b">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">{project.name}</h1>
+              <div className="flex items-center gap-2 mt-2">
+                <Badge variant="outline" className={`px-3 py-1 ${getStatusClass(project.status)}`}>
+                  {project.status}
+                </Badge>
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <Tag className="h-3.5 w-3.5" />
+                  {project.projectType}
+                </Badge>
               </div>
+            </div>
+          </div>
+        </div>
 
-              <div className="flex items-start gap-2">
-                <UserCircle className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <div className="space-y-0.5">
-                  <p className="text-sm font-medium">Client</p>
-                  <p className="text-sm">{client.name}</p>
-                  <p className="text-xs text-muted-foreground">{client.email}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2">
-                <Clock className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <div className="space-y-0.5">
-                  <p className="text-sm font-medium">Status</p>
+        <CardContent className="p-0">
+          <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x">
+            {/* Client Information */}
+            <div className="p-6">
+              <h2 className="font-semibold text-lg mb-4">Client Information</h2>
+              <div className="space-y-3">
+                <div className="flex items-start gap-2">
+                  <UserCircle className="h-4 w-4 mt-1 text-muted-foreground" />
                   <div>
-                    <Badge variant="outline" className="bg-background">
-                      {project.status}
-                    </Badge>
+                    <p className="text-sm font-medium">Name</p>
+                    <p className="text-sm text-muted-foreground">{client.name}</p>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-start gap-2">
-                <CalendarIcon className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <div className="space-y-0.5">
-                  <p className="text-sm font-medium">Created & Deadline</p>
-                  <p className="text-sm text-muted-foreground">
-                    {format(new Date(project.createdAt), "MMM dd, yyyy")}
-                    <ArrowRight className="h-3 w-3 inline mx-1" />
-                    {format(new Date(project.deadline), "MMM dd, yyyy")}
-                  </p>
+                <div className="flex items-start gap-2">
+                  <Mail className="h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Email</p>
+                    <p className="text-sm text-muted-foreground">{client.email}</p>
+                  </div>
                 </div>
+
+                <div className="flex items-start gap-2">
+                  <Phone className="h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Phone</p>
+                    <p className="text-sm text-muted-foreground">{client.phone}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <Tag className="h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Lead Source</p>
+                    <p className="text-sm text-muted-foreground">{client.leadSource}</p>
+                  </div>
+                </div>
+
+                {client.address && (
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-4 w-4 mt-1 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Address</p>
+                      <p className="text-sm text-muted-foreground">{client.address}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-start gap-2">
-                <DollarSign className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <div className="space-y-0.5">
-                  <p className="text-sm font-medium">Project Fee</p>
-                  <p className="text-sm">
-                    {project.fee.toLocaleString()} {project.currency}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2">
-                <Tag className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <div className="space-y-0.5">
-                  <p className="text-sm font-medium">Project Type</p>
-                  <Badge variant="secondary">{project.projectType}</Badge>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2">
-                <Tag className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <div className="space-y-0.5">
-                  <p className="text-sm font-medium">Categories</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {project.categories.map((category, index) => (
-                      <Badge key={index} variant="outline" className="bg-background">
-                        {category}
-                      </Badge>
-                    ))}
+            {/* Project Details */}
+            <div className="p-6">
+              <h2 className="font-semibold text-lg mb-4">Project Details</h2>
+              <div className="space-y-3">
+                <div className="flex items-start gap-2">
+                  <CalendarIcon className="h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Deadline</p>
+                    <p className="text-sm text-muted-foreground">
+                      {format(new Date(project.deadline), "MMMM d, yyyy")}
+                    </p>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-start gap-2">
-                <Users className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <div className="space-y-0.5">
-                  <p className="text-sm font-medium">Team Members</p>
-                  <div className="flex flex-wrap gap-1.5 mt-1">
-                    {assignedTeamMembers.length > 0 ? (
-                      assignedTeamMembers.map((member) => (
-                        <Badge key={member.id} variant="outline" className="flex items-center gap-1 py-1 pl-2 bg-background">
-                          <Users className="h-3 w-3 text-muted-foreground mr-1" />
-                          {member.name} - <span className="text-muted-foreground text-xs">{member.position}</span>
+                <div className="flex items-start gap-2">
+                  <DollarSign className="h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Fee</p>
+                    <p className="text-sm text-muted-foreground">
+                      {project.fee.toLocaleString()} {project.currency}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <Clock className="h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Created At</p>
+                    <p className="text-sm text-muted-foreground">
+                      {format(new Date(project.createdAt), "MMMM d, yyyy")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <Tag className="h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Categories</p>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {project.categories.map((category, index) => (
+                        <Badge key={index} variant="outline" className="bg-background">
+                          {category}
                         </Badge>
-                      ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No team members assigned</p>
-                    )}
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <Users className="h-4 w-4 mt-1 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Team Members</p>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {assignedTeamMembers.length > 0 ? (
+                        assignedTeamMembers.map((member) => (
+                          <Badge key={member.id} variant="outline" className="flex items-center gap-1 py-1 pl-2 bg-background">
+                            <Users className="h-3 w-3 text-muted-foreground mr-1" />
+                            {member.name} - <span className="text-muted-foreground text-xs">{member.position}</span>
+                          </Badge>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No team members assigned</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
