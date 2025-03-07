@@ -1,45 +1,30 @@
 
 import { useState } from "react";
-import { Payment, ProjectStatus } from "@/types";
+import { Project } from "@/types";
 
 export const useProjectDialogs = () => {
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
-  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
-  const [isEditPaymentDialogOpen, setIsEditPaymentDialogOpen] = useState(false);
-  const [isDeletePaymentDialogOpen, setIsDeletePaymentDialogOpen] = useState(false);
-  const [currentPayment, setCurrentPayment] = useState<Payment | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<ProjectStatus>("In progress");
+  const [isAddingProject, setIsAddingProject] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
-  const openEditPaymentDialog = (payment: Payment) => {
-    setCurrentPayment(payment);
-    setIsEditPaymentDialogOpen(true);
-  };
-
-  const openDeletePaymentDialog = (payment: Payment) => {
-    setCurrentPayment(payment);
-    setIsDeletePaymentDialogOpen(true);
-  };
+  const openAddProjectDialog = () => setIsAddingProject(true);
+  const closeAddProjectDialog = () => setIsAddingProject(false);
+  
+  const openEditProjectDialog = (project: Project) => setEditingProject(project);
+  const closeEditProjectDialog = () => setEditingProject(null);
+  
+  const openDeleteDialog = (id: string) => setIsDeleting(id);
+  const closeDeleteDialog = () => setIsDeleting(null);
 
   return {
-    isEditDialogOpen,
-    isDeleteDialogOpen,
-    isStatusDialogOpen,
-    isPaymentDialogOpen,
-    isEditPaymentDialogOpen,
-    isDeletePaymentDialogOpen,
-    currentPayment,
-    selectedStatus,
-    setIsEditDialogOpen,
-    setIsDeleteDialogOpen,
-    setIsStatusDialogOpen,
-    setIsPaymentDialogOpen,
-    setIsEditPaymentDialogOpen,
-    setIsDeletePaymentDialogOpen,
-    setSelectedStatus,
-    setCurrentPayment,
-    openEditPaymentDialog,
-    openDeletePaymentDialog
+    isAddingProject,
+    editingProject,
+    isDeleting,
+    openAddProjectDialog,
+    closeAddProjectDialog,
+    openEditProjectDialog,
+    closeEditProjectDialog,
+    openDeleteDialog,
+    closeDeleteDialog
   };
 };

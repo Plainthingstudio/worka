@@ -1,320 +1,76 @@
-import React, { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
+import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import ProjectForm from "@/components/ProjectForm";
-import { Project, TeamMember, Client, ProjectStatus, Currency, ProjectType, ProjectCategory, LeadSource } from "@/types";
 import ProjectsFilter from "@/components/projects/ProjectsFilter";
 import ProjectsTable from "@/components/projects/ProjectsTable";
 import ProjectsStats from "@/components/projects/ProjectsStats";
 import DeleteConfirmationDialog from "@/components/projects/DeleteConfirmationDialog";
-import { supabase } from "@/integrations/supabase/client";
+import ProjectsHeader from "@/components/projects/ProjectsHeader";
+import ProjectsLoading from "@/components/projects/ProjectsLoading";
+import { useProjects } from "@/hooks/useProjects";
+import { useProjectDialogs } from "@/hooks/useProjectDialogs";
+import { useProjectFilters } from "@/hooks/useProjectFilters";
+import { useSidebarWidth } from "@/hooks/useSidebarWidth";
+import { LeadSource } from "@/types";
 
 const Projects = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [clients, setClients] = useState<Client[]>([]);
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [isAddingProject, setIsAddingProject] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
+  const { 
+    projects, 
+    clients, 
+    teamMembers, 
+    isLoading, 
+    handleAddProject, 
+    handleEditProject, 
+    handleDeleteProject 
+  } = useProjects();
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setIsLoading(true);
-        
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          toast.error("You must be logged in to view projects");
-          setIsLoading(false);
-          return;
-        }
-        
-        const { data: clientsData, error: clientsError } = await supabase
-          .from('clients')
-          .select('*');
-        
-        if (clientsError) {
-          console.error("Error fetching clients:", clientsError);
-          throw clientsError;
-        }
-        
-        const transformedClients = clientsData.map((client: any) => ({
-          id: client.id,
-          name: client.name,
-          email: client.email,
-          phone: client.phone,
-          address: client.address,
-          leadSource: client.lead_source as LeadSource,
-          createdAt: new Date(client.created_at)
-        }));
-        
-        setClients(transformedClients);
-        
-        const { data: teamData, error: teamError } = await supabase
-          .from('team_members')
-          .select('*');
-        
-        if (teamError && teamError.code !== 'PGRST116') {
-          console.error("Error fetching team members:", teamError);
-        }
-        
-        if (teamData) {
-          const transformedTeamMembers = teamData.map((member: any) => ({
-            id: member.id,
-            name: member.name,
-            position: member.position,
-            startDate: new Date(member.start_date),
-            skills: member.skills || [],
-            createdAt: new Date(member.created_at)
-          }));
-          
-          setTeamMembers(transformedTeamMembers);
-        }
-        
-        const { data: projectsData, error: projectsError } = await supabase
-          .from('projects')
-          .select('*, payments(*)');
-        
-        if (projectsError) {
-          console.error("Error fetching projects:", projectsError);
-          throw projectsError;
-        }
-        
-        const transformedProjects = projectsData.map((project: any) => {
-          const payments = Array.isArray(project.payments) ? project.payments.map((payment: any) => ({
-            id: payment.id,
-            projectId: payment.project_id,
-            paymentType: payment.payment_type,
-            amount: payment.amount,
-            date: new Date(payment.date),
-            notes: payment.notes
-          })) : [];
-          
-          return {
-            id: project.id,
-            name: project.name,
-            clientId: project.client_id,
-            status: project.status as ProjectStatus,
-            deadline: new Date(project.deadline),
-            fee: project.fee,
-            currency: project.currency as Currency,
-            projectType: project.project_type as ProjectType,
-            categories: project.categories as ProjectCategory[],
-            teamMembers: project.team_members || [],
-            createdAt: new Date(project.created_at),
-            payments: payments
-          };
-        });
-        
-        setProjects(transformedProjects);
-      } catch (error) {
-        console.error("Error fetching projects data:", error);
-        toast.error("Failed to load projects data");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    
-    fetchData();
-  }, []);
+  const {
+    isAddingProject,
+    editingProject,
+    isDeleting,
+    openAddProjectDialog,
+    closeAddProjectDialog,
+    openEditProjectDialog,
+    closeEditProjectDialog,
+    openDeleteDialog,
+    closeDeleteDialog
+  } = useProjectDialogs();
 
-  useEffect(() => {
-    const handleSidebarChange = () => {
-      const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
-      setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
-    };
+  const { 
+    search, 
+    setSearch, 
+    statusFilter, 
+    setStatusFilter, 
+    filteredProjects 
+  } = useProjectFilters(projects);
 
-    handleSidebarChange();
+  const { isSidebarExpanded } = useSidebarWidth();
 
-    const observer = new MutationObserver(handleSidebarChange);
-    const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
-    if (sidebarElement) {
-      observer.observe(sidebarElement, {
-        attributes: true,
-        attributeFilter: ['class']
-      });
-    }
-    return () => observer.disconnect();
-  }, []);
-
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name.toLowerCase().includes(search.toLowerCase()) || 
-                           clients.find(c => c.id === project.clientId)?.name.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === "all" || project.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  const openAddProjectDialog = () => setIsAddingProject(true);
-  const closeAddProjectDialog = () => setIsAddingProject(false);
-  const openEditProjectDialog = (project: Project) => setEditingProject(project);
-  const closeEditProjectDialog = () => setEditingProject(null);
-  const openDeleteDialog = (id: string) => setIsDeleting(id);
-  const closeDeleteDialog = () => setIsDeleting(null);
-
-  const handleAddProject = async (data: any) => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast.error("You must be logged in to create a project");
-        return;
-      }
-      
-      const status = data.status as ProjectStatus;
-      const currency = data.currency as Currency;
-      const projectType = data.projectType as ProjectType;
-      const categories = data.categories as ProjectCategory[];
-      
-      const { data: projectData, error } = await supabase
-        .from('projects')
-        .insert({
-          name: data.name,
-          client_id: data.clientId,
-          status: status,
-          deadline: data.deadline.toISOString(),
-          fee: data.fee,
-          currency: currency,
-          project_type: projectType,
-          categories: categories,
-          team_members: data.teamMembers || [],
-          user_id: session.user.id
-        })
-        .select()
-        .single();
-      
-      if (error) {
-        throw error;
-      }
-      
-      const newProject: Project = {
-        id: projectData.id,
-        name: projectData.name,
-        clientId: projectData.client_id,
-        status: projectData.status as ProjectStatus,
-        deadline: new Date(projectData.deadline),
-        fee: projectData.fee,
-        currency: projectData.currency as Currency,
-        projectType: projectData.project_type as ProjectType,
-        categories: projectData.categories as ProjectCategory[],
-        teamMembers: projectData.team_members || [],
-        createdAt: new Date(projectData.created_at),
-        payments: []
-      };
-      
-      setProjects([newProject, ...projects]);
-      setIsAddingProject(false);
-      toast.success("Project created successfully");
-    } catch (error: any) {
-      console.error("Error creating project:", error);
-      toast.error(error.message || "Failed to create project");
+  const handleAddProjectSubmit = async (data: any) => {
+    const result = await handleAddProject(data);
+    if (result) {
+      closeAddProjectDialog();
     }
   };
 
-  const handleEditProject = async (data: any) => {
-    if (!editingProject) return;
-    
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast.error("You must be logged in to update a project");
-        return;
+  const handleEditProjectSubmit = async (data: any) => {
+    if (editingProject) {
+      const result = await handleEditProject(data, editingProject.id);
+      if (result) {
+        closeEditProjectDialog();
       }
-      
-      const status = data.status as ProjectStatus;
-      const currency = data.currency as Currency;
-      const projectType = data.projectType as ProjectType;
-      const categories = data.categories as ProjectCategory[];
-      
-      const { error } = await supabase
-        .from('projects')
-        .update({
-          name: data.name,
-          client_id: data.clientId,
-          status: status,
-          deadline: data.deadline.toISOString(),
-          fee: data.fee,
-          currency: currency,
-          project_type: projectType,
-          categories: categories,
-          team_members: data.teamMembers || []
-        })
-        .eq('id', editingProject.id)
-        .eq('user_id', session.user.id);
-      
-      if (error) {
-        throw error;
-      }
-      
-      const updatedProjects = projects.map(project => 
-        project.id === editingProject.id ? {
-          ...project,
-          name: data.name,
-          clientId: data.clientId,
-          status: data.status as ProjectStatus,
-          deadline: data.deadline,
-          fee: data.fee,
-          currency: data.currency as Currency,
-          projectType: data.projectType as ProjectType,
-          categories: data.categories as ProjectCategory[],
-          teamMembers: data.teamMembers || []
-        } : project
-      );
-      
-      setProjects(updatedProjects);
-      setEditingProject(null);
-      toast.success("Project updated successfully");
-    } catch (error: any) {
-      console.error("Error updating project:", error);
-      toast.error(error.message || "Failed to update project");
     }
   };
 
-  const handleDeleteProject = async (id: string) => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast.error("You must be logged in to delete a project");
-        return;
+  const handleDeleteProjectSubmit = async () => {
+    if (isDeleting) {
+      const result = await handleDeleteProject(isDeleting);
+      if (result) {
+        closeDeleteDialog();
       }
-      
-      const { error: paymentsError } = await supabase
-        .from('payments')
-        .delete()
-        .eq('project_id', id)
-        .eq('user_id', session.user.id);
-      
-      if (paymentsError) {
-        throw paymentsError;
-      }
-      
-      const { error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', session.user.id);
-      
-      if (error) {
-        throw error;
-      }
-      
-      const updatedProjects = projects.filter(project => project.id !== id);
-      setProjects(updatedProjects);
-      setIsDeleting(null);
-      toast.success("Project deleted successfully");
-    } catch (error: any) {
-      console.error("Error deleting project:", error);
-      toast.error(error.message || "Failed to delete project");
     }
   };
 
@@ -324,26 +80,10 @@ const Projects = () => {
       <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
         <Navbar title="Projects" />
         <main className="container mx-auto p-6">
-          <div className="mb-8 flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight">
-                Projects
-              </h1>
-              <p className="text-muted-foreground">
-                Track and manage all your client projects.
-              </p>
-            </div>
-            <Button onClick={openAddProjectDialog} className="whitespace-nowrap">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Project
-            </Button>
-          </div>
+          <ProjectsHeader onCreateProject={openAddProjectDialog} />
 
           {isLoading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <p className="mt-2 text-muted-foreground">Loading projects...</p>
-            </div>
+            <ProjectsLoading />
           ) : (
             <>
               <ProjectsStats projects={projects} />
@@ -383,7 +123,7 @@ const Projects = () => {
               <ProjectForm 
                 clients={clients} 
                 teamMembers={teamMembers} 
-                onSave={handleAddProject} 
+                onSave={handleAddProjectSubmit} 
                 onCancel={closeAddProjectDialog} 
               />
             </div>
@@ -405,7 +145,7 @@ const Projects = () => {
                 project={editingProject} 
                 clients={clients} 
                 teamMembers={teamMembers} 
-                onSave={handleEditProject} 
+                onSave={handleEditProjectSubmit} 
                 onCancel={closeEditProjectDialog} 
               />
             </div>
@@ -417,7 +157,7 @@ const Projects = () => {
         <DeleteConfirmationDialog 
           isOpen={!!isDeleting} 
           onClose={closeDeleteDialog} 
-          onConfirm={() => isDeleting && handleDeleteProject(isDeleting)} 
+          onConfirm={handleDeleteProjectSubmit} 
         />
       )}
     </div>
