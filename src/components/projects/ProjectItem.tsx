@@ -1,21 +1,19 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { CalendarIcon, DollarSign, Tag, Pencil, Trash, EyeIcon, Users } from "lucide-react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Client, Project, ProjectStatus, ProjectType } from "@/types";
+import { Client, Project, ProjectStatus, ProjectType, TeamMember } from "@/types";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-// Import the mockTeamMembers array
-import { mockTeamMembers } from "@/pages/Team";
+import { useTeamMembers } from "@/hooks/useTeamMembers";
 
 interface ProjectItemProps {
   project: Project;
@@ -26,11 +24,22 @@ interface ProjectItemProps {
 
 const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) => {
   const navigate = useNavigate();
-
-  // Get assigned team members
-  const assignedTeamMembers = project.teamMembers ? 
-    mockTeamMembers.filter(member => project.teamMembers?.includes(member.id)) : 
-    [];
+  const [assignedTeamMembers, setAssignedTeamMembers] = useState<TeamMember[]>([]);
+  const { fetchTeamMembers } = useTeamMembers();
+  
+  useEffect(() => {
+    const loadTeamMembers = async () => {
+      if (project.teamMembers && project.teamMembers.length > 0) {
+        const allMembers = await fetchTeamMembers();
+        const assigned = allMembers.filter(member => 
+          project.teamMembers?.includes(member.id)
+        );
+        setAssignedTeamMembers(assigned);
+      }
+    };
+    
+    loadTeamMembers();
+  }, [project.teamMembers]);
 
   const getStatusBadgeClass = (status: ProjectStatus) => {
     switch (status) {

@@ -1,11 +1,11 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { CalendarIcon, DollarSign, UserCircle, Tag, Clock, ArrowRight, Users, Phone, Mail, MapPin } from "lucide-react";
+import { CalendarIcon, DollarSign, UserCircle, Tag, Clock, Users, Phone, Mail, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Client, Project } from "@/types";
-import { mockTeamMembers } from "@/pages/Team";
+import { Client, Project, TeamMember } from "@/types";
+import { useTeamMembers } from "@/hooks/useTeamMembers";
 
 interface ProjectInfoProps {
   project: Project;
@@ -13,10 +13,22 @@ interface ProjectInfoProps {
 }
 
 const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
-  // Get assigned team members
-  const assignedTeamMembers = project.teamMembers ? 
-    mockTeamMembers.filter(member => project.teamMembers?.includes(member.id)) : 
-    [];
+  const [assignedTeamMembers, setAssignedTeamMembers] = useState<TeamMember[]>([]);
+  const { fetchTeamMembers } = useTeamMembers();
+  
+  useEffect(() => {
+    const loadTeamMembers = async () => {
+      if (project.teamMembers && project.teamMembers.length > 0) {
+        const allMembers = await fetchTeamMembers();
+        const assigned = allMembers.filter(member => 
+          project.teamMembers?.includes(member.id)
+        );
+        setAssignedTeamMembers(assigned);
+      }
+    };
+    
+    loadTeamMembers();
+  }, [project.teamMembers]);
 
   // Format status badge class
   const getStatusClass = (status: string) => {

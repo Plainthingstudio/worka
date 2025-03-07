@@ -6,11 +6,57 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import TeamForm from "@/components/TeamForm";
-import { TeamMember } from "@/types";
+import { TeamMember, TeamPosition } from "@/types";
 import TeamFilter from "@/components/team/TeamFilter";
 import TeamTable from "@/components/team/TeamTable";
 import DeleteTeamMemberDialog from "@/components/team/DeleteTeamMemberDialog";
 import { supabase } from "@/integrations/supabase/client";
+
+export const useTeamMembers = () => {
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchTeamMembers = async () => {
+    try {
+      setIsLoading(true);
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session.session) {
+        toast.error("You must be logged in to view team members");
+        return [];
+      }
+
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      const transformedMembers: TeamMember[] = data.map(member => ({
+        id: member.id,
+        name: member.name,
+        position: member.position as TeamPosition,
+        startDate: new Date(member.start_date),
+        skills: member.skills || [],
+        createdAt: new Date(member.created_at)
+      }));
+
+      setTeamMembers(transformedMembers);
+      return transformedMembers;
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      toast.error("Failed to load team members");
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { teamMembers, fetchTeamMembers, isLoading };
+};
 
 const Team = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -48,7 +94,7 @@ const Team = () => {
       const transformedMembers: TeamMember[] = data.map(member => ({
         id: member.id,
         name: member.name,
-        position: member.position,
+        position: member.position as TeamPosition,
         startDate: new Date(member.start_date),
         skills: member.skills || [],
         createdAt: new Date(member.created_at)
@@ -69,10 +115,8 @@ const Team = () => {
       setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
     };
 
-    // Initial check
     handleSidebarChange();
 
-    // Set up mutation observer to watch for class changes on the sidebar
     const observer = new MutationObserver(handleSidebarChange);
     const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
     if (sidebarElement) {
@@ -103,7 +147,7 @@ const Team = () => {
         .from('team_members')
         .insert({
           name: data.name,
-          position: data.position,
+          position: data.position as TeamPosition,
           start_date: data.startDate.toISOString(),
           skills: data.skills || [],
           user_id: session.session.user.id
@@ -118,7 +162,7 @@ const Team = () => {
       const transformedMember: TeamMember = {
         id: newMember.id,
         name: newMember.name,
-        position: newMember.position,
+        position: newMember.position as TeamPosition,
         startDate: new Date(newMember.start_date),
         skills: newMember.skills || [],
         createdAt: new Date(newMember.created_at)
@@ -148,7 +192,7 @@ const Team = () => {
         .from('team_members')
         .update({
           name: data.name,
-          position: data.position,
+          position: data.position as TeamPosition,
           start_date: data.startDate.toISOString(),
           skills: data.skills || []
         })
@@ -164,7 +208,7 @@ const Team = () => {
           ? {
               ...member,
               name: data.name,
-              position: data.position,
+              position: data.position as TeamPosition,
               startDate: data.startDate,
               skills: data.skills || []
             }
