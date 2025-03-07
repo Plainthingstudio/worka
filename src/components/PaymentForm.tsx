@@ -30,7 +30,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import { Currency, PaymentType, Payment } from "@/types";
 
 const formSchema = z.object({
@@ -39,9 +38,6 @@ const formSchema = z.object({
   }),
   amount: z.coerce.number().min(0, {
     message: "Amount cannot be negative.",
-  }),
-  currency: z.enum(["USD", "IDR"], {
-    required_error: "Please select a currency.",
   }),
   date: z.date({
     required_error: "Please select a payment date.",
@@ -63,7 +59,6 @@ const PaymentForm = ({ projectId, currency, payment, onSave, onCancel }: Payment
     defaultValues: {
       paymentType: payment?.paymentType || "Down Payment",
       amount: payment?.amount || 0,
-      currency: currency,
       date: payment?.date ? new Date(payment.date) : new Date(),
       notes: payment?.notes || "",
     },
@@ -87,8 +82,6 @@ const PaymentForm = ({ projectId, currency, payment, onSave, onCancel }: Payment
     "Final Payment",
     "Milestone Payment",
   ];
-
-  const currencies: Currency[] = ["USD", "IDR"];
 
   // Custom input formatter for amount field to show thousand separators while editing
   const formatAmount = (value: string) => {
@@ -167,30 +160,17 @@ const PaymentForm = ({ projectId, currency, payment, onSave, onCancel }: Payment
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="currency"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Currency</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select currency" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {currencies.map((currency) => (
-                      <SelectItem key={currency} value={currency}>
-                        {currency}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <FormItem>
+            <FormLabel>Currency</FormLabel>
+            <FormControl>
+              <Input 
+                type="text"
+                value={currency}
+                readOnly
+                disabled
+              />
+            </FormControl>
+          </FormItem>
         </div>
 
         <FormField
