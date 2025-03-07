@@ -2,20 +2,19 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { clients } from '@/mockData';
 import InvoiceHeader from '@/components/invoice/InvoiceHeader';
 import InvoiceItems from '@/components/invoice/InvoiceItems';
 import InvoiceSummary from '@/components/invoice/InvoiceSummary';
 import InvoiceNotes from '@/components/invoice/InvoiceNotes';
 import InvoiceActions from '@/components/invoice/InvoiceActions';
-import { Invoice, InvoiceItem } from '@/types';
-import { generateInvoicePDF } from '@/utils/pdfGenerator';
+import { Invoice, InvoiceItem, Client } from '@/types';
 
 interface InvoiceFormContainerProps {
   invoice: Invoice;
   setInvoice: React.Dispatch<React.SetStateAction<Invoice>>;
   isEditing: boolean;
   isLoading?: boolean;
+  clients: Client[];
   addItem: () => void;
   removeItem: (id: string) => void;
   updateItem: (id: string, field: keyof InvoiceItem, value: any) => void;
@@ -30,6 +29,7 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
   setInvoice,
   isEditing,
   isLoading = false,
+  clients,
   addItem,
   removeItem,
   updateItem,

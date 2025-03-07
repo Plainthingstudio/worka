@@ -5,9 +5,9 @@ import { useToast } from "@/hooks/use-toast";
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
 import { Invoice } from "@/types";
-import { clients } from "@/mockData";
 import { supabase } from "@/integrations/supabase/client";
 import { useSidebarState } from "@/hooks/useSidebarState";
+import { useClients } from "@/hooks/useClients";
 
 // Import refactored components
 import InvoiceDetailsHeader from "@/components/invoice-details/InvoiceDetailsHeader";
@@ -22,6 +22,7 @@ const InvoiceDetails = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isSidebarExpanded } = useSidebarState();
+  const { clients, isLoading: isClientsLoading } = useClients();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [client, setClient] = useState<any>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -108,9 +109,11 @@ const InvoiceDetails = () => {
         
         setInvoice(loadedInvoice);
         
-        // Find the client
-        const foundClient = clients.find((c) => c.id === loadedInvoice.clientId);
-        setClient(foundClient);
+        // Find the client from our Supabase clients
+        if (clients && clients.length > 0) {
+          const foundClient = clients.find((c) => c.id === loadedInvoice.clientId);
+          setClient(foundClient);
+        }
       } catch (error) {
         console.error("Error loading invoice details:", error);
         toast({
@@ -124,8 +127,11 @@ const InvoiceDetails = () => {
       }
     };
     
-    fetchInvoiceDetails();
-  }, [invoiceId, navigate, toast]);
+    // Only fetch invoice after clients are loaded
+    if (!isClientsLoading) {
+      fetchInvoiceDetails();
+    }
+  }, [invoiceId, navigate, toast, clients, isClientsLoading]);
 
   const handleDelete = async () => {
     if (!invoice) return;

@@ -1,19 +1,24 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
 import InvoiceFormContainer from '@/components/invoice/InvoiceFormContainer';
 import { useInvoiceForm } from '@/hooks/useInvoiceForm';
 import InvoiceLoading from '@/components/invoice-details/InvoiceLoading';
 import { useSidebarState } from '@/hooks/useSidebarState';
+import { useClients } from '@/hooks/useClients';
+import { useToast } from '@/hooks/use-toast';
+import { Client } from '@/types';
 
 const InvoiceForm = () => {
   const { isSidebarExpanded } = useSidebarState();
+  const { clients, isLoading: isClientsLoading } = useClients();
+  const { toast } = useToast();
   const {
     invoice,
     setInvoice,
     isEditing,
-    isLoading,
+    isLoading: isInvoiceLoading,
     addItem,
     removeItem,
     updateItem,
@@ -27,10 +32,13 @@ const InvoiceForm = () => {
   useEffect(() => {
     console.log("Current invoice state:", invoice);
     console.log("Is editing mode:", isEditing);
+    console.log("Clients from Supabase:", clients);
     if (Array.isArray(invoice.items)) {
       console.log("Items count:", invoice.items.length);
     }
-  }, [invoice, isEditing]);
+  }, [invoice, isEditing, clients]);
+
+  const isLoading = isInvoiceLoading || isClientsLoading;
 
   if (isLoading) {
     return (
@@ -65,6 +73,7 @@ const InvoiceForm = () => {
             setInvoice={setInvoice}
             isEditing={isEditing}
             isLoading={isLoading}
+            clients={clients}
             addItem={addItem}
             removeItem={removeItem}
             updateItem={updateItem}
