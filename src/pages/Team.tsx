@@ -10,20 +10,59 @@ import { TeamMember } from "@/types";
 import TeamFilter from "@/components/team/TeamFilter";
 import TeamTable from "@/components/team/TeamTable";
 import DeleteTeamMemberDialog from "@/components/team/DeleteTeamMemberDialog";
-
-// Create a mock array for team members and export it for use in other components
-export const mockTeamMembers: TeamMember[] = [];
+import { supabase } from "@/integrations/supabase/client";
 
 const Team = () => {
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(mockTeamMembers);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [search, setSearch] = useState("");
   const [positionFilter, setPositionFilter] = useState<string>("all");
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Listen for sidebar state changes
+  useEffect(() => {
+    fetchTeamMembers();
+  }, []);
+
+  const fetchTeamMembers = async () => {
+    try {
+      setIsLoading(true);
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session.session) {
+        toast.error("You must be logged in to view team members");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      const transformedMembers: TeamMember[] = data.map(member => ({
+        id: member.id,
+        name: member.name,
+        position: member.position,
+        startDate: new Date(member.start_date),
+        skills: member.skills || [],
+        createdAt: new Date(member.created_at)
+      }));
+
+      setTeamMembers(transformedMembers);
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      toast.error("Failed to load team members");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const handleSidebarChange = () => {
       const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
@@ -51,62 +90,131 @@ const Team = () => {
     return matchesSearch && matchesPosition;
   });
 
+  const handleAddMember = async (data: any) => {
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session.session) {
+        toast.error("You must be logged in to add team members");
+        return;
+      }
+
+      const { data: newMember, error } = await supabase
+        .from('team_members')
+        .insert({
+          name: data.name,
+          position: data.position,
+          start_date: data.startDate.toISOString(),
+          skills: data.skills || [],
+          user_id: session.session.user.id
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      const transformedMember: TeamMember = {
+        id: newMember.id,
+        name: newMember.name,
+        position: newMember.position,
+        startDate: new Date(newMember.start_date),
+        skills: newMember.skills || [],
+        createdAt: new Date(newMember.created_at)
+      };
+
+      setTeamMembers([transformedMember, ...teamMembers]);
+      setIsAddingMember(false);
+      toast.success("Team member added successfully");
+    } catch (error) {
+      console.error("Error adding team member:", error);
+      toast.error("Failed to add team member");
+    }
+  };
+
+  const handleEditMember = async (data: any) => {
+    if (!editingMember) return;
+
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session.session) {
+        toast.error("You must be logged in to edit team members");
+        return;
+      }
+
+      const { error } = await supabase
+        .from('team_members')
+        .update({
+          name: data.name,
+          position: data.position,
+          start_date: data.startDate.toISOString(),
+          skills: data.skills || []
+        })
+        .eq('id', editingMember.id)
+        .eq('user_id', session.session.user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      const updatedMembers = teamMembers.map(member =>
+        member.id === editingMember.id
+          ? {
+              ...member,
+              name: data.name,
+              position: data.position,
+              startDate: data.startDate,
+              skills: data.skills || []
+            }
+          : member
+      );
+
+      setTeamMembers(updatedMembers);
+      setEditingMember(null);
+      toast.success("Team member updated successfully");
+    } catch (error) {
+      console.error("Error updating team member:", error);
+      toast.error("Failed to update team member");
+    }
+  };
+
+  const handleDeleteMember = async (id: string) => {
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session.session) {
+        toast.error("You must be logged in to delete team members");
+        return;
+      }
+
+      const { error } = await supabase
+        .from('team_members')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', session.session.user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      const updatedMembers = teamMembers.filter(member => member.id !== id);
+      setTeamMembers(updatedMembers);
+      setIsDeleting(null);
+      toast.success("Team member deleted successfully");
+    } catch (error) {
+      console.error("Error deleting team member:", error);
+      toast.error("Failed to delete team member");
+    }
+  };
+
   const openAddMemberDialog = () => setIsAddingMember(true);
   const closeAddMemberDialog = () => setIsAddingMember(false);
   const openEditMemberDialog = (member: TeamMember) => setEditingMember(member);
   const closeEditMemberDialog = () => setEditingMember(null);
   const openDeleteDialog = (id: string) => setIsDeleting(id);
   const closeDeleteDialog = () => setIsDeleting(null);
-
-  const handleAddMember = (data: any) => {
-    const newMember: TeamMember = {
-      id: `team-${Date.now()}`,
-      name: data.name,
-      position: data.position,
-      startDate: data.startDate,
-      skills: data.skills || [],
-      createdAt: new Date()
-    };
-
-    // Update team members list
-    const updatedMembers = [newMember, ...teamMembers];
-    setTeamMembers(updatedMembers);
-
-    // Update the global mock array
-    mockTeamMembers.length = 0;
-    mockTeamMembers.push(...updatedMembers);
-
-    setIsAddingMember(false);
-    toast.success("Team member added successfully");
-  };
-
-  const handleEditMember = (data: any) => {
-    if (!editingMember) return;
-    const updatedMembers = teamMembers.map(member => member.id === editingMember.id ? {
-      ...member,
-      ...data
-    } : member);
-
-    // Update both state and mock data
-    setTeamMembers(updatedMembers);
-    mockTeamMembers.length = 0;
-    mockTeamMembers.push(...updatedMembers);
-    
-    setEditingMember(null);
-    toast.success("Team member updated successfully");
-  };
-
-  const handleDeleteMember = (id: string) => {
-    const updatedMembers = teamMembers.filter(member => member.id !== id);
-
-    // Update both state and mock data
-    setTeamMembers(updatedMembers);
-    mockTeamMembers.length = 0;
-    mockTeamMembers.push(...updatedMembers);
-    
-    setIsDeleting(null);
-    toast.success("Team member deleted successfully");
-  };
 
   return (
     <div className="flex min-h-screen bg-background">
