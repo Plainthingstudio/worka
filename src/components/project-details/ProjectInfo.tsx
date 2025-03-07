@@ -1,18 +1,11 @@
 
 import React from "react";
 import { format } from "date-fns";
-import { CalendarIcon, DollarSign, UserCircle, Tag, Clock, ArrowRight, Users } from "lucide-react";
+import { CalendarIcon, DollarSign, UserCircle, Tag, Clock, ArrowRight, Users, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Client, Project } from "@/types";
 import { mockTeamMembers } from "@/pages/Team";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface ProjectInfoProps {
   project: Project;
@@ -113,26 +106,18 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
                 <Users className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div className="space-y-0.5">
                   <p className="text-sm font-medium">Team Members</p>
-                  {mockTeamMembers.length > 0 ? (
-                    <Select defaultValue={assignedTeamMembers.length > 0 ? assignedTeamMembers[0].id : undefined}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select team member" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {assignedTeamMembers.length > 0 ? (
-                          assignedTeamMembers.map((member) => (
-                            <SelectItem key={member.id} value={member.id}>
-                              {member.name} ({member.position})
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="none" disabled>No team members assigned</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No team members assigned</p>
-                  )}
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {assignedTeamMembers.length > 0 ? (
+                      assignedTeamMembers.map((member) => (
+                        <Badge key={member.id} variant="outline" className="flex items-center gap-1 py-1 pl-2 bg-background">
+                          <Users className="h-3 w-3 text-muted-foreground mr-1" />
+                          {member.name} - <span className="text-muted-foreground text-xs">{member.position}</span>
+                        </Badge>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No team members assigned</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
