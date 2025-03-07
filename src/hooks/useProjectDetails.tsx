@@ -40,7 +40,11 @@ export const useProjectDetails = (projectId: string | undefined) => {
     handleAddPayment,
     handleEditPayment: editPayment,
     handleDeletePayment: deletePayment
-  } = usePaymentOperations(project, setProject);
+  } = usePaymentOperations(
+    project, 
+    setProject, 
+    () => setIsPaymentDialogOpen(false) // Close dialog on success
+  );
 
   // Wrapper functions to connect dialogs with operations
   const handleChangeStatus = () => {

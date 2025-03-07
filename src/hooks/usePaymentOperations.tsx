@@ -3,7 +3,11 @@ import { toast } from "sonner";
 import { Project, Payment, PaymentType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
-export const usePaymentOperations = (project: Project | null, setProject: (project: Project) => void) => {
+export const usePaymentOperations = (
+  project: Project | null, 
+  setProject: (project: Project) => void,
+  onSuccess?: () => void // Add optional callback for dialog closing
+) => {
   const handleAddPayment = async (data: any) => {
     if (!project) return;
 
@@ -46,6 +50,11 @@ export const usePaymentOperations = (project: Project | null, setProject: (proje
       
       setProject(updatedProject);
       toast.success("Payment added successfully");
+      
+      // Call the success callback if provided (to close the dialog)
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error("Error in handleAddPayment:", error);
       toast.error("Failed to add payment");
