@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Project, ProjectStatus, Currency, ProjectType, ProjectCategory } from "@/types";
+import { Project, ProjectStatus, Currency, ProjectType, ProjectCategory, LeadSource } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useProjects = () => {
