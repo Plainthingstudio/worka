@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,19 +11,68 @@ import { Client, LeadSource } from "@/types";
 import ClientsFilter from "@/components/clients/ClientsFilter";
 import ClientsTable from "@/components/clients/ClientsTable";
 import DeleteConfirmationDialog from "@/components/clients/DeleteConfirmationDialog";
-
-// Import and modify the clients from mockData
-import { clients as mockClients } from "@/mockData";
+import { supabase } from "@/integrations/supabase/client";
 
 const Clients = () => {
-  // Initialize state with the mockClients but allow it to be updated
-  const [clients, setClients] = useState<Client[]>(mockClients);
+  const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [isAddingClient, setIsAddingClient] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch clients from Supabase
+  useEffect(() => {
+    async function fetchClients() {
+      try {
+        setIsLoading(true);
+        
+        // Get current user session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          toast.error("You must be logged in to view clients");
+          setIsLoading(false);
+          return;
+        }
+        
+        // Fetch clients from Supabase
+        const { data, error } = await supabase
+          .from('clients')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error("Error fetching clients:", error);
+          toast.error("Failed to load clients");
+          setIsLoading(false);
+          return;
+        }
+        
+        // Transform Supabase data to match Client type
+        const transformedClients = data.map((client: any) => ({
+          id: client.id,
+          name: client.name,
+          email: client.email,
+          phone: client.phone,
+          address: client.address,
+          leadSource: client.lead_source,
+          createdAt: new Date(client.created_at)
+        }));
+        
+        setClients(transformedClients);
+      } catch (error) {
+        console.error("Error fetching clients:", error);
+        toast.error("Failed to load clients");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchClients();
+  }, []);
 
   // Listen for sidebar state changes
   useEffect(() => {
@@ -47,7 +97,9 @@ const Clients = () => {
   }, []);
 
   const filteredClients = clients.filter(client => {
-    const matchesSearch = client.name.toLowerCase().includes(search.toLowerCase()) || client.email.toLowerCase().includes(search.toLowerCase()) || client.phone.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = client.name.toLowerCase().includes(search.toLowerCase()) || 
+                           client.email.toLowerCase().includes(search.toLowerCase()) || 
+                           (client.phone && client.phone.toLowerCase().includes(search.toLowerCase()));
     const matchesSource = sourceFilter === "all" || client.leadSource === sourceFilter;
     return matchesSearch && matchesSource;
   });
@@ -59,62 +111,141 @@ const Clients = () => {
   const openDeleteDialog = (id: string) => setIsDeleting(id);
   const closeDeleteDialog = () => setIsDeleting(null);
 
-  const handleAddClient = (data: any) => {
-    const newClient: Client = {
-      id: `client-${Date.now()}`,
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      address: data.address,
-      leadSource: data.leadSource,
-      createdAt: new Date()
-    };
-
-    // Update both local state and the central mockData
-    const updatedClients = [newClient, ...clients];
-    setClients(updatedClients);
-
-    // Update the original array to make it available globally
-    mockClients.length = 0; // Clear the array
-    mockClients.push(...updatedClients); // Add all clients back
-
-    setIsAddingClient(false);
-    toast.success("Client created successfully");
+  const handleAddClient = async (data: any) => {
+    try {
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("You must be logged in to create a client");
+        return;
+      }
+      
+      // Insert new client to Supabase
+      const { data: clientData, error } = await supabase
+        .from('clients')
+        .insert({
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          lead_source: data.leadSource,
+          user_id: session.user.id
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Transform Supabase data to match Client type
+      const newClient: Client = {
+        id: clientData.id,
+        name: clientData.name,
+        email: clientData.email,
+        phone: clientData.phone,
+        address: clientData.address,
+        leadSource: clientData.lead_source,
+        createdAt: new Date(clientData.created_at)
+      };
+      
+      // Update local state
+      setClients([newClient, ...clients]);
+      setIsAddingClient(false);
+      toast.success("Client created successfully");
+    } catch (error: any) {
+      console.error("Error creating client:", error);
+      toast.error(error.message || "Failed to create client");
+    }
   };
 
-  const handleEditClient = (data: any) => {
+  const handleEditClient = async (data: any) => {
     if (!editingClient) return;
-    const updatedClients = clients.map(client => client.id === editingClient.id ? {
-      ...client,
-      ...data
-    } : client);
-
-    // Update both local state and the central mockData
-    setClients(updatedClients);
-
-    // Update the original array to make it available globally
-    mockClients.length = 0;
-    mockClients.push(...updatedClients);
-    setEditingClient(null);
-    toast.success("Client updated successfully");
+    
+    try {
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("You must be logged in to update a client");
+        return;
+      }
+      
+      // Update client in Supabase
+      const { error } = await supabase
+        .from('clients')
+        .update({
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          lead_source: data.leadSource
+        })
+        .eq('id', editingClient.id)
+        .eq('user_id', session.user.id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Update local state
+      const updatedClients = clients.map(client => 
+        client.id === editingClient.id ? {
+          ...client,
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          leadSource: data.leadSource
+        } : client
+      );
+      
+      setClients(updatedClients);
+      setEditingClient(null);
+      toast.success("Client updated successfully");
+    } catch (error: any) {
+      console.error("Error updating client:", error);
+      toast.error(error.message || "Failed to update client");
+    }
   };
 
-  const handleDeleteClient = (id: string) => {
-    const updatedClients = clients.filter(client => client.id !== id);
-
-    // Update both local state and the central mockData
-    setClients(updatedClients);
-
-    // Update the original array to make it available globally
-    mockClients.length = 0;
-    mockClients.push(...updatedClients);
-    setIsDeleting(null);
-    toast.success("Client deleted successfully");
+  const handleDeleteClient = async (id: string) => {
+    try {
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("You must be logged in to delete a client");
+        return;
+      }
+      
+      // Delete client from Supabase
+      const { error } = await supabase
+        .from('clients')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', session.user.id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Update local state
+      const updatedClients = clients.filter(client => client.id !== id);
+      setClients(updatedClients);
+      setIsDeleting(null);
+      toast.success("Client deleted successfully");
+    } catch (error: any) {
+      console.error("Error deleting client:", error);
+      toast.error(error.message || "Failed to delete client");
+    }
   };
 
   const leadSources: LeadSource[] = ["Dribbble", "Website", "LinkedIn", "Behance", "Direct Email", "Other"];
 
-  return <div className="flex min-h-screen bg-background">
+  return (
+    <div className="flex min-h-screen bg-background">
       <Sidebar />
       <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
         <Navbar title="Clients" />
@@ -134,33 +265,61 @@ const Clients = () => {
             </Button>
           </div>
 
-          <ClientsFilter search={search} setSearch={setSearch} sourceFilter={sourceFilter} setSourceFilter={setSourceFilter} leadSources={leadSources} />
+          <ClientsFilter 
+            search={search} 
+            setSearch={setSearch} 
+            sourceFilter={sourceFilter} 
+            setSourceFilter={setSourceFilter} 
+            leadSources={leadSources} 
+          />
 
           <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
             <div className="overflow-x-auto p-4 py-[8px] px-[8px]">
-              <ClientsTable clients={filteredClients} onEdit={openEditClientDialog} onDelete={openDeleteDialog} />
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <p className="mt-2 text-muted-foreground">Loading clients...</p>
+                </div>
+              ) : (
+                <ClientsTable 
+                  clients={filteredClients} 
+                  onEdit={openEditClientDialog} 
+                  onDelete={openDeleteDialog} 
+                />
+              )}
             </div>
           </div>
         </main>
       </div>
 
       {/* Add Client Dialog */}
-      {isAddingClient && <Dialog open={isAddingClient} onOpenChange={closeAddClientDialog}>
+      {isAddingClient && (
+        <Dialog open={isAddingClient} onOpenChange={closeAddClientDialog}>
           <DialogContent className="sm:max-w-[500px]">
             <ClientForm onSave={handleAddClient} onCancel={closeAddClientDialog} />
           </DialogContent>
-        </Dialog>}
+        </Dialog>
+      )}
 
       {/* Edit Client Dialog */}
-      {editingClient && <Dialog open={!!editingClient} onOpenChange={closeEditClientDialog}>
+      {editingClient && (
+        <Dialog open={!!editingClient} onOpenChange={closeEditClientDialog}>
           <DialogContent className="sm:max-w-[500px]">
             <ClientForm client={editingClient} onSave={handleEditClient} onCancel={closeEditClientDialog} />
           </DialogContent>
-        </Dialog>}
+        </Dialog>
+      )}
 
       {/* Delete Confirmation Dialog */}
-      {isDeleting && <DeleteConfirmationDialog isOpen={!!isDeleting} onClose={closeDeleteDialog} onConfirm={() => isDeleting && handleDeleteClient(isDeleting)} />}
-    </div>;
+      {isDeleting && (
+        <DeleteConfirmationDialog 
+          isOpen={!!isDeleting} 
+          onClose={closeDeleteDialog} 
+          onConfirm={() => isDeleting && handleDeleteClient(isDeleting)} 
+        />
+      )}
+    </div>
+  );
 };
 
 export default Clients;
