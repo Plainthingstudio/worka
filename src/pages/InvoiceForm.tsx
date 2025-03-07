@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
 import InvoiceFormContainer from '@/components/invoice/InvoiceFormContainer';
@@ -26,6 +26,13 @@ const InvoiceForm = () => {
   } = useInvoiceForm();
 
   const isLoading = isInvoiceLoading || isClientsLoading;
+
+  // Debug log to track invoice items
+  useEffect(() => {
+    if (invoice && Array.isArray(invoice.items)) {
+      console.log("InvoiceForm: invoice items updated:", invoice.items);
+    }
+  }, [invoice?.items]);
 
   if (isLoading) {
     return (

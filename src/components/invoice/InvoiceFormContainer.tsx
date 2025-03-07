@@ -38,7 +38,7 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
   generatePDF,
   formatCurrency
 }) => {
-  // Debug when invoice or items change
+  // Debug log when invoice items change
   useEffect(() => {
     console.log("InvoiceFormContainer: Current invoice items:", invoice.items);
   }, [invoice.items]);
@@ -58,7 +58,7 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
     );
   }
 
-  // Ensure items is always an array, but don't modify it unnecessarily
+  // Ensure items is always an array
   const items = Array.isArray(invoice.items) ? invoice.items : [];
 
   return (
