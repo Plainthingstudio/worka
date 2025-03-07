@@ -58,7 +58,7 @@ const Clients = () => {
           email: client.email,
           phone: client.phone,
           address: client.address,
-          leadSource: client.lead_source,
+          leadSource: client.lead_source as LeadSource, // Cast to LeadSource type
           createdAt: new Date(client.created_at)
         }));
         
@@ -121,6 +121,9 @@ const Clients = () => {
         return;
       }
       
+      // Validate leadSource to ensure it's one of the allowed values
+      const leadSource = data.leadSource as LeadSource;
+      
       // Insert new client to Supabase
       const { data: clientData, error } = await supabase
         .from('clients')
@@ -129,7 +132,7 @@ const Clients = () => {
           email: data.email,
           phone: data.phone,
           address: data.address,
-          lead_source: data.leadSource,
+          lead_source: leadSource,
           user_id: session.user.id
         })
         .select()
@@ -146,7 +149,7 @@ const Clients = () => {
         email: clientData.email,
         phone: clientData.phone,
         address: clientData.address,
-        leadSource: clientData.lead_source,
+        leadSource: clientData.lead_source as LeadSource,
         createdAt: new Date(clientData.created_at)
       };
       
@@ -172,6 +175,9 @@ const Clients = () => {
         return;
       }
       
+      // Validate leadSource to ensure it's one of the allowed values
+      const leadSource = data.leadSource as LeadSource;
+      
       // Update client in Supabase
       const { error } = await supabase
         .from('clients')
@@ -180,7 +186,7 @@ const Clients = () => {
           email: data.email,
           phone: data.phone,
           address: data.address,
-          lead_source: data.leadSource
+          lead_source: leadSource
         })
         .eq('id', editingClient.id)
         .eq('user_id', session.user.id);
@@ -197,7 +203,7 @@ const Clients = () => {
           email: data.email,
           phone: data.phone,
           address: data.address,
-          leadSource: data.leadSource
+          leadSource: data.leadSource as LeadSource
         } : client
       );
       

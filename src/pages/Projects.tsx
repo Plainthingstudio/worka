@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import ProjectForm from "@/components/ProjectForm";
-import { Project, TeamMember, Client } from "@/types";
+import { Project, TeamMember, Client, ProjectStatus, Currency, ProjectType, ProjectCategory } from "@/types";
 import ProjectsFilter from "@/components/projects/ProjectsFilter";
 import ProjectsTable from "@/components/projects/ProjectsTable";
 import ProjectsStats from "@/components/projects/ProjectsStats";
@@ -58,7 +58,7 @@ const Projects = () => {
           email: client.email,
           phone: client.phone,
           address: client.address,
-          leadSource: client.lead_source,
+          leadSource: client.lead_source as LeadSource,
           createdAt: new Date(client.created_at)
         }));
         
@@ -113,12 +113,12 @@ const Projects = () => {
             id: project.id,
             name: project.name,
             clientId: project.client_id,
-            status: project.status,
+            status: project.status as ProjectStatus,
             deadline: new Date(project.deadline),
             fee: project.fee,
-            currency: project.currency,
-            projectType: project.project_type,
-            categories: project.categories,
+            currency: project.currency as Currency,
+            projectType: project.project_type as ProjectType,
+            categories: project.categories as ProjectCategory[],
             teamMembers: project.team_members || [],
             createdAt: new Date(project.created_at),
             payments: payments
@@ -183,18 +183,24 @@ const Projects = () => {
         return;
       }
       
+      // Ensure types match what's expected
+      const status = data.status as ProjectStatus;
+      const currency = data.currency as Currency;
+      const projectType = data.projectType as ProjectType;
+      const categories = data.categories as ProjectCategory[];
+      
       // Insert new project to Supabase
       const { data: projectData, error } = await supabase
         .from('projects')
         .insert({
           name: data.name,
           client_id: data.clientId,
-          status: data.status,
+          status: status,
           deadline: data.deadline.toISOString(),
           fee: data.fee,
-          currency: data.currency,
-          project_type: data.projectType,
-          categories: data.categories || [],
+          currency: currency,
+          project_type: projectType,
+          categories: categories,
           team_members: data.teamMembers || [],
           user_id: session.user.id
         })
@@ -210,12 +216,12 @@ const Projects = () => {
         id: projectData.id,
         name: projectData.name,
         clientId: projectData.client_id,
-        status: projectData.status,
+        status: projectData.status as ProjectStatus,
         deadline: new Date(projectData.deadline),
         fee: projectData.fee,
-        currency: projectData.currency,
-        projectType: projectData.project_type,
-        categories: projectData.categories,
+        currency: projectData.currency as Currency,
+        projectType: projectData.project_type as ProjectType,
+        categories: projectData.categories as ProjectCategory[],
         teamMembers: projectData.team_members || [],
         createdAt: new Date(projectData.created_at),
         payments: []
@@ -243,18 +249,24 @@ const Projects = () => {
         return;
       }
       
+      // Ensure types match what's expected
+      const status = data.status as ProjectStatus;
+      const currency = data.currency as Currency;
+      const projectType = data.projectType as ProjectType;
+      const categories = data.categories as ProjectCategory[];
+      
       // Update project in Supabase
       const { error } = await supabase
         .from('projects')
         .update({
           name: data.name,
           client_id: data.clientId,
-          status: data.status,
+          status: status,
           deadline: data.deadline.toISOString(),
           fee: data.fee,
-          currency: data.currency,
-          project_type: data.projectType,
-          categories: data.categories || [],
+          currency: currency,
+          project_type: projectType,
+          categories: categories,
           team_members: data.teamMembers || []
         })
         .eq('id', editingProject.id)
@@ -270,12 +282,12 @@ const Projects = () => {
           ...project,
           name: data.name,
           clientId: data.clientId,
-          status: data.status,
+          status: data.status as ProjectStatus,
           deadline: data.deadline,
           fee: data.fee,
-          currency: data.currency,
-          projectType: data.projectType,
-          categories: data.categories || [],
+          currency: data.currency as Currency,
+          projectType: data.projectType as ProjectType,
+          categories: data.categories as ProjectCategory[],
           teamMembers: data.teamMembers || []
         } : project
       );
