@@ -44,6 +44,8 @@ export const useInvoicesFetching = () => {
         throw itemsError;
       }
 
+      console.log("Fetched invoice items from DB:", invoiceItemsData);
+
       // Helper function to validate status
       const validateStatus = (status: string): "Draft" | "Sent" | "Paid" | "Overdue" => {
         const validStatuses = ["Draft", "Sent", "Paid", "Overdue"];
@@ -60,11 +62,13 @@ export const useInvoicesFetching = () => {
           .filter(item => item.invoice_id === invoice.id)
           .map(item => ({
             id: item.id,
-            description: item.description,
-            quantity: item.quantity,
-            rate: item.rate,
-            amount: item.amount
+            description: item.description || "",
+            quantity: Number(item.quantity) || 1,
+            rate: Number(item.rate) || 0,
+            amount: Number(item.amount) || 0
           }));
+
+        console.log(`Items for invoice ${invoice.id}:`, items);
 
         return {
           id: invoice.id,

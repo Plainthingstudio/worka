@@ -66,15 +66,15 @@ export function useInvoiceData(invoiceId: string | undefined) {
         throw new Error(itemsError.message);
       }
 
-      console.log("Fetched invoice items from DB:", itemsData);
+      console.log("Fetched invoice items from DB in useInvoiceData:", itemsData);
       
       // Transform to our Invoice type
-      const items = itemsData.map(item => ({
+      const processedItems: InvoiceItem[] = itemsData.map(item => ({
         id: item.id,
-        description: item.description,
-        quantity: item.quantity,
-        rate: item.rate,
-        amount: item.amount
+        description: item.description || "",
+        quantity: Number(item.quantity) || 1,
+        rate: Number(item.rate) || 0,
+        amount: Number(item.amount) || 0
       }));
 
       // Ensure that the status is one of the allowed values
@@ -87,7 +87,7 @@ export function useInvoiceData(invoiceId: string | undefined) {
         date: new Date(invoiceData.date),
         dueDate: new Date(invoiceData.due_date),
         paymentTerms: invoiceData.payment_terms,
-        items: items,
+        items: processedItems,
         subtotal: invoiceData.subtotal,
         taxPercentage: invoiceData.tax_percentage || 0,
         taxAmount: invoiceData.tax_amount || 0,
@@ -103,7 +103,7 @@ export function useInvoiceData(invoiceId: string | undefined) {
       console.log("Loaded invoice with items:", loadedInvoice);
       
       setInvoice(loadedInvoice);
-      return { invoice: loadedInvoice, items };
+      return { invoice: loadedInvoice, items: processedItems };
     } catch (error) {
       console.error("Error loading invoice:", error);
       toast({

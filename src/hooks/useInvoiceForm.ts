@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Invoice } from '@/types';
 import { useInvoiceItems } from '@/hooks/useInvoiceItems';
@@ -7,7 +7,6 @@ import { useInvoiceData } from '@/hooks/useInvoiceData';
 import { useInvoiceCalculations } from '@/hooks/useInvoiceCalculations';
 import { useInvoicePdf } from '@/hooks/useInvoicePdf';
 import { useInvoices } from '@/hooks/useInvoices';
-import { useEffect } from 'react';
 
 export function useInvoiceForm() {
   const navigate = useNavigate();
@@ -29,17 +28,18 @@ export function useInvoiceForm() {
     updateItem 
   } = useInvoiceItems(invoice?.items || []);
   
-  // Load invoice items into the items state when invoice is loaded
+  // When invoice is loaded/changed, update the items state
   useEffect(() => {
     if (invoice?.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
+      console.log("useInvoiceForm: Setting invoice items to items state:", invoice.items);
       setItems(invoice.items);
     }
-  }, [invoice?.items, setItems]);
+  }, [invoice?.id, invoice?.items, setItems]);
 
   // Keep the invoice items in sync with the items from useInvoiceItems
   useEffect(() => {
     if (items && Array.isArray(items) && items.length > 0) {
-      console.log("Syncing items to invoice:", items);
+      console.log("useInvoiceForm: Syncing items to invoice:", items);
       setInvoice(prev => {
         // Only update if items have actually changed
         if (JSON.stringify(prev.items) !== JSON.stringify(items)) {

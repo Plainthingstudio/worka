@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { InvoiceItem } from '@/types';
@@ -5,13 +6,13 @@ import { useToast } from '@/hooks/use-toast';
 import { createEmptyItem } from '@/utils/invoiceCalculations';
 
 export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
-  console.log("useInvoiceItems initialized with:", initialItems);
+  const { toast } = useToast();
   
-  // Initialize with initial items directly
+  // Initialize with initial items directly, but only once
   const [items, setItems] = useState<InvoiceItem[]>(() => {
     // Process initial items if they exist
     if (Array.isArray(initialItems) && initialItems.length > 0) {
-      console.log("Initializing with items:", initialItems);
+      console.log("Initializing useInvoiceItems with:", initialItems);
       return initialItems.map(item => ({
         ...item,
         id: item.id || uuidv4(),
@@ -24,13 +25,11 @@ export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
     // Otherwise create a default empty item
     return [createEmptyItem()];
   });
-  
-  const { toast } = useToast();
 
   // Update items when initialItems changes (for example, when invoice is loaded from backend)
   useEffect(() => {
     if (Array.isArray(initialItems) && initialItems.length > 0) {
-      console.log("useInvoiceItems: Updating items from initialItems prop change:", initialItems);
+      console.log("useInvoiceItems: Updating items from initialItems change:", initialItems);
       
       const processedItems = initialItems.map(item => ({
         ...item,
@@ -42,12 +41,15 @@ export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
       }));
       
       // Only update if the items have actually changed to prevent infinite loops
-      if (JSON.stringify(items) !== JSON.stringify(processedItems)) {
-        console.log("Items have changed, updating state");
+      const currentItemsStr = JSON.stringify(items.map(i => ({ ...i, id: undefined })));
+      const newItemsStr = JSON.stringify(processedItems.map(i => ({ ...i, id: undefined })));
+      
+      if (currentItemsStr !== newItemsStr) {
+        console.log("Items have significant changes, updating state");
         setItems(processedItems);
       }
     }
-  }, [initialItems]);
+  }, [initialItems, items]);
 
   const addItem = useCallback(() => {
     const newItem = createEmptyItem();
