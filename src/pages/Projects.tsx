@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -162,16 +162,28 @@ const Projects = () => {
       </div>
 
       {isAddingProject && <Dialog open={isAddingProject} onOpenChange={closeAddProjectDialog}>
-          <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden">
-            <div className="max-h-full overflow-y-auto pr-2">
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Create Project</DialogTitle>
+              <DialogDescription>
+                Fill in the details to create a new project.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="max-h-[70vh] overflow-y-auto pr-2">
               <ProjectForm clients={clients} teamMembers={teamMembers} onSave={handleAddProject} onCancel={closeAddProjectDialog} />
             </div>
           </DialogContent>
         </Dialog>}
 
       {editingProject && <Dialog open={!!editingProject} onOpenChange={closeEditProjectDialog}>
-          <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden">
-            <div className="max-h-full overflow-y-auto pr-2">
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Edit Project</DialogTitle>
+              <DialogDescription>
+                Make changes to the project details.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="max-h-[70vh] overflow-y-auto pr-2">
               <ProjectForm project={editingProject} clients={clients} teamMembers={teamMembers} onSave={handleEditProject} onCancel={closeEditProjectDialog} />
             </div>
           </DialogContent>
