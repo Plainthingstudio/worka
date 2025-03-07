@@ -38,17 +38,27 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-4">
-          <PersonalInfoFields form={form} isEditing={isEditing} />
-          <AddressFields form={form} isEditing={isEditing} />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full max-w-3xl">
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Personal Information</h3>
+            <PersonalInfoFields form={form} isEditing={isEditing} />
+          </div>
+          
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Address Information</h3>
+            <AddressFields form={form} isEditing={isEditing} />
+          </div>
         </div>
 
         <FormActions 
           isEditing={isEditing} 
           isSaving={isSaving} 
           onEdit={() => setIsEditing(true)} 
-          onCancel={() => setIsEditing(false)} 
+          onCancel={() => {
+            form.reset();
+            setIsEditing(false);
+          }} 
         />
       </form>
     </Form>

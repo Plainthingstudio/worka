@@ -27,15 +27,15 @@ export function CustomFormField({
   placeholder,
   disabled = false,
   description,
-  className = "w-full max-w-lg",
+  className,
 }: FormFieldProps) {
   return (
     <FormField
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem>
-          <FormLabel className="text-base font-medium">{label}</FormLabel>
+        <FormItem className="w-full">
+          <FormLabel>{label}</FormLabel>
           <FormControl>
             <Input
               {...field}

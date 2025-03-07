@@ -10,7 +10,7 @@ interface AddressFieldsProps {
 
 export function AddressFields({ form, isEditing }: AddressFieldsProps) {
   return (
-    <>
+    <div className="space-y-4">
       <CustomFormField
         form={form}
         name="streetAddress"
@@ -19,7 +19,7 @@ export function AddressFields({ form, isEditing }: AddressFieldsProps) {
         disabled={!isEditing}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <CustomFormField
           form={form}
           name="city"
@@ -39,7 +39,7 @@ export function AddressFields({ form, isEditing }: AddressFieldsProps) {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <CustomFormField
           form={form}
           name="zipCode"
@@ -58,6 +58,6 @@ export function AddressFields({ form, isEditing }: AddressFieldsProps) {
           className="w-full"
         />
       </div>
-    </>
+    </div>
   );
 }

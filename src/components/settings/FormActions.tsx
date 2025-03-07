@@ -17,7 +17,7 @@ export function FormActions({
   onCancel 
 }: FormActionsProps) {
   return (
-    <div className="flex justify-end pt-4">
+    <div className="flex justify-end pt-4 border-t mt-6">
       {!isEditing ? (
         <Button 
           type="button" 

@@ -10,7 +10,7 @@ interface PersonalInfoFieldsProps {
 
 export function PersonalInfoFields({ form, isEditing }: PersonalInfoFieldsProps) {
   return (
-    <>
+    <div className="space-y-4">
       <CustomFormField
         form={form}
         name="fullName"
@@ -35,6 +35,6 @@ export function PersonalInfoFields({ form, isEditing }: PersonalInfoFieldsProps)
         placeholder="+1 (555) 000-0000"
         disabled={!isEditing}
       />
-    </>
+    </div>
   );
 }
