@@ -40,10 +40,24 @@ const Auth = () => {
   
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Authentication is handled in the LoginForm component
-    localStorage.setItem("isLoggedIn", "true");
-    toast.success("Successfully logged in");
-    navigate("/dashboard");
+    setIsLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) throw error;
+      
+      localStorage.setItem("isLoggedIn", "true");
+      toast.success("Successfully logged in");
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to login");
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const handleDummyLogin = async () => {
@@ -96,9 +110,6 @@ const Auth = () => {
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Authentication is handled in the SignupForm component
-    localStorage.setItem("isLoggedIn", "true");
-    toast.success("Account created successfully");
-    navigate("/dashboard");
   };
 
   return (
