@@ -1,6 +1,7 @@
+
 import React from "react";
 import { format } from "date-fns";
-import { DollarSign, UserCircle, Tag, Hash, Clock, ArrowRight, Users, Calendar as CalendarIcon } from "lucide-react";
+import { CalendarIcon, DollarSign, UserCircle, Tag, Hash, Clock, ArrowRight, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Client, Project } from "@/types";
@@ -26,6 +27,14 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
         <CardContent className="grid gap-4 pt-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-4">
+              <div className="flex items-start gap-2">
+                <Hash className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">Project ID</p>
+                  <p className="text-sm text-muted-foreground">{project.id}</p>
+                </div>
+              </div>
+
               <div className="flex items-start gap-2">
                 <UserCircle className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div className="space-y-0.5">
