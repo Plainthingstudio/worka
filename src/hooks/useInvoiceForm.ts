@@ -1,31 +1,26 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
 import { Invoice } from '@/types';
 import { useInvoiceItems } from '@/hooks/useInvoiceItems';
 import { useInvoiceValidation } from '@/hooks/useInvoiceValidation';
-import { supabase } from '@/integrations/supabase/client';
-import { 
-  calculateInvoiceTotals, 
-  createNewInvoice, 
-  formatCurrency 
-} from '@/utils/invoiceCalculations';
-import { generateInvoicePDF } from '@/utils/pdfGenerator';
+import { useInvoiceData } from '@/hooks/useInvoiceData';
+import { useInvoiceCalculations } from '@/hooks/useInvoiceCalculations';
+import { useInvoicePdf } from '@/hooks/useInvoicePdf';
 import { useInvoices } from '@/hooks/useInvoices';
+import { useEffect } from 'react';
 
 export function useInvoiceForm() {
   const navigate = useNavigate();
   const { invoiceId } = useParams();
-  const { toast } = useToast();
-  const isEditing = Boolean(invoiceId);
-  const { validateInvoice } = useInvoiceValidation();
-  const { saveInvoice } = useInvoices();
-
-  // Initialize with empty invoice
-  const [invoice, setInvoice] = useState<Invoice>(createNewInvoice());
-  const [isLoading, setIsLoading] = useState(isEditing);
   
-  // Initialize items hook with empty array - will be updated when invoice loads
+  // Use the extracted hooks
+  const { validateInvoice } = useInvoiceValidation();
+  const { saveInvoice: saveToDB } = useInvoices();
+  const { invoice, setInvoice, isLoading, isEditing, fetchInvoice } = useInvoiceData(invoiceId);
+  const { formatCurrency } = useInvoiceCalculations(invoice, setInvoice);
+  const { generatePDF } = useInvoicePdf();
+  
+  // Initialize items hook with items from invoice
   const { 
     items, 
     setItems, 
@@ -34,103 +29,13 @@ export function useInvoiceForm() {
     updateItem 
   } = useInvoiceItems(invoice?.items || []);
   
-  // Load invoice data when in edit mode
+  // Load invoice items into the items state when invoice is loaded
   useEffect(() => {
-    if (isEditing && invoiceId) {
-      const fetchInvoice = async () => {
-        setIsLoading(true);
-        try {
-          // Check if user is authenticated
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session) {
-            toast({
-              title: "Authentication Error",
-              description: "You must be logged in to edit invoices.",
-              variant: "destructive"
-            });
-            navigate('/login');
-            return;
-          }
-
-          // Fetch the invoice
-          const { data: invoiceData, error: invoiceError } = await supabase
-            .from('invoices')
-            .select('*')
-            .eq('id', invoiceId)
-            .maybeSingle();
-          
-          if (invoiceError || !invoiceData) {
-            throw new Error(invoiceError?.message || 'Invoice not found');
-          }
-
-          // Fetch the invoice items
-          const { data: itemsData, error: itemsError } = await supabase
-            .from('invoice_items')
-            .select('*')
-            .eq('invoice_id', invoiceId);
-          
-          if (itemsError) {
-            throw new Error(itemsError.message);
-          }
-
-          console.log("Fetched invoice items from DB:", itemsData);
-          
-          // Transform to our Invoice type
-          const items = itemsData.map(item => ({
-            id: item.id,
-            description: item.description,
-            quantity: item.quantity,
-            rate: item.rate,
-            amount: item.amount
-          }));
-
-          // Ensure that the status is one of the allowed values
-          const validStatus = validateInvoiceStatus(invoiceData.status);
-
-          const loadedInvoice: Invoice = {
-            id: invoiceData.id,
-            invoiceNumber: invoiceData.invoice_number,
-            clientId: invoiceData.client_id,
-            date: new Date(invoiceData.date),
-            dueDate: new Date(invoiceData.due_date),
-            paymentTerms: invoiceData.payment_terms,
-            items: items,
-            subtotal: invoiceData.subtotal,
-            taxPercentage: invoiceData.tax_percentage || 0,
-            taxAmount: invoiceData.tax_amount || 0,
-            discountPercentage: invoiceData.discount_percentage || 0,
-            discountAmount: invoiceData.discount_amount || 0,
-            total: invoiceData.total,
-            notes: invoiceData.notes || "",
-            termsAndConditions: invoiceData.terms_and_conditions || "",
-            createdAt: new Date(invoiceData.created_at),
-            status: validStatus
-          };
-
-          console.log("Loaded invoice with items:", loadedInvoice);
-          
-          // Important: First update the invoice state
-          setInvoice(loadedInvoice);
-          
-          // Then explicitly update the items state with the fetched items
-          setItems(items);
-        } catch (error) {
-          console.error("Error loading invoice:", error);
-          toast({
-            title: "Error",
-            description: "Failed to load invoice. Please try again.",
-            variant: "destructive"
-          });
-          navigate('/invoices');
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      fetchInvoice();
+    if (invoice?.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
+      setItems(invoice.items);
     }
-  }, [isEditing, invoiceId, navigate, toast, setItems]);
-  
+  }, [invoice?.items, setItems]);
+
   // Keep the invoice items in sync with the items from useInvoiceItems
   useEffect(() => {
     if (items && Array.isArray(items) && items.length > 0) {
@@ -146,37 +51,7 @@ export function useInvoiceForm() {
         return prev;
       });
     }
-  }, [items]);
-
-  // Calculate totals whenever relevant invoice fields change
-  useEffect(() => {
-    if (!invoice || !Array.isArray(invoice.items)) return;
-    
-    const { 
-      subtotal, 
-      taxAmount, 
-      discountAmount, 
-      total, 
-      updatedItems 
-    } = calculateInvoiceTotals(
-      invoice.items, 
-      invoice.taxPercentage, 
-      invoice.discountPercentage
-    );
-
-    setInvoice(prev => ({
-      ...prev,
-      items: updatedItems,
-      subtotal,
-      taxAmount,
-      discountAmount,
-      total
-    }));
-  }, [
-    invoice?.items,
-    invoice?.taxPercentage,
-    invoice?.discountPercentage
-  ]);
+  }, [items, setInvoice]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -192,45 +67,22 @@ export function useInvoiceForm() {
         [name]: value
       }));
     }
-  }, []);
+  }, [setInvoice]);
 
   const submitInvoice = useCallback(async () => {
     if (!validateInvoice(invoice)) {
       return;
     }
 
-    const success = await saveInvoice(invoice, isEditing);
+    const success = await saveToDB(invoice, isEditing);
     if (success) {
       navigate("/invoices");
     }
-  }, [invoice, isEditing, validateInvoice, saveInvoice, navigate]);
+  }, [invoice, isEditing, validateInvoice, saveToDB, navigate]);
 
-  const generatePDF = useCallback(() => {
-    try {
-      generateInvoicePDF(invoice);
-      toast({
-        title: "PDF Generated",
-        description: "Invoice PDF has been created and downloaded.",
-      });
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to generate PDF. Please try again.",
-      });
-    }
-  }, [invoice, toast]);
-
-  // Helper function to validate invoice status
-  const validateInvoiceStatus = (status: string): "Draft" | "Sent" | "Paid" | "Overdue" => {
-    const validStatuses = ["Draft", "Sent", "Paid", "Overdue"];
-    if (validStatuses.includes(status)) {
-      return status as "Draft" | "Sent" | "Paid" | "Overdue";
-    }
-    // Default to "Draft" if the status is not valid
-    return "Draft";
-  };
+  const handleGeneratePDF = useCallback(() => {
+    generatePDF(invoice);
+  }, [invoice, generatePDF]);
 
   return {
     invoice,
@@ -242,7 +94,7 @@ export function useInvoiceForm() {
     updateItem,
     handleInputChange,
     saveInvoice: submitInvoice,
-    generatePDF,
+    generatePDF: handleGeneratePDF,
     formatCurrency
   };
 }
