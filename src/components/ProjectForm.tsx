@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, X, Plus, User, ChevronDown } from "lucide-react";
+import { Calendar as CalendarIcon, X, Plus, User } from "lucide-react";
 import { Client, Currency, Project, ProjectStatus, ProjectType, ProjectCategory, TeamMember } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -17,14 +17,6 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 // Updated schema to include teamMembers
 const formSchema = z.object({
@@ -153,20 +145,6 @@ const ProjectForm = ({
     } else {
       setSelectedTeamMembers([...selectedTeamMembers, memberId]);
     }
-  };
-
-  // Get the count of selected team members
-  const selectedTeamMembersCount = selectedTeamMembers.length;
-
-  // Function to get selected team members names for display
-  const getSelectedTeamMembersText = () => {
-    if (selectedTeamMembersCount === 0) return "Select team members";
-    
-    const selectedMembers = teamMembers.filter(tm => selectedTeamMembers.includes(tm.id));
-    if (selectedMembers.length <= 2) {
-      return selectedMembers.map(m => m.name).join(", ");
-    }
-    return `${selectedMembers[0].name}, ${selectedMembers[1].name} +${selectedTeamMembersCount - 2} more`;
   };
 
   // Custom input formatter for fee field to show thousand separators while editing
@@ -445,42 +423,31 @@ const ProjectForm = ({
             render={() => (
               <FormItem>
                 <FormLabel>Assign Team Members</FormLabel>
-                <div className="w-full">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        className="w-full justify-between font-normal"
-                      >
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <span>{getSelectedTeamMembersText()}</span>
-                        </div>
-                        <ChevronDown className="h-4 w-4 opacity-50" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-full" align="start">
-                      <DropdownMenuLabel>Team Members</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      {teamMembers.map(member => (
-                        <DropdownMenuCheckboxItem
-                          key={member.id}
+                <div className="border rounded-md p-4">
+                  <div className="space-y-3">
+                    {teamMembers.map(member => (
+                      <div key={member.id} className="flex items-center space-x-2">
+                        <Checkbox 
+                          id={`member-${member.id}`} 
                           checked={selectedTeamMembers.includes(member.id)}
                           onCheckedChange={() => toggleTeamMember(member.id)}
+                        />
+                        <label
+                          htmlFor={`member-${member.id}`}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
                         >
-                          <div className="flex flex-col">
-                            <span>{member.name}</span>
-                            <span className="text-xs text-muted-foreground">{member.position}</span>
-                          </div>
-                        </DropdownMenuCheckboxItem>
-                      ))}
-                      {teamMembers.length === 0 && (
-                        <div className="text-sm text-center py-2 text-muted-foreground">
-                          No team members available
-                        </div>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          {member.name} - <span className="text-muted-foreground text-xs">{member.position}</span>
+                        </label>
+                      </div>
+                    ))}
+                    
+                    {teamMembers.length === 0 && (
+                      <div className="text-sm text-muted-foreground">
+                        No team members available. Add team members from the Team page.
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <FormMessage />
               </FormItem>
