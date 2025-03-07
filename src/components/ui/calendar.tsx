@@ -38,7 +38,7 @@ const CustomCaption = (props: React.PropsWithChildren<{ displayMonth: Date }>) =
     if (monthIndex !== -1) {
       const newDate = new Date(displayMonth);
       newDate.setMonth(monthIndex);
-      dayPicker.toMonth(newDate);
+      dayPicker.goToMonth(newDate);
     }
   };
   
@@ -46,7 +46,7 @@ const CustomCaption = (props: React.PropsWithChildren<{ displayMonth: Date }>) =
   const handleYearChange = (newYear: string) => {
     const newDate = new Date(displayMonth);
     newDate.setFullYear(parseInt(newYear));
-    dayPicker.toMonth(newDate);
+    dayPicker.goToMonth(newDate);
   };
   
   return (
@@ -81,7 +81,11 @@ const CustomCaption = (props: React.PropsWithChildren<{ displayMonth: Date }>) =
       
       <div className="space-x-1 flex items-center">
         <button
-          onClick={() => dayPicker.previousMonth()}
+          onClick={() => {
+            const prevMonth = new Date(displayMonth);
+            prevMonth.setMonth(prevMonth.getMonth() - 1);
+            dayPicker.goToMonth(prevMonth);
+          }}
           className={cn(
             buttonVariants({ variant: "outline" }),
             "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute left-1"
@@ -90,7 +94,11 @@ const CustomCaption = (props: React.PropsWithChildren<{ displayMonth: Date }>) =
           <ChevronLeft className="h-4 w-4" />
         </button>
         <button
-          onClick={() => dayPicker.nextMonth()}
+          onClick={() => {
+            const nextMonth = new Date(displayMonth);
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            dayPicker.goToMonth(nextMonth);
+          }}
           className={cn(
             buttonVariants({ variant: "outline" }),
             "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute right-1"
