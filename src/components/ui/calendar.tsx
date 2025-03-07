@@ -1,7 +1,7 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, CaptionProps } from "react-day-picker";
+import { DayPicker, CaptionProps, useDayPicker } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -46,23 +46,21 @@ function Calendar({
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 16 }, (_, i) => currentYear - 5 + i);
     
-    // Maintain reference to the DayPicker's navigation handlers
-    const { goToMonth, nextMonth, previousMonth } = React.useContext(
-      DayPicker.Context
-    );
+    // Use the useDayPicker hook to access context
+    const dayPicker = useDayPicker();
 
     // Handle month change
     const handleMonthChange = (value: string) => {
       const newMonth = months.findIndex((m) => m === value);
       const newDate = new Date(year, newMonth, 1);
-      goToMonth(newDate);
+      dayPicker.goToMonth(newDate);
     };
 
     // Handle year change
     const handleYearChange = (value: string) => {
       const newYear = parseInt(value);
       const newDate = new Date(newYear, month, 1);
-      goToMonth(newDate);
+      dayPicker.goToMonth(newDate);
     };
 
     return (
