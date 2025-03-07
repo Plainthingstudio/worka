@@ -1,190 +1,44 @@
 
-import React, { useState, useEffect, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import React, { lazy } from "react";
+import { useAuthState } from "@/hooks/useAuthState";
+import AuthLoading from "@/components/auth/AuthLoading";
+import AuthRedirecting from "@/components/auth/AuthRedirecting";
+import AuthBackButton from "@/components/auth/AuthBackButton";
+import AuthFooter from "@/components/auth/AuthFooter";
+import AuthCardSuspense from "@/components/auth/AuthCardSuspense";
 
 // Use lazy loading to reduce initial load
 const AuthCard = lazy(() => import("@/components/auth/AuthCard"));
 
 const Auth = () => {
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
-  useEffect(() => {
-    // One-time auth check on mount
-    const checkUser = async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        
-        if (data.session) {
-          setIsAuthenticated(true);
-          navigate("/dashboard", { replace: true });
-        } else {
-          setIsAuthenticated(false);
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
-        setIsAuthenticated(false);
-      } finally {
-        setIsCheckingAuth(false);
-      }
-    };
-    
-    checkUser();
-    
-    // Set up auth state listener with cleanup
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log("Auth state changed:", event);
-        
-        if (event === 'SIGNED_IN' && session) {
-          setIsAuthenticated(true);
-          localStorage.setItem("isLoggedIn", "true");
-          navigate("/dashboard", { replace: true });
-        } else if (event === 'SIGNED_OUT') {
-          setIsAuthenticated(false);
-          localStorage.removeItem("isLoggedIn");
-        }
-      }
-    );
-    
-    return () => {
-      // Proper cleanup to avoid memory leaks
-      if (authListener && authListener.subscription) {
-        authListener.subscription.unsubscribe();
-      }
-    };
-  }, [navigate]);
-  
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (error) throw error;
-      
-      // Success is handled by the auth listener
-      toast.success("Successfully logged in");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to login");
-      setIsLoading(false); // Only set loading to false on error
-    }
-  };
-  
-  const handleDummyLogin = async () => {
-    setIsLoading(true);
-    
-    try {
-      // For demo purposes, we'll use preset credentials
-      const demoEmail = "demo@example.com";
-      const demoPassword = "password123";
-      
-      const { error } = await supabase.auth.signInWithPassword({
-        email: demoEmail,
-        password: demoPassword,
-      });
-      
-      if (error) {
-        // If the demo account doesn't exist yet, create it
-        if (error.message.includes("Invalid login credentials")) {
-          const { error: signUpError } = await supabase.auth.signUp({
-            email: demoEmail,
-            password: demoPassword,
-            options: {
-              data: {
-                full_name: "Demo User",
-              },
-            },
-          });
-          
-          if (signUpError) {
-            throw signUpError;
-          }
-          
-          toast.success("Created and logged in with demo account");
-          
-          // Try to sign in again after creating the account
-          const { error: retryError } = await supabase.auth.signInWithPassword({
-            email: demoEmail,
-            password: demoPassword,
-          });
-          
-          if (retryError) throw retryError;
-        } else {
-          throw error;
-        }
-      } else {
-        toast.success("Successfully logged in with demo account");
-      }
-      
-      // Success is handled by the auth listener
-    } catch (error: any) {
-      toast.error(error.message || "Failed to login with demo account");
-      setIsLoading(false); // Only set loading to false on error
-    }
-  };
-  
-  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // Authentication is handled in the SignupForm component
-  };
+  const {
+    isLoading,
+    email,
+    setEmail,
+    password, 
+    setPassword,
+    isCheckingAuth,
+    isAuthenticated,
+    handleLogin,
+    handleDummyLogin,
+    handleSignup
+  } = useAuthState();
 
   // Render a lightweight loading indicator during initial check
   if (isCheckingAuth) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-pulse text-center">
-          <div className="h-12 w-12 mx-auto rounded-full bg-primary/10">
-            <div className="h-6 w-6 mx-auto rounded-full bg-primary" />
-          </div>
-          <p className="mt-4 text-muted-foreground">Checking authentication...</p>
-        </div>
-      </div>
-    );
+    return <AuthLoading />;
   }
 
   // If already authenticated but still on this page (unlikely edge case), redirect
   if (isAuthenticated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <p>Already authenticated. Redirecting...</p>
-        </div>
-      </div>
-    );
+    return <AuthRedirecting />;
   }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-white to-blue-50 p-6">
-      <Button
-        variant="ghost"
-        className="absolute left-4 top-4 flex items-center text-muted-foreground"
-        onClick={() => navigate("/")}
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Home
-      </Button>
+      <AuthBackButton />
       
-      <Suspense fallback={
-        <div className="animate-pulse text-center">
-          <div className="h-12 w-12 mx-auto rounded-full bg-primary/10">
-            <div className="h-6 w-6 mx-auto rounded-full bg-primary" />
-          </div>
-          <p className="mt-4 text-muted-foreground">Loading authentication...</p>
-        </div>
-      }>
+      <AuthCardSuspense>
         <AuthCard
           email={email}
           setEmail={setEmail}
@@ -195,19 +49,9 @@ const Auth = () => {
           handleDummyLogin={handleDummyLogin}
           handleSignup={handleSignup}
         />
-      </Suspense>
+      </AuthCardSuspense>
       
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        By continuing, you agree to our{" "}
-        <a href="#" className="underline">
-          Terms of Service
-        </a>{" "}
-        and{" "}
-        <a href="#" className="underline">
-          Privacy Policy
-        </a>
-        .
-      </p>
+      <AuthFooter />
     </div>
   );
 };
