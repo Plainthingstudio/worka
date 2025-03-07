@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface LoginFormProps {
   email: string;
@@ -25,13 +27,65 @@ const LoginForm = ({
 }: LoginFormProps) => {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // Sign in with Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      // If successful, proceed with the onSubmit callback
+      onSubmit(e);
+      
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred during login");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast.error("Please enter your email address");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      toast.success("Password reset instructions sent to your email");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send reset instructions");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4 pt-4">
+    <form onSubmit={handleSubmit} className="space-y-4 pt-4">
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -51,6 +105,7 @@ const LoginForm = ({
             variant="link"
             className="h-auto p-0 text-xs font-normal"
             type="button"
+            onClick={handleForgotPassword}
           >
             Forgot password?
           </Button>
@@ -87,8 +142,12 @@ const LoginForm = ({
         />
         <Label htmlFor="remember" className="text-sm">Remember me</Label>
       </div>
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "Logging in..." : "Login"}
+      <Button 
+        type="submit" 
+        className="w-full" 
+        disabled={isLoading || loading}
+      >
+        {isLoading || loading ? "Logging in..." : "Login"}
       </Button>
     </form>
   );

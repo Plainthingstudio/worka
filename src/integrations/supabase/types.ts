@@ -9,7 +9,314 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      clients: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string
+          id: string
+          lead_source: string | null
+          name: string
+          phone: string | null
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          lead_source?: string | null
+          name: string
+          phone?: string | null
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          lead_source?: string | null
+          name?: string
+          phone?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      invoice_items: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string
+          quantity: number
+          rate: number
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id: string
+          quantity: number
+          rate: number
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+          quantity?: number
+          rate?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          client_id: string
+          created_at: string
+          date: string
+          discount_amount: number | null
+          discount_percentage: number | null
+          due_date: string
+          id: string
+          invoice_number: string
+          notes: string | null
+          payment_terms: string
+          status: string
+          subtotal: number
+          tax_amount: number | null
+          tax_percentage: number | null
+          terms_and_conditions: string | null
+          total: number
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          date: string
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          due_date: string
+          id?: string
+          invoice_number: string
+          notes?: string | null
+          payment_terms: string
+          status: string
+          subtotal: number
+          tax_amount?: number | null
+          tax_percentage?: number | null
+          terms_and_conditions?: string | null
+          total: number
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          date?: string
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          notes?: string | null
+          payment_terms?: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number | null
+          tax_percentage?: number | null
+          terms_and_conditions?: string | null
+          total?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          date: string
+          id: string
+          notes: string | null
+          payment_type: string
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          date: string
+          id?: string
+          notes?: string | null
+          payment_type: string
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          payment_type?: string
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          phone_number: string | null
+          state: string | null
+          street_address: string | null
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          phone_number?: string | null
+          state?: string | null
+          street_address?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone_number?: string | null
+          state?: string | null
+          street_address?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          categories: string[]
+          client_id: string
+          created_at: string
+          currency: string
+          deadline: string
+          fee: number
+          id: string
+          name: string
+          project_type: string
+          status: string
+          team_members: string[] | null
+          user_id: string
+        }
+        Insert: {
+          categories: string[]
+          client_id: string
+          created_at?: string
+          currency: string
+          deadline: string
+          fee: number
+          id?: string
+          name: string
+          project_type: string
+          status: string
+          team_members?: string[] | null
+          user_id: string
+        }
+        Update: {
+          categories?: string[]
+          client_id?: string
+          created_at?: string
+          currency?: string
+          deadline?: string
+          fee?: number
+          id?: string
+          name?: string
+          project_type?: string
+          status?: string
+          team_members?: string[] | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_members: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          position: string
+          skills: string[] | null
+          start_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          position: string
+          skills?: string[] | null
+          start_date: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          position?: string
+          skills?: string[] | null
+          start_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

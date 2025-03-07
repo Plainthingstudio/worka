@@ -5,57 +5,100 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import AuthCard from "@/components/auth/AuthCard";
+import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("demo@example.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   
   useEffect(() => {
-    // Auto-login functionality for development
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
-    if (isLoggedIn) {
-      navigate("/dashboard");
-    }
+    // Check if user is already logged in
+    const checkUser = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate("/dashboard");
+      }
+    };
+    
+    checkUser();
+    
+    // Set up auth state listener
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          navigate("/dashboard");
+        }
+      }
+    );
+    
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, [navigate]);
   
-  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate login with credentials
-    setTimeout(() => {
-      localStorage.setItem("isLoggedIn", "true");
-      setIsLoading(false);
-      toast.success("Successfully logged in");
-      navigate("/dashboard");
-    }, 500);
+    // Authentication is handled in the LoginForm component
+    localStorage.setItem("isLoggedIn", "true");
+    toast.success("Successfully logged in");
+    navigate("/dashboard");
   };
   
-  const handleDummyLogin = () => {
+  const handleDummyLogin = async () => {
     setIsLoading(true);
     
-    // Simulate login with dummy credentials
-    setTimeout(() => {
+    try {
+      // For demo purposes, we'll use preset credentials
+      const demoEmail = "demo@example.com";
+      const demoPassword = "password123";
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: demoEmail,
+        password: demoPassword,
+      });
+      
+      if (error) {
+        // If the demo account doesn't exist yet, create it
+        if (error.message.includes("Invalid login credentials")) {
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: demoEmail,
+            password: demoPassword,
+            options: {
+              data: {
+                full_name: "Demo User",
+              },
+            },
+          });
+          
+          if (signUpError) {
+            throw signUpError;
+          }
+          
+          toast.success("Created and logged in with demo account");
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success("Successfully logged in with demo account");
+      }
+      
       localStorage.setItem("isLoggedIn", "true");
-      setIsLoading(false);
-      toast.success("Successfully logged in with demo account");
       navigate("/dashboard");
-    }, 500);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to login with demo account");
+    } finally {
+      setIsLoading(false);
+    }
   };
   
-  const handleSignup = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate signup
-    setTimeout(() => {
-      localStorage.setItem("isLoggedIn", "true");
-      setIsLoading(false);
-      toast.success("Account created successfully");
-      navigate("/dashboard");
-    }, 500);
+    // Authentication is handled in the SignupForm component
+    localStorage.setItem("isLoggedIn", "true");
+    toast.success("Account created successfully");
+    navigate("/dashboard");
   };
 
   return (
