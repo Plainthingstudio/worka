@@ -81,6 +81,7 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
                     {...field}
                     placeholder="Your Name"
                     disabled={!isEditing}
+                    className="max-w-md"
                   />
                 </FormControl>
                 <FormMessage />
@@ -99,6 +100,7 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
                     {...field}
                     placeholder="name@example.com"
                     disabled={true}
+                    className="max-w-md"
                   />
                 </FormControl>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -120,6 +122,7 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
                     {...field}
                     placeholder="+1 (555) 000-0000"
                     disabled={!isEditing}
+                    className="max-w-md"
                   />
                 </FormControl>
                 <FormMessage />
@@ -138,6 +141,7 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
                     {...field}
                     placeholder="123 Main St"
                     disabled={!isEditing}
+                    className="max-w-md"
                   />
                 </FormControl>
                 <FormMessage />
@@ -145,7 +149,7 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
             )}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="city"
@@ -183,7 +187,7 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="zipCode"
@@ -222,7 +226,7 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
           </div>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-4">
           {!isEditing ? (
             <Button 
               type="button" 
