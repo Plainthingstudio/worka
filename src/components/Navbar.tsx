@@ -11,15 +11,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "./ThemeProvider";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Navbar = ({ title }: { title?: string }) => {
   const { theme } = useTheme();
+  const navigate = useNavigate();
   
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    window.location.href = "/auth";
+  const handleLogout = async () => {
+    try {
+      // Clear localStorage first to prevent redirect loops
+      localStorage.removeItem("isLoggedIn");
+      
+      // Then use Supabase signOut
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast.success("Successfully logged out");
+      // Use a direct href to ensure a full page reload, avoiding potential redirect issues
+      window.location.href = "/auth";
+    } catch (error: any) {
+      toast.error(error.message || "Failed to log out");
+      console.error("Logout error:", error);
+    }
   };
 
   return (

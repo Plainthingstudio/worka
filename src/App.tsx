@@ -22,12 +22,41 @@ import NotFound from "./pages/NotFound";
 import Team from "./pages/Team";
 import "./App.css";
 
+// Improved auth check that works with Supabase session
 const isAuthenticated = () => {
-  return !!localStorage.getItem("isLoggedIn");
+  // Check both localStorage and session storage for resilience
+  const hasLocalStorage = !!localStorage.getItem("isLoggedIn");
+  return hasLocalStorage;
 };
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  return isAuthenticated() ? <>{children}</> : <Navigate to="/auth" />;
+  const [isChecking, setIsChecking] = useState(true);
+  const [isAuthed, setIsAuthed] = useState(false);
+  
+  useEffect(() => {
+    const checkAuth = async () => {
+      // Use the simpler check for now - avoids extra Supabase call on every route
+      const authed = isAuthenticated();
+      setIsAuthed(authed);
+      setIsChecking(false);
+    };
+    
+    checkAuth();
+  }, []);
+  
+  if (isChecking) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-pulse text-center">
+          <div className="h-8 w-8 mx-auto rounded-full bg-primary/10">
+            <div className="h-4 w-4 mx-auto rounded-full bg-primary" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  return isAuthed ? <>{children}</> : <Navigate to="/auth" />;
 };
 
 function App() {

@@ -15,35 +15,54 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   useEffect(() => {
-    // Check if user is already logged in
+    // More efficient auth check
     const checkUser = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          navigate("/dashboard");
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Auth check error:", error);
+          setIsAuthenticated(false);
+        } else if (data.session) {
+          setIsAuthenticated(true);
+          // Only navigate if we confirmed the user is authenticated
+          setTimeout(() => navigate("/dashboard"), 100);
+        } else {
+          setIsAuthenticated(false);
         }
       } catch (error) {
         console.error("Auth check error:", error);
+        setIsAuthenticated(false);
       } finally {
+        // Always complete the auth check
         setIsCheckingAuth(false);
       }
     };
     
     checkUser();
     
-    // Set up auth state listener
+    // Set up auth state listener with cleanup
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        if (session) {
+        console.log("Auth state changed:", event);
+        
+        if (event === 'SIGNED_IN' && session) {
+          setIsAuthenticated(true);
           navigate("/dashboard");
+        } else if (event === 'SIGNED_OUT') {
+          setIsAuthenticated(false);
+          // Stay on auth page after sign out
         }
       }
     );
     
     return () => {
-      authListener.subscription.unsubscribe();
+      if (authListener && authListener.subscription) {
+        authListener.subscription.unsubscribe();
+      }
     };
   }, [navigate]);
   
@@ -61,11 +80,10 @@ const Auth = () => {
       
       localStorage.setItem("isLoggedIn", "true");
       toast.success("Successfully logged in");
-      navigate("/dashboard");
+      // Navigation will be handled by the auth state change listener
     } catch (error: any) {
       toast.error(error.message || "Failed to login");
-    } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Only set loading to false on error
     }
   };
   
@@ -108,11 +126,10 @@ const Auth = () => {
       }
       
       localStorage.setItem("isLoggedIn", "true");
-      navigate("/dashboard");
+      // Navigation will be handled by the auth state change listener
     } catch (error: any) {
       toast.error(error.message || "Failed to login with demo account");
-    } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Only set loading to false on error
     }
   };
   
@@ -121,6 +138,7 @@ const Auth = () => {
     // Authentication is handled in the SignupForm component
   };
 
+  // Render a lightweight loading indicator during initial check
   if (isCheckingAuth) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -128,10 +146,16 @@ const Auth = () => {
           <div className="h-12 w-12 mx-auto rounded-full bg-primary/10">
             <div className="h-6 w-6 mx-auto rounded-full bg-primary" />
           </div>
-          <p className="mt-4 text-muted-foreground">Loading...</p>
+          <p className="mt-4 text-muted-foreground">Checking authentication...</p>
         </div>
       </div>
     );
+  }
+
+  // If authenticated but still on this page (edge case), redirect
+  if (isAuthenticated) {
+    navigate("/dashboard");
+    return null;
   }
 
   return (
