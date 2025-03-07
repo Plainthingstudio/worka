@@ -31,6 +31,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  // Listen for system theme changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    
+    const handleChange = () => {
+      if (!localStorage.getItem("theme")) {
+        setTheme(mediaQuery.matches ? "dark" : "light");
+      }
+    };
+    
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light");
   };

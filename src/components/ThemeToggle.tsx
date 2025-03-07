@@ -22,7 +22,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       {theme === "light" ? (
         <Moon className="h-[1.2rem] w-[1.2rem]" />
       ) : (
-        <Sun className="h-[1.2rem] w-[1.2rem]" />
+        <Sun className="h-[1.2rem] w-[1.2rem] text-yellow-400" />
       )}
       <span className="sr-only">Toggle theme</span>
     </Button>
