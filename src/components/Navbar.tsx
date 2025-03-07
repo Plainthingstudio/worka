@@ -22,10 +22,10 @@ const Navbar = ({ title }: { title?: string }) => {
   
   const handleLogout = async () => {
     try {
-      // Clear localStorage first to prevent redirect loops
+      // First clear localStorage to immediately prevent protected routes access
       localStorage.removeItem("isLoggedIn");
       
-      // Then use Supabase signOut
+      // Then perform the actual sign out from Supabase
       const { error } = await supabase.auth.signOut();
       
       if (error) {
@@ -33,8 +33,9 @@ const Navbar = ({ title }: { title?: string }) => {
       }
       
       toast.success("Successfully logged out");
-      // Use a direct href to ensure a full page reload, avoiding potential redirect issues
-      window.location.href = "/auth";
+      
+      // Use navigate with replace to avoid back button issues
+      navigate("/auth", { replace: true });
     } catch (error: any) {
       toast.error(error.message || "Failed to log out");
       console.error("Logout error:", error);

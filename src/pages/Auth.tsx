@@ -18,18 +18,14 @@ const Auth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   useEffect(() => {
-    // More efficient auth check
+    // One-time auth check on mount
     const checkUser = async () => {
       try {
-        const { data, error } = await supabase.auth.getSession();
+        const { data } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error("Auth check error:", error);
-          setIsAuthenticated(false);
-        } else if (data.session) {
+        if (data.session) {
           setIsAuthenticated(true);
-          // Only navigate if we confirmed the user is authenticated
-          setTimeout(() => navigate("/dashboard"), 100);
+          navigate("/dashboard", { replace: true });
         } else {
           setIsAuthenticated(false);
         }
@@ -37,7 +33,6 @@ const Auth = () => {
         console.error("Auth check error:", error);
         setIsAuthenticated(false);
       } finally {
-        // Always complete the auth check
         setIsCheckingAuth(false);
       }
     };
@@ -51,15 +46,17 @@ const Auth = () => {
         
         if (event === 'SIGNED_IN' && session) {
           setIsAuthenticated(true);
-          navigate("/dashboard");
+          localStorage.setItem("isLoggedIn", "true");
+          navigate("/dashboard", { replace: true });
         } else if (event === 'SIGNED_OUT') {
           setIsAuthenticated(false);
-          // Stay on auth page after sign out
+          localStorage.removeItem("isLoggedIn");
         }
       }
     );
     
     return () => {
+      // Proper cleanup to avoid memory leaks
       if (authListener && authListener.subscription) {
         authListener.subscription.unsubscribe();
       }
@@ -71,16 +68,15 @@ const Auth = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) throw error;
       
-      localStorage.setItem("isLoggedIn", "true");
+      // Success is handled by the auth listener
       toast.success("Successfully logged in");
-      // Navigation will be handled by the auth state change listener
     } catch (error: any) {
       toast.error(error.message || "Failed to login");
       setIsLoading(false); // Only set loading to false on error
@@ -95,7 +91,7 @@ const Auth = () => {
       const demoEmail = "demo@example.com";
       const demoPassword = "password123";
       
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: demoEmail,
         password: demoPassword,
       });
@@ -103,7 +99,7 @@ const Auth = () => {
       if (error) {
         // If the demo account doesn't exist yet, create it
         if (error.message.includes("Invalid login credentials")) {
-          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          const { error: signUpError } = await supabase.auth.signUp({
             email: demoEmail,
             password: demoPassword,
             options: {
@@ -118,6 +114,14 @@ const Auth = () => {
           }
           
           toast.success("Created and logged in with demo account");
+          
+          // Try to sign in again after creating the account
+          const { error: retryError } = await supabase.auth.signInWithPassword({
+            email: demoEmail,
+            password: demoPassword,
+          });
+          
+          if (retryError) throw retryError;
         } else {
           throw error;
         }
@@ -125,8 +129,7 @@ const Auth = () => {
         toast.success("Successfully logged in with demo account");
       }
       
-      localStorage.setItem("isLoggedIn", "true");
-      // Navigation will be handled by the auth state change listener
+      // Success is handled by the auth listener
     } catch (error: any) {
       toast.error(error.message || "Failed to login with demo account");
       setIsLoading(false); // Only set loading to false on error
@@ -152,10 +155,15 @@ const Auth = () => {
     );
   }
 
-  // If authenticated but still on this page (edge case), redirect
+  // If already authenticated but still on this page (unlikely edge case), redirect
   if (isAuthenticated) {
-    navigate("/dashboard");
-    return null;
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <p>Already authenticated. Redirecting...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

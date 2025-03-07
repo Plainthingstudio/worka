@@ -22,11 +22,9 @@ import NotFound from "./pages/NotFound";
 import Team from "./pages/Team";
 import "./App.css";
 
-// Improved auth check that works with Supabase session
+// Simple auth check that doesn't require a Supabase call
 const isAuthenticated = () => {
-  // Check both localStorage and session storage for resilience
-  const hasLocalStorage = !!localStorage.getItem("isLoggedIn");
-  return hasLocalStorage;
+  return localStorage.getItem("isLoggedIn") === "true";
 };
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -34,14 +32,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isAuthed, setIsAuthed] = useState(false);
   
   useEffect(() => {
-    const checkAuth = async () => {
-      // Use the simpler check for now - avoids extra Supabase call on every route
+    // Use a timeout to prevent immediate flicker
+    const timer = setTimeout(() => {
       const authed = isAuthenticated();
       setIsAuthed(authed);
       setIsChecking(false);
-    };
+    }, 100);
     
-    checkAuth();
+    return () => clearTimeout(timer);
   }, []);
   
   if (isChecking) {
@@ -56,7 +54,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
   
-  return isAuthed ? <>{children}</> : <Navigate to="/auth" />;
+  return isAuthed ? <>{children}</> : <Navigate to="/auth" replace />;
 };
 
 function App() {
@@ -71,7 +69,7 @@ function App() {
       <Router>
         {isMounted && (
           <Routes>
-            <Route path="/" element={isAuthenticated() ? <Navigate to="/dashboard" /> : <Navigate to="/auth" />} />
+            <Route path="/" element={isAuthenticated() ? <Navigate to="/dashboard" replace /> : <Navigate to="/auth" replace />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
