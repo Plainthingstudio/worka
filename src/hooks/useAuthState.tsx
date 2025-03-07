@@ -13,22 +13,28 @@ export function useAuthState() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   useEffect(() => {
-    // One-time auth check on mount
+    // One-time auth check on mount with reduced timeout
     const checkUser = async () => {
       try {
         const { data } = await supabase.auth.getSession();
         
         if (data.session) {
           setIsAuthenticated(true);
+          localStorage.setItem("isLoggedIn", "true");
           navigate("/dashboard", { replace: true });
         } else {
           setIsAuthenticated(false);
+          localStorage.removeItem("isLoggedIn");
         }
       } catch (error) {
         console.error("Auth check error:", error);
         setIsAuthenticated(false);
+        localStorage.removeItem("isLoggedIn");
       } finally {
-        setIsCheckingAuth(false);
+        // Reduced timeout for faster UI response
+        setTimeout(() => {
+          setIsCheckingAuth(false);
+        }, 100);
       }
     };
     
@@ -70,8 +76,14 @@ export function useAuthState() {
       
       if (error) throw error;
       
+      // Set localStorage immediately for faster UI feedback
+      localStorage.setItem("isLoggedIn", "true");
+      
       // Success is handled by the auth listener
       toast.success("Successfully logged in");
+      
+      // Navigate immediately for faster response
+      navigate("/dashboard", { replace: true });
     } catch (error: any) {
       toast.error(error.message || "Failed to login");
       setIsLoading(false); // Only set loading to false on error
@@ -108,7 +120,13 @@ export function useAuthState() {
             throw signUpError;
           }
           
+          // Set localStorage immediately
+          localStorage.setItem("isLoggedIn", "true");
+          
           toast.success("Created and logged in with demo account");
+          
+          // Navigate immediately
+          navigate("/dashboard", { replace: true });
           
           // Try to sign in again after creating the account
           const { error: retryError } = await supabase.auth.signInWithPassword({
@@ -121,10 +139,14 @@ export function useAuthState() {
           throw error;
         }
       } else {
+        // Set localStorage immediately
+        localStorage.setItem("isLoggedIn", "true");
+        
         toast.success("Successfully logged in with demo account");
+        
+        // Navigate immediately
+        navigate("/dashboard", { replace: true });
       }
-      
-      // Success is handled by the auth listener
     } catch (error: any) {
       toast.error(error.message || "Failed to login with demo account");
       setIsLoading(false); // Only set loading to false on error

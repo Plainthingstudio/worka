@@ -29,13 +29,11 @@ const isAuthenticated = () => {
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isChecking, setIsChecking] = useState(true);
-  const [isAuthed, setIsAuthed] = useState(false);
   
   useEffect(() => {
-    // Use a timeout to prevent immediate flicker
+    // Use a short timeout to prevent immediate flicker
+    // This creates a smoother transition
     const timer = setTimeout(() => {
-      const authed = isAuthenticated();
-      setIsAuthed(authed);
       setIsChecking(false);
     }, 100);
     
@@ -54,7 +52,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
   
-  return isAuthed ? <>{children}</> : <Navigate to="/auth" replace />;
+  return isAuthenticated() ? <>{children}</> : <Navigate to="/auth" replace />;
 };
 
 function App() {

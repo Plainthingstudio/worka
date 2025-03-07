@@ -7,7 +7,7 @@ const AuthLoading: React.FC = () => (
       <div className="h-12 w-12 mx-auto rounded-full bg-primary/10">
         <div className="h-6 w-6 mx-auto rounded-full bg-primary" />
       </div>
-      <p className="mt-4 text-muted-foreground">Checking authentication...</p>
+      <p className="mt-4 text-muted-foreground">Verifying authentication...</p>
     </div>
   </div>
 );

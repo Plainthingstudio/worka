@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   ListChecks,
@@ -17,14 +17,38 @@ import {
 import { cn } from "@/lib/utils";
 import { useTheme } from "./ThemeProvider";
 import { ThemeToggle } from "./ThemeToggle";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Sidebar = () => {
   const [expanded, setExpanded] = useState(true);
-  const location = useLocation();
   const { theme } = useTheme();
+  const navigate = useNavigate();
 
   const toggleSidebar = () => {
     setExpanded(!expanded);
+  };
+
+  const handleLogout = async () => {
+    try {
+      // First clear localStorage to immediately update UI state
+      localStorage.removeItem("isLoggedIn");
+      
+      // Navigate immediately to provide responsive UI feedback
+      navigate("/auth", { replace: true });
+      
+      // Then perform the actual sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast.success("Successfully logged out");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to log out");
+      console.error("Logout error:", error);
+    }
   };
 
   const navItems = [
@@ -129,18 +153,15 @@ const Sidebar = () => {
           <ThemeToggle className={expanded ? "" : "mx-auto"} />
         </div>
         
-        <NavLink
-          to="/auth"
-          className="flex items-center rounded-md px-2 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/20"
-          onClick={() => {
-            localStorage.removeItem("isLoggedIn");
-          }}
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center rounded-md px-2 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/20"
         >
           <LogOut
             className={cn("h-4 w-4", expanded ? "mr-3" : "mx-auto")}
           />
           {expanded && <span>Logout</span>}
-        </NavLink>
+        </button>
       </div>
     </div>
   );

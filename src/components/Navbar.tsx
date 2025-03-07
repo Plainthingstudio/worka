@@ -1,4 +1,3 @@
-
 import React from "react";
 import { LogOut, User, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,8 +21,12 @@ const Navbar = ({ title }: { title?: string }) => {
   
   const handleLogout = async () => {
     try {
-      // First clear localStorage to immediately prevent protected routes access
+      // First clear localStorage to immediately update UI state
       localStorage.removeItem("isLoggedIn");
+      
+      // Use navigate with replace to avoid back button issues
+      // Do this before the async operation to ensure immediate UI response
+      navigate("/auth", { replace: true });
       
       // Then perform the actual sign out from Supabase
       const { error } = await supabase.auth.signOut();
@@ -33,9 +36,6 @@ const Navbar = ({ title }: { title?: string }) => {
       }
       
       toast.success("Successfully logged out");
-      
-      // Use navigate with replace to avoid back button issues
-      navigate("/auth", { replace: true });
     } catch (error: any) {
       toast.error(error.message || "Failed to log out");
       console.error("Logout error:", error);
