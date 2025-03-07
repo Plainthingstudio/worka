@@ -3,7 +3,6 @@ import React from "react";
 import { Eye, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { generateInvoicePDF } from "@/utils/pdfGenerator";
 import { Invoice } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 
@@ -28,12 +27,9 @@ const InvoiceActions: React.FC<InvoiceActionsProps> = ({
     onSubmit();
   };
   
-  const handleGeneratePDF = async () => {
+  const handleGeneratePDF = () => {
     try {
-      // Call our actual PDF generation function
-      await generateInvoicePDF(invoice);
-      
-      // Also call the original onGeneratePDF for any additional logic
+      // Just call the provided onGeneratePDF function which already handles everything
       onGeneratePDF();
     } catch (error) {
       console.error("Error generating PDF:", error);

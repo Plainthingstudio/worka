@@ -7,9 +7,9 @@ import { generateInvoicePDF } from '@/utils/pdfGenerator';
 export function useInvoicePdf() {
   const { toast } = useToast();
 
-  const generatePDF = useCallback((invoice: Invoice) => {
+  const generatePDF = useCallback(async (invoice: Invoice) => {
     try {
-      generateInvoicePDF(invoice);
+      await generateInvoicePDF(invoice);
       toast({
         title: "PDF Generated",
         description: "Invoice PDF has been created and downloaded.",

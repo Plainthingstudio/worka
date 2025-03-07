@@ -1,15 +1,24 @@
+
 import jsPDF from 'jspdf';
 import { Invoice } from '@/types';
-import { clients } from '@/mockData';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 
 export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
   try {
-    // Find client info
-    const client = clients.find(c => c.id === invoice.clientId);
-    if (!client) {
-      throw new Error('Client not found');
+    // Fetch client info from database instead of using mock data
+    const { data: clientData, error: clientError } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('id', invoice.clientId)
+      .single();
+    
+    if (clientError || !clientData) {
+      console.error('Error fetching client data:', clientError?.message || 'Client not found');
+      throw new Error('Client information could not be retrieved');
     }
+    
+    const client = clientData;
     
     // Initialize PDF document
     const pdf = new jsPDF({
@@ -67,7 +76,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     // Use client's actual address or fallback to a default
     const clientAddress = client.address || "No address provided";
     pdf.text(clientAddress, margin, margin + 54);
-    pdf.text(client.phone, margin, margin + 61);
+    pdf.text(client.phone || "No phone provided", margin, margin + 61);
     
     // Add table headers
     const tableTop = margin + 80;
