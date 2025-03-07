@@ -18,7 +18,7 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 // Custom caption component that provides month/year selection
 const CustomCaption = (props: React.PropsWithChildren<{ displayMonth: Date }>) => {
   const { displayMonth } = props;
-  const dayPicker = useDayPicker();
+  const { toMonth } = useDayPicker();
   
   // Get year and month from the display date
   const year = displayMonth.getFullYear();
@@ -38,8 +38,8 @@ const CustomCaption = (props: React.PropsWithChildren<{ displayMonth: Date }>) =
     if (monthIndex !== -1) {
       const newDate = new Date(displayMonth);
       newDate.setMonth(monthIndex);
-      if (dayPicker.toMonth) {
-        dayPicker.toMonth(newDate);
+      if (toMonth) {
+        toMonth(newDate);
       }
     }
   };
@@ -48,8 +48,8 @@ const CustomCaption = (props: React.PropsWithChildren<{ displayMonth: Date }>) =
   const handleYearChange = (newYear: string) => {
     const newDate = new Date(displayMonth);
     newDate.setFullYear(parseInt(newYear));
-    if (dayPicker.toMonth) {
-      dayPicker.toMonth(newDate);
+    if (toMonth) {
+      toMonth(newDate);
     }
   };
   
@@ -88,8 +88,8 @@ const CustomCaption = (props: React.PropsWithChildren<{ displayMonth: Date }>) =
           onClick={() => {
             const prevMonth = new Date(displayMonth);
             prevMonth.setMonth(prevMonth.getMonth() - 1);
-            if (dayPicker.toMonth) {
-              dayPicker.toMonth(prevMonth);
+            if (toMonth) {
+              toMonth(prevMonth);
             }
           }}
           className={cn(
@@ -103,8 +103,8 @@ const CustomCaption = (props: React.PropsWithChildren<{ displayMonth: Date }>) =
           onClick={() => {
             const nextMonth = new Date(displayMonth);
             nextMonth.setMonth(nextMonth.getMonth() + 1);
-            if (dayPicker.toMonth) {
-              dayPicker.toMonth(nextMonth);
+            if (toMonth) {
+              toMonth(nextMonth);
             }
           }}
           className={cn(
