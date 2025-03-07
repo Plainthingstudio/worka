@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import ProjectForm from "@/components/ProjectForm";
 import PaymentForm from "@/components/PaymentForm";
-import { Client, Project, Payment, ProjectStatus, ProjectCategory } from "@/types";
+import { Client, Project, Payment, ProjectStatus } from "@/types";
 
 interface ProjectDialogsProps {
   project: Project;

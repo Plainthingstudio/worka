@@ -1,55 +1,23 @@
+
 import React, { useEffect, useState } from "react";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon, X, Plus, User } from "lucide-react";
-import { Client, Currency, Project, ProjectStatus, ProjectType, ProjectCategory, TeamMember } from "@/types";
+import { Client, Project, ProjectCategory, TeamMember } from "@/types";
+import { Form } from "@/components/ui/form";
+import { DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DialogTitle, DialogDescription, DialogHeader, DialogFooter } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters."
-  }),
-  clientId: z.string({
-    required_error: "Please select a client."
-  }),
-  status: z.enum(["Planning", "In progress", "Completed", "Paused", "Cancelled"], {
-    required_error: "Please select a status."
-  }),
-  deadline: z.date({
-    required_error: "Please select a deadline date."
-  }),
-  fee: z.coerce.number().min(0, {
-    message: "Fee cannot be negative."
-  }),
-  currency: z.enum(["USD", "IDR"], {
-    required_error: "Please select a currency."
-  }),
-  projectType: z.enum(["Project Based", "Monthly Retainer", "Monthly Pay as you go"], {
-    required_error: "Please select a project type."
-  }),
-  categories: z.array(z.string()).min(1, {
-    message: "Select at least one category."
-  }),
-  teamMembers: z.array(z.string()).optional()
-});
+import { projectFormSchema, ProjectFormValues } from "./project-form/projectFormSchema";
+import ProjectBasicDetails from "./project-form/ProjectBasicDetails";
+import ProjectFinancialDetails from "./project-form/ProjectFinancialDetails";
+import ProjectCategories from "./project-form/ProjectCategories";
+import ProjectTeamMembers from "./project-form/ProjectTeamMembers";
 
 interface ProjectFormProps {
   project?: Project;
   clients: Client[];
   teamMembers?: TeamMember[];
-  onSave: (values: z.infer<typeof formSchema>) => void;
+  onSave: (values: ProjectFormValues) => void;
   onCancel: () => void;
 }
 
@@ -60,7 +28,6 @@ const ProjectForm = ({
   onSave,
   onCancel
 }: ProjectFormProps) => {
-  const [categoryInput, setCategoryInput] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<ProjectCategory[]>(
     project?.categories || []
   );
@@ -68,23 +35,8 @@ const ProjectForm = ({
     project?.teamMembers || []
   );
 
-  const categoryOptions: ProjectCategory[] = [
-    'Landing Page',
-    'Website Design',
-    'Mobile App Design',
-    'Dashboard Design',
-    'Framer Development',
-    'Webflow Development',
-    '2D Illustrations',
-    '3D Illustrations',
-    '2D Animations',
-    '3D Animations',
-    'Logo Design',
-    'Branding Design'
-  ];
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ProjectFormValues>({
+    resolver: zodResolver(projectFormSchema),
     defaultValues: {
       name: project?.name || "",
       clientId: project?.clientId || "",
@@ -111,35 +63,9 @@ const ProjectForm = ({
     }
   }, [form]);
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = (values: ProjectFormValues) => {
     onSave(values);
     toast.success(project ? "Project updated successfully" : "Project created successfully");
-  };
-
-  const projectStatuses: ProjectStatus[] = ["Planning", "In progress", "Completed", "Paused", "Cancelled"];
-  const currencies: Currency[] = ["USD", "IDR"];
-  const projectTypes: ProjectType[] = ["Project Based", "Monthly Retainer", "Monthly Pay as you go"];
-
-  const addCategory = (category: ProjectCategory) => {
-    if (category.trim() === "") return;
-    if (!selectedCategories.includes(category)) {
-      setSelectedCategories([...selectedCategories, category]);
-    }
-    setCategoryInput("");
-  };
-
-  const removeCategory = (category: ProjectCategory) => {
-    setSelectedCategories(selectedCategories.filter(c => c !== category));
-  };
-
-  const handleTeamMemberSelect = (memberId: string) => {
-    if (!selectedTeamMembers.includes(memberId)) {
-      setSelectedTeamMembers([...selectedTeamMembers, memberId]);
-    }
-  };
-
-  const removeTeamMember = (memberId: string) => {
-    setSelectedTeamMembers(selectedTeamMembers.filter(id => id !== memberId));
   };
 
   const formatFee = (value: string) => {
@@ -155,319 +81,32 @@ const ProjectForm = ({
     return fee.toLocaleString();
   };
 
-  const getTeamMemberNameById = (id: string): string => {
-    const member = teamMembers.find(m => m.id === id);
-    return member ? `${member.name} - ${member.position}` : "Unknown member";
-  };
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField 
-          control={form.control} 
-          name="name" 
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Project Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Website Redesign" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} 
+        <ProjectBasicDetails 
+          form={form} 
+          clients={clients} 
         />
 
-        <FormField 
-          control={form.control} 
-          name="clientId" 
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Client</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a client" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {clients.map(client => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )} 
+        <ProjectFinancialDetails 
+          form={form} 
+          formatFee={formatFee} 
+          displayFee={displayFee} 
         />
 
-        <FormField 
-          control={form.control} 
-          name="status" 
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Status</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a status" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {projectStatuses.map(status => (
-                    <SelectItem key={status} value={status}>
-                      {status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )} 
-        />
-
-        <FormField 
-          control={form.control} 
-          name="deadline" 
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Deadline</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button 
-                      variant={"outline"} 
-                      className={cn(
-                        "w-full pl-3 text-left font-normal", 
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar 
-                    mode="single" 
-                    selected={field.value} 
-                    onSelect={field.onChange} 
-                    initialFocus 
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )} 
-        />
-
-        <div className="grid grid-cols-2 gap-4">
-          <FormField 
-            control={form.control} 
-            name="fee" 
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Project Fee</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="text"
-                    inputMode="decimal"
-                    value={field.value === 0 ? "" : displayFee(field.value)}
-                    onChange={(e) => {
-                      const formatted = formatFee(e.target.value);
-                      field.onChange(formatted === '' ? 0 : parseFloat(formatted));
-                    }}
-                    placeholder="0"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} 
-          />
-
-          <FormField 
-            control={form.control} 
-            name="currency" 
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Currency</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select currency" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {currencies.map(currency => (
-                      <SelectItem key={currency} value={currency}>
-                        {currency}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )} 
-          />
-        </div>
-
-        <FormField 
-          control={form.control} 
-          name="projectType" 
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Project Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select project type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {projectTypes.map(type => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )} 
-        />
-
-        <FormField 
-          control={form.control} 
-          name="categories" 
-          render={() => (
-            <FormItem>
-              <FormLabel>Project Categories</FormLabel>
-              <div className="flex flex-col space-y-3">
-                <div className="flex">
-                  <FormControl>
-                    <Input 
-                      placeholder="Add a category..." 
-                      value={categoryInput}
-                      onChange={e => setCategoryInput(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          addCategory(categoryInput);
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
-                    className="ml-2"
-                    onClick={() => addCategory(categoryInput)}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2 pb-2">
-                  {selectedCategories.map(category => (
-                    <Badge key={category} variant="outline" className="flex items-center gap-1">
-                      {category}
-                      <button 
-                        type="button" 
-                        onClick={() => removeCategory(category)}
-                        className="rounded-full text-muted-foreground hover:text-foreground focus:outline-none"
-                      >
-                        <X className="h-3 w-3" />
-                        <span className="sr-only">Remove {category}</span>
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-                <div className="mt-2">
-                  <p className="text-sm font-medium mb-2">Suggested categories:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {categoryOptions
-                      .filter(cat => !selectedCategories.includes(cat))
-                      .map(category => (
-                        <Badge 
-                          key={category} 
-                          variant="secondary" 
-                          className="cursor-pointer hover:bg-secondary/80"
-                          onClick={() => addCategory(category)}
-                        >
-                          {category}
-                        </Badge>
-                      ))
-                    }
-                  </div>
-                </div>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )} 
+        <ProjectCategories 
+          form={form} 
+          selectedCategories={selectedCategories} 
+          setSelectedCategories={setSelectedCategories} 
         />
 
         {teamMembers.length > 0 && (
-          <FormField 
-            control={form.control} 
-            name="teamMembers" 
-            render={() => (
-              <FormItem>
-                <FormLabel>Assign Team Members</FormLabel>
-                <div className="space-y-4">
-                  <Select 
-                    onValueChange={handleTeamMemberSelect}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select team members" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {teamMembers
-                        .filter(member => !selectedTeamMembers.includes(member.id))
-                        .map(member => (
-                          <SelectItem key={member.id} value={member.id}>
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4 text-muted-foreground" />
-                              {member.name} - <span className="text-muted-foreground text-xs">{member.position}</span>
-                            </div>
-                          </SelectItem>
-                        ))
-                      }
-                      {teamMembers.length === 0 ||
-                        (teamMembers.length === selectedTeamMembers.length && (
-                          <SelectItem value="none" disabled>
-                            No more team members available
-                          </SelectItem>
-                        ))
-                      }
-                    </SelectContent>
-                  </Select>
-
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedTeamMembers.map(memberId => (
-                      <Badge key={memberId} variant="outline" className="flex items-center gap-1 py-1 pl-2">
-                        <User className="h-3.5 w-3.5 text-muted-foreground mr-1" />
-                        {getTeamMemberNameById(memberId)}
-                        <button 
-                          type="button" 
-                          onClick={() => removeTeamMember(memberId)}
-                          className="ml-1 rounded-full text-muted-foreground hover:text-foreground focus:outline-none"
-                        >
-                          <X className="h-3 w-3" />
-                          <span className="sr-only">Remove {getTeamMemberNameById(memberId)}</span>
-                        </button>
-                      </Badge>
-                    ))}
-                    {selectedTeamMembers.length === 0 && (
-                      <div className="text-sm text-muted-foreground">
-                        No team members assigned yet. Select members from the dropdown above.
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )} 
+          <ProjectTeamMembers 
+            form={form} 
+            teamMembers={teamMembers} 
+            selectedTeamMembers={selectedTeamMembers} 
+            setSelectedTeamMembers={setSelectedTeamMembers} 
           />
         )}
 

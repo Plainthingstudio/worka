@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import ProjectForm from "@/components/ProjectForm";
-import { Project, ProjectCategory, TeamMember } from "@/types";
+import { Project, TeamMember } from "@/types";
 import ProjectsFilter from "@/components/projects/ProjectsFilter";
 import ProjectsTable from "@/components/projects/ProjectsTable";
 import ProjectsStats from "@/components/projects/ProjectsStats";
