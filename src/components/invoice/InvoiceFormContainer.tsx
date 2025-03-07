@@ -38,16 +38,16 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
   generatePDF,
   formatCurrency
 }) => {
-  // Debug when adding item
+  // Debug when invoice or items change
+  useEffect(() => {
+    console.log("InvoiceFormContainer: Current invoice items:", invoice.items);
+  }, [invoice.items]);
+
+  // Handle add item
   const handleAddItem = () => {
     console.log("Add item called from InvoiceFormContainer");
     addItem();
   };
-
-  // Ensure invoice.items is always an array
-  useEffect(() => {
-    console.log("InvoiceFormContainer: Current invoice items:", invoice.items);
-  }, [invoice.items]);
 
   if (isLoading) {
     return (
@@ -58,7 +58,7 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
     );
   }
 
-  // Ensure items is always an array
+  // Ensure items is always an array, but don't modify it unnecessarily
   const items = Array.isArray(invoice.items) ? invoice.items : [];
 
   return (

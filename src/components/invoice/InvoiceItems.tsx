@@ -1,6 +1,6 @@
 
 import React, { useEffect } from "react";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import InvoiceItem from "./InvoiceItem";
 import { Invoice, InvoiceItem as InvoiceItemType } from "@/types";
@@ -20,22 +20,17 @@ const InvoiceItems: React.FC<InvoiceItemsProps> = ({
   onUpdateItem,
   formatCurrency 
 }) => {
-  // Check and log the invoice items when the component mounts and whenever they change
+  // Ensure we always have a valid items array to work with
+  const items = Array.isArray(invoice.items) ? invoice.items : [];
+  
   useEffect(() => {
-    console.log("InvoiceItems component received invoice items:", invoice.items);
-  }, [invoice.items]);
+    console.log("InvoiceItems component received invoice items:", items);
+  }, [items]);
 
   const handleAddItem = () => {
     console.log("Add item button clicked from InvoiceItems component");
     onAddItem();
   };
-
-  // Ensure we always have an array of items to work with
-  const items = Array.isArray(invoice.items) && invoice.items.length > 0 
-    ? invoice.items 
-    : [];
-  
-  console.log("Rendering InvoiceItems with items:", items);
 
   return (
     <div className="space-y-4">

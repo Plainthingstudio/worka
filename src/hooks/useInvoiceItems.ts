@@ -6,26 +6,15 @@ import { useToast } from '@/hooks/use-toast';
 import { createEmptyItem } from '@/utils/invoiceCalculations';
 
 export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
-  // Initialize items with either the provided items or a single empty item
-  const [items, setItems] = useState<InvoiceItem[]>(
-    Array.isArray(initialItems) && initialItems.length > 0 
-      ? initialItems.map(item => ({
-          ...item,
-          id: item.id || uuidv4(),
-          description: item.description || "",
-          quantity: Number(item.quantity) || 1,
-          rate: Number(item.rate) || 0,
-          amount: Number(item.amount) || 0
-        }))
-      : [createEmptyItem()]
-  );
-  
+  // Initialize with a safe default - either initialItems or an empty array
+  // We'll add the default empty item in useEffect after checking
+  const [items, setItems] = useState<InvoiceItem[]>([]);
   const { toast } = useToast();
 
-  // Update items when initialItems changes (e.g., when loading an invoice for editing)
+  // Initialize items when component mounts or initialItems changes
   useEffect(() => {
     if (Array.isArray(initialItems) && initialItems.length > 0) {
-      console.log("Updating items from initialItems in useInvoiceItems:", initialItems);
+      console.log("Initializing items from props:", initialItems);
       
       const processedItems = initialItems.map(item => ({
         ...item,
@@ -36,21 +25,21 @@ export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
         amount: Number(item.amount) || 0
       }));
       
-      console.log("Processed items:", processedItems);
       setItems(processedItems);
+    } else {
+      // If no items provided, create a default empty one
+      console.log("No items provided, creating default empty item");
+      setItems([createEmptyItem()]);
     }
-  }, [initialItems]);
+  }, []);
 
   const addItem = useCallback(() => {
     const newItem = createEmptyItem();
     console.log("Adding new item:", newItem);
-    console.log("Current items:", items);
 
     setItems(currentItems => {
       const validItems = Array.isArray(currentItems) ? currentItems : [];
-      const updatedItems = [...validItems, newItem];
-      console.log("Updated items after add:", updatedItems);
-      return updatedItems;
+      return [...validItems, newItem];
     });
   }, []);
 

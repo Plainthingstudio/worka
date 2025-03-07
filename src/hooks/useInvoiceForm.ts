@@ -25,7 +25,15 @@ export function useInvoiceForm() {
   // Initialize with empty invoice
   const [invoice, setInvoice] = useState<Invoice>(createNewInvoice());
   const [isLoading, setIsLoading] = useState(isEditing);
-  const [initialInvoiceItems, setInitialInvoiceItems] = useState(invoice.items);
+  
+  // Initialize items hook separately to avoid synchronization issues
+  const { 
+    items, 
+    setItems, 
+    addItem, 
+    removeItem, 
+    updateItem 
+  } = useInvoiceItems([]);
   
   // Load invoice data when in edit mode
   useEffect(() => {
@@ -98,8 +106,11 @@ export function useInvoiceForm() {
             status: validStatus
           };
 
+          // Important: Set both the invoice state and the items state to ensure consistency
           setInvoice(loadedInvoice);
-          setInitialInvoiceItems(items);
+          setItems(items);
+          
+          console.log("Loaded invoice with items:", loadedInvoice);
         } catch (error) {
           console.error("Error loading invoice:", error);
           toast({
@@ -115,20 +126,12 @@ export function useInvoiceForm() {
 
       fetchInvoice();
     }
-  }, [isEditing, invoiceId, navigate, toast]);
+  }, [isEditing, invoiceId, navigate, toast, setItems]);
   
-  // Initialize items hook with invoice items
-  const { 
-    items, 
-    setItems, 
-    addItem, 
-    removeItem, 
-    updateItem 
-  } = useInvoiceItems(initialInvoiceItems);
-  
-  // Sync items with invoice
+  // Sync items with invoice (when items change)
   useEffect(() => {
     if (Array.isArray(items) && items.length > 0) {
+      console.log("Syncing items to invoice:", items);
       setInvoice(prev => ({
         ...prev,
         items
