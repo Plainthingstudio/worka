@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Project, Client } from "@/types";
+import { Project, Client, ProjectStatus, Currency, ProjectType, LeadSource } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useProjectData = (projectId: string | undefined) => {
@@ -53,16 +53,16 @@ export const useProjectData = (projectId: string | undefined) => {
           toast.error("Client information not available");
         }
         
-        // Transform the project data
+        // Transform the project data with proper type casting
         const transformedProject: Project = {
           id: projectData.id,
           name: projectData.name,
           clientId: projectData.client_id,
-          status: projectData.status,
+          status: projectData.status as ProjectStatus, // Cast to ProjectStatus
           deadline: new Date(projectData.deadline),
           fee: projectData.fee,
-          currency: projectData.currency,
-          projectType: projectData.project_type,
+          currency: projectData.currency as Currency, // Cast to Currency
+          projectType: projectData.project_type as ProjectType, // Cast to ProjectType
           categories: projectData.categories || [],
           teamMembers: projectData.team_members || [],
           createdAt: new Date(projectData.created_at),
@@ -85,7 +85,7 @@ export const useProjectData = (projectId: string | undefined) => {
             email: clientData.email,
             phone: clientData.phone || "",
             address: clientData.address || "",
-            leadSource: clientData.lead_source || "Website",
+            leadSource: clientData.lead_source as LeadSource || "Website", // Cast to LeadSource with default
             createdAt: new Date(clientData.created_at),
           };
           setClient(transformedClient);
