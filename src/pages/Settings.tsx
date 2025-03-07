@@ -50,12 +50,6 @@ const Settings = () => {
                   Profile
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="appearance" 
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4"
-                >
-                  Appearance
-                </TabsTrigger>
-                <TabsTrigger 
                   value="account" 
                   className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4"
                 >
@@ -73,25 +67,6 @@ const Settings = () => {
                 <Card className="border shadow-sm w-full">
                   <CardContent className="p-6">
                     <SettingsForm isSaving={isSaving} onSave={handleSaveSettings} />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="appearance" className="w-full">
-                <Card className="border shadow-sm w-full">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-xl">Appearance Settings</CardTitle>
-                    <CardDescription>
-                      Customize how the application looks and feels
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium">Theme</h3>
-                      <p className="text-sm text-muted-foreground">
-                        You can change the theme using the toggle in the sidebar
-                      </p>
-                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
