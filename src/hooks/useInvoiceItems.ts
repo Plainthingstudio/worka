@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { InvoiceItem } from '@/types';
@@ -6,26 +5,32 @@ import { useToast } from '@/hooks/use-toast';
 import { createEmptyItem } from '@/utils/invoiceCalculations';
 
 export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
+  console.log("useInvoiceItems initialized with:", initialItems);
+  
   // Initialize with initial items directly
-  const [items, setItems] = useState<InvoiceItem[]>(
-    Array.isArray(initialItems) && initialItems.length > 0
-      ? initialItems.map(item => ({
-          ...item,
-          id: item.id || uuidv4(),
-          description: item.description || "",
-          quantity: Number(item.quantity) || 1,
-          rate: Number(item.rate) || 0,
-          amount: Number(item.amount) || 0
-        }))
-      : [createEmptyItem()]
-  );
+  const [items, setItems] = useState<InvoiceItem[]>(() => {
+    // Process initial items if they exist
+    if (Array.isArray(initialItems) && initialItems.length > 0) {
+      console.log("Initializing with items:", initialItems);
+      return initialItems.map(item => ({
+        ...item,
+        id: item.id || uuidv4(),
+        description: item.description || "",
+        quantity: Number(item.quantity) || 1,
+        rate: Number(item.rate) || 0,
+        amount: Number(item.amount) || 0
+      }));
+    }
+    // Otherwise create a default empty item
+    return [createEmptyItem()];
+  });
   
   const { toast } = useToast();
 
   // Update items when initialItems changes (for example, when invoice is loaded from backend)
   useEffect(() => {
     if (Array.isArray(initialItems) && initialItems.length > 0) {
-      console.log("Updating items from initialItems prop change:", initialItems);
+      console.log("useInvoiceItems: Updating items from initialItems prop change:", initialItems);
       
       const processedItems = initialItems.map(item => ({
         ...item,
@@ -36,7 +41,11 @@ export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
         amount: Number(item.amount) || 0
       }));
       
-      setItems(processedItems);
+      // Only update if the items have actually changed to prevent infinite loops
+      if (JSON.stringify(items) !== JSON.stringify(processedItems)) {
+        console.log("Items have changed, updating state");
+        setItems(processedItems);
+      }
     }
   }, [initialItems]);
 

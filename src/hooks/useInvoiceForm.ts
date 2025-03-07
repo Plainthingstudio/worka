@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -26,14 +25,14 @@ export function useInvoiceForm() {
   const [invoice, setInvoice] = useState<Invoice>(createNewInvoice());
   const [isLoading, setIsLoading] = useState(isEditing);
   
-  // Initialize items hook separately to avoid synchronization issues
+  // Initialize items hook with empty array - will be updated when invoice loads
   const { 
     items, 
     setItems, 
     addItem, 
     removeItem, 
     updateItem 
-  } = useInvoiceItems([]);
+  } = useInvoiceItems(invoice?.items || []);
   
   // Load invoice data when in edit mode
   useEffect(() => {
@@ -74,6 +73,8 @@ export function useInvoiceForm() {
             throw new Error(itemsError.message);
           }
 
+          console.log("Fetched invoice items from DB:", itemsData);
+          
           // Transform to our Invoice type
           const items = itemsData.map(item => ({
             id: item.id,
@@ -106,11 +107,13 @@ export function useInvoiceForm() {
             status: validStatus
           };
 
-          // Important: Set both the invoice state and the items state to ensure consistency
-          setInvoice(loadedInvoice);
-          setItems(items);
-          
           console.log("Loaded invoice with items:", loadedInvoice);
+          
+          // Important: First update the invoice state
+          setInvoice(loadedInvoice);
+          
+          // Then explicitly update the items state with the fetched items
+          setItems(items);
         } catch (error) {
           console.error("Error loading invoice:", error);
           toast({
@@ -128,14 +131,20 @@ export function useInvoiceForm() {
     }
   }, [isEditing, invoiceId, navigate, toast, setItems]);
   
-  // Sync items with invoice (when items change)
+  // Keep the invoice items in sync with the items from useInvoiceItems
   useEffect(() => {
-    if (Array.isArray(items) && items.length > 0) {
+    if (items && Array.isArray(items) && items.length > 0) {
       console.log("Syncing items to invoice:", items);
-      setInvoice(prev => ({
-        ...prev,
-        items
-      }));
+      setInvoice(prev => {
+        // Only update if items have actually changed
+        if (JSON.stringify(prev.items) !== JSON.stringify(items)) {
+          return {
+            ...prev,
+            items
+          };
+        }
+        return prev;
+      });
     }
   }, [items]);
 
