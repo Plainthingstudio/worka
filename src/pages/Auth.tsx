@@ -7,18 +7,20 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("demo@example.com");
   const [password, setPassword] = useState("password123");
+  const [rememberMe, setRememberMe] = useState(false);
   
   useEffect(() => {
     // Auto-login functionality for development
     const isLoggedIn = localStorage.getItem("isLoggedIn");
     if (isLoggedIn) {
-      navigate("/");
+      navigate("/dashboard");
     }
   }, [navigate]);
   
@@ -26,12 +28,12 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate login with any credentials
+    // Simulate login with credentials
     setTimeout(() => {
       localStorage.setItem("isLoggedIn", "true");
       setIsLoading(false);
       toast.success("Successfully logged in");
-      navigate("/");
+      navigate("/dashboard");
     }, 500);
   };
   
@@ -43,7 +45,7 @@ const Auth = () => {
       localStorage.setItem("isLoggedIn", "true");
       setIsLoading(false);
       toast.success("Successfully logged in with demo account");
-      navigate("/");
+      navigate("/dashboard");
     }, 500);
   };
   
@@ -56,7 +58,7 @@ const Auth = () => {
       localStorage.setItem("isLoggedIn", "true");
       setIsLoading(false);
       toast.success("Account created successfully");
-      navigate("/");
+      navigate("/dashboard");
     }, 500);
   };
 
@@ -130,6 +132,7 @@ const Auth = () => {
                     <Button
                       variant="link"
                       className="h-auto p-0 text-xs font-normal"
+                      type="button"
                     >
                       Forgot password?
                     </Button>
@@ -142,6 +145,14 @@ const Auth = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="remember" 
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked === true)}
+                  />
+                  <Label htmlFor="remember" className="text-sm">Remember me</Label>
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Logging in..." : "Login"}

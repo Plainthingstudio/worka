@@ -39,7 +39,7 @@ function App() {
     <Router>
       {isMounted && (
         <Routes>
-          <Route path="/" element={<Navigate to="/auth" />} />
+          <Route path="/" element={isAuthenticated() ? <Navigate to="/dashboard" /> : <Navigate to="/auth" />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
