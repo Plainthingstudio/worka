@@ -24,6 +24,7 @@ export const useProjectDetails = (projectId: string | undefined) => {
     setIsEditPaymentDialogOpen,
     setIsDeletePaymentDialogOpen,
     setSelectedStatus,
+    setCurrentPayment,
     openEditPaymentDialog,
     openDeletePaymentDialog
   } = useProjectDialogs();
