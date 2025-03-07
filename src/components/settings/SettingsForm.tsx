@@ -75,13 +75,13 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
             name="fullName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Name</FormLabel>
+                <FormLabel className="text-base font-medium">Full Name</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     placeholder="Your Name"
                     disabled={!isEditing}
-                    className="max-w-md"
+                    className="w-full max-w-lg"
                   />
                 </FormControl>
                 <FormMessage />
@@ -94,13 +94,13 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="text-base font-medium">Email</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     placeholder="name@example.com"
                     disabled={true}
-                    className="max-w-md"
+                    className="w-full max-w-lg"
                   />
                 </FormControl>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -116,13 +116,13 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
             name="phoneNumber"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Phone Number</FormLabel>
+                <FormLabel className="text-base font-medium">Phone Number</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     placeholder="+1 (555) 000-0000"
                     disabled={!isEditing}
-                    className="max-w-md"
+                    className="w-full max-w-lg"
                   />
                 </FormControl>
                 <FormMessage />
@@ -135,13 +135,13 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
             name="streetAddress"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Street Address</FormLabel>
+                <FormLabel className="text-base font-medium">Street Address</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     placeholder="123 Main St"
                     disabled={!isEditing}
-                    className="max-w-md"
+                    className="w-full max-w-lg"
                   />
                 </FormControl>
                 <FormMessage />
@@ -155,12 +155,13 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
               name="city"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>City</FormLabel>
+                  <FormLabel className="text-base font-medium">City</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       placeholder="City"
                       disabled={!isEditing}
+                      className="w-full"
                     />
                   </FormControl>
                   <FormMessage />
@@ -173,12 +174,13 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
               name="state"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>State</FormLabel>
+                  <FormLabel className="text-base font-medium">State</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       placeholder="State"
                       disabled={!isEditing}
+                      className="w-full"
                     />
                   </FormControl>
                   <FormMessage />
@@ -193,12 +195,13 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
               name="zipCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>ZIP Code</FormLabel>
+                  <FormLabel className="text-base font-medium">ZIP Code</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       placeholder="ZIP Code"
                       disabled={!isEditing}
+                      className="w-full"
                     />
                   </FormControl>
                   <FormMessage />
@@ -211,12 +214,13 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
               name="country"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Country</FormLabel>
+                  <FormLabel className="text-base font-medium">Country</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       placeholder="Country"
                       disabled={!isEditing}
+                      className="w-full"
                     />
                   </FormControl>
                   <FormMessage />

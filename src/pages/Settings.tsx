@@ -24,21 +24,21 @@ const Settings = () => {
   
   return (
     <Layout>
-      <div className="container max-w-6xl py-6">
+      <div className="container max-w-6xl py-6 px-4 md:px-6">
         <div className="flex flex-col gap-4 md:gap-6">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Settings</h1>
           
           <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="mb-4 md:mb-6 grid w-full grid-cols-3 max-w-md">
-              <TabsTrigger value="profile">Profile</TabsTrigger>
-              <TabsTrigger value="account">Account</TabsTrigger>
-              <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            <TabsList className="mb-4 md:mb-6 w-full max-w-md h-auto flex flex-wrap">
+              <TabsTrigger value="profile" className="flex-1 py-2">Profile</TabsTrigger>
+              <TabsTrigger value="account" className="flex-1 py-2">Account</TabsTrigger>
+              <TabsTrigger value="notifications" className="flex-1 py-2">Notifications</TabsTrigger>
             </TabsList>
             
             <TabsContent value="profile">
               <Card className="border shadow-sm">
                 <CardHeader className="pb-3">
-                  <CardTitle>Profile Settings</CardTitle>
+                  <CardTitle className="text-xl md:text-2xl">Profile Settings</CardTitle>
                   <CardDescription>
                     Manage your personal information and contact details
                   </CardDescription>
@@ -52,7 +52,7 @@ const Settings = () => {
             <TabsContent value="account">
               <Card className="border shadow-sm">
                 <CardHeader className="pb-3">
-                  <CardTitle>Account Settings</CardTitle>
+                  <CardTitle className="text-xl md:text-2xl">Account Settings</CardTitle>
                   <CardDescription>
                     Manage your account settings, change password, and connected applications
                   </CardDescription>
@@ -68,7 +68,7 @@ const Settings = () => {
             <TabsContent value="notifications">
               <Card className="border shadow-sm">
                 <CardHeader className="pb-3">
-                  <CardTitle>Notification Preferences</CardTitle>
+                  <CardTitle className="text-xl md:text-2xl">Notification Preferences</CardTitle>
                   <CardDescription>
                     Configure how you receive notifications from the system
                   </CardDescription>
