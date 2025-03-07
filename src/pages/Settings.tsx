@@ -6,10 +6,34 @@ import { SettingsForm } from "@/components/settings/SettingsForm";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import Sidebar from "@/components/Sidebar";
+import Navbar from "@/components/Navbar";
 
 const Settings = () => {
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  
+  // Listen for sidebar state changes
+  useEffect(() => {
+    const handleSidebarChange = () => {
+      const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
+      setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
+    };
+
+    // Initial check
+    handleSidebarChange();
+
+    // Set up mutation observer to watch for class changes on the sidebar
+    const observer = new MutationObserver(handleSidebarChange);
+    const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
+    
+    if (sidebarElement) {
+      observer.observe(sidebarElement, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    return () => observer.disconnect();
+  }, []);
   
   const handleSaveSettings = async (formData: any) => {
     setIsSaving(true);
@@ -23,67 +47,75 @@ const Settings = () => {
   };
   
   return (
-    <Layout>
-      <div className="container py-6 px-4 md:px-6">
-        <div className="flex flex-col gap-4 md:gap-6">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Settings</h1>
-          
-          <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="mb-4 md:mb-6 w-full sm:w-auto border-b flex flex-wrap h-auto">
-              <TabsTrigger value="profile" className="flex-1 sm:flex-none py-2 px-6">Profile</TabsTrigger>
-              <TabsTrigger value="account" className="flex-1 sm:flex-none py-2 px-6">Account</TabsTrigger>
-              <TabsTrigger value="notifications" className="flex-1 sm:flex-none py-2 px-6">Notifications</TabsTrigger>
-            </TabsList>
+    <div className="min-h-screen bg-background">
+      <Sidebar />
+      <div 
+        className={`flex-1 w-full transition-all duration-300 ease-in-out ${
+          isSidebarExpanded ? "pl-56" : "pl-14"
+        }`}
+      >
+        <Navbar title="Settings" />
+        <main className="container py-6">
+          <div className="flex flex-col gap-4 md:gap-6">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Settings</h1>
             
-            <TabsContent value="profile" className="w-full">
-              <Card className="border shadow-sm w-full">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-xl md:text-2xl">Profile Settings</CardTitle>
-                  <CardDescription>
-                    Manage your personal information and contact details
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <SettingsForm isSaving={isSaving} onSave={handleSaveSettings} />
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="account" className="w-full">
-              <Card className="border shadow-sm w-full">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-xl md:text-2xl">Account Settings</CardTitle>
-                  <CardDescription>
-                    Manage your account settings, change password, and connected applications
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col gap-2">
-                    <p className="text-muted-foreground">Account settings functionality coming soon.</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="notifications" className="w-full">
-              <Card className="border shadow-sm w-full">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-xl md:text-2xl">Notification Preferences</CardTitle>
-                  <CardDescription>
-                    Configure how you receive notifications from the system
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col gap-2">
-                    <p className="text-muted-foreground">Notification settings functionality coming soon.</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
+            <Tabs defaultValue="profile" className="w-full">
+              <TabsList className="mb-4 md:mb-6 w-full sm:w-auto border-b flex flex-wrap h-auto">
+                <TabsTrigger value="profile" className="flex-1 sm:flex-none py-2 px-6">Profile</TabsTrigger>
+                <TabsTrigger value="account" className="flex-1 sm:flex-none py-2 px-6">Account</TabsTrigger>
+                <TabsTrigger value="notifications" className="flex-1 sm:flex-none py-2 px-6">Notifications</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="profile" className="w-full">
+                <Card className="border shadow-sm w-full">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-xl md:text-2xl">Profile Settings</CardTitle>
+                    <CardDescription>
+                      Manage your personal information and contact details
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <SettingsForm isSaving={isSaving} onSave={handleSaveSettings} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="account" className="w-full">
+                <Card className="border shadow-sm w-full">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-xl md:text-2xl">Account Settings</CardTitle>
+                    <CardDescription>
+                      Manage your account settings, change password, and connected applications
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col gap-2">
+                      <p className="text-muted-foreground">Account settings functionality coming soon.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="notifications" className="w-full">
+                <Card className="border shadow-sm w-full">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-xl md:text-2xl">Notification Preferences</CardTitle>
+                    <CardDescription>
+                      Configure how you receive notifications from the system
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col gap-2">
+                      <p className="text-muted-foreground">Notification settings functionality coming soon.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </main>
       </div>
-    </Layout>
+    </div>
   );
 };
 
