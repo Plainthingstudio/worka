@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Layout } from "@/components/Layout";
 import { SettingsForm } from "@/components/settings/SettingsForm";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -55,26 +54,38 @@ const Settings = () => {
         }`}
       >
         <Navbar title="Settings" />
-        <main className="container py-6">
-          <div className="flex flex-col gap-4 md:gap-6">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Settings</h1>
+        <main className="container py-6 max-w-6xl">
+          <div className="flex flex-col gap-6">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Profile Settings</h1>
+              <p className="text-muted-foreground mt-1">Manage your personal information and contact details</p>
+            </div>
             
             <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="mb-4 md:mb-6 w-full sm:w-auto border-b flex flex-wrap h-auto">
-                <TabsTrigger value="profile" className="flex-1 sm:flex-none py-2 px-6">Profile</TabsTrigger>
-                <TabsTrigger value="account" className="flex-1 sm:flex-none py-2 px-6">Account</TabsTrigger>
-                <TabsTrigger value="notifications" className="flex-1 sm:flex-none py-2 px-6">Notifications</TabsTrigger>
+              <TabsList className="mb-6 w-full sm:w-auto h-auto bg-background border-b rounded-none p-0 justify-start">
+                <TabsTrigger 
+                  value="profile" 
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4"
+                >
+                  Profile
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="account" 
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4"
+                >
+                  Account
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="notifications" 
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4"
+                >
+                  Notifications
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="profile" className="w-full">
                 <Card className="border shadow-sm w-full">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-xl md:text-2xl">Profile Settings</CardTitle>
-                    <CardDescription>
-                      Manage your personal information and contact details
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-6">
                     <SettingsForm isSaving={isSaving} onSave={handleSaveSettings} />
                   </CardContent>
                 </Card>
@@ -83,7 +94,7 @@ const Settings = () => {
               <TabsContent value="account" className="w-full">
                 <Card className="border shadow-sm w-full">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-xl md:text-2xl">Account Settings</CardTitle>
+                    <CardTitle className="text-xl">Account Settings</CardTitle>
                     <CardDescription>
                       Manage your account settings, change password, and connected applications
                     </CardDescription>
@@ -99,7 +110,7 @@ const Settings = () => {
               <TabsContent value="notifications" className="w-full">
                 <Card className="border shadow-sm w-full">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-xl md:text-2xl">Notification Preferences</CardTitle>
+                    <CardTitle className="text-xl">Notification Preferences</CardTitle>
                     <CardDescription>
                       Configure how you receive notifications from the system
                     </CardDescription>

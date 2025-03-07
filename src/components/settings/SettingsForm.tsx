@@ -38,15 +38,15 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full max-w-3xl">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="space-y-8">
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Personal Information</h3>
+            <h3 className="text-lg font-semibold tracking-tight text-foreground border-b pb-2">Personal Information</h3>
             <PersonalInfoFields form={form} isEditing={isEditing} />
           </div>
           
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Address Information</h3>
+            <h3 className="text-lg font-semibold tracking-tight text-foreground border-b pb-2">Address Information</h3>
             <AddressFields form={form} isEditing={isEditing} />
           </div>
         </div>

@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { Pencil, Save, X } from "lucide-react";
 
 interface FormActionsProps {
   isEditing: boolean;
@@ -17,7 +17,7 @@ export function FormActions({
   onCancel 
 }: FormActionsProps) {
   return (
-    <div className="flex justify-end pt-6 border-t mt-6">
+    <div className="flex justify-end pt-6 mt-8 border-t">
       {!isEditing ? (
         <Button 
           type="button" 
@@ -28,16 +28,28 @@ export function FormActions({
           Edit
         </Button>
       ) : (
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Button
             type="button"
             variant="outline"
             onClick={onCancel}
+            className="gap-2"
           >
+            <X size={16} />
             Cancel
           </Button>
-          <Button type="submit" disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save Changes"}
+          <Button type="submit" disabled={isSaving} className="gap-2">
+            {isSaving ? (
+              <>
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></span>
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save size={16} />
+                Save Changes
+              </>
+            )}
           </Button>
         </div>
       )}

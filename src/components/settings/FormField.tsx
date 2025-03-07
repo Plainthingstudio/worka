@@ -41,7 +41,7 @@ export function CustomFormField({
               {...field}
               placeholder={placeholder}
               disabled={disabled}
-              className={className}
+              className={`${className} ${disabled ? 'opacity-80' : ''}`}
             />
           </FormControl>
           {description && (
