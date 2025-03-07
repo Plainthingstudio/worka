@@ -43,6 +43,12 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
     console.log("InvoiceFormContainer: Current invoice items:", invoice.items);
   }, [invoice.items]);
 
+  // Handle add item
+  const handleAddItem = () => {
+    console.log("Add item called from InvoiceFormContainer");
+    addItem();
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-12">
@@ -51,6 +57,9 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
       </div>
     );
   }
+
+  // Ensure items is always an array, but don't modify it unnecessarily
+  const items = Array.isArray(invoice.items) ? invoice.items : [];
 
   return (
     <>
@@ -73,8 +82,8 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
         />
 
         <InvoiceItems 
-          invoice={invoice}
-          onAddItem={addItem}
+          invoice={{...invoice, items}}
+          onAddItem={handleAddItem}
           onRemoveItem={removeItem}
           onUpdateItem={updateItem}
           formatCurrency={formatCurrency}
