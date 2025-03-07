@@ -23,6 +23,8 @@ const ProjectDetails = () => {
     setIsDeleteDialogOpen,
     setIsStatusDialogOpen,
     setIsPaymentDialogOpen,
+    setIsEditPaymentDialogOpen,
+    setIsDeletePaymentDialogOpen,
     setSelectedStatus,
     handleEditProject,
     handleDeleteProject,
@@ -68,8 +70,10 @@ const ProjectDetails = () => {
     return (
       <ProjectDetailsLayout 
         title="Project Details" 
-        isLoading={true} 
-      />
+        isLoading={true}
+      >
+        {null}
+      </ProjectDetailsLayout>
     );
   }
 

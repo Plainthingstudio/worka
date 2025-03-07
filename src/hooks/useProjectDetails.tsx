@@ -194,6 +194,8 @@ export const useProjectDetails = (projectId: string | undefined) => {
     setIsDeleteDialogOpen,
     setIsStatusDialogOpen,
     setIsPaymentDialogOpen,
+    setIsEditPaymentDialogOpen,
+    setIsDeletePaymentDialogOpen,
     setSelectedStatus,
     handleEditProject,
     handleDeleteProject,
