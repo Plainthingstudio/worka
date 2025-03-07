@@ -27,6 +27,15 @@ const InvoiceDetails = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Helper function to validate invoice status
+  const validateInvoiceStatus = (status: string): "Draft" | "Sent" | "Paid" | "Overdue" => {
+    const validStatuses = ["Draft", "Sent", "Paid", "Overdue"];
+    if (validStatuses.includes(status)) {
+      return status as "Draft" | "Sent" | "Paid" | "Overdue";
+    }
+    return "Draft"; // Default fallback
+  };
+
   // Fetch invoice and related data
   useEffect(() => {
     const fetchInvoiceDetails = async () => {
@@ -94,7 +103,7 @@ const InvoiceDetails = () => {
           notes: invoiceData.notes || "",
           termsAndConditions: invoiceData.terms_and_conditions || "",
           createdAt: new Date(invoiceData.created_at),
-          status: invoiceData.status
+          status: validateInvoiceStatus(invoiceData.status)
         };
         
         setInvoice(loadedInvoice);

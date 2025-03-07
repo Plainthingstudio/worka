@@ -75,6 +75,9 @@ export function useInvoiceForm() {
             amount: item.amount
           }));
 
+          // Ensure that the status is one of the allowed values
+          const validStatus = validateInvoiceStatus(invoiceData.status);
+
           const loadedInvoice: Invoice = {
             id: invoiceData.id,
             invoiceNumber: invoiceData.invoice_number,
@@ -92,7 +95,7 @@ export function useInvoiceForm() {
             notes: invoiceData.notes || "",
             termsAndConditions: invoiceData.terms_and_conditions || "",
             createdAt: new Date(invoiceData.created_at),
-            status: invoiceData.status
+            status: validStatus
           };
 
           setInvoice(loadedInvoice);
@@ -206,6 +209,16 @@ export function useInvoiceForm() {
       });
     }
   }, [invoice, toast]);
+
+  // Helper function to validate invoice status
+  const validateInvoiceStatus = (status: string): "Draft" | "Sent" | "Paid" | "Overdue" => {
+    const validStatuses = ["Draft", "Sent", "Paid", "Overdue"];
+    if (validStatuses.includes(status)) {
+      return status as "Draft" | "Sent" | "Paid" | "Overdue";
+    }
+    // Default to "Draft" if the status is not valid
+    return "Draft";
+  };
 
   return {
     invoice,

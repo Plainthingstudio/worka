@@ -50,6 +50,15 @@ export const useInvoices = () => {
         throw itemsError;
       }
 
+      // Helper function to validate status
+      const validateStatus = (status: string): "Draft" | "Sent" | "Paid" | "Overdue" => {
+        const validStatuses = ["Draft", "Sent", "Paid", "Overdue"];
+        if (validStatuses.includes(status)) {
+          return status as "Draft" | "Sent" | "Paid" | "Overdue";
+        }
+        return "Draft"; // Default fallback
+      };
+
       // Transform the data to match our expected format
       const transformedInvoices: Invoice[] = invoicesData.map(invoice => {
         // Find items for this invoice
@@ -80,7 +89,7 @@ export const useInvoices = () => {
           notes: invoice.notes || "",
           termsAndConditions: invoice.terms_and_conditions || "",
           createdAt: new Date(invoice.created_at),
-          status: invoice.status
+          status: validateStatus(invoice.status)
         };
       });
 
