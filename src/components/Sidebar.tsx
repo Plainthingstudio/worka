@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "./ThemeProvider";
+import { ThemeToggle } from "./ThemeToggle";
 
 const Sidebar = () => {
   const [expanded, setExpanded] = useState(true);
@@ -74,7 +75,9 @@ const Sidebar = () => {
       className={cn(
         "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-border transition-all duration-300 ease-in-out",
         expanded ? "w-56" : "w-14",
-        theme === "dark" ? "bg-sidebar-background text-sidebar-foreground" : "bg-white"
+        theme === "dark" 
+          ? "bg-background/90 text-foreground backdrop-blur-sm" 
+          : "bg-white"
       )}
     >
       <div className="flex h-14 items-center justify-between px-3">
@@ -88,7 +91,7 @@ const Sidebar = () => {
         )}
         <button
           onClick={toggleSidebar}
-          className="rounded-md p-1 text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
         >
           {expanded ? (
             <ChevronLeft className="h-4 w-4" />
@@ -108,7 +111,7 @@ const Sidebar = () => {
                 "flex items-center rounded-md px-2 py-2 text-sm font-medium transition-all",
                 isActive
                   ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               )
             }
           >
@@ -120,10 +123,15 @@ const Sidebar = () => {
         ))}
       </nav>
 
-      <div className="border-t border-border p-2">
+      <div className="border-t border-border p-2 space-y-2">
+        <div className={cn("flex", expanded ? "justify-between items-center px-2" : "justify-center")}>
+          {expanded && <span className="text-sm text-muted-foreground">Theme</span>}
+          <ThemeToggle className={expanded ? "" : "mx-auto"} />
+        </div>
+        
         <NavLink
           to="/auth"
-          className="flex items-center rounded-md px-2 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          className="flex items-center rounded-md px-2 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground"
           onClick={() => {
             localStorage.removeItem("isLoggedIn");
           }}

@@ -7,33 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { useSidebarState } from "@/hooks/useSidebarState";
 
 const Settings = () => {
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
-  
-  // Listen for sidebar state changes
-  useEffect(() => {
-    const handleSidebarChange = () => {
-      const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
-      setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
-    };
-
-    // Initial check
-    handleSidebarChange();
-
-    // Set up mutation observer to watch for class changes on the sidebar
-    const observer = new MutationObserver(handleSidebarChange);
-    const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
-    
-    if (sidebarElement) {
-      observer.observe(sidebarElement, { attributes: true, attributeFilter: ['class'] });
-    }
-
-    return () => observer.disconnect();
-  }, []);
+  const { isSidebarExpanded } = useSidebarState();
   
   const handleSaveSettings = async (formData: any) => {
     setIsSaving(true);
@@ -57,12 +36,9 @@ const Settings = () => {
         <Navbar title="Settings" />
         <main className="container py-6 max-w-6xl">
           <div className="flex flex-col gap-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Profile Settings</h1>
-                <p className="text-muted-foreground mt-1">Manage your personal information and contact details</p>
-              </div>
-              <ThemeToggle className="mr-2" />
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Profile Settings</h1>
+              <p className="text-muted-foreground mt-1">Manage your personal information and contact details</p>
             </div>
             
             <Tabs defaultValue="profile" className="w-full">
@@ -113,14 +89,8 @@ const Settings = () => {
                     <div className="space-y-4">
                       <h3 className="text-lg font-medium">Theme</h3>
                       <p className="text-sm text-muted-foreground">
-                        Select the theme for the application
+                        You can change the theme using the toggle in the sidebar
                       </p>
-                      <div className="flex items-center gap-4">
-                        <ThemeToggle />
-                        <span className="text-sm font-medium">
-                          Switch between light and dark mode
-                        </span>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>

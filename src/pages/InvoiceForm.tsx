@@ -1,14 +1,14 @@
 
-import React, { useEffect, useState } from 'react';
-import { clients } from '@/mockData';
+import React, { useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
 import InvoiceFormContainer from '@/components/invoice/InvoiceFormContainer';
 import { useInvoiceForm } from '@/hooks/useInvoiceForm';
 import InvoiceLoading from '@/components/invoice-details/InvoiceLoading';
+import { useSidebarState } from '@/hooks/useSidebarState';
 
 const InvoiceForm = () => {
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const { isSidebarExpanded } = useSidebarState();
   const {
     invoice,
     setInvoice,
@@ -31,27 +31,6 @@ const InvoiceForm = () => {
       console.log("Items count:", invoice.items.length);
     }
   }, [invoice, isEditing]);
-
-  // Listen for sidebar state changes
-  useEffect(() => {
-    const handleSidebarChange = () => {
-      const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
-      setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
-    };
-
-    // Initial check
-    handleSidebarChange();
-
-    // Set up mutation observer to watch for class changes on the sidebar
-    const observer = new MutationObserver(handleSidebarChange);
-    const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
-    
-    if (sidebarElement) {
-      observer.observe(sidebarElement, { attributes: true, attributeFilter: ['class'] });
-    }
-
-    return () => observer.disconnect();
-  }, []);
 
   if (isLoading) {
     return (

@@ -1,6 +1,6 @@
 
 import React from "react";
-import { LogOut, User, Settings, Moon, Sun } from "lucide-react";
+import { LogOut, User, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,7 +13,6 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link } from "react-router-dom";
 import { useTheme } from "./ThemeProvider";
-import { ThemeToggle } from "./ThemeToggle";
 
 const Navbar = ({ title }: { title?: string }) => {
   const { theme } = useTheme();
@@ -32,8 +31,6 @@ const Navbar = ({ title }: { title?: string }) => {
       </div>
 
       <div className="flex items-center gap-2">
-        <ThemeToggle />
-        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="gap-2">
