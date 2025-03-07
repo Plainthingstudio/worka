@@ -1,12 +1,107 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, useDayPicker } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+
+// Custom caption component that provides month/year selection
+const CustomCaption = (props: React.PropsWithChildren<{ displayMonth: Date }>) => {
+  const { displayMonth } = props;
+  const dayPicker = useDayPicker();
+  
+  // Get year and month from the display date
+  const year = displayMonth.getFullYear();
+  const month = displayMonth.getMonth();
+  
+  // Create arrays for months and a reasonable year range
+  const months = [
+    "January", "February", "March", "April", "May", "June", 
+    "July", "August", "September", "October", "November", "December"
+  ];
+  
+  const years = Array.from({ length: 10 }, (_, i) => year - 5 + i);
+  
+  // Handler for month change
+  const handleMonthChange = (newMonth: string) => {
+    const monthIndex = months.findIndex(m => m === newMonth);
+    if (monthIndex !== -1) {
+      const newDate = new Date(displayMonth);
+      newDate.setMonth(monthIndex);
+      dayPicker.toMonth(newDate);
+    }
+  };
+  
+  // Handler for year change
+  const handleYearChange = (newYear: string) => {
+    const newDate = new Date(displayMonth);
+    newDate.setFullYear(parseInt(newYear));
+    dayPicker.toMonth(newDate);
+  };
+  
+  return (
+    <div className="flex justify-center pt-1 relative items-center">
+      <div className="flex items-center justify-center gap-1">
+        <Select value={months[month]} onValueChange={handleMonthChange}>
+          <SelectTrigger className="h-7 w-[110px] text-sm font-medium">
+            <SelectValue placeholder="Month" />
+          </SelectTrigger>
+          <SelectContent>
+            {months.map((m) => (
+              <SelectItem key={m} value={m}>
+                {m}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
+        <Select value={year.toString()} onValueChange={handleYearChange}>
+          <SelectTrigger className="h-7 w-[80px] text-sm font-medium">
+            <SelectValue placeholder="Year" />
+          </SelectTrigger>
+          <SelectContent>
+            {years.map((y) => (
+              <SelectItem key={y} value={y.toString()}>
+                {y}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div className="space-x-1 flex items-center">
+        <button
+          onClick={() => dayPicker.previousMonth()}
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute left-1"
+          )}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <button
+          onClick={() => dayPicker.nextMonth()}
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute right-1"
+          )}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
 
 function Calendar({
   className,
@@ -22,7 +117,7 @@ function Calendar({
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium",
+        caption_label: "hidden", // Hide default caption label
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
@@ -53,8 +148,7 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
-        IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
+        Caption: ({ displayMonth }) => <CustomCaption displayMonth={displayMonth} />,
       }}
       {...props}
     />
