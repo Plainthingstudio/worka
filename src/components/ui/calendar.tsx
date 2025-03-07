@@ -22,7 +22,7 @@ function Calendar({
   ...props
 }: CalendarProps) {
   // Custom caption component for month/year selection
-  function CustomCaption({ displayMonth, toDate, onChange }: CaptionProps) {
+  function CustomCaption({ displayMonth }: CaptionProps) {
     const months = [
       "January",
       "February",
@@ -45,19 +45,24 @@ function Calendar({
     // Generate years (5 years back, 10 years forward)
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 16 }, (_, i) => currentYear - 5 + i);
+    
+    // Maintain reference to the DayPicker's navigation handlers
+    const { goToMonth, nextMonth, previousMonth } = React.useContext(
+      DayPicker.Context
+    );
 
     // Handle month change
     const handleMonthChange = (value: string) => {
       const newMonth = months.findIndex((m) => m === value);
-      const newDate = toDate(new Date(year, newMonth, 1));
-      onChange(newDate);
+      const newDate = new Date(year, newMonth, 1);
+      goToMonth(newDate);
     };
 
     // Handle year change
     const handleYearChange = (value: string) => {
       const newYear = parseInt(value);
-      const newDate = toDate(new Date(newYear, month, 1));
-      onChange(newDate);
+      const newDate = new Date(newYear, month, 1);
+      goToMonth(newDate);
     };
 
     return (
