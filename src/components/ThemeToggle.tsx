@@ -16,7 +16,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       variant="outline"
       size="icon"
       onClick={toggleTheme}
-      className={className}
+      className={`${className} dark:border-border/60 dark:hover:border-primary/50 dark:hover:bg-primary/10 dark:text-foreground transition-all duration-300`}
       title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >
       {theme === "light" ? (

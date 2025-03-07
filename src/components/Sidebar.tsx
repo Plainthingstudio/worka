@@ -76,18 +76,18 @@ const Sidebar = () => {
         "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-border transition-all duration-300 ease-in-out",
         expanded ? "w-56" : "w-14",
         theme === "dark" 
-          ? "bg-background/90 text-foreground backdrop-blur-sm" 
+          ? "bg-background/95 text-foreground backdrop-blur-lg border-border/40 shadow-xl shadow-black/10" 
           : "bg-white"
       )}
     >
       <div className="flex h-14 items-center justify-between px-3">
         {expanded ? (
           <div className="flex items-center space-x-2">
-            <div className="h-7 w-7 rounded-full bg-primary" />
+            <div className="h-7 w-7 rounded-full bg-primary shadow-lg shadow-primary/30" />
             <span className="text-md font-semibold">Studio</span>
           </div>
         ) : (
-          <div className="mx-auto h-7 w-7 rounded-full bg-primary" />
+          <div className="mx-auto h-7 w-7 rounded-full bg-primary shadow-lg shadow-primary/30" />
         )}
         <button
           onClick={toggleSidebar}
@@ -110,8 +110,8 @@ const Sidebar = () => {
               cn(
                 "flex items-center rounded-md px-2 py-2 text-sm font-medium transition-all",
                 isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  ? "bg-primary/20 text-primary dark:bg-primary/10 dark:text-primary dark:shadow-md dark:shadow-primary/5"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/20"
               )
             }
           >
@@ -123,7 +123,7 @@ const Sidebar = () => {
         ))}
       </nav>
 
-      <div className="border-t border-border p-2 space-y-2">
+      <div className="border-t border-border/50 p-2 space-y-2">
         <div className={cn("flex", expanded ? "justify-between items-center px-2" : "justify-center")}>
           {expanded && <span className="text-sm text-muted-foreground">Theme</span>}
           <ThemeToggle className={expanded ? "" : "mx-auto"} />
@@ -131,7 +131,7 @@ const Sidebar = () => {
         
         <NavLink
           to="/auth"
-          className="flex items-center rounded-md px-2 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground"
+          className="flex items-center rounded-md px-2 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/20"
           onClick={() => {
             localStorage.removeItem("isLoggedIn");
           }}
