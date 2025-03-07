@@ -1,13 +1,13 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/toaster"
 import Invoices from './pages/Invoices';
 import InvoiceForm from './pages/InvoiceForm';
 import InvoiceDetails from './pages/InvoiceDetails';
 import NotFound from './pages/NotFound';
-import Auth from './pages/Auth';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import Clients from './pages/Clients';
 import Settings from './pages/Settings';
 import RequireAuth from './components/auth/RequireAuth';
@@ -20,8 +20,8 @@ function App() {
         <AuthProvider>
           <Routes>
             {/* Public Routes */}
-            <Route path="/login" element={<Auth />} />
-            <Route path="/register" element={<Auth />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
             {/* Protected Routes */}
             <Route path="/" element={<RequireAuth><Invoices /></RequireAuth>} />
