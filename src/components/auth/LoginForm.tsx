@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,8 @@ interface LoginFormProps {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
-const LoginForm = ({
+// Use memo to prevent unnecessary re-renders
+const LoginForm = memo(({
   email,
   setEmail,
   password,
@@ -30,6 +31,14 @@ const LoginForm = ({
     setShowPassword(!showPassword);
   };
 
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+  };
+
   return (
     <form onSubmit={onSubmit} className="space-y-4 pt-4">
       <div className="space-y-2">
@@ -41,7 +50,7 @@ const LoginForm = ({
           autoComplete="email"
           required
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={handleEmailChange}
         />
       </div>
       <div className="space-y-2">
@@ -62,7 +71,7 @@ const LoginForm = ({
             autoComplete="current-password"
             required
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={handlePasswordChange}
           />
           <Button
             type="button"
@@ -96,6 +105,8 @@ const LoginForm = ({
       </Button>
     </form>
   );
-};
+});
+
+LoginForm.displayName = "LoginForm";
 
 export default LoginForm;

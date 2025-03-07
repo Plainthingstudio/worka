@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { memo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LoginForm from "./LoginForm";
 import SignupForm from "./SignupForm";
@@ -16,7 +16,8 @@ interface AuthCardProps {
   handleSignup: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
-const AuthCard = ({
+// Use memo to prevent unnecessary re-renders
+const AuthCard = memo(({
   email,
   setEmail,
   password,
@@ -71,6 +72,8 @@ const AuthCard = ({
       </div>
     </div>
   );
-};
+});
+
+AuthCard.displayName = "AuthCard";
 
 export default AuthCard;

@@ -1,24 +1,33 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import AuthCard from "@/components/auth/AuthCard";
 import { supabase } from "@/integrations/supabase/client";
+
+// Use lazy loading to reduce initial load
+const AuthCard = lazy(() => import("@/components/auth/AuthCard"));
 
 const Auth = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   
   useEffect(() => {
     // Check if user is already logged in
     const checkUser = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        navigate("/dashboard");
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          navigate("/dashboard");
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+      } finally {
+        setIsCheckingAuth(false);
       }
     };
     
@@ -112,8 +121,21 @@ const Auth = () => {
     // Authentication is handled in the SignupForm component
   };
 
+  if (isCheckingAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="animate-pulse text-center">
+          <div className="h-12 w-12 mx-auto rounded-full bg-primary/10">
+            <div className="h-6 w-6 mx-auto rounded-full bg-primary" />
+          </div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-white to-blue-50 p-6 animate-fade-in">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-white to-blue-50 p-6">
       <Button
         variant="ghost"
         className="absolute left-4 top-4 flex items-center text-muted-foreground"
@@ -123,16 +145,25 @@ const Auth = () => {
         Back to Home
       </Button>
       
-      <AuthCard
-        email={email}
-        setEmail={setEmail}
-        password={password}
-        setPassword={setPassword}
-        isLoading={isLoading}
-        handleLogin={handleLogin}
-        handleDummyLogin={handleDummyLogin}
-        handleSignup={handleSignup}
-      />
+      <Suspense fallback={
+        <div className="animate-pulse text-center">
+          <div className="h-12 w-12 mx-auto rounded-full bg-primary/10">
+            <div className="h-6 w-6 mx-auto rounded-full bg-primary" />
+          </div>
+          <p className="mt-4 text-muted-foreground">Loading authentication...</p>
+        </div>
+      }>
+        <AuthCard
+          email={email}
+          setEmail={setEmail}
+          password={password}
+          setPassword={setPassword}
+          isLoading={isLoading}
+          handleLogin={handleLogin}
+          handleDummyLogin={handleDummyLogin}
+          handleSignup={handleSignup}
+        />
+      </Suspense>
       
       <p className="mt-6 text-center text-sm text-muted-foreground">
         By continuing, you agree to our{" "}

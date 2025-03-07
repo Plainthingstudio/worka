@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { memo } from "react";
 import { Button } from "@/components/ui/button";
 
 interface DemoLoginProps {
@@ -7,7 +7,8 @@ interface DemoLoginProps {
   onDemoLogin: () => void;
 }
 
-const DemoLogin = ({ isLoading, onDemoLogin }: DemoLoginProps) => {
+// Use memo to prevent unnecessary re-renders
+const DemoLogin = memo(({ isLoading, onDemoLogin }: DemoLoginProps) => {
   return (
     <div className="mt-6 flex flex-col space-y-3">
       <Button
@@ -30,6 +31,8 @@ const DemoLogin = ({ isLoading, onDemoLogin }: DemoLoginProps) => {
       </div>
     </div>
   );
-};
+});
+
+DemoLogin.displayName = "DemoLogin";
 
 export default DemoLogin;
