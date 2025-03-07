@@ -1,17 +1,10 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, CaptionProps, useDayPicker } from "react-day-picker";
+import { DayPicker } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
@@ -21,85 +14,6 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
-  // Custom caption component for month/year selection
-  function CustomCaption({ displayMonth }: CaptionProps) {
-    const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December"
-    ];
-
-    // Get current month and year
-    const month = displayMonth.getMonth();
-    const year = displayMonth.getFullYear();
-
-    // Generate years (5 years back, 10 years forward)
-    const currentYear = new Date().getFullYear();
-    const years = Array.from({ length: 16 }, (_, i) => currentYear - 5 + i);
-    
-    // Use the useDayPicker hook to access context
-    const dayPicker = useDayPicker();
-
-    // Handle month change
-    const handleMonthChange = (value: string) => {
-      const newMonth = months.findIndex((m) => m === value);
-      const newDate = new Date(year, newMonth, 1);
-      dayPicker.goToMonth(newDate);
-    };
-
-    // Handle year change
-    const handleYearChange = (value: string) => {
-      const newYear = parseInt(value);
-      const newDate = new Date(newYear, month, 1);
-      dayPicker.goToMonth(newDate);
-    };
-
-    return (
-      <div className="flex justify-center items-center gap-1">
-        <Select
-          value={months[month]}
-          onValueChange={handleMonthChange}
-        >
-          <SelectTrigger className="h-7 w-[110px] text-xs font-medium bg-transparent border-none">
-            <SelectValue placeholder={months[month]} />
-          </SelectTrigger>
-          <SelectContent>
-            {months.map((monthName) => (
-              <SelectItem key={monthName} value={monthName} className="text-sm">
-                {monthName}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={year.toString()}
-          onValueChange={handleYearChange}
-        >
-          <SelectTrigger className="h-7 w-[70px] text-xs font-medium bg-transparent border-none">
-            <SelectValue placeholder={year.toString()} />
-          </SelectTrigger>
-          <SelectContent>
-            {years.map((yearValue) => (
-              <SelectItem key={yearValue} value={yearValue.toString()} className="text-sm">
-                {yearValue}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-    );
-  }
-
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -141,7 +55,6 @@ function Calendar({
       components={{
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
-        Caption: CustomCaption
       }}
       {...props}
     />
