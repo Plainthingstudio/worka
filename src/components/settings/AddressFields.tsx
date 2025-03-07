@@ -14,24 +14,13 @@ export function AddressFields({ form, isEditing }: AddressFieldsProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <CustomFormField
           form={form}
-          name="addressLine1"
-          label="Address Line 1"
+          name="streetAddress"
+          label="Street Address"
           placeholder="123 Main St"
           disabled={!isEditing}
           className="bg-background"
         />
 
-        <CustomFormField
-          form={form}
-          name="addressLine2"
-          label="Address Line 2"
-          placeholder="Apt 4B"
-          disabled={!isEditing}
-          className="bg-background"
-        />
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <CustomFormField
           form={form}
           name="city"
@@ -40,7 +29,9 @@ export function AddressFields({ form, isEditing }: AddressFieldsProps) {
           disabled={!isEditing}
           className="bg-background"
         />
-
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <CustomFormField
           form={form}
           name="state"
@@ -49,18 +40,18 @@ export function AddressFields({ form, isEditing }: AddressFieldsProps) {
           disabled={!isEditing}
           className="bg-background"
         />
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
         <CustomFormField
           form={form}
-          name="postalCode"
+          name="zipCode"
           label="Postal Code"
           placeholder="94103"
           disabled={!isEditing}
           className="bg-background"
         />
-
+      </div>
+      
+      <div className="max-w-lg">
         <CustomFormField
           form={form}
           name="country"

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SettingsForm } from "@/components/settings/SettingsForm";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,21 +8,23 @@ import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
 import { useSidebarState } from "@/hooks/useSidebarState";
+import { SettingsFormValues } from "@/components/settings/settingsFormSchema";
 
 const Settings = () => {
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
   const { isSidebarExpanded } = useSidebarState();
   
-  const handleSaveSettings = async (formData: any) => {
+  const handleSaveSettings = async (formData: SettingsFormValues) => {
     setIsSaving(true);
-    // Simulate saving to backend
-    setTimeout(() => {
-      // Store user data in localStorage
-      localStorage.setItem("userSettings", JSON.stringify(formData));
+    try {
+      // The actual saving happens in the SettingsForm component
+      // This function is for any additional logic needed in the future
       setIsSaving(false);
-      toast.success("Settings saved successfully");
-    }, 500);
+    } catch (error) {
+      toast.error("An error occurred while saving settings");
+      setIsSaving(false);
+    }
   };
   
   return (

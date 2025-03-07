@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface SignupFormProps {
   isLoading: boolean;
@@ -13,6 +14,7 @@ interface SignupFormProps {
 }
 
 const SignupForm = ({ isLoading, onSubmit }: SignupFormProps) => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -44,8 +46,13 @@ const SignupForm = ({ isLoading, onSubmit }: SignupFormProps) => {
         return;
       }
 
-      // If successful, proceed with the onSubmit callback
-      onSubmit(e);
+      toast.success("Account created successfully! You can now log in.");
+      
+      // Redirect to dashboard if auto-confirm is enabled, otherwise show a message
+      if (data.session) {
+        localStorage.setItem("isLoggedIn", "true");
+        navigate("/dashboard");
+      }
       
     } catch (error: any) {
       toast.error(error.message || "An error occurred during signup");

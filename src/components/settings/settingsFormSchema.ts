@@ -14,14 +14,3 @@ export const settingsFormSchema = z.object({
 });
 
 export type SettingsFormValues = z.infer<typeof settingsFormSchema>;
-
-export const defaultValues: SettingsFormValues = {
-  fullName: "",
-  email: "demo@example.com", // Read-only
-  phoneNumber: "",
-  streetAddress: "",
-  city: "",
-  state: "",
-  zipCode: "",
-  country: "",
-};
