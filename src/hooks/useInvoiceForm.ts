@@ -25,9 +25,8 @@ export function useInvoiceForm() {
   // Initialize with empty invoice
   const [invoice, setInvoice] = useState<Invoice>(createNewInvoice());
   const [isLoading, setIsLoading] = useState(isEditing);
-  const [invoiceItemsLoaded, setInvoiceItemsLoaded] = useState(false);
   
-  // Initialize items hook with empty array first - we'll populate it after fetching
+  // Initialize items hook separately to avoid synchronization issues
   const { 
     items, 
     setItems, 
@@ -75,8 +74,6 @@ export function useInvoiceForm() {
             throw new Error(itemsError.message);
           }
 
-          console.log("Fetched invoice items from database:", itemsData);
-
           // Transform to our Invoice type
           const items = itemsData.map(item => ({
             id: item.id,
@@ -96,7 +93,7 @@ export function useInvoiceForm() {
             date: new Date(invoiceData.date),
             dueDate: new Date(invoiceData.due_date),
             paymentTerms: invoiceData.payment_terms,
-            items: items, // Set the items initially
+            items: items,
             subtotal: invoiceData.subtotal,
             taxPercentage: invoiceData.tax_percentage || 0,
             taxAmount: invoiceData.tax_amount || 0,
@@ -109,16 +106,11 @@ export function useInvoiceForm() {
             status: validStatus
           };
 
+          // Important: Set both the invoice state and the items state to ensure consistency
           setInvoice(loadedInvoice);
+          setItems(items);
           
-          // Important: Wait until next tick to set items to avoid race conditions
-          setTimeout(() => {
-            setItems(items);
-            setInvoiceItemsLoaded(true);
-          }, 0);
-          
-          console.log("Loaded invoice:", loadedInvoice);
-          console.log("Loaded invoice items:", items);
+          console.log("Loaded invoice with items:", loadedInvoice);
         } catch (error) {
           console.error("Error loading invoice:", error);
           toast({
@@ -236,7 +228,6 @@ export function useInvoiceForm() {
     setInvoice,
     isEditing,
     isLoading,
-    invoiceItemsLoaded,
     addItem,
     removeItem,
     updateItem,

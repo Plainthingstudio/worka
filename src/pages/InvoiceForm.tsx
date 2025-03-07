@@ -16,7 +16,6 @@ const InvoiceForm = () => {
     setInvoice,
     isEditing,
     isLoading: isInvoiceLoading,
-    invoiceItemsLoaded,
     addItem,
     removeItem,
     updateItem,
@@ -67,7 +66,7 @@ const InvoiceForm = () => {
             invoice={invoice}
             setInvoice={setInvoice}
             isEditing={isEditing}
-            isLoading={!invoiceItemsLoaded && isEditing}
+            isLoading={isLoading}
             clients={clients}
             addItem={addItem}
             removeItem={removeItem}
