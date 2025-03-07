@@ -35,6 +35,14 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-4">
               <div className="flex items-start gap-2">
+                <Tag className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">Project Name</p>
+                  <p className="text-sm">{project.name}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2">
                 <UserCircle className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div className="space-y-0.5">
                   <p className="text-sm font-medium">Client</p>
