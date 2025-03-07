@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { useProjectDetails } from "@/hooks/useProjectDetails";
 import ProjectDetailsLayout from "@/components/project-details/ProjectDetailsLayout";
 import ProjectContent from "@/components/project-details/ProjectContent";
+import ProjectsLoading from "@/components/projects/ProjectsLoading";
 
 const ProjectDetails = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -35,6 +36,7 @@ const ProjectDetails = () => {
     handleDeletePayment,
     openEditPaymentDialog,
     openDeletePaymentDialog,
+    isLoading
   } = useProjectDetails(projectId);
 
   const dialogState = {
@@ -66,39 +68,44 @@ const ProjectDetails = () => {
     onDeletePaymentSubmit: handleDeletePayment,
   };
 
-  if (!project || !client) {
-    return (
-      <ProjectDetailsLayout 
-        title="Project Details" 
-        isLoading={true}
-      >
-        {null}
-      </ProjectDetailsLayout>
-    );
-  }
-
   return (
     <ProjectDetailsLayout 
-      title="Project Details"
+      title="Project Details" 
+      isLoading={isLoading}
     >
-      <ProjectContent
-        project={project}
-        client={client}
-        currentPayment={currentPayment}
-        dialogState={dialogState}
-        selectedStatus={selectedStatus}
-        onEdit={() => setIsEditDialogOpen(true)}
-        onDelete={() => setIsDeleteDialogOpen(true)}
-        onMarkAsCompleted={handleMarkAsCompleted}
-        onChangeStatus={() => {
-          setSelectedStatus("In progress");
-          setIsStatusDialogOpen(true);
-        }}
-        onAddPayment={() => setIsPaymentDialogOpen(true)}
-        onEditPayment={openEditPaymentDialog}
-        onDeletePayment={openDeletePaymentDialog}
-        handlers={handlers}
-      />
+      {isLoading ? (
+        <ProjectsLoading />
+      ) : (
+        project && client ? (
+          <ProjectContent
+            project={project}
+            client={client}
+            currentPayment={currentPayment}
+            dialogState={dialogState}
+            selectedStatus={selectedStatus}
+            onEdit={() => setIsEditDialogOpen(true)}
+            onDelete={() => setIsDeleteDialogOpen(true)}
+            onMarkAsCompleted={handleMarkAsCompleted}
+            onChangeStatus={() => {
+              setSelectedStatus("In progress");
+              setIsStatusDialogOpen(true);
+            }}
+            onAddPayment={() => setIsPaymentDialogOpen(true)}
+            onEditPayment={openEditPaymentDialog}
+            onDeletePayment={openDeletePaymentDialog}
+            handlers={handlers}
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="flex items-center gap-2 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <h2 className="text-xl font-semibold">Project not found</h2>
+            </div>
+            <p className="text-muted-foreground mb-4">The project you're looking for doesn't exist or you don't have access to it.</p>
+            <a href="/projects" className="text-primary hover:underline">Return to Projects</a>
+          </div>
+        )
+      )}
     </ProjectDetailsLayout>
   );
 };

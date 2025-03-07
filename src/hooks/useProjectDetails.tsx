@@ -6,7 +6,7 @@ import { usePaymentOperations } from "./usePaymentOperations";
 import { ProjectStatus } from "@/types";
 
 export const useProjectDetails = (projectId: string | undefined) => {
-  const { project, setProject, client } = useProjectData(projectId);
+  const { project, setProject, client, isLoading } = useProjectData(projectId);
   
   const {
     isEditDialogOpen,
@@ -87,5 +87,6 @@ export const useProjectDetails = (projectId: string | undefined) => {
     handleDeletePayment,
     openEditPaymentDialog,
     openDeletePaymentDialog,
+    isLoading
   };
 };
