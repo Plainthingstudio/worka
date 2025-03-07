@@ -32,12 +32,14 @@ const AddPaymentDialog = ({
             Record a new payment for this project.
           </DialogDescription>
         </DialogHeader>
-        <PaymentForm
-          projectId={project.id}
-          currency={project.currency}
-          onSave={onSave}
-          onCancel={onClose}
-        />
+        <div className="max-h-[70vh] overflow-y-auto pr-2">
+          <PaymentForm
+            projectId={project.id}
+            currency={project.currency}
+            onSave={onSave}
+            onCancel={onClose}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

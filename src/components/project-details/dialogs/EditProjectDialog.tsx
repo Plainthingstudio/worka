@@ -27,14 +27,14 @@ const EditProjectDialog = ({
 }: EditProjectDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Edit Project</DialogTitle>
           <DialogDescription>
             Make changes to the project details.
           </DialogDescription>
         </DialogHeader>
-        <div className="max-h-[calc(85vh-120px)] overflow-y-auto pr-2">
+        <div className="max-h-[70vh] overflow-y-auto pr-2">
           <ProjectForm
             project={project}
             clients={clients}

@@ -35,13 +35,15 @@ const EditPaymentDialog = ({
           </DialogDescription>
         </DialogHeader>
         {payment && (
-          <PaymentForm
-            projectId={project.id}
-            currency={project.currency}
-            payment={payment}
-            onSave={onSave}
-            onCancel={onClose}
-          />
+          <div className="max-h-[70vh] overflow-y-auto pr-2">
+            <PaymentForm
+              projectId={project.id}
+              currency={project.currency}
+              payment={payment}
+              onSave={onSave}
+              onCancel={onClose}
+            />
+          </div>
         )}
       </DialogContent>
     </Dialog>
