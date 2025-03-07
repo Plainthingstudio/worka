@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import ProjectForm from "@/components/ProjectForm";
-import { Project, TeamMember, Client, ProjectStatus, Currency, ProjectType, ProjectCategory } from "@/types";
+import { Project, TeamMember, Client, ProjectStatus, Currency, ProjectType, ProjectCategory, LeadSource } from "@/types";
 import ProjectsFilter from "@/components/projects/ProjectsFilter";
 import ProjectsTable from "@/components/projects/ProjectsTable";
 import ProjectsStats from "@/components/projects/ProjectsStats";
@@ -26,13 +25,11 @@ const Projects = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch data from Supabase
   useEffect(() => {
     async function fetchData() {
       try {
         setIsLoading(true);
         
-        // Get current user session
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
@@ -41,7 +38,6 @@ const Projects = () => {
           return;
         }
         
-        // Fetch clients first
         const { data: clientsData, error: clientsError } = await supabase
           .from('clients')
           .select('*');
@@ -51,7 +47,6 @@ const Projects = () => {
           throw clientsError;
         }
         
-        // Transform clients data
         const transformedClients = clientsData.map((client: any) => ({
           id: client.id,
           name: client.name,
@@ -64,17 +59,15 @@ const Projects = () => {
         
         setClients(transformedClients);
         
-        // Fetch team members
         const { data: teamData, error: teamError } = await supabase
           .from('team_members')
           .select('*');
         
-        if (teamError && teamError.code !== 'PGRST116') { // Ignore "relation does not exist" error
+        if (teamError && teamError.code !== 'PGRST116') {
           console.error("Error fetching team members:", teamError);
         }
         
         if (teamData) {
-          // Transform team members data
           const transformedTeamMembers = teamData.map((member: any) => ({
             id: member.id,
             name: member.name,
@@ -87,7 +80,6 @@ const Projects = () => {
           setTeamMembers(transformedTeamMembers);
         }
         
-        // Fetch projects with payments
         const { data: projectsData, error: projectsError } = await supabase
           .from('projects')
           .select('*, payments(*)');
@@ -97,9 +89,7 @@ const Projects = () => {
           throw projectsError;
         }
         
-        // Transform projects data
         const transformedProjects = projectsData.map((project: any) => {
-          // Transform payments
           const payments = Array.isArray(project.payments) ? project.payments.map((payment: any) => ({
             id: payment.id,
             projectId: payment.project_id,
@@ -137,17 +127,14 @@ const Projects = () => {
     fetchData();
   }, []);
 
-  // Listen for sidebar state changes
   useEffect(() => {
     const handleSidebarChange = () => {
       const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
       setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
     };
 
-    // Initial check
     handleSidebarChange();
 
-    // Set up mutation observer to watch for class changes on the sidebar
     const observer = new MutationObserver(handleSidebarChange);
     const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
     if (sidebarElement) {
@@ -175,7 +162,6 @@ const Projects = () => {
 
   const handleAddProject = async (data: any) => {
     try {
-      // Get current user session
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -183,13 +169,11 @@ const Projects = () => {
         return;
       }
       
-      // Ensure types match what's expected
       const status = data.status as ProjectStatus;
       const currency = data.currency as Currency;
       const projectType = data.projectType as ProjectType;
       const categories = data.categories as ProjectCategory[];
       
-      // Insert new project to Supabase
       const { data: projectData, error } = await supabase
         .from('projects')
         .insert({
@@ -211,7 +195,6 @@ const Projects = () => {
         throw error;
       }
       
-      // Create a new project object
       const newProject: Project = {
         id: projectData.id,
         name: projectData.name,
@@ -227,7 +210,6 @@ const Projects = () => {
         payments: []
       };
       
-      // Update local state
       setProjects([newProject, ...projects]);
       setIsAddingProject(false);
       toast.success("Project created successfully");
@@ -241,7 +223,6 @@ const Projects = () => {
     if (!editingProject) return;
     
     try {
-      // Get current user session
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -249,13 +230,11 @@ const Projects = () => {
         return;
       }
       
-      // Ensure types match what's expected
       const status = data.status as ProjectStatus;
       const currency = data.currency as Currency;
       const projectType = data.projectType as ProjectType;
       const categories = data.categories as ProjectCategory[];
       
-      // Update project in Supabase
       const { error } = await supabase
         .from('projects')
         .update({
@@ -276,7 +255,6 @@ const Projects = () => {
         throw error;
       }
       
-      // Update local state
       const updatedProjects = projects.map(project => 
         project.id === editingProject.id ? {
           ...project,
@@ -303,7 +281,6 @@ const Projects = () => {
 
   const handleDeleteProject = async (id: string) => {
     try {
-      // Get current user session
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -311,7 +288,6 @@ const Projects = () => {
         return;
       }
       
-      // First delete all payments associated with this project
       const { error: paymentsError } = await supabase
         .from('payments')
         .delete()
@@ -322,7 +298,6 @@ const Projects = () => {
         throw paymentsError;
       }
       
-      // Then delete the project
       const { error } = await supabase
         .from('projects')
         .delete()
@@ -333,7 +308,6 @@ const Projects = () => {
         throw error;
       }
       
-      // Update local state
       const updatedProjects = projects.filter(project => project.id !== id);
       setProjects(updatedProjects);
       setIsDeleting(null);
