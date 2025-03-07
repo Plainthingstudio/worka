@@ -16,6 +16,7 @@ import GraphicDesignBrief from "./pages/GraphicDesignBrief";
 import IllustrationsBrief from "./pages/IllustrationsBrief";
 import ThankYou from "./pages/ThankYou";
 import Statistics from "./pages/Statistics";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Team from "./pages/Team";
 import "./App.css";
@@ -55,6 +56,7 @@ function App() {
           <Route path="/briefs/illustration" element={<ProtectedRoute><IllustrationsBrief /></ProtectedRoute>} />
           <Route path="/thank-you" element={<ProtectedRoute><ThankYou /></ProtectedRoute>} />
           <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       )}
