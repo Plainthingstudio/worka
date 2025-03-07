@@ -5,11 +5,11 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { clients } from "@/mockData";
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
 import { useInvoices } from "@/hooks/useInvoices";
 import { useSidebarState } from "@/hooks/useSidebarState";
+import { useClients } from "@/hooks/useClients";
 import InvoicesFilter from "@/components/invoices/InvoicesFilter";
 import InvoicesTable from "@/components/invoices/InvoicesTable";
 
@@ -19,10 +19,11 @@ const Invoices = () => {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const { clients, isLoading: isClientsLoading } = useClients();
   
   const {
     invoices,
-    isLoading,
+    isLoading: isInvoicesLoading,
     deleteConfirmOpen,
     setDeleteConfirmOpen,
     deleteInvoice,
@@ -46,6 +47,8 @@ const Invoices = () => {
                         (statusFilter === "overdue" && invoice.status === "Overdue");
     return matchesSearch && matchesStatus;
   });
+
+  const isLoading = isInvoicesLoading || isClientsLoading;
 
   return (
     <div className="flex h-screen bg-muted/10">
