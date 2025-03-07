@@ -38,7 +38,7 @@ const CustomCaption = (props: React.PropsWithChildren<{ displayMonth: Date }>) =
     if (monthIndex !== -1) {
       const newDate = new Date(displayMonth);
       newDate.setMonth(monthIndex);
-      dayPicker.goToMonth(newDate);
+      dayPicker.toMonth(newDate);
     }
   };
   
@@ -46,7 +46,7 @@ const CustomCaption = (props: React.PropsWithChildren<{ displayMonth: Date }>) =
   const handleYearChange = (newYear: string) => {
     const newDate = new Date(displayMonth);
     newDate.setFullYear(parseInt(newYear));
-    dayPicker.goToMonth(newDate);
+    dayPicker.toMonth(newDate);
   };
   
   return (
@@ -84,7 +84,7 @@ const CustomCaption = (props: React.PropsWithChildren<{ displayMonth: Date }>) =
           onClick={() => {
             const prevMonth = new Date(displayMonth);
             prevMonth.setMonth(prevMonth.getMonth() - 1);
-            dayPicker.goToMonth(prevMonth);
+            dayPicker.toMonth(prevMonth);
           }}
           className={cn(
             buttonVariants({ variant: "outline" }),
@@ -97,7 +97,7 @@ const CustomCaption = (props: React.PropsWithChildren<{ displayMonth: Date }>) =
           onClick={() => {
             const nextMonth = new Date(displayMonth);
             nextMonth.setMonth(nextMonth.getMonth() + 1);
-            dayPicker.goToMonth(nextMonth);
+            dayPicker.toMonth(nextMonth);
           }}
           className={cn(
             buttonVariants({ variant: "outline" }),
