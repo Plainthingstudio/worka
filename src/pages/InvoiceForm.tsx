@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
 import InvoiceFormContainer from '@/components/invoice/InvoiceFormContainer';
@@ -24,6 +24,13 @@ const InvoiceForm = () => {
     generatePDF,
     formatCurrency
   } = useInvoiceForm();
+
+  // Add a debug log to check invoice items when they change
+  useEffect(() => {
+    if (invoice && invoice.items) {
+      console.log("InvoiceForm: Current invoice items:", invoice.items);
+    }
+  }, [invoice.items]);
 
   const isLoading = isInvoiceLoading || isClientsLoading;
 

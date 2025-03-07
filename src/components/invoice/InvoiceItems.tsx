@@ -27,11 +27,6 @@ const InvoiceItems: React.FC<InvoiceItemsProps> = ({
     console.log("InvoiceItems component received invoice items:", items);
   }, [items]);
 
-  const handleAddItem = () => {
-    console.log("Add item button clicked from InvoiceItems component");
-    onAddItem();
-  };
-
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Invoice Items</h3>
@@ -63,7 +58,7 @@ const InvoiceItems: React.FC<InvoiceItemsProps> = ({
             type="button"
             variant="outline"
             size="sm"
-            onClick={handleAddItem}
+            onClick={onAddItem}
           >
             <Plus className="mr-1 h-4 w-4" />
             Add First Item
@@ -77,7 +72,7 @@ const InvoiceItems: React.FC<InvoiceItemsProps> = ({
           variant="outline"
           size="sm"
           className="mt-2"
-          onClick={handleAddItem}
+          onClick={onAddItem}
         >
           <Plus className="mr-1 h-4 w-4" />
           Add Another Item

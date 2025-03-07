@@ -6,8 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createEmptyItem } from '@/utils/invoiceCalculations';
 
 export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
-  // Initialize with a safe default - either initialItems or an empty array
-  // We'll add the default empty item in useEffect after checking
+  // Initialize with a safe default - either initialItems or an empty array with a default item
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const { toast } = useToast();
 
@@ -31,7 +30,7 @@ export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
       console.log("No items provided, creating default empty item");
       setItems([createEmptyItem()]);
     }
-  }, []);
+  }, [initialItems]); // Important: Added initialItems as a dependency
 
   const addItem = useCallback(() => {
     const newItem = createEmptyItem();
