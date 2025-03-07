@@ -4,11 +4,9 @@ import { useParams } from "react-router-dom";
 import { useProjectDetails } from "@/hooks/useProjectDetails";
 import ProjectDetailsLayout from "@/components/project-details/ProjectDetailsLayout";
 import ProjectContent from "@/components/project-details/ProjectContent";
-import { useSidebarState } from "@/hooks/useSidebarState";
 
 const ProjectDetails = () => {
   const { projectId } = useParams<{ projectId: string }>();
-  const { isSidebarExpanded } = useSidebarState();
   
   const {
     project,
@@ -73,7 +71,6 @@ const ProjectDetails = () => {
       <ProjectDetailsLayout 
         title="Project Details" 
         isLoading={true}
-        isSidebarExpanded={isSidebarExpanded}
       >
         {null}
       </ProjectDetailsLayout>
@@ -83,7 +80,6 @@ const ProjectDetails = () => {
   return (
     <ProjectDetailsLayout 
       title="Project Details"
-      isSidebarExpanded={isSidebarExpanded}
     >
       <ProjectContent
         project={project}
