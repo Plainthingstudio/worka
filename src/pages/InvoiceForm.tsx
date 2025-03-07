@@ -9,8 +9,10 @@ import { useSidebarState } from '@/hooks/useSidebarState';
 import { useClients } from '@/hooks/useClients';
 import { useToast } from '@/hooks/use-toast';
 import { Client } from '@/types';
+import { useParams } from 'react-router-dom';
 
 const InvoiceForm = () => {
+  const { invoiceId } = useParams();
   const { isSidebarExpanded } = useSidebarState();
   const { clients, isLoading: isClientsLoading } = useClients();
   const { toast } = useToast();
@@ -32,11 +34,12 @@ const InvoiceForm = () => {
   useEffect(() => {
     console.log("Current invoice state:", invoice);
     console.log("Is editing mode:", isEditing);
+    console.log("Invoice ID from params:", invoiceId);
     console.log("Clients from Supabase:", clients);
     if (Array.isArray(invoice.items)) {
       console.log("Items count:", invoice.items.length);
     }
-  }, [invoice, isEditing, clients]);
+  }, [invoice, isEditing, clients, invoiceId]);
 
   const isLoading = isInvoiceLoading || isClientsLoading;
 

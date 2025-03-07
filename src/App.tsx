@@ -1,70 +1,43 @@
-
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "./components/ThemeProvider";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import Clients from "./pages/Clients";
-import Projects from "./pages/Projects";
-import ProjectDetails from "./pages/ProjectDetails";
-import Invoices from "./pages/Invoices";
-import InvoiceForm from "./pages/InvoiceForm";
-import InvoiceDetails from "./pages/InvoiceDetails";
-import Briefs from "./pages/Briefs";
-import UIDesignBrief from "./pages/UIDesignBrief";
-import GraphicDesignBrief from "./pages/GraphicDesignBrief";
-import IllustrationsBrief from "./pages/IllustrationsBrief";
-import ThankYou from "./pages/ThankYou";
-import Statistics from "./pages/Statistics";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
-import Team from "./pages/Team";
-import "./App.css";
-
-const isAuthenticated = () => {
-  return !!localStorage.getItem("isLoggedIn");
-};
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  return isAuthenticated() ? <>{children}</> : <Navigate to="/auth" />;
-};
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/toaster"
+import Invoices from './pages/Invoices';
+import InvoiceForm from './pages/InvoiceForm';
+import InvoiceDetails from './pages/InvoiceDetails';
+import NotFound from './pages/NotFound';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Clients from './pages/Clients';
+import Settings from './pages/Settings';
+import RequireAuth from './components/auth/RequireAuth';
+import { AuthProvider } from './hooks/useAuth';
 
 function App() {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   return (
-    <ThemeProvider>
-      <Router>
-        {isMounted && (
+    <Router>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-react-theme">
+        <AuthProvider>
           <Routes>
-            <Route path="/" element={isAuthenticated() ? <Navigate to="/dashboard" /> : <Navigate to="/auth" />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
-            <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
-            <Route path="/projects/:projectId" element={<ProtectedRoute><ProjectDetails /></ProtectedRoute>} />
-            <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
-            <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
-            <Route path="/invoices/new" element={<ProtectedRoute><InvoiceForm /></ProtectedRoute>} />
-            <Route path="/invoices/:invoiceId" element={<ProtectedRoute><InvoiceDetails /></ProtectedRoute>} />
-            <Route path="/briefs" element={<ProtectedRoute><Briefs /></ProtectedRoute>} />
-            <Route path="/briefs/ui" element={<ProtectedRoute><UIDesignBrief /></ProtectedRoute>} />
-            <Route path="/briefs/graphic" element={<ProtectedRoute><GraphicDesignBrief /></ProtectedRoute>} />
-            <Route path="/briefs/illustration" element={<ProtectedRoute><IllustrationsBrief /></ProtectedRoute>} />
-            <Route path="/thank-you" element={<ProtectedRoute><ThankYou /></ProtectedRoute>} />
-            <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            {/* Public Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+
+            {/* Protected Routes */}
+            <Route path="/" element={<RequireAuth><Invoices /></RequireAuth>} />
+            <Route path="/invoices" element={<RequireAuth><Invoices /></RequireAuth>} />
+            <Route path="/invoices/new" element={<RequireAuth><InvoiceForm /></RequireAuth>} />
+            <Route path="/invoices/:invoiceId" element={<RequireAuth><InvoiceDetails /></RequireAuth>} />
+            <Route path="/invoices/:invoiceId/edit" element={<RequireAuth><InvoiceForm /></RequireAuth>} />
+            <Route path="/clients" element={<RequireAuth><Clients /></RequireAuth>} />
+            <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
-        )}
-        <Toaster />
-      </Router>
-    </ThemeProvider>
+          <Toaster />
+        </AuthProvider>
+      </ThemeProvider>
+    </Router>
   );
 }
 

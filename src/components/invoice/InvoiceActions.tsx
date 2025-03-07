@@ -24,7 +24,7 @@ const InvoiceActions: React.FC<InvoiceActionsProps> = ({
   const { toast } = useToast();
   
   const handleSubmit = () => {
-    console.log("Submitting invoice...");
+    console.log("Submitting invoice...", isEditing ? "updating" : "creating");
     onSubmit();
   };
   
