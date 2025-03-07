@@ -7,8 +7,7 @@ import Invoices from './pages/Invoices';
 import InvoiceForm from './pages/InvoiceForm';
 import InvoiceDetails from './pages/InvoiceDetails';
 import NotFound from './pages/NotFound';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import Auth from './pages/Auth';
 import Clients from './pages/Clients';
 import Settings from './pages/Settings';
 import RequireAuth from './components/auth/RequireAuth';
@@ -21,8 +20,8 @@ function App() {
         <AuthProvider>
           <Routes>
             {/* Public Routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Auth />} />
+            <Route path="/register" element={<Auth />} />
 
             {/* Protected Routes */}
             <Route path="/" element={<RequireAuth><Invoices /></RequireAuth>} />

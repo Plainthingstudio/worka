@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -9,16 +9,20 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  
+  // Get the path the user was trying to access before being redirected to login
+  const from = location.state?.from?.pathname || "/invoices";
   
   useEffect(() => {
     // Check if user is already logged in
     const checkUser = async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
-        navigate("/dashboard");
+        navigate(from);
       }
     };
     
@@ -28,7 +32,7 @@ const Auth = () => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session) {
-          navigate("/dashboard");
+          navigate(from);
         }
       }
     );
@@ -36,7 +40,7 @@ const Auth = () => {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, from]);
   
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,9 +54,8 @@ const Auth = () => {
       
       if (error) throw error;
       
-      localStorage.setItem("isLoggedIn", "true");
       toast.success("Successfully logged in");
-      navigate("/dashboard");
+      navigate(from);
     } catch (error: any) {
       toast.error(error.message || "Failed to login");
     } finally {
@@ -98,8 +101,7 @@ const Auth = () => {
         toast.success("Successfully logged in with demo account");
       }
       
-      localStorage.setItem("isLoggedIn", "true");
-      navigate("/dashboard");
+      navigate(from);
     } catch (error: any) {
       toast.error(error.message || "Failed to login with demo account");
     } finally {
@@ -113,7 +115,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-white to-blue-50 p-6 animate-fade-in">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-white to-blue-50 p-6 animate-fade-in dark:from-gray-900 dark:to-gray-800">
       <Button
         variant="ghost"
         className="absolute left-4 top-4 flex items-center text-muted-foreground"
