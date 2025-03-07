@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -73,19 +74,21 @@ const ProjectDialogs = ({
   return (
     <>
       <Dialog open={isEditDialogOpen} onOpenChange={onCloseEditDialog}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Edit Project</DialogTitle>
             <DialogDescription>
               Make changes to the project details.
             </DialogDescription>
           </DialogHeader>
-          <ProjectForm
-            project={project}
-            clients={clients}
-            onSave={onEditProject}
-            onCancel={onCloseEditDialog}
-          />
+          <div className="max-h-[calc(85vh-120px)] overflow-y-auto pr-2">
+            <ProjectForm
+              project={project}
+              clients={clients}
+              onSave={onEditProject}
+              onCancel={onCloseEditDialog}
+            />
+          </div>
         </DialogContent>
       </Dialog>
 

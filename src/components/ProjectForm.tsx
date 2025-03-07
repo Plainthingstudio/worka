@@ -110,7 +110,7 @@ const ProjectForm = ({
           />
         )}
 
-        <DialogFooter className="flex gap-2 pt-4">
+        <DialogFooter className="sticky bottom-0 pt-4 mt-6 bg-background">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>

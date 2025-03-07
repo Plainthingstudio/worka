@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -161,14 +162,18 @@ const Projects = () => {
       </div>
 
       {isAddingProject && <Dialog open={isAddingProject} onOpenChange={closeAddProjectDialog}>
-          <DialogContent className="sm:max-w-[600px]">
-            <ProjectForm clients={clients} teamMembers={teamMembers} onSave={handleAddProject} onCancel={closeAddProjectDialog} />
+          <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden">
+            <div className="max-h-full overflow-y-auto pr-2">
+              <ProjectForm clients={clients} teamMembers={teamMembers} onSave={handleAddProject} onCancel={closeAddProjectDialog} />
+            </div>
           </DialogContent>
         </Dialog>}
 
       {editingProject && <Dialog open={!!editingProject} onOpenChange={closeEditProjectDialog}>
-          <DialogContent className="sm:max-w-[600px]">
-            <ProjectForm project={editingProject} clients={clients} teamMembers={teamMembers} onSave={handleEditProject} onCancel={closeEditProjectDialog} />
+          <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden">
+            <div className="max-h-full overflow-y-auto pr-2">
+              <ProjectForm project={editingProject} clients={clients} teamMembers={teamMembers} onSave={handleEditProject} onCancel={closeEditProjectDialog} />
+            </div>
           </DialogContent>
         </Dialog>}
 
