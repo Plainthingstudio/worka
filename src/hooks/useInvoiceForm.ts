@@ -3,23 +3,24 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Invoice } from '@/types';
-import { useInvoiceStorage } from '@/hooks/useInvoiceStorage';
 import { useInvoiceItems } from '@/hooks/useInvoiceItems';
 import { useInvoiceValidation } from '@/hooks/useInvoiceValidation';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   calculateInvoiceTotals, 
   createNewInvoice, 
   formatCurrency 
 } from '@/utils/invoiceCalculations';
 import { generateInvoicePDF } from '@/utils/pdfGenerator';
+import { useInvoices } from '@/hooks/useInvoices';
 
 export function useInvoiceForm() {
   const navigate = useNavigate();
   const { invoiceId } = useParams();
   const { toast } = useToast();
   const isEditing = Boolean(invoiceId);
-  const { loadInvoice, saveInvoice } = useInvoiceStorage();
   const { validateInvoice } = useInvoiceValidation();
+  const { saveInvoice } = useInvoices();
 
   // Initialize with empty invoice
   const [invoice, setInvoice] = useState<Invoice>(createNewInvoice());
@@ -29,26 +30,89 @@ export function useInvoiceForm() {
   // Load invoice data when in edit mode
   useEffect(() => {
     if (isEditing && invoiceId) {
-      setIsLoading(true);
-      console.log("Loading existing invoice data for editing, ID:", invoiceId);
-      try {
-        const loadedInvoice = loadInvoice(invoiceId);
-        
-        if (loadedInvoice) {
-          console.log("Setting invoice from loaded data:", loadedInvoice);
-          setInvoice(loadedInvoice);
-          
-          if (Array.isArray(loadedInvoice.items)) {
-            setInitialInvoiceItems(loadedInvoice.items);
+      const fetchInvoice = async () => {
+        setIsLoading(true);
+        try {
+          // Check if user is authenticated
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            toast({
+              title: "Authentication Error",
+              description: "You must be logged in to edit invoices.",
+              variant: "destructive"
+            });
+            navigate('/login');
+            return;
           }
+
+          // Fetch the invoice
+          const { data: invoiceData, error: invoiceError } = await supabase
+            .from('invoices')
+            .select('*')
+            .eq('id', invoiceId)
+            .maybeSingle();
+          
+          if (invoiceError || !invoiceData) {
+            throw new Error(invoiceError?.message || 'Invoice not found');
+          }
+
+          // Fetch the invoice items
+          const { data: itemsData, error: itemsError } = await supabase
+            .from('invoice_items')
+            .select('*')
+            .eq('invoice_id', invoiceId);
+          
+          if (itemsError) {
+            throw new Error(itemsError.message);
+          }
+
+          // Transform to our Invoice type
+          const items = itemsData.map(item => ({
+            id: item.id,
+            description: item.description,
+            quantity: item.quantity,
+            rate: item.rate,
+            amount: item.amount
+          }));
+
+          const loadedInvoice: Invoice = {
+            id: invoiceData.id,
+            invoiceNumber: invoiceData.invoice_number,
+            clientId: invoiceData.client_id,
+            date: new Date(invoiceData.date),
+            dueDate: new Date(invoiceData.due_date),
+            paymentTerms: invoiceData.payment_terms,
+            items: items,
+            subtotal: invoiceData.subtotal,
+            taxPercentage: invoiceData.tax_percentage || 0,
+            taxAmount: invoiceData.tax_amount || 0,
+            discountPercentage: invoiceData.discount_percentage || 0,
+            discountAmount: invoiceData.discount_amount || 0,
+            total: invoiceData.total,
+            notes: invoiceData.notes || "",
+            termsAndConditions: invoiceData.terms_and_conditions || "",
+            createdAt: new Date(invoiceData.created_at),
+            status: invoiceData.status
+          };
+
+          setInvoice(loadedInvoice);
+          setInitialInvoiceItems(items);
+        } catch (error) {
+          console.error("Error loading invoice:", error);
+          toast({
+            title: "Error",
+            description: "Failed to load invoice. Please try again.",
+            variant: "destructive"
+          });
+          navigate('/invoices');
+        } finally {
+          setIsLoading(false);
         }
-      } catch (error) {
-        console.error("Error loading invoice:", error);
-      } finally {
-        setIsLoading(false);
-      }
+      };
+
+      fetchInvoice();
     }
-  }, [isEditing, invoiceId, loadInvoice]);
+  }, [isEditing, invoiceId, navigate, toast]);
   
   // Initialize items hook with invoice items
   const { 
@@ -62,7 +126,6 @@ export function useInvoiceForm() {
   // Sync items with invoice
   useEffect(() => {
     if (Array.isArray(items) && items.length > 0) {
-      console.log("Syncing items with invoice:", items);
       setInvoice(prev => ({
         ...prev,
         items
@@ -102,7 +165,6 @@ export function useInvoiceForm() {
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    console.log(`Updating invoice field: ${name}, value:`, value);
     
     if (name === "taxPercentage" || name === "discountPercentage") {
       setInvoice(prev => ({
@@ -117,14 +179,12 @@ export function useInvoiceForm() {
     }
   }, []);
 
-  const submitInvoice = useCallback(() => {
-    console.log("Attempting to save invoice:", invoice);
-    
+  const submitInvoice = useCallback(async () => {
     if (!validateInvoice(invoice)) {
       return;
     }
 
-    const success = saveInvoice(invoice, isEditing);
+    const success = await saveInvoice(invoice, isEditing);
     if (success) {
       navigate("/invoices");
     }
