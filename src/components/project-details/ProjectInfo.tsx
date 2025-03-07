@@ -1,11 +1,18 @@
 
 import React from "react";
 import { format } from "date-fns";
-import { CalendarIcon, DollarSign, UserCircle, Tag, Hash, Clock, ArrowRight, Users } from "lucide-react";
+import { CalendarIcon, DollarSign, UserCircle, Tag, Clock, ArrowRight, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Client, Project } from "@/types";
 import { mockTeamMembers } from "@/pages/Team";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ProjectInfoProps {
   project: Project;
@@ -27,14 +34,6 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
         <CardContent className="grid gap-4 pt-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-4">
-              <div className="flex items-start gap-2">
-                <Hash className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <div className="space-y-0.5">
-                  <p className="text-sm font-medium">Project ID</p>
-                  <p className="text-sm text-muted-foreground">{project.id}</p>
-                </div>
-              </div>
-
               <div className="flex items-start gap-2">
                 <UserCircle className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div className="space-y-0.5">
@@ -89,7 +88,7 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
               </div>
 
               <div className="flex items-start gap-2">
-                <Hash className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                <Tag className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div className="space-y-0.5">
                   <p className="text-sm font-medium">Categories</p>
                   <div className="flex flex-wrap gap-1.5">
@@ -106,17 +105,23 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
                 <Users className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div className="space-y-0.5">
                   <p className="text-sm font-medium">Team Members</p>
-                  {assignedTeamMembers.length > 0 ? (
-                    <div className="space-y-1">
-                      {assignedTeamMembers.map((member) => (
-                        <div key={member.id} className="flex items-center">
-                          <p className="text-sm">{member.name}</p>
-                          <span className="text-xs text-muted-foreground ml-1">
-                            ({member.position})
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                  {mockTeamMembers.length > 0 ? (
+                    <Select defaultValue={assignedTeamMembers.length > 0 ? assignedTeamMembers[0].id : undefined}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select team member" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {assignedTeamMembers.length > 0 ? (
+                          assignedTeamMembers.map((member) => (
+                            <SelectItem key={member.id} value={member.id}>
+                              {member.name} ({member.position})
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="none" disabled>No team members assigned</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
                   ) : (
                     <p className="text-sm text-muted-foreground">No team members assigned</p>
                   )}
