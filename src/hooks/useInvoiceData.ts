@@ -77,6 +77,8 @@ export function useInvoiceData(invoiceId: string | undefined) {
         amount: Number(item.amount) || 0
       }));
 
+      console.log("Processed items to be set in invoice:", processedItems);
+
       // Ensure that the status is one of the allowed values
       const validStatus = validateInvoiceStatus(invoiceData.status);
 

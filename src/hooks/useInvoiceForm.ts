@@ -32,17 +32,28 @@ export function useInvoiceForm() {
   useEffect(() => {
     if (invoice?.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
       console.log("useInvoiceForm: Setting invoice items to items state:", invoice.items);
-      setItems(invoice.items);
+      
+      // Only update if items are different to avoid infinite loop
+      const currentItemsJSON = JSON.stringify(items);
+      const newItemsJSON = JSON.stringify(invoice.items);
+      
+      if (currentItemsJSON !== newItemsJSON) {
+        setItems(invoice.items);
+      }
     }
-  }, [invoice?.id, invoice?.items, setItems]);
+  }, [invoice?.id, invoice?.items, setItems, items]);
 
   // Keep the invoice items in sync with the items from useInvoiceItems
   useEffect(() => {
     if (items && Array.isArray(items) && items.length > 0) {
       console.log("useInvoiceForm: Syncing items to invoice:", items);
+      
+      // Only update if items have actually changed
       setInvoice(prev => {
-        // Only update if items have actually changed
-        if (JSON.stringify(prev.items) !== JSON.stringify(items)) {
+        const prevItemsJSON = JSON.stringify(prev.items || []);
+        const newItemsJSON = JSON.stringify(items);
+        
+        if (prevItemsJSON !== newItemsJSON) {
           return {
             ...prev,
             items

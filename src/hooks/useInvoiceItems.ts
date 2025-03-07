@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { InvoiceItem } from '@/types';
@@ -8,7 +7,7 @@ import { createEmptyItem } from '@/utils/invoiceCalculations';
 export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
   const { toast } = useToast();
   
-  // Initialize with initial items directly, but only once
+  // Initialize items state
   const [items, setItems] = useState<InvoiceItem[]>(() => {
     // Process initial items if they exist
     if (Array.isArray(initialItems) && initialItems.length > 0) {
@@ -26,8 +25,9 @@ export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
     return [createEmptyItem()];
   });
 
-  // Update items when initialItems changes (for example, when invoice is loaded from backend)
+  // This effect runs whenever initialItems changes (e.g., when invoice is loaded from backend)
   useEffect(() => {
+    // Only update if initialItems is a non-empty array
     if (Array.isArray(initialItems) && initialItems.length > 0) {
       console.log("useInvoiceItems: Updating items from initialItems change:", initialItems);
       
@@ -40,16 +40,15 @@ export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
         amount: Number(item.amount) || 0
       }));
       
-      // Only update if the items have actually changed to prevent infinite loops
-      const currentItemsStr = JSON.stringify(items.map(i => ({ ...i, id: undefined })));
-      const newItemsStr = JSON.stringify(processedItems.map(i => ({ ...i, id: undefined })));
+      // Check if the items are actually different before updating
+      const areItemsDifferent = JSON.stringify(items) !== JSON.stringify(processedItems);
       
-      if (currentItemsStr !== newItemsStr) {
+      if (areItemsDifferent) {
         console.log("Items have significant changes, updating state");
         setItems(processedItems);
       }
     }
-  }, [initialItems, items]);
+  }, [initialItems]);
 
   const addItem = useCallback(() => {
     const newItem = createEmptyItem();
