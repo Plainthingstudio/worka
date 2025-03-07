@@ -52,25 +52,26 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
         
         if (error) {
-          throw error;
+          console.error("Error fetching profile:", error);
+          toast.error("Failed to load profile data");
+          setLoading(false);
+          return;
         }
         
-        if (data) {
-          // Populate form with user data
-          form.reset({
-            fullName: data.full_name || "",
-            email: data.email || session.user.email || "",
-            phoneNumber: data.phone_number || "",
-            streetAddress: data.street_address || "",
-            city: data.city || "",
-            state: data.state || "",
-            zipCode: data.zip_code || "",
-            country: data.country || "",
-          });
-        }
+        // Populate form with user data or use session data for new users
+        form.reset({
+          fullName: data?.full_name || session.user.user_metadata?.full_name || "",
+          email: data?.email || session.user.email || "",
+          phoneNumber: data?.phone_number || "",
+          streetAddress: data?.street_address || "",
+          city: data?.city || "",
+          state: data?.state || "",
+          zipCode: data?.zip_code || "",
+          country: data?.country || "",
+        });
       } catch (error: any) {
         toast.error("Failed to load profile data");
         console.error("Error fetching profile:", error);
@@ -92,23 +93,51 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
         return;
       }
       
-      // Update profile in Supabase
-      const { error } = await supabase
+      // Check if profile exists
+      const { data: existingProfile } = await supabase
         .from('profiles')
-        .update({
-          full_name: data.fullName,
-          phone_number: data.phoneNumber,
-          street_address: data.streetAddress,
-          city: data.city,
-          state: data.state,
-          zip_code: data.zipCode,
-          country: data.country,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', session.user.id);
+        .select('id')
+        .eq('id', session.user.id)
+        .maybeSingle();
       
-      if (error) {
-        throw error;
+      if (existingProfile) {
+        // Update existing profile
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            full_name: data.fullName,
+            phone_number: data.phoneNumber,
+            street_address: data.streetAddress,
+            city: data.city,
+            state: data.state,
+            zip_code: data.zipCode,
+            country: data.country,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', session.user.id);
+        
+        if (error) {
+          throw error;
+        }
+      } else {
+        // Insert new profile for new user
+        const { error } = await supabase
+          .from('profiles')
+          .insert({
+            id: session.user.id,
+            full_name: data.fullName,
+            email: session.user.email,
+            phone_number: data.phoneNumber,
+            street_address: data.streetAddress,
+            city: data.city,
+            state: data.state,
+            zip_code: data.zipCode,
+            country: data.country,
+          });
+        
+        if (error) {
+          throw error;
+        }
       }
       
       // Call the parent's onSave function for any additional logic
