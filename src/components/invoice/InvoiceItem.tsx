@@ -18,11 +18,6 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
   onRemove, 
   formatCurrency 
 }) => {
-  // Log item data when component mounts and whenever it changes
-  useEffect(() => {
-    console.log("InvoiceItem component received item:", item);
-  }, [item]);
-  
   // Ensure we have valid values, defaulting as needed
   const itemId = item?.id || '';
   const description = item?.description || '';

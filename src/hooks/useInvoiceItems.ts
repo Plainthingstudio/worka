@@ -6,11 +6,11 @@ import { useToast } from '@/hooks/use-toast';
 import { createEmptyItem } from '@/utils/invoiceCalculations';
 
 export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
-  // Initialize with a safe default - either initialItems or an empty array with a default item
+  // Initialize with an empty array
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const { toast } = useToast();
 
-  // Initialize items when component mounts or initialItems changes
+  // Process initial items when they change
   useEffect(() => {
     if (Array.isArray(initialItems) && initialItems.length > 0) {
       console.log("Initializing items from props:", initialItems);
@@ -24,13 +24,14 @@ export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
         amount: Number(item.amount) || 0
       }));
       
+      console.log("Setting processed items:", processedItems);
       setItems(processedItems);
-    } else {
-      // If no items provided, create a default empty one
+    } else if (items.length === 0) {
+      // Only create a default item if we don't have any items yet
       console.log("No items provided, creating default empty item");
       setItems([createEmptyItem()]);
     }
-  }, [initialItems]); // Important: Added initialItems as a dependency
+  }, [initialItems]);
 
   const addItem = useCallback(() => {
     const newItem = createEmptyItem();
