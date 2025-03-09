@@ -38,8 +38,8 @@ export const FONTS = {
 // Color configurations
 export const COLORS = {
   line: {
-    dark: [0, 0, 0],
-    light: [200, 200, 200]
+    dark: [0, 0, 0] as [number, number, number],
+    light: [200, 200, 200] as [number, number, number]
   }
 };
 
