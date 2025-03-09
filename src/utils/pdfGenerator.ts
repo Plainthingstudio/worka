@@ -50,21 +50,28 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     pdf.setFont("helvetica", "bold");
     pdf.text("Invoice", pageWidth - margin, margin + 5, { align: "right" });
     
-    // Add invoice details (top right, below INVOICE) - Fixed layout issues here
-    pdf.setFontSize(10);
+    // Add invoice details (top right, below INVOICE) - INCREASED FONT SIZE HERE
+    pdf.setFontSize(12); // Increased from 10
     pdf.setFont("helvetica", "bold");
     pdf.text("Invoice#:", pageWidth - margin - 55, margin + 20);
     pdf.text("Date:", pageWidth - margin - 55, margin + 27);
+    pdf.text("Due Date:", pageWidth - margin - 55, margin + 34); // Added due date
     
     pdf.setFont("helvetica", "normal");
     pdf.text(invoice.invoiceNumber, pageWidth - margin, margin + 20, { align: "right" });
     pdf.text(format(new Date(invoice.date), "dd/MMMM/yyyy"), pageWidth - margin, margin + 27, { align: "right" });
     
+    // Calculate due date (30 days from invoice date if not specified)
+    const dueDate = invoice.dueDate 
+      ? new Date(invoice.dueDate)
+      : new Date(new Date(invoice.date).setDate(new Date(invoice.date).getDate() + 30));
+    pdf.text(format(dueDate, "dd/MMMM/yyyy"), pageWidth - margin, margin + 34, { align: "right" });
+    
     // Add "Total Due:" section
     pdf.setFontSize(12);
     pdf.setFont("helvetica", "bold");
-    pdf.text("Total Due:", pageWidth - margin, margin + 40, { align: "right" });
-    pdf.text(`USD: $ ${invoice.total.toFixed(2)}`, pageWidth - margin, margin + 47, { align: "right" });
+    pdf.text("Total Due:", pageWidth - margin, margin + 47, { align: "right" });
+    pdf.text(`USD: $ ${invoice.total.toFixed(2)}`, pageWidth - margin, margin + 54, { align: "right" });
     
     // Add billed to section (left) - INCREASED FONT SIZE HERE
     pdf.setFontSize(12);
@@ -91,7 +98,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     
     // Add table headers
     const tableTop = margin + 80;
-    pdf.setFontSize(11);
+    pdf.setFontSize(12); // Increased from 11
     pdf.setFont("helvetica", "bold");
     
     // Table headers
@@ -107,7 +114,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     
     // Draw table rows - INCREASED FONT SIZE HERE
     pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(10); // Increased from default
+    pdf.setFontSize(11); // Increased from 10
     let currentY = tableTop + 10;
     
     invoice.items.forEach((item, index) => {
@@ -130,14 +137,17 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
       // Calculate row height based on description length
       const rowHeight = Math.max(wrappedDescription.length * 6, 12);
       
-      // Draw thin line between items
+      // Draw thin line between items - FIX: only draw if not the last item
       if (index < invoice.items.length - 1) {
         pdf.setDrawColor(200, 200, 200);
         pdf.setLineWidth(0.1);
-        pdf.line(margin, currentY + (rowHeight * 0.75), pageWidth - margin, currentY + (rowHeight * 0.75));
+        
+        // Ensure the line is drawn at an appropriate position relative to the text
+        const lineY = currentY + rowHeight - 2; // Position the line better
+        pdf.line(margin, lineY, pageWidth - margin, lineY);
       }
       
-      currentY += rowHeight; // Increment Y position for next item based on content height
+      currentY += rowHeight + 3; // Add a bit more space between items
     });
     
     // Draw line before totals
