@@ -73,10 +73,21 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     pdf.setFont("helvetica", "normal");
     pdf.text(client.name, margin, margin + 47);
     
-    // Use client's actual address or fallback to a default
-    const clientAddress = client.address || "No address provided";
-    pdf.text(clientAddress, margin, margin + 54);
-    pdf.text(client.phone || "No phone provided", margin, margin + 61);
+    // Proper handling of long client addresses
+    if (client.address) {
+      // Limit the width of the address text to avoid overflow
+      const addressWidth = contentWidth * 0.45; // 45% of content width
+      const addressLines = pdf.splitTextToSize(client.address, addressWidth);
+      pdf.text(addressLines, margin, margin + 54);
+      
+      // Adjust placement of phone number based on number of address lines
+      const phoneY = margin + 54 + (addressLines.length * 7); 
+      pdf.text(client.phone || "No phone provided", margin, phoneY);
+    } else {
+      // Fallback for no address
+      pdf.text("No address provided", margin, margin + 54);
+      pdf.text(client.phone || "No phone provided", margin, margin + 61);
+    }
     
     // Add table headers
     const tableTop = margin + 80;
@@ -106,20 +117,27 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
         currentY = 30;
       }
       
+      // Handle long item descriptions
+      const descriptionWidth = contentWidth * 0.5;
+      const wrappedDescription = pdf.splitTextToSize(item.description, descriptionWidth);
+      
       // Draw the item's details
-      pdf.text(item.description, margin, currentY);
+      pdf.text(wrappedDescription, margin, currentY);
       pdf.text(`$${item.rate.toFixed(2)}`, pageWidth - margin - 80, currentY);
       pdf.text(item.quantity.toString(), pageWidth - margin - 45, currentY);
       pdf.text(`$${item.amount.toFixed(2)}`, pageWidth - margin, currentY, { align: "right" });
+      
+      // Calculate row height based on description length
+      const rowHeight = Math.max(wrappedDescription.length * 6, 12);
       
       // Draw thin line between items
       if (index < invoice.items.length - 1) {
         pdf.setDrawColor(200, 200, 200);
         pdf.setLineWidth(0.1);
-        pdf.line(margin, currentY + 4, pageWidth - margin, currentY + 4);
+        pdf.line(margin, currentY + (rowHeight * 0.75), pageWidth - margin, currentY + (rowHeight * 0.75));
       }
       
-      currentY += 12; // Increment Y position for next item
+      currentY += rowHeight; // Increment Y position for next item based on content height
     });
     
     // Draw line before totals
