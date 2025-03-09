@@ -13,14 +13,14 @@ export const renderInvoiceItems = (
   startY: number
 ): number => {
   const { margin } = PAGE_CONFIG;
-  let currentY = startY;
+  // Use the passed startY position, but ensure minimum spacing
+  let currentY = Math.max(startY + 15, TABLE_CONFIG.header.y);
   
-  // Add table headers
-  currentY = checkPageOverflow(doc, TABLE_CONFIG.header.y);
+  // Add table headers with proper spacing
   doc.setFontSize(FONTS.size.subheading);
   doc.setFont(FONTS.family.main, FONTS.style.bold);
   
-  // Table header columns
+  // Table header columns with improved positioning
   doc.text("ITEM DESCRIPTION", TABLE_CONFIG.columns.description.x, currentY);
   doc.text("PRICE", TABLE_CONFIG.columns.price.x, currentY);
   doc.text("QTY", TABLE_CONFIG.columns.quantity.x, currentY);
@@ -39,17 +39,17 @@ export const renderInvoiceItems = (
   // Draw table rows
   items.forEach((item, index) => {
     // Check if we need a new page
-    if (currentY > 250) {
+    if (currentY > PAGE_CONFIG.height - 50) {
       doc.addPage();
       currentY = 30;
     }
     
     // Handle long item descriptions
-    const descriptionWidth = CONTENT_WIDTH * 0.5;
+    const descriptionWidth = TABLE_CONFIG.columns.description.width;
     const wrappedDescription = doc.splitTextToSize(item.description, descriptionWidth);
     
-    // Draw the item's details
-    doc.text(wrappedDescription, margin.left, currentY);
+    // Draw the item's details with proper alignment
+    doc.text(wrappedDescription, TABLE_CONFIG.columns.description.x, currentY);
     doc.text(`$${item.rate.toFixed(2)}`, TABLE_CONFIG.columns.price.x, currentY);
     doc.text(item.quantity.toString(), TABLE_CONFIG.columns.quantity.x, currentY);
     doc.text(`$${item.amount.toFixed(2)}`, TABLE_CONFIG.columns.amount.x, currentY, { align: "right" });
@@ -70,5 +70,5 @@ export const renderInvoiceItems = (
   });
   
   // Return the final Y position
-  return currentY;
+  return currentY + 5; // Add a little extra spacing
 };

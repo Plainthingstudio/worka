@@ -16,16 +16,16 @@ export const renderInvoiceTotals = (
   total: number
 ): number => {
   const { margin } = PAGE_CONFIG;
-  let currentY = startY + 5;
+  let currentY = startY + 10; // Increased spacing after items
   
   // Draw line before totals
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(LINE_WIDTH.thick);
   doc.line(margin.left, currentY, PAGE_CONFIG.width - margin.right, currentY);
-  currentY += 10;
+  currentY += 15; // Increased spacing
   
-  // Add totals section
-  const totalsX = PAGE_CONFIG.width - margin.right - 70;
+  // Add totals section with better alignment
+  const totalsX = PAGE_CONFIG.width - margin.right - 100; // Moved left for more space
   const valuesX = PAGE_CONFIG.width - margin.right;
   
   doc.setFontSize(FONTS.size.subheading);
@@ -33,29 +33,29 @@ export const renderInvoiceTotals = (
   // Subtotal
   doc.text("SUB TOTAL", totalsX, currentY);
   doc.text(`$${subtotal.toFixed(2)}`, valuesX, currentY, { align: "right" });
-  currentY += 8;
+  currentY += 10; // Increased spacing
   
   // Tax
   doc.text(`Tax Vat ${taxPercentage}%`, totalsX, currentY);
   doc.text(`$${taxAmount.toFixed(2)}`, valuesX, currentY, { align: "right" });
-  currentY += 8;
+  currentY += 10; // Increased spacing
   
   // Discount
   doc.text(`Discount ${discountPercentage}%`, totalsX, currentY);
   doc.text(`- $${discountAmount.toFixed(2)}`, valuesX, currentY, { align: "right" });
-  currentY += 8;
+  currentY += 15; // Increased spacing
   
   // Draw line before grand total
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(LINE_WIDTH.thick);
   doc.line(totalsX - 20, currentY, valuesX, currentY);
-  currentY += 10;
+  currentY += 15; // Increased spacing
   
-  // Grand total
+  // Grand total with larger font
   doc.setFont(FONTS.family.main, FONTS.style.bold);
   doc.setFontSize(FONTS.size.heading);
   doc.text("Grand Total", totalsX, currentY);
   doc.text(`$${total.toFixed(2)}`, valuesX, currentY, { align: "right" });
   
-  return currentY + 10;
+  return currentY + 15; // Return new position with additional spacing
 };

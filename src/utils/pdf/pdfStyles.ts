@@ -49,10 +49,10 @@ export const LINE_WIDTH = {
   thin: 0.1
 };
 
-// Table layout configurations
+// Table layout configurations - UPDATED FOR BETTER SPACING
 export const TABLE_CONFIG = {
   header: {
-    y: 80, // Y position of table header
+    y: 110, // Increased Y position to avoid overlap with client info
   },
   columns: {
     description: {
@@ -60,13 +60,13 @@ export const TABLE_CONFIG = {
       x: PAGE_CONFIG.margin.left
     },
     price: {
-      x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right - 80
+      x: PAGE_CONFIG.margin.left + (CONTENT_WIDTH * 0.6) // Adjusted position
     },
     quantity: {
-      x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right - 45
+      x: PAGE_CONFIG.margin.left + (CONTENT_WIDTH * 0.75) // Adjusted position
     },
     amount: {
-      x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right
+      x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right // Kept at right margin
     }
   }
 };
