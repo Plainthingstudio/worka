@@ -7,14 +7,13 @@ import { Invoice } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 
 interface InvoiceActionsProps {
-  isEditing: boolean;
+  isEditing?: boolean; // Keep for type compatibility but won't be used
   onSubmit: () => void;
   onGeneratePDF: () => void;
   invoice: Invoice;
 }
 
 const InvoiceActions: React.FC<InvoiceActionsProps> = ({ 
-  isEditing, 
   onSubmit, 
   onGeneratePDF,
   invoice
@@ -70,7 +69,7 @@ const InvoiceActions: React.FC<InvoiceActionsProps> = ({
         type="button"
         onClick={handleSubmit}
       >
-        {isEditing ? "Update Invoice" : "Save Invoice"}
+        Save Invoice
       </Button>
     </div>
   );

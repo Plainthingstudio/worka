@@ -1,7 +1,7 @@
 
 import React from "react";
 import { format } from "date-fns";
-import { Eye, Edit, Trash, Download, MoreVertical } from "lucide-react";
+import { Eye, Trash, Download, MoreVertical } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -23,7 +23,7 @@ interface InvoicesTableProps {
   invoices: Invoice[];
   getClientName: (clientId: string) => string;
   onView: (invoiceId: string) => void;
-  onEdit: (invoiceId: string) => void;
+  onEdit: (invoiceId: string) => void; // Keeping for type compatibility but won't use
   onDelete: (invoiceId: string) => void;
   onDownload: (invoice: Invoice) => void;
 }
@@ -32,7 +32,6 @@ const InvoicesTable = ({
   invoices,
   getClientName,
   onView,
-  onEdit,
   onDelete,
   onDownload,
 }: InvoicesTableProps) => {
@@ -94,13 +93,7 @@ const InvoicesTable = ({
                       <Eye className="mr-2 h-4 w-4" />
                       View
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => onEdit(invoice.id)}
-                      className="cursor-pointer"
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
+                    {/* Removed Edit option */}
                     <DropdownMenuItem 
                       onClick={() => onDelete(invoice.id)}
                       className="cursor-pointer text-destructive focus:text-destructive"

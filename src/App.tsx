@@ -77,7 +77,7 @@ function App() {
             <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
             <Route path="/invoices/new" element={<ProtectedRoute><InvoiceForm /></ProtectedRoute>} />
             <Route path="/invoices/:invoiceId" element={<ProtectedRoute><InvoiceDetails /></ProtectedRoute>} />
-            <Route path="/invoices/:invoiceId/edit" element={<ProtectedRoute><InvoiceForm /></ProtectedRoute>} />
+            {/* Removed: <Route path="/invoices/:invoiceId/edit" element={<ProtectedRoute><InvoiceForm /></ProtectedRoute>} /> */}
             <Route path="/briefs" element={<ProtectedRoute><Briefs /></ProtectedRoute>} />
             <Route path="/briefs/ui" element={<ProtectedRoute><UIDesignBrief /></ProtectedRoute>} />
             <Route path="/briefs/graphic" element={<ProtectedRoute><GraphicDesignBrief /></ProtectedRoute>} />

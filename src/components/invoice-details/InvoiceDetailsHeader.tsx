@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Edit, Download, Trash } from "lucide-react";
+import { ArrowLeft, Download, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Invoice } from "@/types";
 
@@ -40,15 +40,6 @@ const InvoiceDetailsHeader: React.FC<InvoiceDetailsHeaderProps> = ({
           >
             <Trash className="mr-1 h-4 w-4" />
             Delete
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-primary text-primary hover:bg-primary/10"
-            onClick={() => navigate(`/invoices/${invoice.id}/edit`)}
-          >
-            <Edit className="mr-1 h-4 w-4" />
-            Edit Invoice
           </Button>
           <Button
             variant="default"
