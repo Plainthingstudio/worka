@@ -21,30 +21,16 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
   briefDetails,
   onDownload,
 }) => {
+  // If no brief details are available, don't render anything
   if (!briefDetails) return null;
 
   // Enhanced logging for debugging
   console.log("Brief details in dialog:", briefDetails);
-  console.log("Brief type:", briefDetails.type);
-  console.log("Logo feelings:", briefDetails.logoFeelings);
-  
-  if (briefDetails.logoFeelings) {
-    console.log("Logo feelings complexity:", briefDetails.logoFeelings.complexity);
-    console.log("Logo feelings gender:", briefDetails.logoFeelings.gender);
-    console.log("Logo feelings pricing:", briefDetails.logoFeelings.pricing);
-    console.log("Logo feelings era:", briefDetails.logoFeelings.era);
-    console.log("Logo feelings tone:", briefDetails.logoFeelings.tone);
-  }
-  
-  console.log("Services data:", briefDetails.services);
-  console.log("Print Media data:", briefDetails.printMedia);
-  console.log("Digital Media data:", briefDetails.digitalMedia);
   
   // Add effect to log when the dialog opens/closes
   useEffect(() => {
     if (open && briefDetails) {
       console.log("Dialog opened with brief details:", briefDetails);
-      console.log("Logo feelings in dialog open effect:", briefDetails.logoFeelings);
     }
   }, [open, briefDetails]);
 
@@ -69,6 +55,15 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
     }
   };
 
+  // Helper function to get value that might be in camelCase or snake_case
+  const getValue = (camelCaseKey: string, snakeCaseKey: string) => {
+    return briefDetails[camelCaseKey] !== undefined 
+      ? briefDetails[camelCaseKey] 
+      : briefDetails[snakeCaseKey] !== undefined 
+        ? briefDetails[snakeCaseKey] 
+        : null;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -84,20 +79,24 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-2">Client Information</h3>
               <div className="space-y-2">
-                <p><span className="font-medium">Name:</span> {briefDetails.name}</p>
-                <p><span className="font-medium">Email:</span> {briefDetails.email}</p>
-                <p><span className="font-medium">Company:</span> {briefDetails.companyName || briefDetails.company_name}</p>
+                <p><span className="font-medium">Name:</span> {briefDetails.name || "Not available"}</p>
+                <p><span className="font-medium">Email:</span> {briefDetails.email || "Not available"}</p>
+                <p>
+                  <span className="font-medium">Company:</span> {
+                    getValue("companyName", "company_name") || "Not available"
+                  }
+                </p>
                 {briefDetails.phone && <p><span className="font-medium">Phone:</span> {briefDetails.phone}</p>}
               </div>
             </div>
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-2">Brief Information</h3>
               <div className="space-y-2">
-                <p><span className="font-medium">Type:</span> {briefDetails.type}</p>
-                <p><span className="font-medium">Status:</span> {briefDetails.status}</p>
+                <p><span className="font-medium">Type:</span> {briefDetails.type || "Not available"}</p>
+                <p><span className="font-medium">Status:</span> {briefDetails.status || "Not available"}</p>
                 <p>
                   <span className="font-medium">Submitted:</span>{" "}
-                  {formatDate(briefDetails.submissionDate || briefDetails.submission_date)}
+                  {formatDate(getValue("submissionDate", "submission_date"))}
                 </p>
               </div>
             </div>
@@ -121,11 +120,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Close
             </Button>
-            <Button onClick={() => {
-              console.log("Download button clicked with brief:", briefDetails);
-              console.log("Logo feelings at download time:", briefDetails.logoFeelings);
-              onDownload(briefDetails);
-            }}>
+            <Button onClick={() => onDownload(briefDetails)}>
               <Download className="mr-2 h-4 w-4" />
               Download PDF
             </Button>
