@@ -29,19 +29,23 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
   };
 
   // Helper function to handle both camelCase and snake_case field access
-  const getValue = (camelCaseKey: string, snakeCaseKey: string) => {
-    return briefDetails[camelCaseKey] || briefDetails[snakeCaseKey] || "Not provided";
+  const getValue = (camelCaseKey: string, snakeCaseKey: string, defaultValue = "Not provided") => {
+    const value = briefDetails[camelCaseKey] !== undefined ? briefDetails[camelCaseKey] : 
+                 briefDetails[snakeCaseKey] !== undefined ? briefDetails[snakeCaseKey] : 
+                 defaultValue;
+    return value || defaultValue; // Return defaultValue if value is null/undefined
   };
 
   // Helper to get illustrations count safely
   const getIllustrationsCount = () => {
-    const count = briefDetails.illustrationsCount || briefDetails.illustrations_count;
+    const count = getValue("illustrationsCount", "illustrations_count");
     return count ? count.toString() : "Not provided";
   };
 
   // Helper to get illustration details safely
   const getIllustrationDetails = () => {
-    const details = briefDetails.illustrationDetails || briefDetails.illustration_details;
+    const details = getValue("illustrationDetails", "illustration_details", []);
+    // Ensure details is an array, even if empty
     return Array.isArray(details) ? details : [];
   };
 
@@ -57,20 +61,20 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
   // Helper to check if any competitor is provided
   const hasCompetitors = () => {
     return Boolean(
-      briefDetails.competitor1 || 
-      briefDetails.competitor2 || 
-      briefDetails.competitor3 || 
-      briefDetails.competitor4
+      getValue("competitor1", "competitor1", "") || 
+      getValue("competitor2", "competitor2", "") || 
+      getValue("competitor3", "competitor3", "") || 
+      getValue("competitor4", "competitor4", "")
     );
   };
 
   // Helper to check if any reference is provided
   const hasReferences = () => {
     return Boolean(
-      briefDetails.reference1 || 
-      briefDetails.reference2 || 
-      briefDetails.reference3 || 
-      briefDetails.reference4
+      getValue("reference1", "reference1", "") || 
+      getValue("reference2", "reference2", "") || 
+      getValue("reference3", "reference3", "") || 
+      getValue("reference4", "reference4", "")
     );
   };
 
@@ -107,10 +111,10 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
       <div>
         <h4 className="font-medium">Competitors</h4>
         <div className="space-y-2 mt-1">
-          {briefDetails.competitor1 && <p>1. {briefDetails.competitor1}</p>}
-          {briefDetails.competitor2 && <p>2. {briefDetails.competitor2}</p>}
-          {briefDetails.competitor3 && <p>3. {briefDetails.competitor3}</p>}
-          {briefDetails.competitor4 && <p>4. {briefDetails.competitor4}</p>}
+          {getValue("competitor1", "competitor1", "") && <p>1. {getValue("competitor1", "competitor1")}</p>}
+          {getValue("competitor2", "competitor2", "") && <p>2. {getValue("competitor2", "competitor2")}</p>}
+          {getValue("competitor3", "competitor3", "") && <p>3. {getValue("competitor3", "competitor3")}</p>}
+          {getValue("competitor4", "competitor4", "") && <p>4. {getValue("competitor4", "competitor4")}</p>}
           {!hasCompetitors() && <p>Not provided</p>}
         </div>
       </div>
@@ -124,17 +128,24 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
         <h4 className="font-medium">Illustrations Details</h4>
         <p><span className="font-medium">Count:</span> {getIllustrationsCount()}</p>
         
-        {getIllustrationDetails().length > 0 && (
+        {getIllustrationDetails().length > 0 ? (
           <div className="space-y-2 mt-2">
-            {getIllustrationDetails().map((detail: string, index: number) => 
-              detail && (
+            {getIllustrationDetails().map((detail: any, index: number) => {
+              // Convert detail to string safely, no matter what type it is
+              const detailText = typeof detail === 'string' ? detail : 
+                               detail && typeof detail === 'object' ? JSON.stringify(detail) : 
+                               detail ? String(detail) : "Not provided";
+              
+              return detail ? (
                 <div key={index} className="border p-3 rounded-md">
                   <p className="font-medium">Illustration {index + 1}</p>
-                  <p>{detail}</p>
+                  <p>{detailText}</p>
                 </div>
-              )
-            )}
+              ) : null;
+            })}
           </div>
+        ) : (
+          <p>No illustration details provided</p>
         )}
       </div>
       
@@ -142,10 +153,10 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
       <div>
         <h4 className="font-medium">Design References</h4>
         <div className="space-y-2 mt-1">
-          {briefDetails.reference1 && <p>1. {briefDetails.reference1}</p>}
-          {briefDetails.reference2 && <p>2. {briefDetails.reference2}</p>}
-          {briefDetails.reference3 && <p>3. {briefDetails.reference3}</p>}
-          {briefDetails.reference4 && <p>4. {briefDetails.reference4}</p>}
+          {getValue("reference1", "reference1", "") && <p>1. {getValue("reference1", "reference1")}</p>}
+          {getValue("reference2", "reference2", "") && <p>2. {getValue("reference2", "reference2")}</p>}
+          {getValue("reference3", "reference3", "") && <p>3. {getValue("reference3", "reference3")}</p>}
+          {getValue("reference4", "reference4", "") && <p>4. {getValue("reference4", "reference4")}</p>}
           {!hasReferences() && <p>Not provided</p>}
         </div>
       </div>
@@ -172,7 +183,7 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
       
       <div>
         <h4 className="font-medium">Completion Deadline</h4>
-        <p className="mt-1">{formatDate(briefDetails.completionDeadline || briefDetails.completion_deadline)}</p>
+        <p className="mt-1">{formatDate(getValue("completionDeadline", "completion_deadline"))}</p>
       </div>
     </div>
   );

@@ -56,12 +56,13 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
   };
 
   // Helper function to get value that might be in camelCase or snake_case
-  const getValue = (camelCaseKey: string, snakeCaseKey: string) => {
-    return briefDetails[camelCaseKey] !== undefined 
+  const getValue = (camelCaseKey: string, snakeCaseKey: string, defaultValue = "Not available") => {
+    const value = briefDetails[camelCaseKey] !== undefined 
       ? briefDetails[camelCaseKey] 
       : briefDetails[snakeCaseKey] !== undefined 
         ? briefDetails[snakeCaseKey] 
-        : null;
+        : defaultValue;
+    return value || defaultValue; // Return defaultValue if value is null/undefined
   };
 
   return (
@@ -83,7 +84,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
                 <p><span className="font-medium">Email:</span> {briefDetails.email || "Not available"}</p>
                 <p>
                   <span className="font-medium">Company:</span> {
-                    getValue("companyName", "company_name") || "Not available"
+                    getValue("companyName", "company_name")
                   }
                 </p>
                 {briefDetails.phone && <p><span className="font-medium">Phone:</span> {briefDetails.phone}</p>}

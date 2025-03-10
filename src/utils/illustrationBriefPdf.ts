@@ -187,4 +187,3 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
     throw error;
   }
 };
-
