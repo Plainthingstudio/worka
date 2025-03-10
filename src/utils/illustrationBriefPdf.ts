@@ -146,19 +146,29 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
     
     // Illustration Details
     const details = getValue("illustrationDetails", "illustration_details", []);
+    
+    // Fix: Ensure 'details' is an array and process each detail item properly
     if (Array.isArray(details) && details.length > 0) {
-      details.forEach((detail, index) => {
+      details.forEach((detail: any, index: number) => {
         if (detail) {
-          const detailText = typeof detail === 'string' ? detail : String(detail);
+          // Convert the detail to a string safely, no matter what type it is
+          const detailText = typeof detail === 'string' ? detail : 
+                            detail && typeof detail === 'object' ? JSON.stringify(detail) : 
+                            String(detail || "Not provided");
+                            
           y = addMultiParagraphField(doc, `Illustration ${index + 1}`, detailText, y);
           y = checkPageOverflow(doc, y);
         }
       });
+    } else {
+      // If no details or not an array, add a placeholder
+      y = addField(doc, "Illustration Details", "No details provided", y);
     }
 
     // Deliverables
     y = addSectionTitle(doc, "Deliverables", y);
-    const deliverables = Array.isArray(brief.deliverables) ? brief.deliverables.join(", ") : "Not provided";
+    const deliverables = Array.isArray(brief.deliverables) ? brief.deliverables.join(", ") : 
+                        brief.deliverables || "Not provided";
     y = addField(doc, "File Formats", deliverables, y);
     y = checkPageOverflow(doc, y);
 
@@ -177,3 +187,4 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
     throw error;
   }
 };
+
