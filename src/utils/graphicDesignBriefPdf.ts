@@ -1,6 +1,6 @@
 
 import jsPDF from "jspdf";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 import { 
   addSectionTitle, 
   addField, 
@@ -31,7 +31,22 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
 
     // Brief Information
     y = addSectionTitle(doc, "Brief Information", y);
-    y = addField(doc, "Submission Date", format(new Date(brief.submissionDate), "MMMM dd, yyyy"), y);
+    
+    // Safely format the submission date
+    let submissionDateFormatted = "Not specified";
+    if (brief.submissionDate) {
+      // Try to parse the date if it's a string
+      const dateObj = typeof brief.submissionDate === 'string' 
+        ? parseISO(brief.submissionDate) 
+        : new Date(brief.submissionDate);
+      
+      // Only format if it's a valid date
+      if (isValid(dateObj)) {
+        submissionDateFormatted = format(dateObj, "MMMM dd, yyyy");
+      }
+    }
+    
+    y = addField(doc, "Submission Date", submissionDateFormatted, y);
     y = addField(doc, "Status", brief.status, y);
     y = checkPageOverflow(doc, y);
 

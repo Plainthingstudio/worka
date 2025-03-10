@@ -1,6 +1,6 @@
 
 import jsPDF from "jspdf";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 import { 
   addSectionTitle, 
   addField, 
@@ -27,7 +27,22 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
 
     // Brief Information
     y = addSectionTitle(doc, "Brief Information", y);
-    y = addField(doc, "Submission Date", format(new Date(brief.submissionDate), "MMMM dd, yyyy"), y);
+    
+    // Safely format the submission date
+    let submissionDateFormatted = "Not specified";
+    if (brief.submissionDate) {
+      // Try to parse the date if it's a string
+      const dateObj = typeof brief.submissionDate === 'string' 
+        ? parseISO(brief.submissionDate) 
+        : new Date(brief.submissionDate);
+      
+      // Only format if it's a valid date
+      if (isValid(dateObj)) {
+        submissionDateFormatted = format(dateObj, "MMMM dd, yyyy");
+      }
+    }
+    
+    y = addField(doc, "Submission Date", submissionDateFormatted, y);
     y = addField(doc, "Status", brief.status, y);
     y = checkPageOverflow(doc, y);
 
@@ -57,7 +72,7 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
     // Illustration Details
     if (brief.illustrationDetails && brief.illustrationDetails.length > 0) {
       y = addSectionTitle(doc, "Illustration Details", y);
-      y = addField(doc, "Number of Illustrations", brief.illustrationsCount.toString(), y);
+      y = addField(doc, "Number of Illustrations", brief.illustrationsCount?.toString() || "Not specified", y);
       y = checkPageOverflow(doc, y);
       
       brief.illustrationDetails.forEach((detail: string, index: number) => {
@@ -75,11 +90,22 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
       y = checkPageOverflow(doc, y);
     }
 
-    // Deadline
+    // Deadline - Handle with safe date formatting
     y = addSectionTitle(doc, "Deadline", y);
-    const deadlineValue = brief.completionDeadline 
-      ? format(new Date(brief.completionDeadline), "MMMM dd, yyyy") 
-      : "Not specified";
+    let deadlineValue = "Not specified";
+    
+    if (brief.completionDeadline) {
+      // Try to parse the date if it's a string
+      const deadlineObj = typeof brief.completionDeadline === 'string' 
+        ? parseISO(brief.completionDeadline) 
+        : new Date(brief.completionDeadline);
+      
+      // Only format if it's a valid date
+      if (isValid(deadlineObj)) {
+        deadlineValue = format(deadlineObj, "MMMM dd, yyyy");
+      }
+    }
+    
     y = addField(doc, "Completion Deadline", deadlineValue, y);
 
     // Save the PDF
