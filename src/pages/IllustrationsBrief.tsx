@@ -7,9 +7,11 @@ import { Card } from "@/components/ui/card";
 import IllustrationStepOne from "@/components/illustrations-brief-form/IllustrationStepOne";
 import IllustrationStepTwo from "@/components/illustrations-brief-form/IllustrationStepTwo";
 import IllustrationStepThree from "@/components/illustrations-brief-form/IllustrationStepThree";
+import { supabase } from "@/integrations/supabase/client";
 
 const IllustrationsBrief = () => {
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const methods = useForm({
@@ -40,7 +42,7 @@ const IllustrationsBrief = () => {
       illustrationDetails: [""],
       deliverables: {},
     },
-    mode: "onChange", // Add this to make validation more responsive
+    mode: "onChange",
   });
 
   const handleNext = async () => {
@@ -78,54 +80,91 @@ const IllustrationsBrief = () => {
     setStep(step - 1);
   };
 
-  const handleSubmit = () => {
-    // Convert the deliverables object to an array of selected items
-    const formData = methods.getValues();
-    const selectedDeliverables = Object.entries(formData.deliverables || {})
-      .filter(([_, isSelected]) => isSelected)
-      .map(([key, _]) => {
-        // Convert back to original format
-        return key
-          .replace(/_/g, ' ')
-          .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ')
-          .replace(/png/i, '.PNG')
-          .replace(/pdf/i, '.PDF')
-          .replace(/ai/i, '.AI')
-          .replace(/svg/i, '.SVG')
-          .replace(/mp4/i, '.MP4')
-          .replace(/webm/i, '.WebM');
-      });
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      // Convert the deliverables object to an array of selected items
+      const formData = methods.getValues();
+      const selectedDeliverables = Object.entries(formData.deliverables || {})
+        .filter(([_, isSelected]) => isSelected)
+        .map(([key, _]) => {
+          // Convert back to original format
+          return key
+            .replace(/_/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')
+            .replace(/png/i, '.PNG')
+            .replace(/pdf/i, '.PDF')
+            .replace(/ai/i, '.AI')
+            .replace(/svg/i, '.SVG')
+            .replace(/mp4/i, '.MP4')
+            .replace(/webm/i, '.WebM');
+        });
 
-    // Get current date and time
-    const now = new Date();
-    // Store the ISO string directly - we'll format it when displaying
-    const submissionDate = now.toISOString();
+      // Prepare data for Supabase with correct column names
+      const briefData = {
+        name: formData.name,
+        email: formData.email,
+        company_name: formData.companyName,
+        type: "Illustration Design",
+        status: "New",
+        about_company: formData.aboutCompany,
+        target_audience: formData.targetAudience,
+        competitor1: formData.competitor1,
+        competitor2: formData.competitor2,
+        competitor3: formData.competitor3,
+        competitor4: formData.competitor4,
+        reference1: formData.reference1,
+        reference2: formData.reference2,
+        reference3: formData.reference3,
+        reference4: formData.reference4,
+        general_style: formData.generalStyle,
+        color_preferences: formData.colorPreferences,
+        has_brand_guidelines: formData.brandGuidelines,
+        completion_deadline: formData.completionDeadline,
+        // Custom fields for illustrations
+        illustrations_purpose: formData.illustrationsPurpose,
+        illustrations_for: formData.illustrationsFor,
+        illustrations_style: formData.illustrationsStyle,
+        illustrations_count: formData.illustrationsCount,
+        illustration_details: formData.illustrationDetails,
+        like_dislike_design: formData.likeDislikeDesign,
+        deliverables: selectedDeliverables
+      };
 
-    // Get existing briefs from localStorage
-    const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
+      // Insert into Supabase
+      const { error } = await supabase
+        .from('briefs')
+        .insert(briefData);
+
+      if (error) throw error;
+
+      // Also save to localStorage for backward compatibility
+      const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
+      const localStorageBrief = {
+        ...formData,
+        id: Date.now(),
+        submissionDate: new Date().toISOString(),
+        status: "New",
+        deliverables: selectedDeliverables
+      };
+      localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
     
-    // Add the new brief with submission date and status
-    const newBrief = {
-      ...formData,
-      id: Date.now(),
-      submissionDate: submissionDate,
-      status: "New",
-      deliverables: selectedDeliverables
-    };
+      // Save the brief type for the thank you page
+      localStorage.setItem("lastSubmittedBriefType", "Illustration Design");
     
-    // Save to localStorage
-    localStorage.setItem("briefs", JSON.stringify([...existingBriefs, newBrief]));
+      // Show success message
+      toast.success("Illustration design brief submitted successfully!");
     
-    // Save the brief type for the thank you page
-    localStorage.setItem("lastSubmittedBriefType", "Illustration Design");
-    
-    // Show success message
-    toast.success("Illustration design brief submitted successfully!");
-    
-    // Navigate to the thank you page
-    navigate("/thank-you");
+      // Navigate to the thank you page
+      navigate("/thank-you");
+    } catch (error: any) {
+      console.error("Error submitting brief:", error);
+      toast.error(error.message || "Failed to submit brief");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -149,7 +188,7 @@ const IllustrationsBrief = () => {
           <FormProvider {...methods}>
             {step === 1 && <IllustrationStepOne onNext={handleNext} />}
             {step === 2 && <IllustrationStepTwo onNext={handleNext} onPrevious={handlePrevious} />}
-            {step === 3 && <IllustrationStepThree onPrevious={handlePrevious} onSubmit={handleSubmit} />}
+            {step === 3 && <IllustrationStepThree onPrevious={handlePrevious} onSubmit={handleSubmit} isSubmitting={isSubmitting} />}
           </FormProvider>
         </Card>
       </div>

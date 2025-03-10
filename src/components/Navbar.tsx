@@ -1,4 +1,5 @@
-import React from "react";
+
+import React, { useEffect, useState } from "react";
 import { LogOut, User, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +19,55 @@ import { toast } from "sonner";
 const Navbar = ({ title }: { title?: string }) => {
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const [userName, setUserName] = useState<string>("");
+  const [userInitials, setUserInitials] = useState<string>("SM");
+  
+  useEffect(() => {
+    const getUserProfile = async () => {
+      try {
+        // Get current user session
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          // Try to get user profile from profiles table
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', user.id)
+            .single();
+
+          if (error) {
+            console.error("Error fetching profile:", error);
+            return;
+          }
+
+          if (data && data.full_name) {
+            setUserName(data.full_name);
+            
+            // Create initials from full name
+            const nameParts = data.full_name.split(' ');
+            const initials = nameParts.length > 1 
+              ? `${nameParts[0][0]}${nameParts[1][0]}`
+              : data.full_name.substring(0, 2);
+            
+            setUserInitials(initials.toUpperCase());
+          } else {
+            // Use email as fallback
+            setUserName(user.email || "Studio Manager");
+            // Create initials from email
+            if (user.email) {
+              const emailName = user.email.split('@')[0];
+              setUserInitials(emailName.substring(0, 2).toUpperCase());
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error getting user info:", error);
+      }
+    };
+
+    getUserProfile();
+  }, []);
   
   const handleLogout = async () => {
     try {
@@ -56,10 +106,10 @@ const Navbar = ({ title }: { title?: string }) => {
             <Button variant="ghost" size="sm" className="gap-2 dark:hover:bg-accent/20">
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-primary/10 text-primary dark:bg-primary/20">
-                  SM
+                  {userInitials}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm font-medium">Studio Manager</span>
+              <span className="text-sm font-medium">{userName || "Studio Manager"}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 dark:border-border/40 dark:bg-background/95 dark:backdrop-blur-md">

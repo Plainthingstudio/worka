@@ -9,6 +9,183 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      briefs: {
+        Row: {
+          about_company: string | null
+          barrier_to_entry: string | null
+          brand_guidelines_details: string | null
+          brand_positioning: string | null
+          color_preferences: string | null
+          company_name: string
+          competitor1: string | null
+          competitor2: string | null
+          competitor3: string | null
+          competitor4: string | null
+          completion_deadline: string | null
+          current_website: string | null
+          development_service: string | null
+          digital_media: Json | null
+          email: string
+          existing_brand_assets: string | null
+          features_and_benefits: string | null
+          font_preferences: string | null
+          general_style: string | null
+          has_brand_guidelines: string | null
+          has_wireframe: string | null
+          id: string
+          logo_feelings: Json | null
+          logo_type: string | null
+          market_category: string | null
+          name: string
+          page_count: number | null
+          page_details: Json | null
+          print_media: Json | null
+          products_services: string | null
+          project_description: string | null
+          project_size: string | null
+          project_type: string | null
+          reference1: string | null
+          reference2: string | null
+          reference3: string | null
+          reference4: string | null
+          services: Json | null
+          slogan: string | null
+          specific_imagery: string | null
+          status: string
+          style_preferences: string | null
+          submission_date: string
+          target_age: string | null
+          target_audience: string | null
+          target_demography: string | null
+          target_gender: string | null
+          target_personality: string | null
+          target_profession: string | null
+          type: string
+          user_id: string
+          vision_mission: string | null
+          website_content: string | null
+          website_purpose: string | null
+          website_type_interest: Json | null
+          wireframe_details: string | null
+        }
+        Insert: {
+          about_company?: string | null
+          barrier_to_entry?: string | null
+          brand_guidelines_details?: string | null
+          brand_positioning?: string | null
+          color_preferences?: string | null
+          company_name: string
+          competitor1?: string | null
+          competitor2?: string | null
+          competitor3?: string | null
+          competitor4?: string | null
+          completion_deadline?: string | null
+          current_website?: string | null
+          development_service?: string | null
+          digital_media?: Json | null
+          email: string
+          existing_brand_assets?: string | null
+          features_and_benefits?: string | null
+          font_preferences?: string | null
+          general_style?: string | null
+          has_brand_guidelines?: string | null
+          has_wireframe?: string | null
+          id?: string
+          logo_feelings?: Json | null
+          logo_type?: string | null
+          market_category?: string | null
+          name: string
+          page_count?: number | null
+          page_details?: Json | null
+          print_media?: Json | null
+          products_services?: string | null
+          project_description?: string | null
+          project_size?: string | null
+          project_type?: string | null
+          reference1?: string | null
+          reference2?: string | null
+          reference3?: string | null
+          reference4?: string | null
+          services?: Json | null
+          slogan?: string | null
+          specific_imagery?: string | null
+          status?: string
+          style_preferences?: string | null
+          submission_date?: string
+          target_age?: string | null
+          target_audience?: string | null
+          target_demography?: string | null
+          target_gender?: string | null
+          target_personality?: string | null
+          target_profession?: string | null
+          type: string
+          user_id: string
+          vision_mission?: string | null
+          website_content?: string | null
+          website_purpose?: string | null
+          website_type_interest?: Json | null
+          wireframe_details?: string | null
+        }
+        Update: {
+          about_company?: string | null
+          barrier_to_entry?: string | null
+          brand_guidelines_details?: string | null
+          brand_positioning?: string | null
+          color_preferences?: string | null
+          company_name?: string
+          competitor1?: string | null
+          competitor2?: string | null
+          competitor3?: string | null
+          competitor4?: string | null
+          completion_deadline?: string | null
+          current_website?: string | null
+          development_service?: string | null
+          digital_media?: Json | null
+          email?: string
+          existing_brand_assets?: string | null
+          features_and_benefits?: string | null
+          font_preferences?: string | null
+          general_style?: string | null
+          has_brand_guidelines?: string | null
+          has_wireframe?: string | null
+          id?: string
+          logo_feelings?: Json | null
+          logo_type?: string | null
+          market_category?: string | null
+          name?: string
+          page_count?: number | null
+          page_details?: Json | null
+          print_media?: Json | null
+          products_services?: string | null
+          project_description?: string | null
+          project_size?: string | null
+          project_type?: string | null
+          reference1?: string | null
+          reference2?: string | null
+          reference3?: string | null
+          reference4?: string | null
+          services?: Json | null
+          slogan?: string | null
+          specific_imagery?: string | null
+          status?: string
+          style_preferences?: string | null
+          submission_date?: string
+          target_age?: string | null
+          target_audience?: string | null
+          target_demography?: string | null
+          target_gender?: string | null
+          target_personality?: string | null
+          target_profession?: string | null
+          type?: string
+          user_id?: string
+          vision_mission?: string | null
+          website_content?: string | null
+          website_purpose?: string | null
+          website_type_interest?: Json | null
+          wireframe_details?: string | null
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           address: string | null

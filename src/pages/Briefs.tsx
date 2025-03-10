@@ -16,9 +16,10 @@ import {
   generateUIDesignBriefPDF, 
   generateGraphicDesignBriefPDF 
 } from "@/utils/briefPdfGenerator";
+import { Loader2 } from "lucide-react";
 
 const Briefs = () => {
-  const { briefs, setBriefs, filter, setFilter, search, setSearch, filteredBriefs } = useBriefs();
+  const { briefs, filter, setFilter, search, setSearch, filteredBriefs, isLoading, deleteBrief } = useBriefs();
   const [selectedBrief, setSelectedBrief] = React.useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
@@ -47,15 +48,8 @@ const Briefs = () => {
   }, []);
 
   const viewBriefDetails = (brief: any) => {
-    const storedBriefs = localStorage.getItem("briefs");
-    if (storedBriefs) {
-      const allBriefs = JSON.parse(storedBriefs);
-      const fullBrief = allBriefs.find((b: any) => b.id === brief.id);
-      if (fullBrief) {
-        setBriefDetails(fullBrief);
-        setIsViewDialogOpen(true);
-      }
-    }
+    setBriefDetails(brief);
+    setIsViewDialogOpen(true);
   };
 
   const handleDeleteBrief = (brief: any) => {
@@ -65,35 +59,25 @@ const Briefs = () => {
 
   const confirmDelete = () => {
     if (selectedBrief) {
-      const updatedBriefs = briefs.filter(brief => brief.id !== selectedBrief.id);
-      localStorage.setItem("briefs", JSON.stringify(updatedBriefs));
-      setBriefs(updatedBriefs);
+      deleteBrief(selectedBrief.id);
       setIsDeleteDialogOpen(false);
       setSelectedBrief(null);
-      toast.success("Brief deleted successfully!");
     }
   };
 
   const downloadBrief = async (brief: any) => {
     try {
-      const storedBriefs = localStorage.getItem("briefs");
-      if (storedBriefs) {
-        const allBriefs = JSON.parse(storedBriefs);
-        const fullBrief = allBriefs.find((b: any) => b.id === brief.id);
-        if (fullBrief) {
-          if (fullBrief.type === "Illustration Design" || fullBrief.type === "Illustrations") {
-            await generateIllustrationBriefPDF(fullBrief);
-            toast.success("Illustration brief downloaded successfully");
-          } else if (fullBrief.type === "UI Design") {
-            await generateUIDesignBriefPDF(fullBrief);
-            toast.success("UI Design brief downloaded successfully");
-          } else if (fullBrief.type === "Graphic Design") {
-            await generateGraphicDesignBriefPDF(fullBrief);
-            toast.success("Graphic Design brief downloaded successfully");
-          } else {
-            toast.error("Download not supported for this brief type");
-          }
-        }
+      if (brief.type === "Illustration Design" || brief.type === "Illustrations") {
+        await generateIllustrationBriefPDF(brief);
+        toast.success("Illustration brief downloaded successfully");
+      } else if (brief.type === "UI Design") {
+        await generateUIDesignBriefPDF(brief);
+        toast.success("UI Design brief downloaded successfully");
+      } else if (brief.type === "Graphic Design") {
+        await generateGraphicDesignBriefPDF(brief);
+        toast.success("Graphic Design brief downloaded successfully");
+      } else {
+        toast.error("Download not supported for this brief type");
       }
     } catch (error) {
       console.error("Error downloading brief:", error);
@@ -119,12 +103,21 @@ const Briefs = () => {
             search={search}
             setSearch={setSearch}
           />
-          <BriefsTable 
-            briefs={filteredBriefs} 
-            onView={viewBriefDetails}
-            onDownload={downloadBrief}
-            onDelete={handleDeleteBrief}
-          />
+          
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-2">Loading briefs...</span>
+            </div>
+          ) : (
+            <BriefsTable 
+              briefs={filteredBriefs} 
+              onView={viewBriefDetails}
+              onDownload={downloadBrief}
+              onDelete={handleDeleteBrief}
+            />
+          )}
+          
           <BriefTypeCards />
         </main>
       </div>

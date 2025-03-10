@@ -7,13 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface Brief {
-  id: number;
+  id: string;
   name: string;
   email: string;
-  companyName: string;
+  companyName?: string;
+  company_name?: string;
   type: string;
   status: string;
-  submissionDate: string;
+  submissionDate?: string;
+  submission_date?: string;
 }
 
 interface BriefsTableProps {
@@ -68,6 +70,17 @@ const BriefsTable: React.FC<BriefsTableProps> = ({ briefs, onView, onDownload, o
     }
   };
 
+  // Handle different property naming conventions
+  const getCompanyName = (brief: Brief) => {
+    return brief.companyName || brief.company_name || "";
+  };
+
+  const getSubmissionDate = (brief: Brief) => {
+    const dateString = brief.submissionDate || brief.submission_date;
+    if (!dateString) return "N/A";
+    return format(new Date(dateString), "MMM d, yyyy");
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -97,9 +110,9 @@ const BriefsTable: React.FC<BriefsTableProps> = ({ briefs, onView, onDownload, o
                     <div className="text-sm text-muted-foreground">{brief.email}</div>
                   </div>
                 </TableCell>
-                <TableCell>{brief.companyName}</TableCell>
+                <TableCell>{getCompanyName(brief)}</TableCell>
                 <TableCell>
-                  {format(new Date(brief.submissionDate), "MMM d, yyyy")}
+                  {getSubmissionDate(brief)}
                 </TableCell>
                 <TableCell>
                   <Badge className={`inline-flex items-center gap-1 w-fit ${getStatusBadgeClass(brief.status)}`}>

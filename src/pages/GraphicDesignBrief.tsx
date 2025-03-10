@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Card } from "@/components/ui/card";
@@ -7,10 +8,13 @@ import StepOne from "@/components/brief-form/StepOne";
 import StepTwo from "@/components/brief-form/StepTwo";
 import StepThree from "@/components/brief-form/StepThree";
 import StepFour from "@/components/brief-form/StepFour";
+import { supabase } from "@/integrations/supabase/client";
 
 const GraphicDesignBrief = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const methods = useForm({
     defaultValues: {
       name: "",
@@ -57,7 +61,9 @@ const GraphicDesignBrief = () => {
     }
   });
 
-  const onSubmit = (data: any) => {
+  const onSubmit = async (data: any) => {
+    setIsSubmitting(true);
+    
     const processCheckboxGroup = (group: Record<string, boolean>) => {
       if (!group) return [];
       
@@ -71,52 +77,78 @@ const GraphicDesignBrief = () => {
         });
     };
 
-    const now = new Date();
-    const submissionDate = now.toISOString();
+    try {
+      const services = processCheckboxGroup(data.services || {});
+      const printMedia = processCheckboxGroup(data.printMedia || {});
+      const digitalMedia = processCheckboxGroup(data.digitalMedia || {});
 
-    const services = processCheckboxGroup(data.services || {});
-    const printMedia = processCheckboxGroup(data.printMedia || {});
-    const digitalMedia = processCheckboxGroup(data.digitalMedia || {});
+      // Prepare data for Supabase with correct column names
+      const briefData = {
+        name: data.name || "",
+        email: data.email || "",
+        company_name: data.companyName || "",
+        type: "Graphic Design",
+        status: "New",
+        about_company: data.aboutCompany || "",
+        vision_mission: data.visionMission || "",
+        slogan: data.slogan || "",
+        logo_feelings: data.logoFeelings || {},
+        logo_type: data.logoType || "",
+        reference1: data.reference1 || "",
+        reference2: data.reference2 || "",
+        reference3: data.reference3 || "",
+        reference4: data.reference4 || "",
+        target_age: data.targetAge || "",
+        target_gender: data.targetGender || "",
+        target_demography: data.targetDemography || "",
+        target_profession: data.targetProfession || "",
+        target_personality: data.targetPersonality || "",
+        products_services: data.productsServices || "",
+        features_and_benefits: data.featuresAndBenefits || "",
+        market_category: data.marketCategory || "",
+        competitor1: data.competitor1 || "",
+        competitor2: data.competitor2 || "",
+        competitor3: data.competitor3 || "",
+        competitor4: data.competitor4 || "",
+        brand_positioning: data.brandPositioning || "",
+        barrier_to_entry: data.barrierToEntry || "",
+        specific_imagery: data.specificImagery || "",
+        services: services,
+        print_media: printMedia,
+        digital_media: digitalMedia
+      };
 
-    console.log("Processed services:", services);
-    console.log("Processed print media:", printMedia);
-    console.log("Processed digital media:", digitalMedia);
+      // Insert into Supabase
+      const { error } = await supabase
+        .from('briefs')
+        .insert(briefData);
 
-    // Preserve the exact values for logo preferences
-    const briefData = {
-      ...data,
-      id: Date.now(),
-      submissionDate: submissionDate,
-      status: "New",
-      type: "Graphic Design",
-      name: data.name || "",
-      email: data.email || "",
-      // Preserve the exact values selected for logoFeelings
-      logoFeelings: {
-        style: data.logoFeelings?.style || "",
-        pricing: data.logoFeelings?.pricing || "", // "Economical" or "Luxury"
-        era: data.logoFeelings?.era || "",       // "Modern" or "Classic"
-        tone: data.logoFeelings?.tone || "",     // "Serious" or "Playful"
-        complexity: data.logoFeelings?.complexity || "", // "Simple" or "Complex"
-        gender: data.logoFeelings?.gender || ""  // "Feminine" or "Masculine"
-      },
-      tone: processCheckboxGroup(data.tone || {}),
-      services: services,
-      printMedia: printMedia,
-      digitalMedia: digitalMedia
-    };
+      if (error) throw error;
 
-    console.log("Final brief data to be saved:", briefData);
-    console.log("Logo feelings being saved:", briefData.logoFeelings);
+      // Also save to localStorage for backward compatibility
+      const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
+      const localStorageBrief = {
+        ...data,
+        id: Date.now(),
+        submissionDate: new Date().toISOString(),
+        status: "New",
+        type: "Graphic Design",
+        services: services,
+        printMedia: printMedia,
+        digitalMedia: digitalMedia
+      };
+      localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
 
-    const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
-    
-    localStorage.setItem("briefs", JSON.stringify([...existingBriefs, briefData]));
-    
-    localStorage.setItem("lastSubmittedBriefType", "Graphic Design");
+      localStorage.setItem("lastSubmittedBriefType", "Graphic Design");
 
-    toast.success("Brief submitted successfully!");
-    navigate("/thank-you");
+      toast.success("Brief submitted successfully!");
+      navigate("/thank-you");
+    } catch (error: any) {
+      console.error("Error submitting brief:", error);
+      toast.error(error.message || "Failed to submit brief");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStep = () => {
@@ -146,6 +178,7 @@ const GraphicDesignBrief = () => {
           <StepFour
             onPrevious={() => setCurrentStep(3)}
             onSubmit={methods.handleSubmit(onSubmit)}
+            isSubmitting={isSubmitting}
           />
         );
       default:
