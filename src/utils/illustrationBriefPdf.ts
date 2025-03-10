@@ -143,7 +143,7 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
     
     // Get illustrations count
     const illustrationsCount = getValue("illustrationsCount", "illustrations_count", "Not specified");
-    y = addField(doc, "Number of Illustrations", illustrationsCount.toString(), y);
+    y = addField(doc, "Number of Illustrations", String(illustrationsCount), y);
     y = checkPageOverflow(doc, y);
     
     // Get illustration details
