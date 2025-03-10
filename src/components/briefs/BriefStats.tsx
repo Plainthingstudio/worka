@@ -11,7 +11,7 @@ const BriefStats: React.FC<BriefStatsProps> = ({ briefs }) => {
     total: briefs.length,
     ui: briefs.filter(b => b.type === "UI Design").length,
     graphic: briefs.filter(b => b.type === "Graphic Design").length,
-    illustrations: briefs.filter(b => ["Illustrations", "Illustration Design"].includes(b.type)).length
+    illustrations: briefs.filter(b => b.type === "Illustration Design").length
   };
 
   return (
@@ -19,7 +19,7 @@ const BriefStats: React.FC<BriefStatsProps> = ({ briefs }) => {
       <BriefStatCard title="Total Briefs" count={statCounts.total} />
       <BriefStatCard title="UI Design" count={statCounts.ui} />
       <BriefStatCard title="Graphic Design" count={statCounts.graphic} />
-      <BriefStatCard title="Illustrations" count={statCounts.illustrations} />
+      <BriefStatCard title="Illustration Design" count={statCounts.illustrations} />
     </div>
   );
 };

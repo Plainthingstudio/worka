@@ -28,7 +28,7 @@ const BriefsFilter: React.FC<BriefsFilterProps> = ({
             <SelectItem value="all">All Types</SelectItem>
             <SelectItem value="UI Design">UI Design</SelectItem>
             <SelectItem value="Graphic Design">Graphic Design</SelectItem>
-            <SelectItem value="Illustrations">Illustrations</SelectItem>
+            <SelectItem value="Illustration Design">Illustration Design</SelectItem>
           </SelectContent>
         </Select>
       </div>

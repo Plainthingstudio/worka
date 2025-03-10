@@ -19,8 +19,9 @@ export const useBriefs = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // If user is logged in, fetch briefs from Supabase using our function
+      // If user is logged in, fetch briefs from Supabase
       if (user) {
+        // Use the database function that combines all brief types
         const { data, error } = await supabase.rpc('get_all_briefs', {
           user_uuid: user.id
         });

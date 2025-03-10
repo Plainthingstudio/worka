@@ -20,7 +20,6 @@ const BriefsTable: React.FC<BriefsTableProps> = ({ briefs, onView, onDownload, o
         return <LayoutDashboard className="h-4 w-4 text-blue-500" />;
       case "Graphic Design":
         return <Palette className="h-4 w-4 text-purple-500" />;
-      case "Illustrations":
       case "Illustration Design":
         return <PencilRuler className="h-4 w-4 text-amber-500" />;
       default:
