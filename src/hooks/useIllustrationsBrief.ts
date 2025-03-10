@@ -19,6 +19,7 @@ export interface IllustrationBriefFormValues {
   competitor2: string;
   competitor3: string;
   competitor4: string;
+  hasBrandGuidelines: string;
   brandGuidelines: string;
   reference1: string;
   reference2: string;
@@ -52,7 +53,7 @@ interface BriefDataForSupabase {
   reference4: string;
   general_style: string;
   color_preferences: string;
-  has_brand_guidelines: string;
+  brand_guidelines: string;
   completion_deadline: string;
   illustrations_purpose: string;
   illustrations_for: string;
@@ -93,6 +94,11 @@ export const useIllustrationsBrief = () => {
       // Check if user is logged in - optional for public form
       const { data: { user } } = await supabase.auth.getUser();
 
+      // Handle the brand guidelines based on the radio selection
+      const brandGuidelinesValue = formData.hasBrandGuidelines === "Yes" 
+        ? formData.brandGuidelines 
+        : "No brand guidelines available";
+
       // Prepare data for Supabase with correct column names
       const briefData: BriefDataForSupabase = {
         name: formData.name,
@@ -111,7 +117,7 @@ export const useIllustrationsBrief = () => {
         reference4: formData.reference4,
         general_style: formData.generalStyle,
         color_preferences: formData.colorPreferences,
-        has_brand_guidelines: formData.brandGuidelines,
+        brand_guidelines: brandGuidelinesValue,
         completion_deadline: formData.completionDeadline,
         illustrations_purpose: formData.illustrationsPurpose,
         illustrations_for: formData.illustrationsFor,

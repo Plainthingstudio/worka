@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Card } from "@/components/ui/card";
@@ -26,6 +27,7 @@ const IllustrationsBrief = () => {
       competitor2: "",
       competitor3: "",
       competitor4: "",
+      hasBrandGuidelines: "No",
       brandGuidelines: "",
       reference1: "",
       reference2: "",
