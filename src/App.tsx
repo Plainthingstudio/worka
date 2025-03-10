@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
@@ -65,6 +66,14 @@ function App() {
           <Routes>
             <Route path="/" element={isAuthenticated() ? <Navigate to="/dashboard" replace /> : <Navigate to="/auth" replace />} />
             <Route path="/auth" element={<Auth />} />
+            
+            {/* Public routes - no authentication required */}
+            <Route path="/briefs/ui-design" element={<UIDesignBrief />} />
+            <Route path="/briefs/graphic-design" element={<GraphicDesignBrief />} />
+            <Route path="/briefs/illustrations" element={<IllustrationsBrief />} />
+            <Route path="/thank-you" element={<ThankYou />} />
+            
+            {/* Protected routes - require authentication */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
             <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
@@ -74,10 +83,6 @@ function App() {
             <Route path="/invoices/new" element={<ProtectedRoute><InvoiceForm /></ProtectedRoute>} />
             <Route path="/invoices/:invoiceId" element={<ProtectedRoute><InvoiceDetails /></ProtectedRoute>} />
             <Route path="/briefs" element={<ProtectedRoute><Briefs /></ProtectedRoute>} />
-            <Route path="/briefs/ui-design" element={<ProtectedRoute><UIDesignBrief /></ProtectedRoute>} />
-            <Route path="/briefs/graphic-design" element={<ProtectedRoute><GraphicDesignBrief /></ProtectedRoute>} />
-            <Route path="/briefs/illustrations" element={<ProtectedRoute><IllustrationsBrief /></ProtectedRoute>} />
-            <Route path="/thank-you" element={<ProtectedRoute><ThankYou /></ProtectedRoute>} />
             <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
