@@ -225,6 +225,213 @@ export type Database = {
         }
         Relationships: []
       }
+      graphic_design_briefs: {
+        Row: {
+          about_company: string | null
+          barrier_to_entry: string | null
+          brand_positioning: string | null
+          company_name: string
+          competitor1: string | null
+          competitor2: string | null
+          competitor3: string | null
+          competitor4: string | null
+          digital_media: Json | null
+          email: string
+          features_and_benefits: string | null
+          id: string
+          logo_feelings: Json | null
+          logo_type: string | null
+          market_category: string | null
+          name: string
+          print_media: Json | null
+          products_services: string | null
+          reference1: string | null
+          reference2: string | null
+          reference3: string | null
+          reference4: string | null
+          services: Json | null
+          slogan: string | null
+          specific_imagery: string | null
+          status: string
+          submission_date: string
+          target_age: string | null
+          target_demography: string | null
+          target_gender: string | null
+          target_personality: string | null
+          target_profession: string | null
+          user_id: string | null
+          vision_mission: string | null
+        }
+        Insert: {
+          about_company?: string | null
+          barrier_to_entry?: string | null
+          brand_positioning?: string | null
+          company_name: string
+          competitor1?: string | null
+          competitor2?: string | null
+          competitor3?: string | null
+          competitor4?: string | null
+          digital_media?: Json | null
+          email: string
+          features_and_benefits?: string | null
+          id?: string
+          logo_feelings?: Json | null
+          logo_type?: string | null
+          market_category?: string | null
+          name: string
+          print_media?: Json | null
+          products_services?: string | null
+          reference1?: string | null
+          reference2?: string | null
+          reference3?: string | null
+          reference4?: string | null
+          services?: Json | null
+          slogan?: string | null
+          specific_imagery?: string | null
+          status?: string
+          submission_date?: string
+          target_age?: string | null
+          target_demography?: string | null
+          target_gender?: string | null
+          target_personality?: string | null
+          target_profession?: string | null
+          user_id?: string | null
+          vision_mission?: string | null
+        }
+        Update: {
+          about_company?: string | null
+          barrier_to_entry?: string | null
+          brand_positioning?: string | null
+          company_name?: string
+          competitor1?: string | null
+          competitor2?: string | null
+          competitor3?: string | null
+          competitor4?: string | null
+          digital_media?: Json | null
+          email?: string
+          features_and_benefits?: string | null
+          id?: string
+          logo_feelings?: Json | null
+          logo_type?: string | null
+          market_category?: string | null
+          name?: string
+          print_media?: Json | null
+          products_services?: string | null
+          reference1?: string | null
+          reference2?: string | null
+          reference3?: string | null
+          reference4?: string | null
+          services?: Json | null
+          slogan?: string | null
+          specific_imagery?: string | null
+          status?: string
+          submission_date?: string
+          target_age?: string | null
+          target_demography?: string | null
+          target_gender?: string | null
+          target_personality?: string | null
+          target_profession?: string | null
+          user_id?: string | null
+          vision_mission?: string | null
+        }
+        Relationships: []
+      }
+      illustration_design_briefs: {
+        Row: {
+          about_company: string | null
+          brand_guidelines: string | null
+          color_preferences: string | null
+          company_name: string
+          competitor1: string | null
+          competitor2: string | null
+          competitor3: string | null
+          competitor4: string | null
+          completion_deadline: string | null
+          deliverables: Json | null
+          email: string
+          general_style: string | null
+          id: string
+          illustration_details: Json | null
+          illustrations_count: number | null
+          illustrations_for: string | null
+          illustrations_purpose: string | null
+          illustrations_style: string | null
+          like_dislike_design: string | null
+          name: string
+          phone: string | null
+          reference1: string | null
+          reference2: string | null
+          reference3: string | null
+          reference4: string | null
+          status: string
+          submission_date: string
+          target_audience: string | null
+          user_id: string | null
+        }
+        Insert: {
+          about_company?: string | null
+          brand_guidelines?: string | null
+          color_preferences?: string | null
+          company_name: string
+          competitor1?: string | null
+          competitor2?: string | null
+          competitor3?: string | null
+          competitor4?: string | null
+          completion_deadline?: string | null
+          deliverables?: Json | null
+          email: string
+          general_style?: string | null
+          id?: string
+          illustration_details?: Json | null
+          illustrations_count?: number | null
+          illustrations_for?: string | null
+          illustrations_purpose?: string | null
+          illustrations_style?: string | null
+          like_dislike_design?: string | null
+          name: string
+          phone?: string | null
+          reference1?: string | null
+          reference2?: string | null
+          reference3?: string | null
+          reference4?: string | null
+          status?: string
+          submission_date?: string
+          target_audience?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          about_company?: string | null
+          brand_guidelines?: string | null
+          color_preferences?: string | null
+          company_name?: string
+          competitor1?: string | null
+          competitor2?: string | null
+          competitor3?: string | null
+          competitor4?: string | null
+          completion_deadline?: string | null
+          deliverables?: Json | null
+          email?: string
+          general_style?: string | null
+          id?: string
+          illustration_details?: Json | null
+          illustrations_count?: number | null
+          illustrations_for?: string | null
+          illustrations_purpose?: string | null
+          illustrations_style?: string | null
+          like_dislike_design?: string | null
+          name?: string
+          phone?: string | null
+          reference1?: string | null
+          reference2?: string | null
+          reference3?: string | null
+          reference4?: string | null
+          status?: string
+          submission_date?: string
+          target_audience?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       invoice_items: {
         Row: {
           amount: number
@@ -500,12 +707,146 @@ export type Database = {
         }
         Relationships: []
       }
+      ui_design_briefs: {
+        Row: {
+          about_company: string | null
+          brand_guidelines_details: string | null
+          color_preferences: string | null
+          company_name: string
+          competitor1: string | null
+          competitor2: string | null
+          competitor3: string | null
+          competitor4: string | null
+          completion_deadline: string | null
+          current_website: string | null
+          development_service: string | null
+          email: string
+          existing_brand_assets: string | null
+          font_preferences: string | null
+          general_style: string | null
+          has_brand_guidelines: string | null
+          has_wireframe: string | null
+          id: string
+          name: string
+          page_count: number | null
+          page_details: Json | null
+          project_description: string | null
+          project_size: string | null
+          project_type: string | null
+          reference1: string | null
+          reference2: string | null
+          reference3: string | null
+          reference4: string | null
+          status: string
+          style_preferences: string | null
+          submission_date: string
+          target_audience: string | null
+          user_id: string | null
+          website_content: string | null
+          website_purpose: string | null
+          website_type_interest: Json | null
+          wireframe_details: string | null
+        }
+        Insert: {
+          about_company?: string | null
+          brand_guidelines_details?: string | null
+          color_preferences?: string | null
+          company_name: string
+          competitor1?: string | null
+          competitor2?: string | null
+          competitor3?: string | null
+          competitor4?: string | null
+          completion_deadline?: string | null
+          current_website?: string | null
+          development_service?: string | null
+          email: string
+          existing_brand_assets?: string | null
+          font_preferences?: string | null
+          general_style?: string | null
+          has_brand_guidelines?: string | null
+          has_wireframe?: string | null
+          id?: string
+          name: string
+          page_count?: number | null
+          page_details?: Json | null
+          project_description?: string | null
+          project_size?: string | null
+          project_type?: string | null
+          reference1?: string | null
+          reference2?: string | null
+          reference3?: string | null
+          reference4?: string | null
+          status?: string
+          style_preferences?: string | null
+          submission_date?: string
+          target_audience?: string | null
+          user_id?: string | null
+          website_content?: string | null
+          website_purpose?: string | null
+          website_type_interest?: Json | null
+          wireframe_details?: string | null
+        }
+        Update: {
+          about_company?: string | null
+          brand_guidelines_details?: string | null
+          color_preferences?: string | null
+          company_name?: string
+          competitor1?: string | null
+          competitor2?: string | null
+          competitor3?: string | null
+          competitor4?: string | null
+          completion_deadline?: string | null
+          current_website?: string | null
+          development_service?: string | null
+          email?: string
+          existing_brand_assets?: string | null
+          font_preferences?: string | null
+          general_style?: string | null
+          has_brand_guidelines?: string | null
+          has_wireframe?: string | null
+          id?: string
+          name?: string
+          page_count?: number | null
+          page_details?: Json | null
+          project_description?: string | null
+          project_size?: string | null
+          project_type?: string | null
+          reference1?: string | null
+          reference2?: string | null
+          reference3?: string | null
+          reference4?: string | null
+          status?: string
+          style_preferences?: string | null
+          submission_date?: string
+          target_audience?: string | null
+          user_id?: string | null
+          website_content?: string | null
+          website_purpose?: string | null
+          website_type_interest?: Json | null
+          wireframe_details?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_all_briefs: {
+        Args: {
+          user_uuid: string
+        }
+        Returns: {
+          id: string
+          user_id: string
+          name: string
+          email: string
+          company_name: string
+          type: string
+          status: string
+          submission_date: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

@@ -78,7 +78,6 @@ export const useGraphicDesignBrief = () => {
         name: data.name || "",
         email: data.email || "",
         company_name: data.companyName || "",
-        type: "Graphic Design",
         status: "New",
         about_company: data.aboutCompany || "",
         vision_mission: data.visionMission || "",
@@ -115,9 +114,9 @@ export const useGraphicDesignBrief = () => {
         briefData.user_id = user.id;
       }
 
-      // Insert into Supabase
+      // Insert into Supabase - now using the specific table for graphic design briefs
       const { error } = await supabase
-        .from('briefs')
+        .from('graphic_design_briefs')
         .insert(briefData);
 
       if (error) throw error;

@@ -19,25 +19,26 @@ export const useBriefs = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      let query = supabase
-        .from('briefs')
-        .select('*')
-        .order('submission_date', { ascending: false });
-
-      // If user is logged in, only fetch their briefs
+      // If user is logged in, fetch briefs from Supabase using our function
       if (user) {
-        query = query.eq('user_id', user.id);
+        const { data, error } = await supabase.rpc('get_all_briefs', {
+          user_uuid: user.id
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        // Transform data to match Brief interface
+        const formattedBriefs: Brief[] = data;
+        setBriefs(formattedBriefs);
+      } else {
+        // For demo/testing purposes, load from localStorage if not logged in
+        const storedBriefs = localStorage.getItem("briefs");
+        if (storedBriefs) {
+          setBriefs(JSON.parse(storedBriefs));
+        }
       }
-
-      const { data, error } = await query;
-
-      if (error) {
-        throw error;
-      }
-
-      // Transform data to match Brief interface
-      const formattedBriefs: Brief[] = data;
-      setBriefs(formattedBriefs);
     } catch (error) {
       console.error("Error fetching briefs:", error);
       toast.error("Failed to load briefs");
@@ -54,16 +55,47 @@ export const useBriefs = () => {
 
   const deleteBrief = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('briefs')
-        .delete()
-        .eq('id', id);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // We need to determine which table to delete from
+        const brief = briefs.find(b => b.id === id);
+        if (!brief) throw new Error("Brief not found");
+        
+        let error;
+        
+        // Delete from the appropriate table based on type
+        if (brief.type === "UI Design") {
+          const result = await supabase
+            .from('ui_design_briefs')
+            .delete()
+            .eq('id', id);
+          error = result.error;
+        } else if (brief.type === "Graphic Design") {
+          const result = await supabase
+            .from('graphic_design_briefs')
+            .delete()
+            .eq('id', id);
+          error = result.error;
+        } else if (brief.type === "Illustration Design") {
+          const result = await supabase
+            .from('illustration_design_briefs')
+            .delete()
+            .eq('id', id);
+          error = result.error;
+        }
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        // For demo/local mode
+        const storedBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
+        const updatedBriefs = storedBriefs.filter((brief: any) => brief.id !== id);
+        localStorage.setItem("briefs", JSON.stringify(updatedBriefs));
+      }
 
       setBriefs(briefs.filter(brief => brief.id !== id));
       toast.success("Brief deleted successfully");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting brief:", error);
       toast.error("Failed to delete brief");
     }

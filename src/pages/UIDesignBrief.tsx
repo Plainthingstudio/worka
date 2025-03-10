@@ -110,7 +110,6 @@ const UIDesignBrief = () => {
         name: formData.name,
         email: formData.email,
         company_name: formData.companyName,
-        type: "UI Design",
         status: "New",
         about_company: formData.aboutCompany,
         target_audience: formData.targetAudience,
@@ -151,9 +150,9 @@ const UIDesignBrief = () => {
         briefData.user_id = user.id;
       }
 
-      // Insert into Supabase
+      // Insert into Supabase - now using the specific table for UI design briefs
       const { error } = await supabase
-        .from('briefs')
+        .from('ui_design_briefs')
         .insert(briefData);
 
       if (error) throw error;

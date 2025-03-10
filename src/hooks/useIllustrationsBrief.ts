@@ -38,7 +38,7 @@ interface BriefDataForSupabase {
   name: string;
   email: string;
   company_name: string;
-  type: string;
+  type?: string;
   status: string;
   about_company: string;
   target_audience: string;
@@ -98,7 +98,6 @@ export const useIllustrationsBrief = () => {
         name: formData.name,
         email: formData.email,
         company_name: formData.companyName,
-        type: "Illustration Design",
         status: "New",
         about_company: formData.aboutCompany,
         target_audience: formData.targetAudience,
@@ -134,9 +133,9 @@ export const useIllustrationsBrief = () => {
         briefData.user_id = user.id;
       }
 
-      // Insert into Supabase
+      // Insert into Supabase - now using the specific table for illustration design briefs
       const { error } = await supabase
-        .from('briefs')
+        .from('illustration_design_briefs')
         .insert(briefData);
 
       if (error) throw error;
