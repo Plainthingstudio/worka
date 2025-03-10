@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
@@ -22,7 +21,6 @@ import NotFound from "./pages/NotFound";
 import Team from "./pages/Team";
 import "./App.css";
 
-// Simple auth check that doesn't require a Supabase call
 const isAuthenticated = () => {
   return localStorage.getItem("isLoggedIn") === "true";
 };
@@ -31,8 +29,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isChecking, setIsChecking] = useState(true);
   
   useEffect(() => {
-    // Use a short timeout to prevent immediate flicker
-    // This creates a smoother transition
     const timer = setTimeout(() => {
       setIsChecking(false);
     }, 100);
@@ -77,11 +73,10 @@ function App() {
             <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
             <Route path="/invoices/new" element={<ProtectedRoute><InvoiceForm /></ProtectedRoute>} />
             <Route path="/invoices/:invoiceId" element={<ProtectedRoute><InvoiceDetails /></ProtectedRoute>} />
-            {/* Removed: <Route path="/invoices/:invoiceId/edit" element={<ProtectedRoute><InvoiceForm /></ProtectedRoute>} /> */}
             <Route path="/briefs" element={<ProtectedRoute><Briefs /></ProtectedRoute>} />
-            <Route path="/briefs/ui" element={<ProtectedRoute><UIDesignBrief /></ProtectedRoute>} />
-            <Route path="/briefs/graphic" element={<ProtectedRoute><GraphicDesignBrief /></ProtectedRoute>} />
-            <Route path="/briefs/illustration" element={<ProtectedRoute><IllustrationsBrief /></ProtectedRoute>} />
+            <Route path="/briefs/ui-design" element={<ProtectedRoute><UIDesignBrief /></ProtectedRoute>} />
+            <Route path="/briefs/graphic-design" element={<ProtectedRoute><GraphicDesignBrief /></ProtectedRoute>} />
+            <Route path="/briefs/illustrations" element={<ProtectedRoute><IllustrationsBrief /></ProtectedRoute>} />
             <Route path="/thank-you" element={<ProtectedRoute><ThankYou /></ProtectedRoute>} />
             <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
