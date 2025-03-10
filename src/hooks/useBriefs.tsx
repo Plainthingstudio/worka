@@ -19,19 +19,25 @@ export const useBriefs = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // If user is logged in, fetch briefs from Supabase
       if (user) {
-        // Use the database function that combines all brief types
+        // Debug the RPC function
+        console.log("Fetching briefs for user:", user.id);
+        
+        // Use the database function to get all briefs
         const { data, error } = await supabase.rpc('get_all_briefs', {
           user_uuid: user.id
         });
 
         if (error) {
+          console.error("RPC Error:", error);
           throw error;
         }
 
+        // Log the returned data
+        console.log("Briefs data from RPC:", data);
+
         // Transform data to match Brief interface
-        const formattedBriefs: Brief[] = data;
+        const formattedBriefs: Brief[] = data || [];
         setBriefs(formattedBriefs);
       } else {
         // For demo/testing purposes, load from localStorage if not logged in
@@ -44,14 +50,76 @@ export const useBriefs = () => {
       console.error("Error fetching briefs:", error);
       toast.error("Failed to load briefs");
       
-      // Fallback to localStorage for demo purposes
-      const storedBriefs = localStorage.getItem("briefs");
-      if (storedBriefs) {
-        setBriefs(JSON.parse(storedBriefs));
+      // Fallback to direct queries if RPC fails
+      try {
+        if (await fetchBriefsDirectly()) {
+          console.log("Successfully fetched briefs directly");
+        }
+      } catch (directError) {
+        console.error("Direct fetching also failed:", directError);
+        
+        // Final fallback to localStorage
+        const storedBriefs = localStorage.getItem("briefs");
+        if (storedBriefs) {
+          setBriefs(JSON.parse(storedBriefs));
+        }
       }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Fallback method to fetch directly from tables instead of using RPC
+  const fetchBriefsDirectly = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+
+    console.log("Fetching briefs directly from tables for user:", user.id);
+    
+    // Fetch from UI Design briefs
+    const { data: uiData, error: uiError } = await supabase
+      .from('ui_design_briefs')
+      .select('*')
+      .eq('user_id', user.id);
+    
+    if (uiError) console.error("UI briefs error:", uiError);
+    
+    // Fetch from Graphic Design briefs
+    const { data: graphicData, error: graphicError } = await supabase
+      .from('graphic_design_briefs')
+      .select('*')
+      .eq('user_id', user.id);
+    
+    if (graphicError) console.error("Graphic briefs error:", graphicError);
+    
+    // Fetch from Illustration Design briefs
+    const { data: illustrationData, error: illustrationError } = await supabase
+      .from('illustration_design_briefs')
+      .select('*')
+      .eq('user_id', user.id);
+    
+    if (illustrationError) console.error("Illustration briefs error:", illustrationError);
+    
+    // Transform and combine all data
+    const allBriefs: Brief[] = [
+      ...(uiData || []).map((brief: any) => ({
+        ...brief,
+        type: "UI Design"
+      })),
+      ...(graphicData || []).map((brief: any) => ({
+        ...brief,
+        type: "Graphic Design"
+      })),
+      ...(illustrationData || []).map((brief: any) => ({
+        ...brief,
+        type: "Illustration Design"
+      }))
+    ];
+    
+    console.log("Combined briefs from direct fetching:", allBriefs);
+    
+    setBriefs(allBriefs);
+    return allBriefs.length > 0;
   };
 
   const deleteBrief = async (id: string) => {
