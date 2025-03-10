@@ -61,7 +61,7 @@ export const useIllustrationsBrief = () => {
       const { data: { user } } = await supabase.auth.getUser();
 
       // Prepare data for Supabase with correct column names
-      const briefData = {
+      const briefData: any = {
         name: formData.name,
         email: formData.email,
         company_name: formData.companyName,
@@ -91,7 +91,7 @@ export const useIllustrationsBrief = () => {
         submission_date: new Date().toISOString()
       };
 
-      // If user is logged in, add user_id - optional for public forms
+      // If user is logged in, add user_id
       if (user) {
         briefData.user_id = user.id;
       }
