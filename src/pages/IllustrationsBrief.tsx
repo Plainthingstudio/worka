@@ -102,8 +102,11 @@ const IllustrationsBrief = () => {
             .replace(/webm/i, '.WebM');
         });
 
+      // Try to get the current user - if logged in, attach user_id
+      const { data: { user } } = await supabase.auth.getUser();
+
       // Prepare data for Supabase with correct column names
-      const briefData = {
+      const briefData: any = {
         name: formData.name,
         email: formData.email,
         company_name: formData.companyName,
@@ -130,8 +133,14 @@ const IllustrationsBrief = () => {
         illustrations_count: formData.illustrationsCount,
         illustration_details: formData.illustrationDetails,
         like_dislike_design: formData.likeDislikeDesign,
-        deliverables: selectedDeliverables
+        deliverables: selectedDeliverables,
+        submission_date: new Date().toISOString()
       };
+
+      // If user is logged in, add user_id
+      if (user) {
+        briefData.user_id = user.id;
+      }
 
       // Insert into Supabase
       const { error } = await supabase

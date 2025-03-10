@@ -44,15 +44,17 @@ export const useBriefs = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) {
-        throw new Error("No authenticated user");
-      }
-
-      const { data, error } = await supabase
+      let query = supabase
         .from('briefs')
         .select('*')
-        .eq('user_id', user.id)
         .order('submission_date', { ascending: false });
+
+      // If user is logged in, only fetch their briefs
+      if (user) {
+        query = query.eq('user_id', user.id);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         throw error;

@@ -1,51 +1,37 @@
 
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { Card } from "@/components/ui/card";
 import UIStepOne from "@/components/ui-brief-form/UIStepOne";
 import UIStepTwo from "@/components/ui-brief-form/UIStepTwo";
 import UIStepThree from "@/components/ui-brief-form/UIStepThree";
+import { supabase } from "@/integrations/supabase/client";
 
 const UIDesignBrief = () => {
+  const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
+
   const methods = useForm({
     defaultValues: {
-      // User contact information
+      type: "UI Design",
       name: "",
       email: "",
-      
-      // Step One defaults
       companyName: "",
       aboutCompany: "",
+      targetAudience: "",
+      websitePurpose: "",
+      projectDescription: "",
+      currentWebsite: "",
       projectType: "",
       projectSize: "",
-      websiteTypeInterest: {
-        agency: false,
-        portfolio: false,
-        finance: false,
-        saas: false,
-        ecommerce: false,
-        web3: false,
-        crypto: false,
-        webapp: false,
-        desktopapp: false,
-        mobileapp: false,
-        other: false
-      },
-      currentWebsite: "",
+      websiteTypeInterest: {},
       competitor1: "",
       competitor2: "",
       competitor3: "",
       competitor4: "",
-      
-      // Step Two defaults
-      targetAudience: "",
-      websitePurpose: "",
-      projectDescription: "",
-      // Removed keyFeatures
       reference1: "",
       reference2: "",
       reference3: "",
@@ -59,83 +45,143 @@ const UIDesignBrief = () => {
       hasWireframe: "",
       wireframeDetails: "",
       stylePreferences: "",
-      // Removed responsiveRequirements
-      
-      // Step Three defaults
       pageCount: 1,
-      pageDetails: [],
+      pageDetails: [{ name: "", description: "" }],
       websiteContent: "",
       developmentService: "",
-      completionDeadline: ""
-    }
+      completionDeadline: "",
+    },
+    mode: "onChange",
   });
 
-  const onSubmit = (data: any) => {
-    // Process checkbox group
-    const processCheckboxGroup = (group: Record<string, boolean>) => {
-      if (!group) return [];
+  const handleNext = async () => {
+    if (step === 1) {
+      const isValid = await methods.trigger([
+        "name", 
+        "email", 
+        "companyName", 
+        "aboutCompany",
+        "projectType",
+        "projectSize"
+      ]);
       
-      return Object.entries(group)
-        .filter(([_, checked]) => checked === true)
-        .map(([key]) => key.replace(/_/g, ' '));
-    };
-
-    // Get current date and time
-    const now = new Date();
-    // Store the ISO string directly - we'll format it when displaying
-    const submissionDate = now.toISOString();
-
-    const briefData = {
-      ...data,
-      id: Date.now(),
-      submissionDate: submissionDate,
-      status: "New",
-      type: "UI Design", // Mark this as a UI design brief
-      // Ensure the name and email are included
-      name: data.name || "",
-      email: data.email || "",
-      // Process checkbox groups
-      websiteTypeInterest: processCheckboxGroup(data.websiteTypeInterest || {})
-    };
-
-    // Get existing briefs
-    const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
-    
-    // Add new brief
-    localStorage.setItem("briefs", JSON.stringify([...existingBriefs, briefData]));
-    
-    // Store last submitted brief type
-    localStorage.setItem("lastSubmittedBriefType", "UI Design");
-
-    console.log("Submitted UI brief data:", briefData);
-    toast.success("UI Design Brief submitted successfully!");
-    navigate("/thank-you");
+      if (isValid) {
+        setStep(2);
+      } else {
+        toast.error("Please fill in all required fields");
+      }
+    } else if (step === 2) {
+      const isValid = await methods.trigger([
+        "targetAudience", 
+        "websitePurpose", 
+        "projectDescription",
+        "generalStyle"
+      ]);
+      
+      if (isValid) {
+        setStep(3);
+      } else {
+        toast.error("Please fill in all required fields");
+      }
+    }
   };
 
-  const renderStep = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <UIStepOne
-            onNext={() => setCurrentStep(2)}
-          />
-        );
-      case 2:
-        return (
-          <UIStepTwo
-            onNext={() => setCurrentStep(3)}
-            onPrevious={() => setCurrentStep(1)}
-          />
-        );
-      case 3:
-        return (
-          <UIStepThree
-            onPrevious={() => setCurrentStep(2)}
-            onSubmit={methods.handleSubmit(onSubmit)}
-          />
-        );
-      default:
-        return null;
+  const handlePrevious = () => {
+    setStep(step - 1);
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const formData = methods.getValues();
+      
+      // Process the website type interests
+      const websiteTypeInterests = Object.entries(formData.websiteTypeInterest || {})
+        .filter(([_, isSelected]) => isSelected)
+        .map(([key]) => {
+          return key
+            .split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        });
+      
+      // Prepare data for Supabase with correct column names
+      const briefData = {
+        name: formData.name,
+        email: formData.email,
+        company_name: formData.companyName,
+        type: "UI Design",
+        status: "New",
+        about_company: formData.aboutCompany,
+        target_audience: formData.targetAudience,
+        website_purpose: formData.websitePurpose,
+        project_description: formData.projectDescription,
+        current_website: formData.currentWebsite,
+        project_type: formData.projectType,
+        project_size: formData.projectSize,
+        website_type_interest: websiteTypeInterests.length > 0 ? websiteTypeInterests : null,
+        competitor1: formData.competitor1,
+        competitor2: formData.competitor2,
+        competitor3: formData.competitor3,
+        competitor4: formData.competitor4,
+        reference1: formData.reference1,
+        reference2: formData.reference2,
+        reference3: formData.reference3,
+        reference4: formData.reference4,
+        general_style: formData.generalStyle,
+        color_preferences: formData.colorPreferences,
+        font_preferences: formData.fontPreferences,
+        existing_brand_assets: formData.existingBrandAssets,
+        has_brand_guidelines: formData.hasBrandGuidelines,
+        brand_guidelines_details: formData.brandGuidelinesDetails,
+        has_wireframe: formData.hasWireframe,
+        wireframe_details: formData.wireframeDetails,
+        style_preferences: formData.stylePreferences,
+        page_count: formData.pageCount,
+        page_details: formData.pageDetails,
+        website_content: formData.websiteContent,
+        development_service: formData.developmentService,
+        completion_deadline: formData.completionDeadline,
+        submission_date: new Date().toISOString()
+      };
+
+      // Try to get the current user - if logged in, attach user_id
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        briefData.user_id = user.id;
+      }
+
+      // Insert into Supabase
+      const { error } = await supabase
+        .from('briefs')
+        .insert(briefData);
+
+      if (error) throw error;
+
+      // Also save to localStorage for backward compatibility
+      const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
+      const localStorageBrief = {
+        ...formData,
+        id: Date.now(),
+        submissionDate: new Date().toISOString(),
+        status: "New",
+        type: "UI Design"
+      };
+      localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
+      
+      // Save the brief type for the thank you page
+      localStorage.setItem("lastSubmittedBriefType", "UI Design");
+      
+      // Show success message
+      toast.success("UI design brief submitted successfully!");
+      
+      // Navigate to the thank you page
+      navigate("/thank-you");
+    } catch (error: any) {
+      console.error("Error submitting brief:", error);
+      toast.error(error.message || "Failed to submit brief");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -146,19 +192,21 @@ const UIDesignBrief = () => {
           <div className="mb-8">
             <h1 className="text-2xl font-semibold mb-2">UI Design Brief</h1>
             <div className="flex gap-2">
-              {[1, 2, 3].map((step) => (
+              {[1, 2, 3].map((i) => (
                 <div
-                  key={step}
+                  key={i}
                   className={`h-2 flex-1 rounded-full ${
-                    step <= currentStep ? "bg-primary" : "bg-muted"
+                    i <= step ? "bg-primary" : "bg-muted"
                   }`}
                 />
               ))}
             </div>
           </div>
-
+          
           <FormProvider {...methods}>
-            {renderStep()}
+            {step === 1 && <UIStepOne onNext={handleNext} />}
+            {step === 2 && <UIStepTwo onNext={handleNext} onPrevious={handlePrevious} />}
+            {step === 3 && <UIStepThree onPrevious={handlePrevious} onSubmit={handleSubmit} isSubmitting={isSubmitting} />}
           </FormProvider>
         </Card>
       </div>

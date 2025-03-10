@@ -82,8 +82,11 @@ const GraphicDesignBrief = () => {
       const printMedia = processCheckboxGroup(data.printMedia || {});
       const digitalMedia = processCheckboxGroup(data.digitalMedia || {});
 
+      // Try to get the current user - if logged in, attach user_id
+      const { data: { user } } = await supabase.auth.getUser();
+
       // Prepare data for Supabase with correct column names
-      const briefData = {
+      const briefData: any = {
         name: data.name || "",
         email: data.email || "",
         company_name: data.companyName || "",
@@ -115,8 +118,14 @@ const GraphicDesignBrief = () => {
         specific_imagery: data.specificImagery || "",
         services: services,
         print_media: printMedia,
-        digital_media: digitalMedia
+        digital_media: digitalMedia,
+        submission_date: new Date().toISOString()
       };
+
+      // If user is logged in, add user_id
+      if (user) {
+        briefData.user_id = user.id;
+      }
 
       // Insert into Supabase
       const { error } = await supabase

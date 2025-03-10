@@ -61,7 +61,7 @@ export type Database = {
           target_personality: string | null
           target_profession: string | null
           type: string
-          user_id: string
+          user_id: string | null
           vision_mission: string | null
           website_content: string | null
           website_purpose: string | null
@@ -119,7 +119,7 @@ export type Database = {
           target_personality?: string | null
           target_profession?: string | null
           type: string
-          user_id: string
+          user_id?: string | null
           vision_mission?: string | null
           website_content?: string | null
           website_purpose?: string | null
@@ -177,7 +177,7 @@ export type Database = {
           target_personality?: string | null
           target_profession?: string | null
           type?: string
-          user_id?: string
+          user_id?: string | null
           vision_mission?: string | null
           website_content?: string | null
           website_purpose?: string | null
