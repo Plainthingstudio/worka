@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -44,7 +43,6 @@ export const useIllustrationsBrief = () => {
       const selectedDeliverables = Object.entries(formData.deliverables || {})
         .filter(([_, isSelected]) => isSelected)
         .map(([key, _]) => {
-          // Convert back to original format
           return key
             .replace(/_/g, ' ')
             .split(' ')
@@ -62,7 +60,7 @@ export const useIllustrationsBrief = () => {
       const { data: { user } } = await supabase.auth.getUser();
 
       // Prepare data for Supabase with correct column names
-      const briefData: any = {
+      const briefData = {
         name: formData.name,
         email: formData.email,
         company_name: formData.companyName,
@@ -82,7 +80,6 @@ export const useIllustrationsBrief = () => {
         color_preferences: formData.colorPreferences,
         has_brand_guidelines: formData.brandGuidelines,
         completion_deadline: formData.completionDeadline,
-        // Custom fields for illustrations
         illustrations_purpose: formData.illustrationsPurpose,
         illustrations_for: formData.illustrationsFor,
         illustrations_style: formData.illustrationsStyle,
@@ -105,7 +102,7 @@ export const useIllustrationsBrief = () => {
 
       if (error) throw error;
 
-      // Also save to localStorage for backward compatibility
+      // Save to localStorage for backward compatibility
       const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
       const localStorageBrief = {
         ...formData,

@@ -23,6 +23,7 @@ export type Database = {
           competitor4: string | null
           completion_deadline: string | null
           current_website: string | null
+          deliverables: Json | null
           development_service: string | null
           digital_media: Json | null
           email: string
@@ -81,6 +82,7 @@ export type Database = {
           competitor4?: string | null
           completion_deadline?: string | null
           current_website?: string | null
+          deliverables?: Json | null
           development_service?: string | null
           digital_media?: Json | null
           email: string
@@ -139,6 +141,7 @@ export type Database = {
           competitor4?: string | null
           completion_deadline?: string | null
           current_website?: string | null
+          deliverables?: Json | null
           development_service?: string | null
           digital_media?: Json | null
           email?: string
