@@ -1,5 +1,6 @@
+
 import React, { useEffect } from "react";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 import { Download } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,27 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
     }
   }, [open, briefDetails]);
 
+  // Safely format date function
+  const formatDate = (dateValue: any): string => {
+    if (!dateValue) return "Not available";
+    
+    try {
+      // If it's a string, try to parse it
+      const dateObj = typeof dateValue === 'string' 
+        ? parseISO(dateValue) 
+        : new Date(dateValue);
+      
+      // Check if date is valid before formatting
+      if (isValid(dateObj)) {
+        return format(dateObj, "MMMM d, yyyy");
+      }
+      return "Invalid date";
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "Date format error";
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -64,7 +86,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
               <div className="space-y-2">
                 <p><span className="font-medium">Name:</span> {briefDetails.name}</p>
                 <p><span className="font-medium">Email:</span> {briefDetails.email}</p>
-                <p><span className="font-medium">Company:</span> {briefDetails.companyName}</p>
+                <p><span className="font-medium">Company:</span> {briefDetails.companyName || briefDetails.company_name}</p>
                 {briefDetails.phone && <p><span className="font-medium">Phone:</span> {briefDetails.phone}</p>}
               </div>
             </div>
@@ -75,7 +97,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
                 <p><span className="font-medium">Status:</span> {briefDetails.status}</p>
                 <p>
                   <span className="font-medium">Submitted:</span>{" "}
-                  {format(new Date(briefDetails.submissionDate), "MMMM d, yyyy")}
+                  {formatDate(briefDetails.submissionDate || briefDetails.submission_date)}
                 </p>
               </div>
             </div>

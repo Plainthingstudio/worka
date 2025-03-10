@@ -14,7 +14,7 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
   try {
     // Log the incoming brief data for debugging
     console.log("Generating PDF with brief data:", brief);
-    console.log("Logo feelings data for PDF:", brief.logoFeelings);
+    console.log("Logo feelings data for PDF:", brief.logoFeelings || brief.logo_feelings);
     
     const doc = new jsPDF();
     let y = 20;
@@ -26,7 +26,7 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
     y = addSectionTitle(doc, "Client Information", y);
     y = addField(doc, "Name", brief.name, y);
     y = addField(doc, "Email", brief.email, y);
-    y = addField(doc, "Company", brief.companyName, y);
+    y = addField(doc, "Company", brief.companyName || brief.company_name, y);
     y = checkPageOverflow(doc, y);
 
     // Brief Information
@@ -34,15 +34,20 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
     
     // Safely format the submission date
     let submissionDateFormatted = "Not specified";
-    if (brief.submissionDate) {
-      // Try to parse the date if it's a string
-      const dateObj = typeof brief.submissionDate === 'string' 
-        ? parseISO(brief.submissionDate) 
-        : new Date(brief.submissionDate);
-      
-      // Only format if it's a valid date
-      if (isValid(dateObj)) {
-        submissionDateFormatted = format(dateObj, "MMMM dd, yyyy");
+    if (brief.submissionDate || brief.submission_date) {
+      try {
+        // Try to parse the date if it's a string
+        const dateValue = brief.submissionDate || brief.submission_date;
+        const dateObj = typeof dateValue === 'string' 
+          ? parseISO(dateValue) 
+          : new Date(dateValue);
+        
+        // Only format if it's a valid date
+        if (isValid(dateObj)) {
+          submissionDateFormatted = format(dateObj, "MMMM dd, yyyy");
+        }
+      } catch (error) {
+        console.error("Error formatting submission date:", error);
       }
     }
     
@@ -52,93 +57,96 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
 
     // Company Information
     y = addSectionTitle(doc, "Company Information", y);
-    y = addMultiParagraphField(doc, "About Company", brief.aboutCompany, y);
+    y = addMultiParagraphField(doc, "About Company", brief.aboutCompany || brief.about_company, y);
     y = checkPageOverflow(doc, y);
-    y = addMultiParagraphField(doc, "Vision & Mission", brief.visionMission, y);
+    y = addMultiParagraphField(doc, "Vision & Mission", brief.visionMission || brief.vision_mission, y);
     y = checkPageOverflow(doc, y);
     y = addMultiParagraphField(doc, "Slogan", brief.slogan, y);
     y = checkPageOverflow(doc, y);
 
     // Logo Preferences
-    if (brief.logoFeelings) {
+    const logoFeelings = brief.logoFeelings || brief.logo_feelings;
+    if (logoFeelings) {
       y = addSectionTitle(doc, "Logo Preferences", y);
       
       // Process each logo feeling attribute individually with page break checking after each
-      if (brief.logoFeelings.gender) {
-        y = addField(doc, "Feminine vs Masculine", brief.logoFeelings.gender, y);
+      if (logoFeelings.gender) {
+        y = addField(doc, "Feminine vs Masculine", logoFeelings.gender, y);
         y = checkPageOverflow(doc, y);
       }
       
-      if (brief.logoFeelings.pricing) {
-        y = addField(doc, "Economical vs Luxury", brief.logoFeelings.pricing, y);
+      if (logoFeelings.pricing) {
+        y = addField(doc, "Economical vs Luxury", logoFeelings.pricing, y);
         y = checkPageOverflow(doc, y);
       }
       
-      if (brief.logoFeelings.era) {
-        y = addField(doc, "Modern vs Classic", brief.logoFeelings.era, y);
+      if (logoFeelings.era) {
+        y = addField(doc, "Modern vs Classic", logoFeelings.era, y);
         y = checkPageOverflow(doc, y);
       }
       
-      if (brief.logoFeelings.tone) {
-        y = addField(doc, "Serious vs Playful", brief.logoFeelings.tone, y);
+      if (logoFeelings.tone) {
+        y = addField(doc, "Serious vs Playful", logoFeelings.tone, y);
         y = checkPageOverflow(doc, y);
       }
       
       // Explicitly check for complexity and add with page break check
-      if (brief.logoFeelings.complexity) {
-        console.log("Adding complexity to PDF:", brief.logoFeelings.complexity);
-        y = addField(doc, "Simple vs Complex", brief.logoFeelings.complexity, y);
+      if (logoFeelings.complexity) {
+        console.log("Adding complexity to PDF:", logoFeelings.complexity);
+        y = addField(doc, "Simple vs Complex", logoFeelings.complexity, y);
         y = checkPageOverflow(doc, y);
       }
     }
 
     // Logo Type
-    if (brief.logoType) {
-      y = addField(doc, "Logo Type", brief.logoType, y);
+    const logoType = brief.logoType || brief.logo_type;
+    if (logoType) {
+      y = addField(doc, "Logo Type", logoType, y);
       y = checkPageOverflow(doc, y);
     }
 
     // Tone
-    if (brief.tone && brief.tone.length > 0) {
-      y = addField(doc, "Tone", brief.tone.join(", "), y);
+    const tone = brief.tone;
+    if (tone && tone.length > 0) {
+      y = addField(doc, "Tone", Array.isArray(tone) ? tone.join(", ") : tone, y);
       y = checkPageOverflow(doc, y);
     }
 
     // Target Audience
     y = addSectionTitle(doc, "Target Audience", y);
-    if (brief.targetAge) {
-      y = addField(doc, "Age Range", brief.targetAge, y);
+    if (brief.targetAge || brief.target_age) {
+      y = addField(doc, "Age Range", brief.targetAge || brief.target_age, y);
       y = checkPageOverflow(doc, y);
     }
-    if (brief.targetGender) {
-      y = addField(doc, "Gender", brief.targetGender, y);
+    if (brief.targetGender || brief.target_gender) {
+      y = addField(doc, "Gender", brief.targetGender || brief.target_gender, y);
       y = checkPageOverflow(doc, y);
     }
-    if (brief.targetDemography) {
-      y = addField(doc, "Demography", brief.targetDemography, y);
+    if (brief.targetDemography || brief.target_demography) {
+      y = addField(doc, "Demography", brief.targetDemography || brief.target_demography, y);
       y = checkPageOverflow(doc, y);
     }
-    if (brief.targetProfession) {
-      y = addField(doc, "Profession", brief.targetProfession, y);
+    if (brief.targetProfession || brief.target_profession) {
+      y = addField(doc, "Profession", brief.targetProfession || brief.target_profession, y);
       y = checkPageOverflow(doc, y);
     }
-    if (brief.targetPersonality) {
-      y = addField(doc, "Personality", brief.targetPersonality, y);
+    if (brief.targetPersonality || brief.target_personality) {
+      y = addField(doc, "Personality", brief.targetPersonality || brief.target_personality, y);
       y = checkPageOverflow(doc, y);
     }
 
     // Product Information
     y = addSectionTitle(doc, "Product Information", y);
-    if (brief.productsServices) {
-      y = addMultiParagraphField(doc, "Products/Services", brief.productsServices, y);
+    if (brief.productsServices || brief.products_services) {
+      y = addMultiParagraphField(doc, "Products/Services", brief.productsServices || brief.products_services, y);
       y = checkPageOverflow(doc, y);
     }
-    if (brief.featuresAndBenefits) {
-      y = addMultiParagraphField(doc, "Features & Benefits", brief.featuresAndBenefits, y);
+    if (brief.featuresAndBenefits || brief.features_and_benefits) {
+      y = addMultiParagraphField(doc, "Features & Benefits", brief.featuresAndBenefits || brief.features_and_benefits, y);
       y = checkPageOverflow(doc, y);
     }
-    if (brief.marketCategory) {
-      y = addMultiParagraphField(doc, "Market Category", brief.marketCategory, y);
+    if (brief.marketCategory || brief.market_category) {
+      y = addMultiParagraphField(doc, "Market Category", brief.marketCategory || brief.market_category, y);
       y = checkPageOverflow(doc, y);
     }
 
@@ -189,42 +197,46 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
     // Additional Information
     y = addSectionTitle(doc, "Additional Information", y);
     
-    if (brief.brandPositioning) {
-      y = addMultiParagraphField(doc, "Brand Positioning", brief.brandPositioning, y);
+    if (brief.brandPositioning || brief.brand_positioning) {
+      y = addMultiParagraphField(doc, "Brand Positioning", brief.brandPositioning || brief.brand_positioning, y);
       y = checkPageOverflow(doc, y);
     }
-    if (brief.barrierToEntry) {
-      y = addMultiParagraphField(doc, "Barrier to Entry", brief.barrierToEntry, y);
+    if (brief.barrierToEntry || brief.barrier_to_entry) {
+      y = addMultiParagraphField(doc, "Barrier to Entry", brief.barrierToEntry || brief.barrier_to_entry, y);
       y = checkPageOverflow(doc, y);
     }
-    if (brief.specificImagery) {
-      y = addMultiParagraphField(doc, "Specific Imagery", brief.specificImagery, y);
+    if (brief.specificImagery || brief.specific_imagery) {
+      y = addMultiParagraphField(doc, "Specific Imagery", brief.specificImagery || brief.specific_imagery, y);
       y = checkPageOverflow(doc, y);
     }
 
     // Services Required
-    if (brief.services && brief.services.length > 0) {
+    const services = brief.services;
+    if (services && services.length > 0) {
       y = addSectionTitle(doc, "Services Required", y);
-      y = addField(doc, "Services", brief.services.join(", "), y);
+      y = addField(doc, "Services", Array.isArray(services) ? services.join(", ") : services, y);
       y = checkPageOverflow(doc, y);
     }
 
     // Print Media
-    if (brief.printMedia && brief.printMedia.length > 0) {
+    const printMedia = brief.printMedia || brief.print_media;
+    if (printMedia && printMedia.length > 0) {
       y = addSectionTitle(doc, "Print Media", y);
-      y = addField(doc, "Print Media Items", brief.printMedia.join(", "), y);
+      y = addField(doc, "Print Media Items", Array.isArray(printMedia) ? printMedia.join(", ") : printMedia, y);
       y = checkPageOverflow(doc, y);
     }
 
     // Digital Media
-    if (brief.digitalMedia && brief.digitalMedia.length > 0) {
+    const digitalMedia = brief.digitalMedia || brief.digital_media;
+    if (digitalMedia && digitalMedia.length > 0) {
       y = addSectionTitle(doc, "Digital Media", y);
-      y = addField(doc, "Digital Media Items", brief.digitalMedia.join(", "), y);
+      y = addField(doc, "Digital Media Items", Array.isArray(digitalMedia) ? digitalMedia.join(", ") : digitalMedia, y);
       y = checkPageOverflow(doc, y);
     }
 
     // Save the PDF
     doc.save(`Graphic_Design_Brief_${brief.id}.pdf`);
+    console.log("PDF saved successfully for graphic design brief:", brief.id);
     
     return true;
   } catch (error) {

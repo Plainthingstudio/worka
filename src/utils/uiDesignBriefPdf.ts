@@ -12,6 +12,9 @@ import {
 
 export const generateUIDesignBriefPDF = async (brief: any) => {
   try {
+    // For debugging
+    console.log("Generating UI Design Brief PDF with data:", brief);
+    
     const doc = new jsPDF();
     let y = 20;
 
@@ -22,7 +25,7 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
     y = addSectionTitle(doc, "Client Information", y);
     y = addField(doc, "Name", brief.name, y);
     y = addField(doc, "Email", brief.email, y);
-    y = addField(doc, "Company", brief.companyName, y);
+    y = addField(doc, "Company", brief.companyName || brief.company_name, y);
     y = checkPageOverflow(doc, y);
 
     // Brief Information
@@ -30,15 +33,20 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
     
     // Safely format the submission date
     let submissionDateFormatted = "Not specified";
-    if (brief.submissionDate) {
-      // Try to parse the date if it's a string
-      const dateObj = typeof brief.submissionDate === 'string' 
-        ? parseISO(brief.submissionDate) 
-        : new Date(brief.submissionDate);
-      
-      // Only format if it's a valid date
-      if (isValid(dateObj)) {
-        submissionDateFormatted = format(dateObj, "MMMM dd, yyyy");
+    if (brief.submissionDate || brief.submission_date) {
+      try {
+        // Try to parse the date if it's a string
+        const dateValue = brief.submissionDate || brief.submission_date;
+        const dateObj = typeof dateValue === 'string' 
+          ? parseISO(dateValue) 
+          : new Date(dateValue);
+        
+        // Only format if it's a valid date
+        if (isValid(dateObj)) {
+          submissionDateFormatted = format(dateObj, "MMMM dd, yyyy");
+        }
+      } catch (error) {
+        console.error("Error formatting submission date:", error);
       }
     }
     
@@ -48,31 +56,34 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
 
     // Project Overview
     y = addSectionTitle(doc, "Project Overview", y);
-    y = addMultiParagraphField(doc, "About Company", brief.aboutCompany, y);
+    y = addMultiParagraphField(doc, "About Company", brief.aboutCompany || brief.about_company, y);
     y = checkPageOverflow(doc, y);
-    y = addField(doc, "Project Type", brief.projectType, y);
+    y = addField(doc, "Project Type", brief.projectType || brief.project_type, y);
     y = checkPageOverflow(doc, y);
-    y = addField(doc, "Project Size", brief.projectSize, y);
+    y = addField(doc, "Project Size", brief.projectSize || brief.project_size, y);
     y = checkPageOverflow(doc, y);
     
     // Project Details
     y = addSectionTitle(doc, "Project Details", y);
-    y = addMultiParagraphField(doc, "Target Audience", brief.targetAudience, y);
+    y = addMultiParagraphField(doc, "Target Audience", brief.targetAudience || brief.target_audience, y);
     y = checkPageOverflow(doc, y);
-    y = addMultiParagraphField(doc, "Website/App Purpose", brief.websitePurpose, y);
+    y = addMultiParagraphField(doc, "Website/App Purpose", brief.websitePurpose || brief.website_purpose, y);
     y = checkPageOverflow(doc, y);
-    y = addMultiParagraphField(doc, "Project Description", brief.projectDescription, y);
+    y = addMultiParagraphField(doc, "Project Description", brief.projectDescription || brief.project_description, y);
     y = checkPageOverflow(doc, y);
     
     // Website Type Interest
     if (brief.websiteTypeInterest && brief.websiteTypeInterest.length > 0) {
-      y = addField(doc, "Website Type Interest", brief.websiteTypeInterest.join(", "), y);
+      y = addField(doc, "Website Type Interest", Array.isArray(brief.websiteTypeInterest) ? brief.websiteTypeInterest.join(", ") : brief.websiteTypeInterest, y);
+      y = checkPageOverflow(doc, y);
+    } else if (brief.website_type_interest && brief.website_type_interest.length > 0) {
+      y = addField(doc, "Website Type Interest", Array.isArray(brief.website_type_interest) ? brief.website_type_interest.join(", ") : brief.website_type_interest, y);
       y = checkPageOverflow(doc, y);
     }
     
     // Current Website
-    if (brief.currentWebsite) {
-      y = addField(doc, "Current Website", brief.currentWebsite, y);
+    if (brief.currentWebsite || brief.current_website) {
+      y = addField(doc, "Current Website", brief.currentWebsite || brief.current_website, y);
       y = checkPageOverflow(doc, y);
     }
 
@@ -88,26 +99,26 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
 
     // Design Preferences
     y = addSectionTitle(doc, "Design Preferences", y);
-    y = addMultiParagraphField(doc, "General Style", brief.generalStyle, y);
+    y = addMultiParagraphField(doc, "General Style", brief.generalStyle || brief.general_style, y);
     y = checkPageOverflow(doc, y);
     
-    if (brief.colorPreferences) {
-      y = addMultiParagraphField(doc, "Color Preferences", brief.colorPreferences, y);
+    if (brief.colorPreferences || brief.color_preferences) {
+      y = addMultiParagraphField(doc, "Color Preferences", brief.colorPreferences || brief.color_preferences, y);
       y = checkPageOverflow(doc, y);
     }
     
-    if (brief.fontPreferences) {
-      y = addMultiParagraphField(doc, "Font Preferences", brief.fontPreferences, y);
+    if (brief.fontPreferences || brief.font_preferences) {
+      y = addMultiParagraphField(doc, "Font Preferences", brief.fontPreferences || brief.font_preferences, y);
       y = checkPageOverflow(doc, y);
     }
     
-    if (brief.existingBrandAssets) {
-      y = addMultiParagraphField(doc, "Existing Brand Assets", brief.existingBrandAssets, y);
+    if (brief.existingBrandAssets || brief.existing_brand_assets) {
+      y = addMultiParagraphField(doc, "Existing Brand Assets", brief.existingBrandAssets || brief.existing_brand_assets, y);
       y = checkPageOverflow(doc, y);
     }
     
-    if (brief.stylePreferences) {
-      y = addMultiParagraphField(doc, "Style Preferences", brief.stylePreferences, y);
+    if (brief.stylePreferences || brief.style_preferences) {
+      y = addMultiParagraphField(doc, "Style Preferences", brief.stylePreferences || brief.style_preferences, y);
       y = checkPageOverflow(doc, y);
     }
     
@@ -122,37 +133,44 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
     }
 
     // Brand Guidelines and Wireframes
-    if (brief.hasBrandGuidelines || brief.hasWireframe) {
+    if (brief.hasBrandGuidelines || brief.has_brand_guidelines || brief.hasWireframe || brief.has_wireframe) {
       y = addSectionTitle(doc, "Additional Information", y);
       
-      if (brief.hasBrandGuidelines) {
-        y = addField(doc, "Has Brand Guidelines", brief.hasBrandGuidelines, y);
+      const hasBrandGuidelines = brief.hasBrandGuidelines || brief.has_brand_guidelines;
+      if (hasBrandGuidelines) {
+        y = addField(doc, "Has Brand Guidelines", String(hasBrandGuidelines), y);
         y = checkPageOverflow(doc, y);
         
-        if (brief.brandGuidelinesDetails) {
-          y = addMultiParagraphField(doc, "Brand Guidelines Details", brief.brandGuidelinesDetails, y);
+        const brandGuidelinesDetails = brief.brandGuidelinesDetails || brief.brand_guidelines_details;
+        if (brandGuidelinesDetails) {
+          y = addMultiParagraphField(doc, "Brand Guidelines Details", brandGuidelinesDetails, y);
           y = checkPageOverflow(doc, y);
         }
       }
       
-      if (brief.hasWireframe) {
-        y = addField(doc, "Has Wireframes", brief.hasWireframe, y);
+      const hasWireframe = brief.hasWireframe || brief.has_wireframe;
+      if (hasWireframe) {
+        y = addField(doc, "Has Wireframes", String(hasWireframe), y);
         y = checkPageOverflow(doc, y);
         
-        if (brief.wireframeDetails) {
-          y = addMultiParagraphField(doc, "Wireframe Details", brief.wireframeDetails, y);
+        const wireframeDetails = brief.wireframeDetails || brief.wireframe_details;
+        if (wireframeDetails) {
+          y = addMultiParagraphField(doc, "Wireframe Details", wireframeDetails, y);
           y = checkPageOverflow(doc, y);
         }
       }
     }
 
     // Page Details
-    if (brief.pageCount && brief.pageDetails && brief.pageDetails.length > 0) {
+    const pageCount = brief.pageCount || brief.page_count;
+    const pageDetails = brief.pageDetails || brief.page_details;
+    
+    if (pageCount && pageDetails && pageDetails.length > 0) {
       y = addSectionTitle(doc, "Page Details", y);
-      y = addField(doc, "Number of Pages", brief.pageCount.toString(), y);
+      y = addField(doc, "Number of Pages", String(pageCount), y);
       y = checkPageOverflow(doc, y);
       
-      brief.pageDetails.forEach((page: any, index: number) => {
+      pageDetails.forEach((page: any, index: number) => {
         if (page && (page.name || page.description)) {
           doc.setFont("helvetica", "bold");
           doc.setFontSize(12);
@@ -174,16 +192,19 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
     }
     
     // Implementation Details
-    if (brief.websiteContent || brief.developmentService) {
+    const websiteContent = brief.websiteContent || brief.website_content;
+    const developmentService = brief.developmentService || brief.development_service;
+    
+    if (websiteContent || developmentService) {
       y = addSectionTitle(doc, "Implementation Details", y);
       
-      if (brief.websiteContent) {
-        y = addMultiParagraphField(doc, "Website Content", brief.websiteContent, y);
+      if (websiteContent) {
+        y = addMultiParagraphField(doc, "Website Content", websiteContent, y);
         y = checkPageOverflow(doc, y);
       }
       
-      if (brief.developmentService) {
-        y = addField(doc, "Development Service", brief.developmentService, y);
+      if (developmentService) {
+        y = addField(doc, "Development Service", developmentService, y);
         y = checkPageOverflow(doc, y);
       }
     }
@@ -192,15 +213,20 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
     y = addSectionTitle(doc, "Deadline", y);
     let deadlineValue = "Not specified";
     
-    if (brief.completionDeadline) {
-      // Try to parse the date if it's a string
-      const deadlineObj = typeof brief.completionDeadline === 'string' 
-        ? parseISO(brief.completionDeadline) 
-        : new Date(brief.completionDeadline);
-      
-      // Only format if it's a valid date
-      if (isValid(deadlineObj)) {
-        deadlineValue = format(deadlineObj, "MMMM dd, yyyy");
+    if (brief.completionDeadline || brief.completion_deadline) {
+      try {
+        // Try to parse the date if it's a string
+        const dateValue = brief.completionDeadline || brief.completion_deadline;
+        const deadlineObj = typeof dateValue === 'string' 
+          ? parseISO(dateValue) 
+          : new Date(dateValue);
+        
+        // Only format if it's a valid date
+        if (isValid(deadlineObj)) {
+          deadlineValue = format(deadlineObj, "MMMM dd, yyyy");
+        }
+      } catch (error) {
+        console.error("Error formatting completion deadline:", error);
       }
     }
     
@@ -208,6 +234,7 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
 
     // Save the PDF
     doc.save(`UI_Design_Brief_${brief.id}.pdf`);
+    console.log("PDF saved successfully for UI design brief:", brief.id);
     
     return true;
   } catch (error) {
