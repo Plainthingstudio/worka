@@ -17,35 +17,28 @@ export const useBriefs = () => {
   const fetchBriefs = async () => {
     setIsLoading(true);
     try {
+      // Try first to use the RPC function that combines all brief types
       const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id || "00000000-0000-0000-0000-000000000000"; // Use a placeholder UUID if not logged in
       
-      if (user) {
-        console.log("Fetching briefs for user:", user.id);
-        
-        // Try first to use the RPC function that combines all brief types
-        const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_briefs', {
-          user_uuid: user.id
-        });
+      console.log("Fetching all briefs using RPC function");
+      
+      const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_briefs', {
+        user_uuid: userId
+      });
 
-        if (!rpcError && rpcData && rpcData.length > 0) {
-          console.log("Briefs data successfully fetched from RPC:", rpcData);
-          setBriefs(rpcData);
-        } else {
-          console.log("RPC fetch failed or returned no data, trying direct table fetches");
-          if (rpcError) console.error("RPC Error:", rpcError);
-          
-          // Fallback to direct table fetching
-          const success = await fetchBriefsDirectly();
-          if (!success) {
-            console.error("No briefs found in database tables");
-            toast.error("Failed to load briefs from database");
-          }
-        }
+      if (!rpcError && rpcData && rpcData.length > 0) {
+        console.log("Briefs data successfully fetched from RPC:", rpcData);
+        setBriefs(rpcData);
       } else {
-        // For demo/testing purposes, load from localStorage if not logged in
-        const storedBriefs = localStorage.getItem("briefs");
-        if (storedBriefs) {
-          setBriefs(JSON.parse(storedBriefs));
+        console.log("RPC fetch failed or returned no data, trying direct table fetches");
+        if (rpcError) console.error("RPC Error:", rpcError);
+        
+        // Fallback to direct table fetching
+        const success = await fetchBriefsDirectly();
+        if (!success) {
+          console.error("No briefs found in database tables");
+          toast.error("Failed to load briefs from database");
         }
       }
     } catch (error) {
@@ -64,16 +57,12 @@ export const useBriefs = () => {
 
   // Method to fetch directly from individual brief tables
   const fetchBriefsDirectly = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
-
-    console.log("Fetching briefs directly from tables for user:", user.id);
+    console.log("Fetching briefs directly from tables");
     
-    // Fetch from UI Design briefs
+    // Fetch from UI Design briefs without user_id filter
     const { data: uiData, error: uiError } = await supabase
       .from('ui_design_briefs')
-      .select('*')
-      .eq('user_id', user.id);
+      .select('*');
     
     if (uiError) {
       console.error("UI briefs error:", uiError);
@@ -81,11 +70,10 @@ export const useBriefs = () => {
       console.log("UI briefs data:", uiData);
     }
     
-    // Fetch from Graphic Design briefs
+    // Fetch from Graphic Design briefs without user_id filter
     const { data: graphicData, error: graphicError } = await supabase
       .from('graphic_design_briefs')
-      .select('*')
-      .eq('user_id', user.id);
+      .select('*');
     
     if (graphicError) {
       console.error("Graphic briefs error:", graphicError);
@@ -93,11 +81,10 @@ export const useBriefs = () => {
       console.log("Graphic briefs data:", graphicData);
     }
     
-    // Fetch from Illustration Design briefs
+    // Fetch from Illustration Design briefs without user_id filter
     const { data: illustrationData, error: illustrationError } = await supabase
       .from('illustration_design_briefs')
-      .select('*')
-      .eq('user_id', user.id);
+      .select('*');
     
     if (illustrationError) {
       console.error("Illustration briefs error:", illustrationError);
