@@ -33,6 +33,39 @@ export interface IllustrationBriefFormValues {
   deliverables: Record<string, boolean>;
 }
 
+// Define interface for the data sent to Supabase
+interface BriefDataForSupabase {
+  name: string;
+  email: string;
+  company_name: string;
+  type: string;
+  status: string;
+  about_company: string;
+  target_audience: string;
+  competitor1: string;
+  competitor2: string;
+  competitor3: string;
+  competitor4: string;
+  reference1: string;
+  reference2: string;
+  reference3: string;
+  reference4: string;
+  general_style: string;
+  color_preferences: string;
+  has_brand_guidelines: string;
+  completion_deadline: string;
+  illustrations_purpose: string;
+  illustrations_for: string;
+  illustrations_style: string;
+  illustrations_count: number;
+  illustration_details: string[];
+  like_dislike_design: string;
+  deliverables: string[];
+  submission_date: string;
+  user_id?: string;
+  phone?: string;
+}
+
 export const useIllustrationsBrief = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -61,7 +94,7 @@ export const useIllustrationsBrief = () => {
       const { data: { user } } = await supabase.auth.getUser();
 
       // Prepare data for Supabase with correct column names
-      const briefData: any = {
+      const briefData: BriefDataForSupabase = {
         name: formData.name,
         email: formData.email,
         company_name: formData.companyName,
@@ -90,6 +123,11 @@ export const useIllustrationsBrief = () => {
         deliverables: selectedDeliverables,
         submission_date: new Date().toISOString()
       };
+
+      // Add phone if provided
+      if (formData.phone) {
+        briefData.phone = formData.phone;
+      }
 
       // If user is logged in, add user_id
       if (user) {
