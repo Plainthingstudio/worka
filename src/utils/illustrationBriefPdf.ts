@@ -149,9 +149,11 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
     // Get illustration details
     const illustrationDetails = getValue("illustrationDetails", "illustration_details", []);
     if (Array.isArray(illustrationDetails) && illustrationDetails.length > 0) {
-      illustrationDetails.forEach((detail: string, index: number) => {
+      illustrationDetails.forEach((detail: any, index: number) => {
         if (detail) {
-          y = addMultiParagraphField(doc, `Illustration ${index + 1}`, detail, y);
+          // Ensure detail is a string before passing to addMultiParagraphField
+          const detailStr = typeof detail === 'string' ? detail : String(detail);
+          y = addMultiParagraphField(doc, `Illustration ${index + 1}`, detailStr, y);
           y = checkPageOverflow(doc, y);
         }
       });
