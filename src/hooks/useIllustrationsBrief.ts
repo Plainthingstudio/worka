@@ -58,7 +58,7 @@ export const useIllustrationsBrief = () => {
             .replace(/webm/i, '.WebM');
         });
 
-      // Try to get the current user - if logged in, attach user_id
+      // Check if user is logged in - optional for public form
       const { data: { user } } = await supabase.auth.getUser();
 
       // Prepare data for Supabase with correct column names
@@ -93,7 +93,7 @@ export const useIllustrationsBrief = () => {
         submission_date: new Date().toISOString()
       };
 
-      // If user is logged in, add user_id
+      // If user is logged in, add user_id - optional for public forms
       if (user) {
         briefData.user_id = user.id;
       }
