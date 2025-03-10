@@ -34,6 +34,7 @@ export type Database = {
           has_brand_guidelines: string | null
           has_wireframe: string | null
           id: string
+          illustration_details: Json | null
           logo_feelings: Json | null
           logo_type: string | null
           market_category: string | null
@@ -93,6 +94,7 @@ export type Database = {
           has_brand_guidelines?: string | null
           has_wireframe?: string | null
           id?: string
+          illustration_details?: Json | null
           logo_feelings?: Json | null
           logo_type?: string | null
           market_category?: string | null
@@ -152,6 +154,7 @@ export type Database = {
           has_brand_guidelines?: string | null
           has_wireframe?: string | null
           id?: string
+          illustration_details?: Json | null
           logo_feelings?: Json | null
           logo_type?: string | null
           market_category?: string | null
