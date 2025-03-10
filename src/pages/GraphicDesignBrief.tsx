@@ -187,7 +187,6 @@ const GraphicDesignBrief = () => {
           <StepFour
             onPrevious={() => setCurrentStep(3)}
             onSubmit={methods.handleSubmit(onSubmit)}
-            isSubmitting={isSubmitting}
           />
         );
       default:

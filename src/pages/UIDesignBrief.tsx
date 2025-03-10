@@ -106,7 +106,7 @@ const UIDesignBrief = () => {
         });
       
       // Prepare data for Supabase with correct column names
-      const briefData = {
+      const briefData: any = {
         name: formData.name,
         email: formData.email,
         company_name: formData.companyName,
@@ -206,7 +206,7 @@ const UIDesignBrief = () => {
           <FormProvider {...methods}>
             {step === 1 && <UIStepOne onNext={handleNext} />}
             {step === 2 && <UIStepTwo onNext={handleNext} onPrevious={handlePrevious} />}
-            {step === 3 && <UIStepThree onPrevious={handlePrevious} onSubmit={handleSubmit} isSubmitting={isSubmitting} />}
+            {step === 3 && <UIStepThree onPrevious={handlePrevious} onSubmit={handleSubmit} />}
           </FormProvider>
         </Card>
       </div>

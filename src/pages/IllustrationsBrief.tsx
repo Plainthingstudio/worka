@@ -197,7 +197,7 @@ const IllustrationsBrief = () => {
           <FormProvider {...methods}>
             {step === 1 && <IllustrationStepOne onNext={handleNext} />}
             {step === 2 && <IllustrationStepTwo onNext={handleNext} onPrevious={handlePrevious} />}
-            {step === 3 && <IllustrationStepThree onPrevious={handlePrevious} onSubmit={handleSubmit} isSubmitting={isSubmitting} />}
+            {step === 3 && <IllustrationStepThree onPrevious={handlePrevious} onSubmit={handleSubmit} />}
           </FormProvider>
         </Card>
       </div>
