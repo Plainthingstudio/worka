@@ -1,22 +1,10 @@
-
 import React from "react";
 import { format } from "date-fns";
 import { Eye, Download, Trash, LayoutDashboard, Palette, PencilRuler, ImageIcon, Clock, CheckCircle, AlertCircle, CircleDashed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
-interface Brief {
-  id: string;
-  name: string;
-  email: string;
-  companyName?: string;
-  company_name?: string;
-  type: string;
-  status: string;
-  submissionDate?: string;
-  submission_date?: string;
-}
+import { Brief } from "@/types/brief";
 
 interface BriefsTableProps {
   briefs: Brief[];
@@ -70,7 +58,6 @@ const BriefsTable: React.FC<BriefsTableProps> = ({ briefs, onView, onDownload, o
     }
   };
 
-  // Handle different property naming conventions
   const getCompanyName = (brief: Brief) => {
     return brief.companyName || brief.company_name || "";
   };

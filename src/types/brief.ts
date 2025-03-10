@@ -1,0 +1,42 @@
+
+import { Json } from "@/integrations/supabase/types";
+
+export interface Brief {
+  id: string;
+  name: string;
+  email: string;
+  companyName?: string;
+  company_name?: string;
+  type: string;
+  status: string;
+  submissionDate?: string;
+  submission_date?: string;
+  services?: Json | null;
+  print_media?: Json | null;
+  digital_media?: Json | null;
+  about_company?: string;
+  vision_mission?: string;
+  slogan?: string;
+  logo_feelings?: Json | null;
+  logo_type?: string;
+  reference1?: string;
+  reference2?: string;
+  reference3?: string;
+  reference4?: string;
+  target_age?: string;
+  target_gender?: string;
+  target_demography?: string;
+  target_profession?: string;
+  target_personality?: string;
+  products_services?: string;
+  features_and_benefits?: string;
+  market_category?: string;
+  competitor1?: string;
+  competitor2?: string;
+  competitor3?: string;
+  competitor4?: string;
+  brand_positioning?: string;
+  barrier_to_entry?: string;
+  specific_imagery?: string;
+  user_id?: string;
+}
