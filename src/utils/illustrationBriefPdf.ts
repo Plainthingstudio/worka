@@ -1,25 +1,62 @@
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { format, isValid, parseISO } from 'date-fns';
+import logo from '../assets/logo.png';
 
-import jsPDF from "jspdf";
-import { format, isValid, parseISO } from "date-fns";
-import { 
-  addSectionTitle, 
-  addField, 
-  checkPageOverflow, 
-  addPdfTitle, 
-  addMultiParagraphField,
-  addSeparator 
-} from "./pdfUtils";
-
-export const generateIllustrationBriefPDF = async (brief: any) => {
+// Function to add the logo to the document
+const addLogoToDocument = async (doc: jsPDF): Promise<void> => {
   try {
-    console.log("Generating Illustration Brief PDF with data:", brief);
+    const imgData = logo;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    doc.addImage(imgData, 'PNG', pageWidth / 2 - 25, 5, 50, 15);
+  } catch (error) {
+    console.error("Error adding logo to PDF:", error);
+  }
+};
+
+// Function to add a table to the document
+const addTableToDocument = (doc: jsPDF, headers: string[], data: string[][], startY: number): number => {
+  (doc as any).autoTable({
+    head: [headers],
+    body: data,
+    startY: startY,
+    theme: 'striped',
+    headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
+    styles: { overflow: 'linebreak', fontSize: 10 },
+    columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 'auto' } },
+  });
+
+  // @ts-ignore
+  const finalY = doc.lastAutoTable.finalY || startY;
+  return finalY + 10;
+};
+
+// Fix the getIllustrationDetails function to handle the array/object properly
+export const generateIllustrationBriefPDF = async (briefData: any): Promise<void> => {
+  try {
+    console.log("Generating illustration brief PDF with data:", briefData);
     
-    // Helper function to get value that might be in camelCase or snake_case
+    // Create a new PDF document
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Add logo and header
+    await addLogoToDocument(doc);
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("Illustration Design Brief", pageWidth / 2, 30, { align: "center" });
+    
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    
+    // Helper function to safely get values (handles both camelCase and snake_case)
     const getValue = (camelCaseKey: string, snakeCaseKey: string, defaultValue = "Not provided") => {
-      const value = brief[camelCaseKey] !== undefined ? brief[camelCaseKey] : 
-                   brief[snakeCaseKey] !== undefined ? brief[snakeCaseKey] : 
-                   defaultValue;
-      
+      const value = briefData[camelCaseKey] !== undefined 
+        ? briefData[camelCaseKey] 
+        : briefData[snakeCaseKey] !== undefined 
+          ? briefData[snakeCaseKey] 
+          : defaultValue;
+          
       // Check if value is null, undefined, empty string, or empty array
       if (value === null || value === undefined || value === "" || 
           (Array.isArray(value) && value.length === 0)) {
@@ -29,193 +66,178 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
       return value;
     };
     
-    // Helper function to safely format dates
+    // Helper to safely format dates
     const formatDate = (dateValue: any): string => {
       if (!dateValue) return "Not provided";
       
       try {
-        const dateObj = typeof dateValue === 'string' 
-          ? parseISO(dateValue) 
-          : new Date(dateValue);
+        let dateObj;
+        
+        if (typeof dateValue === 'string') {
+          dateObj = parseISO(dateValue);
+        } else {
+          dateObj = new Date(dateValue);
+        }
         
         if (isValid(dateObj)) {
-          return format(dateObj, "MMMM dd, yyyy");
+          return format(dateObj, "MMMM d, yyyy");
         }
-        return "Invalid date format";
+        return "Invalid date";
       } catch (error) {
         console.error("Error formatting date:", error);
-        return "Date format error";
+        return "Not provided";
       }
     };
     
-    const doc = new jsPDF();
-    let y = 20;
+    // Helper to handle illustration details which could be an array or object
+    const getIllustrationDetails = () => {
+      const details = getValue("illustrationDetails", "illustration_details", []);
+      return Array.isArray(details) ? details : 
+             details && typeof details === 'object' ? [details] : [];
+    };
 
-    // Add title
-    y = addPdfTitle(doc, "Illustration Design Brief", y);
-
-    // Client Information
-    y = addSectionTitle(doc, "Client Information", y);
-    y = addField(doc, "Name", brief.name || "Not provided", y);
-    y = addField(doc, "Email", brief.email || "Not provided", y);
-    y = addField(doc, "Company", getValue("companyName", "company_name"), y);
-    if (brief.phone) {
-      y = addField(doc, "Phone", brief.phone, y);
+    // Helper to process the details to a string
+    const processDetailsToString = (details: any[]): string => {
+      if (!details || details.length === 0) return "Not provided";
+      
+      try {
+        return details.map(detail => {
+          if (typeof detail === 'string') return detail;
+          return JSON.stringify(detail);
+        }).join(", ");
+      } catch (error) {
+        console.error("Error processing details:", error);
+        return "Error processing details";
+      }
+    };
+    
+    // Client information section
+    doc.setFont("helvetica", "bold");
+    doc.text("Client Information", 20, 45);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Name: ${getValue("name", "name")}`, 20, 52);
+    doc.text(`Email: ${getValue("email", "email")}`, 20, 59);
+    doc.text(`Company: ${getValue("companyName", "company_name")}`, 20, 66);
+    if (getValue("phone", "phone") !== "Not provided") {
+      doc.text(`Phone: ${getValue("phone", "phone")}`, 20, 73);
     }
-    y = checkPageOverflow(doc, y);
-
-    // Brief Information
-    y = addSectionTitle(doc, "Brief Information", y);
-    y = addField(doc, "Submission Date", formatDate(getValue("submissionDate", "submission_date")), y);
-    y = addField(doc, "Status", brief.status || "Not provided", y);
-    y = checkPageOverflow(doc, y);
-
-    // Project Details
-    y = addSectionTitle(doc, "Project Details", y);
     
-    // About Company
-    y = addMultiParagraphField(doc, "About Company", getValue("aboutCompany", "about_company"), y);
-    y = checkPageOverflow(doc, y);
+    let currentY = 85; // Start position after client information
     
-    // Illustrations Purpose
-    y = addMultiParagraphField(doc, "Illustrations Purpose", getValue("illustrationsPurpose", "illustrations_purpose"), y);
-    y = checkPageOverflow(doc, y);
+    // Submission details
+    doc.setFont("helvetica", "bold");
+    doc.text("Submission Details", 20, currentY);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Submitted: ${formatDate(getValue("submissionDate", "submission_date"))}`, 20, currentY + 7);
+    doc.text(`Status: ${getValue("status", "status")}`, 20, currentY + 14);
+    currentY += 26;
     
-    // Illustrations For
-    y = addMultiParagraphField(doc, "Illustrations For", getValue("illustrationsFor", "illustrations_for"), y);
-    y = checkPageOverflow(doc, y);
+    // Function to add text with dynamic line breaks
+    const addTextWithLineBreaks = (text: string, x: number, y: number, maxWidth: number): number => {
+      const words = text.split(' ');
+      let line = '';
+      let currentYPos = y;
     
-    // Illustrations Style
-    y = addMultiParagraphField(doc, "Illustrations Style", getValue("illustrationsStyle", "illustrations_style"), y);
-    y = checkPageOverflow(doc, y);
+      words.forEach(word => {
+        const testLine = line + word + ' ';
+        const textWidth = doc.getTextWidth(testLine);
     
-    // Target Audience
-    y = addMultiParagraphField(doc, "Target Audience", getValue("targetAudience", "target_audience"), y);
-    y = checkPageOverflow(doc, y);
-
-    // Competitors
-    y = addSectionTitle(doc, "Competitors", y);
-    const competitor1 = getValue("competitor1", "competitor1");
-    const competitor2 = getValue("competitor2", "competitor2");
-    const competitor3 = getValue("competitor3", "competitor3");
-    const competitor4 = getValue("competitor4", "competitor4");
-    
-    if (competitor1 !== "Not provided") y = addField(doc, "Competitor 1", competitor1, y);
-    if (competitor2 !== "Not provided") y = addField(doc, "Competitor 2", competitor2, y);
-    if (competitor3 !== "Not provided") y = addField(doc, "Competitor 3", competitor3, y);
-    if (competitor4 !== "Not provided") y = addField(doc, "Competitor 4", competitor4, y);
-    if (competitor1 === "Not provided" && competitor2 === "Not provided" && 
-        competitor3 === "Not provided" && competitor4 === "Not provided") {
-      y = addField(doc, "Competitors", "None provided", y);
-    }
-    y = checkPageOverflow(doc, y);
-
-    // Brand Guidelines
-    y = addMultiParagraphField(doc, "Brand Guidelines", getValue("brandGuidelines", "brand_guidelines"), y);
-    y = checkPageOverflow(doc, y);
-
-    // References
-    y = addSectionTitle(doc, "Design References", y);
-    const reference1 = getValue("reference1", "reference1");
-    const reference2 = getValue("reference2", "reference2");
-    const reference3 = getValue("reference3", "reference3");
-    const reference4 = getValue("reference4", "reference4");
-    
-    if (reference1 !== "Not provided") y = addField(doc, "Reference 1", reference1, y);
-    if (reference2 !== "Not provided") y = addField(doc, "Reference 2", reference2, y);
-    if (reference3 !== "Not provided") y = addField(doc, "Reference 3", reference3, y);
-    if (reference4 !== "Not provided") y = addField(doc, "Reference 4", reference4, y);
-    if (reference1 === "Not provided" && reference2 === "Not provided" && 
-        reference3 === "Not provided" && reference4 === "Not provided") {
-      y = addField(doc, "References", "None provided", y);
-    }
-    y = checkPageOverflow(doc, y);
-
-    // General Style
-    y = addMultiParagraphField(doc, "General Style", getValue("generalStyle", "general_style"), y);
-    y = checkPageOverflow(doc, y);
-
-    // Color Preferences
-    y = addMultiParagraphField(doc, "Color Preferences", getValue("colorPreferences", "color_preferences"), y);
-    y = checkPageOverflow(doc, y);
-
-    // Likes/Dislikes in Design
-    y = addMultiParagraphField(doc, "Likes/Dislikes in Design", getValue("likeDislikeDesign", "like_dislike_design"), y);
-    y = checkPageOverflow(doc, y);
-
-    // Illustration Details
-    y = addSectionTitle(doc, "Illustration Details", y);
-    
-    // Illustrations Count
-    const count = getValue("illustrationsCount", "illustrations_count");
-    y = addField(doc, "Number of Illustrations", count !== "Not provided" ? String(count) : "Not provided", y);
-    y = checkPageOverflow(doc, y);
-    
-    // Illustration Details - Ensuring proper type handling
-    const details = getValue("illustrationDetails", "illustration_details", []);
-    
-    // Ensure 'details' is an array and process each detail item properly
-    const processedDetails = Array.isArray(details) ? details : 
-                            details && typeof details === 'object' ? [details] : [];
-                            
-    if (processedDetails.length > 0) {
-      processedDetails.forEach((detail: any, index: number) => {
-        if (detail) {
-          // Convert the detail to a string safely
-          let detailText: string;
-          
-          if (typeof detail === 'string') {
-            detailText = detail;
-          } else if (detail && typeof detail === 'object') {
-            try {
-              detailText = JSON.stringify(detail);
-            } catch (e) {
-              detailText = "Complex object (cannot display)";
-            }
-          } else {
-            detailText = String(detail || "Not provided");
-          }
-                            
-          y = addMultiParagraphField(doc, `Illustration ${index + 1}`, detailText, y);
-          y = checkPageOverflow(doc, y);
+        if (textWidth > maxWidth && line.length > 0) {
+          doc.text(line, x, currentYPos);
+          line = word + ' ';
+          currentYPos += 7;
+        } else {
+          line = testLine;
         }
       });
-    } else {
-      // If no details or not an array, add a placeholder
-      y = addField(doc, "Illustration Details", "No details provided", y);
-    }
-
-    // Deliverables
-    y = addSectionTitle(doc, "Deliverables", y);
     
-    // Try different possible formats for deliverables
-    let deliverables = "Not provided";
+      doc.text(line, x, currentYPos);
+      return currentYPos;
+    };
     
-    if (Array.isArray(brief.deliverables) && brief.deliverables.length > 0) {
-      deliverables = brief.deliverables.join(", ");
-    } else if (brief.deliverables && typeof brief.deliverables === 'object') {
-      // If it's an object, try to extract values
-      const deliverableValues = Object.values(brief.deliverables).filter(Boolean);
-      if (deliverableValues.length > 0) {
-        deliverables = deliverableValues.join(", ");
+    // Add brief details
+    const addBriefDetailSection = (title: string, content: string) => {
+      if (content && content !== "Not provided") {
+        doc.setFont("helvetica", "bold");
+        doc.text(title, 20, currentY);
+        doc.setFont("helvetica", "normal");
+        currentY = addTextWithLineBreaks(content, 20, currentY + 7, pageWidth - 40) + 10;
       }
-    } else if (typeof brief.deliverables === 'string') {
-      deliverables = brief.deliverables;
+    };
+    
+    addBriefDetailSection("About Company", getValue("aboutCompany", "about_company"));
+    addBriefDetailSection("Illustrations Purpose", getValue("illustrationsPurpose", "illustrations_purpose"));
+    addBriefDetailSection("Illustrations For", getValue("illustrationsFor", "illustrations_for"));
+    addBriefDetailSection("Illustrations Style", getValue("illustrationsStyle", "illustrations_style"));
+    addBriefDetailSection("Target Audience", getValue("targetAudience", "target_audience"));
+    addBriefDetailSection("Brand Guidelines", getValue("brandGuidelines", "brand_guidelines"));
+    addBriefDetailSection("General Style", getValue("generalStyle", "general_style"));
+    addBriefDetailSection("Color Preferences", getValue("colorPreferences", "color_preferences"));
+    addBriefDetailSection("Likes/Dislikes in Design", getValue("likeDislikeDesign", "like_dislike_design"));
+    addBriefDetailSection("Number of Illustrations", getValue("illustrationsCount", "illustrations_count"));
+    addBriefDetailSection("File Formats", getValue("deliverables", "deliverables"));
+    
+    // Competitors Table
+    const competitorsHeaders = ["Competitor", "Details"];
+    let competitorsData: string[][] = [];
+    for (let i = 1; i <= 4; i++) {
+      const competitor = getValue(`competitor${i}`, `competitor${i}`);
+      if (competitor !== "Not provided") {
+        competitorsData.push([`Competitor ${i}`, competitor]);
+      }
+    }
+    if (competitorsData.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Competitors", 20, currentY);
+      doc.setFont("helvetica", "normal");
+      currentY = addTableToDocument(doc, competitorsHeaders, competitorsData, currentY + 7);
     }
     
-    y = addField(doc, "File Formats", deliverables, y);
-    y = checkPageOverflow(doc, y);
-
-    // Deadline
-    y = addSectionTitle(doc, "Deadline", y);
-    y = addField(doc, "Completion Deadline", formatDate(getValue("completionDeadline", "completion_deadline")), y);
+    // Design References Table
+    const referencesHeaders = ["Reference", "Details"];
+    let referencesData: string[][] = [];
+    for (let i = 1; i <= 4; i++) {
+      const reference = getValue(`reference${i}`, `reference${i}`);
+      if (reference !== "Not provided") {
+        referencesData.push([`Reference ${i}`, reference]);
+      }
+    }
+    if (referencesData.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Design References", 20, currentY);
+      doc.setFont("helvetica", "normal");
+      currentY = addTableToDocument(doc, referencesHeaders, referencesData, currentY + 7);
+    }
+    
+    // Illustration Details Section
+    const illustrationDetails = getIllustrationDetails();
+    if (illustrationDetails.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Illustration Details", 20, currentY);
+      doc.setFont("helvetica", "normal");
+      currentY += 7;
+    
+      illustrationDetails.forEach((detail, index) => {
+        const detailStr = typeof detail === 'string' ? detail : JSON.stringify(detail, null, 2);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Illustration ${index + 1}:`, 20, currentY);
+        doc.setFont("helvetica", "normal");
+        currentY = addTextWithLineBreaks(detailStr, 20, currentY + 7, pageWidth - 40) + 10;
+      });
+    }
+    
+    // Completion Deadline
+    const completionDeadline = formatDate(getValue("completionDeadline", "completion_deadline"));
+    if (completionDeadline !== "Not provided") {
+      doc.setFont("helvetica", "bold");
+      doc.text("Completion Deadline", 20, currentY);
+      doc.setFont("helvetica", "normal");
+      doc.text(completionDeadline, 20, currentY + 7);
+      currentY += 15;
+    }
 
     // Save the PDF
-    const pdfName = `Illustration_Brief_${brief.id || new Date().getTime()}.pdf`;
-    doc.save(pdfName);
-    console.log("PDF saved successfully:", pdfName);
-    
-    return true;
+    doc.save(`IllustrationBrief-${getValue("companyName", "company_name")}.pdf`);
   } catch (error) {
     console.error("Error generating illustration brief PDF:", error);
     throw error;
