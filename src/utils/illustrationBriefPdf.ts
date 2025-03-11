@@ -19,7 +19,14 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
       const value = brief[camelCaseKey] !== undefined ? brief[camelCaseKey] : 
                    brief[snakeCaseKey] !== undefined ? brief[snakeCaseKey] : 
                    defaultValue;
-      return value || defaultValue; // Return defaultValue if value is null/undefined
+      
+      // Check if value is null, undefined, empty string, or empty array
+      if (value === null || value === undefined || value === "" || 
+          (Array.isArray(value) && value.length === 0)) {
+        return defaultValue;
+      }
+      
+      return value;
     };
     
     // Helper function to safely format dates
@@ -141,13 +148,13 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
     
     // Illustrations Count
     const count = getValue("illustrationsCount", "illustrations_count");
-    y = addField(doc, "Number of Illustrations", String(count), y);
+    y = addField(doc, "Number of Illustrations", count !== "Not provided" ? String(count) : "Not provided", y);
     y = checkPageOverflow(doc, y);
     
     // Illustration Details
     const details = getValue("illustrationDetails", "illustration_details", []);
     
-    // Fix: Ensure 'details' is an array and process each detail item properly
+    // Ensure 'details' is an array and process each detail item properly
     if (Array.isArray(details) && details.length > 0) {
       details.forEach((detail: any, index: number) => {
         if (detail) {
@@ -160,6 +167,11 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
           y = checkPageOverflow(doc, y);
         }
       });
+    } else if (details && typeof details === 'object' && !Array.isArray(details)) {
+      // Handle case where details is an object but not an array
+      const detailText = JSON.stringify(details);
+      y = addMultiParagraphField(doc, "Illustration Details", detailText, y);
+      y = checkPageOverflow(doc, y);
     } else {
       // If no details or not an array, add a placeholder
       y = addField(doc, "Illustration Details", "No details provided", y);
@@ -167,14 +179,26 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
 
     // Deliverables
     y = addSectionTitle(doc, "Deliverables", y);
-    const deliverables = Array.isArray(brief.deliverables) ? brief.deliverables.join(", ") : 
-                        brief.deliverables || "Not provided";
+    
+    // Try different possible formats for deliverables
+    let deliverables = "Not provided";
+    
+    if (Array.isArray(brief.deliverables) && brief.deliverables.length > 0) {
+      deliverables = brief.deliverables.join(", ");
+    } else if (brief.deliverables && typeof brief.deliverables === 'object') {
+      // If it's an object, try to extract values
+      const deliverableValues = Object.values(brief.deliverables).filter(Boolean);
+      if (deliverableValues.length > 0) {
+        deliverables = deliverableValues.join(", ");
+      }
+    }
+    
     y = addField(doc, "File Formats", deliverables, y);
     y = checkPageOverflow(doc, y);
 
     // Deadline
     y = addSectionTitle(doc, "Deadline", y);
-    y = addField(doc, "Completion Deadline", getValue("completionDeadline", "completion_deadline"), y);
+    y = addField(doc, "Completion Deadline", formatDate(getValue("completionDeadline", "completion_deadline")), y);
 
     // Save the PDF
     const pdfName = `Illustration_Brief_${brief.id || new Date().getTime()}.pdf`;

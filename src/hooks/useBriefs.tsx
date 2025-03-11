@@ -29,7 +29,70 @@ export const useBriefs = () => {
 
       if (!rpcError && rpcData && rpcData.length > 0) {
         console.log("Briefs data successfully fetched from RPC:", rpcData);
-        setBriefs(rpcData);
+        
+        // For each brief, fetch the full details based on the type
+        const briefs = await Promise.all(rpcData.map(async (brief: any) => {
+          if (brief.type === "Illustration Design") {
+            const { data: fullBrief, error } = await supabase
+              .from('illustration_design_briefs')
+              .select('*')
+              .eq('id', brief.id)
+              .single();
+              
+            if (error) {
+              console.error("Error fetching full illustration brief:", error);
+              return brief;
+            }
+            
+            return {
+              ...fullBrief,
+              type: "Illustration Design",
+              submissionDate: fullBrief.submission_date,
+              companyName: fullBrief.company_name
+            };
+          } else if (brief.type === "UI Design") {
+            const { data: fullBrief, error } = await supabase
+              .from('ui_design_briefs')
+              .select('*')
+              .eq('id', brief.id)
+              .single();
+              
+            if (error) {
+              console.error("Error fetching full UI brief:", error);
+              return brief;
+            }
+            
+            return {
+              ...fullBrief,
+              type: "UI Design",
+              submissionDate: fullBrief.submission_date,
+              companyName: fullBrief.company_name
+            };
+          } else if (brief.type === "Graphic Design") {
+            const { data: fullBrief, error } = await supabase
+              .from('graphic_design_briefs')
+              .select('*')
+              .eq('id', brief.id)
+              .single();
+              
+            if (error) {
+              console.error("Error fetching full graphic brief:", error);
+              return brief;
+            }
+            
+            return {
+              ...fullBrief,
+              type: "Graphic Design",
+              submissionDate: fullBrief.submission_date,
+              companyName: fullBrief.company_name
+            };
+          }
+          
+          return brief;
+        }));
+        
+        console.log("Full briefs data:", briefs);
+        setBriefs(briefs);
       } else {
         console.log("RPC fetch failed or returned no data, trying direct table fetches");
         if (rpcError) console.error("RPC Error:", rpcError);

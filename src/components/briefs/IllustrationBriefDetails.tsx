@@ -30,51 +30,67 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
 
   // Helper function to handle both camelCase and snake_case field access
   const getValue = (camelCaseKey: string, snakeCaseKey: string, defaultValue = "Not provided") => {
+    if (!briefDetails) return defaultValue;
+    
     const value = briefDetails[camelCaseKey] !== undefined ? briefDetails[camelCaseKey] : 
                  briefDetails[snakeCaseKey] !== undefined ? briefDetails[snakeCaseKey] : 
                  defaultValue;
-    return value || defaultValue; // Return defaultValue if value is null/undefined
+    
+    // Check if value is null, undefined, empty string, or empty array
+    if (value === null || value === undefined || value === "" || 
+        (Array.isArray(value) && value.length === 0)) {
+      return defaultValue;
+    }
+    
+    return value;
   };
 
   // Helper to get illustrations count safely
   const getIllustrationsCount = () => {
     const count = getValue("illustrationsCount", "illustrations_count");
-    return count ? count.toString() : "Not provided";
+    return count !== "Not provided" ? count.toString() : "Not provided";
   };
 
   // Helper to get illustration details safely
   const getIllustrationDetails = () => {
     const details = getValue("illustrationDetails", "illustration_details", []);
     // Ensure details is an array, even if empty
-    return Array.isArray(details) ? details : [];
+    return Array.isArray(details) ? details : 
+           details && typeof details === 'object' ? [JSON.stringify(details)] : [];
   };
 
   // Helper to get deliverables safely
   const getDeliverables = () => {
+    // Try different possible formats for deliverables
     const deliverables = briefDetails.deliverables;
+    
     if (Array.isArray(deliverables) && deliverables.length > 0) {
       return deliverables.join(", ");
+    } else if (deliverables && typeof deliverables === 'object') {
+      // If it's an object, try to extract values
+      return Object.values(deliverables).filter(Boolean).join(", ");
     }
+    
     return "Not provided";
   };
 
   // Helper to check if any competitor is provided
   const hasCompetitors = () => {
     return Boolean(
-      getValue("competitor1", "competitor1", "") || 
-      getValue("competitor2", "competitor2", "") || 
-      getValue("competitor3", "competitor3", "") || 
-      getValue("competitor4", "competitor4", "")
+      getValue("competitor1", "competitor1", "") !== "Not provided" || 
+      getValue("competitor2", "competitor2", "") !== "Not provided" || 
+      getValue("competitor3", "competitor3", "") !== "Not provided" || 
+      getValue("competitor4", "competitor4", "") !== "Not provided"
     );
   };
 
   // Helper to check if any reference is provided
   const hasReferences = () => {
     return Boolean(
-      getValue("reference1", "reference1", "") || 
-      getValue("reference2", "reference2", "") || 
-      getValue("reference3", "reference3", "") || 
-      getValue("reference4", "reference4", "")
+      getValue("reference1", "reference1", "") !== "Not provided" || 
+      getValue("reference2", "reference2", "") !== "Not provided" || 
+      getValue("reference3", "reference3", "") !== "Not provided" || 
+      getValue("reference4", "reference4", "") !== "Not provided"
     );
   };
 
@@ -111,11 +127,15 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
       <div>
         <h4 className="font-medium">Competitors</h4>
         <div className="space-y-2 mt-1">
-          {getValue("competitor1", "competitor1", "") && <p>1. {getValue("competitor1", "competitor1")}</p>}
-          {getValue("competitor2", "competitor2", "") && <p>2. {getValue("competitor2", "competitor2")}</p>}
-          {getValue("competitor3", "competitor3", "") && <p>3. {getValue("competitor3", "competitor3")}</p>}
-          {getValue("competitor4", "competitor4", "") && <p>4. {getValue("competitor4", "competitor4")}</p>}
-          {!hasCompetitors() && <p>Not provided</p>}
+          {getValue("competitor1", "competitor1", "") !== "Not provided" && 
+            <p>1. {getValue("competitor1", "competitor1")}</p>}
+          {getValue("competitor2", "competitor2", "") !== "Not provided" && 
+            <p>2. {getValue("competitor2", "competitor2")}</p>}
+          {getValue("competitor3", "competitor3", "") !== "Not provided" && 
+            <p>3. {getValue("competitor3", "competitor3")}</p>}
+          {getValue("competitor4", "competitor4", "") !== "Not provided" && 
+            <p>4. {getValue("competitor4", "competitor4")}</p>}
+          {!hasCompetitors() && <p>None provided</p>}
         </div>
       </div>
       
@@ -153,10 +173,14 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
       <div>
         <h4 className="font-medium">Design References</h4>
         <div className="space-y-2 mt-1">
-          {getValue("reference1", "reference1", "") && <p>1. {getValue("reference1", "reference1")}</p>}
-          {getValue("reference2", "reference2", "") && <p>2. {getValue("reference2", "reference2")}</p>}
-          {getValue("reference3", "reference3", "") && <p>3. {getValue("reference3", "reference3")}</p>}
-          {getValue("reference4", "reference4", "") && <p>4. {getValue("reference4", "reference4")}</p>}
+          {getValue("reference1", "reference1", "") !== "Not provided" && 
+            <p>1. {getValue("reference1", "reference1")}</p>}
+          {getValue("reference2", "reference2", "") !== "Not provided" && 
+            <p>2. {getValue("reference2", "reference2")}</p>}
+          {getValue("reference3", "reference3", "") !== "Not provided" && 
+            <p>3. {getValue("reference3", "reference3")}</p>}
+          {getValue("reference4", "reference4", "") !== "Not provided" && 
+            <p>4. {getValue("reference4", "reference4")}</p>}
           {!hasReferences() && <p>Not provided</p>}
         </div>
       </div>
