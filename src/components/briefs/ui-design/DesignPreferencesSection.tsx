@@ -1,6 +1,16 @@
 
 import React from "react";
-import { getValue, hasReferences } from "./UIHelperFunctions";
+import { getValue } from "./UIHelperFunctions";
+
+// Helper to check if any reference is provided
+const hasReferences = (briefDetails: any): boolean => {
+  return Boolean(
+    getValue(briefDetails, "reference1", "reference1", "") !== "Not provided" || 
+    getValue(briefDetails, "reference2", "reference2", "") !== "Not provided" || 
+    getValue(briefDetails, "reference3", "reference3", "") !== "Not provided" || 
+    getValue(briefDetails, "reference4", "reference4", "") !== "Not provided"
+  );
+};
 
 interface DesignPreferencesSectionProps {
   briefDetails: any;
@@ -8,9 +18,9 @@ interface DesignPreferencesSectionProps {
 
 const DesignPreferencesSection: React.FC<DesignPreferencesSectionProps> = ({ briefDetails }) => {
   return (
-    <>
+    <div className="space-y-4">
       <div>
-        <h4 className="font-medium">General Style</h4>
+        <h4 className="font-medium">Design Preferences</h4>
         <p className="mt-1">{getValue(briefDetails, "generalStyle", "general_style")}</p>
       </div>
       
@@ -25,6 +35,12 @@ const DesignPreferencesSection: React.FC<DesignPreferencesSectionProps> = ({ bri
       </div>
       
       <div>
+        <h4 className="font-medium">Style Preferences</h4>
+        <p className="mt-1">{getValue(briefDetails, "stylePreferences", "style_preferences")}</p>
+      </div>
+      
+      {/* Design References */}
+      <div>
         <h4 className="font-medium">Design References</h4>
         <div className="space-y-2 mt-1">
           {getValue(briefDetails, "reference1", "reference1", "") !== "Not provided" && 
@@ -38,12 +54,7 @@ const DesignPreferencesSection: React.FC<DesignPreferencesSectionProps> = ({ bri
           {!hasReferences(briefDetails) && <p>None provided</p>}
         </div>
       </div>
-      
-      <div>
-        <h4 className="font-medium">Style Preferences</h4>
-        <p className="mt-1">{getValue(briefDetails, "stylePreferences", "style_preferences")}</p>
-      </div>
-    </>
+    </div>
   );
 };
 

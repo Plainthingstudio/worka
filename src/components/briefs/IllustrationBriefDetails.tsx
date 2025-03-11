@@ -27,7 +27,7 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
   };
 
   // Helper function to get value that might be in camelCase or snake_case
-  const getValue = (camelCaseKey: string, snakeCaseKey: string, defaultValue = "Not provided") => {
+  const getValue = (camelCaseKey: string, snakeCaseKey: string, defaultValue: any = "Not provided") => {
     if (!briefDetails) return defaultValue;
     
     const value = briefDetails[camelCaseKey] !== undefined ? briefDetails[camelCaseKey] : 
@@ -85,7 +85,7 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
     );
   };
 
-  // Helper to format deliverables which might be an array or string
+  // Helper to format deliverables which might be an array or string or object
   const formatDeliverables = (deliverables: any): string => {
     if (!deliverables) return "Not provided";
     
@@ -95,6 +95,19 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
     
     if (typeof deliverables === 'string') {
       return deliverables;
+    }
+    
+    if (typeof deliverables === 'object') {
+      try {
+        // If it's an object with file format properties
+        const formats = Object.entries(deliverables)
+          .filter(([_, isSelected]) => isSelected === true)
+          .map(([key, _]) => key);
+        
+        return formats.length > 0 ? formats.join(", ") : "Not provided";
+      } catch (e) {
+        return "Not provided";
+      }
     }
     
     return "Not provided";

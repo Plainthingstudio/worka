@@ -1,4 +1,5 @@
-import jsPDF from 'jspdf';
+
+import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { format, isValid, parseISO } from 'date-fns';
 import { addLogoToDocument } from './pdfHelpers';
@@ -39,7 +40,7 @@ export const generateIllustrationBriefPDF = async (briefData: any): Promise<void
     doc.setFont("helvetica", "normal");
     
     // Helper function to safely get values (handles both camelCase and snake_case)
-    const getValue = (camelCaseKey: string, snakeCaseKey: string, defaultValue = "Not provided") => {
+    const getValue = (camelCaseKey: string, snakeCaseKey: string, defaultValue: any = "Not provided") => {
       const value = briefData[camelCaseKey] !== undefined 
         ? briefData[camelCaseKey] 
         : briefData[snakeCaseKey] !== undefined 
@@ -165,13 +166,22 @@ export const generateIllustrationBriefPDF = async (briefData: any): Promise<void
     addBriefDetailSection("Likes/Dislikes in Design", getValue("likeDislikeDesign", "like_dislike_design"));
     addBriefDetailSection("Number of Illustrations", String(getValue("illustrationsCount", "illustrations_count")));
     
-    // Handle deliverables which could be a string or array
+    // Handle deliverables which could be a string, array, or object
     const deliverables = getValue("deliverables", "deliverables");
-    const deliverablesStr = Array.isArray(deliverables) 
-      ? deliverables.join(", ") 
-      : typeof deliverables === 'string' 
-        ? deliverables 
-        : "Not provided";
+    let deliverablesStr = "Not provided";
+    
+    if (Array.isArray(deliverables)) {
+      deliverablesStr = deliverables.join(", ");
+    } else if (typeof deliverables === 'string') {
+      deliverablesStr = deliverables;
+    } else if (typeof deliverables === 'object' && deliverables !== null) {
+      // If it's an object with file format properties
+      const formats = Object.entries(deliverables)
+        .filter(([_, isSelected]) => isSelected === true)
+        .map(([key, _]) => key);
+      
+      deliverablesStr = formats.length > 0 ? formats.join(", ") : "Not provided";
+    }
     
     addBriefDetailSection("File Formats", deliverablesStr);
     

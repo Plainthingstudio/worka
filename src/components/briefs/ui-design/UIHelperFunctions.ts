@@ -5,7 +5,7 @@ export const getValue = (
   briefData: any,
   camelCaseKey: string,
   snakeCaseKey: string,
-  defaultValue = "Not provided"
+  defaultValue: any = "Not provided"
 ): any => {
   if (!briefData) return defaultValue;
   
@@ -83,4 +83,24 @@ export const getPageDetails = (briefData: any) => {
   const details = getValue(briefData, "pageDetails", "page_details", []);
   return Array.isArray(details) ? details : 
          details && typeof details === 'object' ? [details] : [];
+};
+
+// Helper to check if any competitor is provided
+export const hasCompetitors = (briefData: any): boolean => {
+  return Boolean(
+    getValue(briefData, "competitor1", "competitor1", "") !== "Not provided" || 
+    getValue(briefData, "competitor2", "competitor2", "") !== "Not provided" || 
+    getValue(briefData, "competitor3", "competitor3", "") !== "Not provided" || 
+    getValue(briefData, "competitor4", "competitor4", "") !== "Not provided"
+  );
+};
+
+// Helper to check if any reference is provided
+export const hasReferences = (briefData: any): boolean => {
+  return Boolean(
+    getValue(briefData, "reference1", "reference1", "") !== "Not provided" || 
+    getValue(briefData, "reference2", "reference2", "") !== "Not provided" || 
+    getValue(briefData, "reference3", "reference3", "") !== "Not provided" || 
+    getValue(briefData, "reference4", "reference4", "") !== "Not provided"
+  );
 };
