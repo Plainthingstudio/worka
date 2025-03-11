@@ -151,7 +151,7 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
     y = addField(doc, "Number of Illustrations", count !== "Not provided" ? String(count) : "Not provided", y);
     y = checkPageOverflow(doc, y);
     
-    // Illustration Details
+    // Illustration Details - Ensuring proper type handling
     const details = getValue("illustrationDetails", "illustration_details", []);
     
     // Ensure 'details' is an array and process each detail item properly
@@ -161,10 +161,20 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
     if (processedDetails.length > 0) {
       processedDetails.forEach((detail: any, index: number) => {
         if (detail) {
-          // Convert the detail to a string safely, no matter what type it is
-          const detailText = typeof detail === 'string' ? detail : 
-                            detail && typeof detail === 'object' ? JSON.stringify(detail) : 
-                            String(detail || "Not provided");
+          // Convert the detail to a string safely
+          let detailText: string;
+          
+          if (typeof detail === 'string') {
+            detailText = detail;
+          } else if (detail && typeof detail === 'object') {
+            try {
+              detailText = JSON.stringify(detail);
+            } catch (e) {
+              detailText = "Complex object (cannot display)";
+            }
+          } else {
+            detailText = String(detail || "Not provided");
+          }
                             
           y = addMultiParagraphField(doc, `Illustration ${index + 1}`, detailText, y);
           y = checkPageOverflow(doc, y);
@@ -189,6 +199,8 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
       if (deliverableValues.length > 0) {
         deliverables = deliverableValues.join(", ");
       }
+    } else if (typeof brief.deliverables === 'string') {
+      deliverables = brief.deliverables;
     }
     
     y = addField(doc, "File Formats", deliverables, y);

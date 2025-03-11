@@ -7,8 +7,6 @@ interface IllustrationBriefDetailsProps {
 }
 
 const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ briefDetails }) => {
-  console.log("Illustration brief details:", briefDetails);
-
   // Helper function to safely format dates
   const formatDate = (dateValue: any): string => {
     if (!dateValue) return "Not provided";
@@ -28,7 +26,7 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
     }
   };
 
-  // Helper function to handle both camelCase and snake_case field access
+  // Helper function to get value that might be in camelCase or snake_case
   const getValue = (camelCaseKey: string, snakeCaseKey: string, defaultValue = "Not provided") => {
     if (!briefDetails) return defaultValue;
     
@@ -45,33 +43,26 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
     return value;
   };
 
-  // Helper to get illustrations count safely
-  const getIllustrationsCount = () => {
-    const count = getValue("illustrationsCount", "illustrations_count");
-    return count !== "Not provided" ? count.toString() : "Not provided";
-  };
-
-  // Helper to get illustration details safely
+  // Helper to handle illustration details which could be an array or object
   const getIllustrationDetails = () => {
     const details = getValue("illustrationDetails", "illustration_details", []);
-    // Ensure details is an array, even if empty
     return Array.isArray(details) ? details : 
            details && typeof details === 'object' ? [details] : [];
   };
 
-  // Helper to get deliverables safely
-  const getDeliverables = () => {
-    // Try different possible formats for deliverables
-    const deliverables = briefDetails.deliverables;
+  // Helper to process the details to a string
+  const processDetailsToString = (details: any[]): string => {
+    if (!details || details.length === 0) return "Not provided";
     
-    if (Array.isArray(deliverables) && deliverables.length > 0) {
-      return deliverables.join(", ");
-    } else if (deliverables && typeof deliverables === 'object') {
-      // If it's an object, try to extract values
-      return Object.values(deliverables).filter(Boolean).join(", ");
+    try {
+      return details.map(detail => {
+        if (typeof detail === 'string') return detail;
+        return JSON.stringify(detail);
+      }).join(", ");
+    } catch (error) {
+      console.error("Error processing details:", error);
+      return "Error processing details";
     }
-    
-    return "Not provided";
   };
 
   // Helper to check if any competitor is provided
@@ -106,16 +97,14 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
         <p className="mt-1">{getValue("illustrationsPurpose", "illustrations_purpose")}</p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <h4 className="font-medium">Illustrations For</h4>
-          <p className="mt-1">{getValue("illustrationsFor", "illustrations_for")}</p>
-        </div>
-        
-        <div>
-          <h4 className="font-medium">Illustrations Style</h4>
-          <p className="mt-1">{getValue("illustrationsStyle", "illustrations_style")}</p>
-        </div>
+      <div>
+        <h4 className="font-medium">Illustrations For</h4>
+        <p className="mt-1">{getValue("illustrationsFor", "illustrations_for")}</p>
+      </div>
+      
+      <div>
+        <h4 className="font-medium">Illustrations Style</h4>
+        <p className="mt-1">{getValue("illustrationsStyle", "illustrations_style")}</p>
       </div>
       
       <div>
@@ -144,32 +133,7 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
         <p className="mt-1">{getValue("brandGuidelines", "brand_guidelines")}</p>
       </div>
       
-      <div className="space-y-2">
-        <h4 className="font-medium">Illustrations Details</h4>
-        <p><span className="font-medium">Count:</span> {getIllustrationsCount()}</p>
-        
-        {getIllustrationDetails().length > 0 ? (
-          <div className="space-y-2 mt-2">
-            {getIllustrationDetails().map((detail: any, index: number) => {
-              // Convert detail to string safely, no matter what type it is
-              const detailText = typeof detail === 'string' ? detail : 
-                               detail && typeof detail === 'object' ? JSON.stringify(detail) : 
-                               detail ? String(detail) : "Not provided";
-              
-              return detail ? (
-                <div key={index} className="border p-3 rounded-md">
-                  <p className="font-medium">Illustration {index + 1}</p>
-                  <p>{detailText}</p>
-                </div>
-              ) : null;
-            })}
-          </div>
-        ) : (
-          <p>No illustration details provided</p>
-        )}
-      </div>
-      
-      {/* Reference section */}
+      {/* Design References */}
       <div>
         <h4 className="font-medium">Design References</h4>
         <div className="space-y-2 mt-1">
@@ -181,7 +145,7 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
             <p>3. {getValue("reference3", "reference3")}</p>}
           {getValue("reference4", "reference4", "") !== "Not provided" && 
             <p>4. {getValue("reference4", "reference4")}</p>}
-          {!hasReferences() && <p>Not provided</p>}
+          {!hasReferences() && <p>None provided</p>}
         </div>
       </div>
       
@@ -201,8 +165,27 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
       </div>
       
       <div>
-        <h4 className="font-medium">Deliverables</h4>
-        <p className="mt-1">{getDeliverables()}</p>
+        <h4 className="font-medium">Number of Illustrations</h4>
+        <p className="mt-1">{getValue("illustrationsCount", "illustrations_count")}</p>
+      </div>
+      
+      {/* Illustration Details */}
+      <div>
+        <h4 className="font-medium">Illustration Details</h4>
+        <div className="space-y-2 mt-1">
+          {getIllustrationDetails().map((detail, index) => (
+            <div key={index} className="border p-3 rounded-md">
+              <p className="font-medium">Illustration {index + 1}</p>
+              <p>{typeof detail === 'string' ? detail : JSON.stringify(detail)}</p>
+            </div>
+          ))}
+          {getIllustrationDetails().length === 0 && <p>No details provided</p>}
+        </div>
+      </div>
+      
+      <div>
+        <h4 className="font-medium">File Formats</h4>
+        <p className="mt-1">{getValue("deliverables", "deliverables")}</p>
       </div>
       
       <div>

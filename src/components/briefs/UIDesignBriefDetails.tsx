@@ -50,12 +50,41 @@ const UIDesignBriefDetails: React.FC<UIDesignBriefDetailsProps> = ({ briefDetail
     return value;
   };
 
-  // Helper function to get website type interest array
+  // Helper function to get website type interest as a string of selected options only
   const getWebsiteTypeInterest = () => {
-    const interestArray = getValue("websiteTypeInterest", "website_type_interest", []);
-    if (Array.isArray(interestArray) && interestArray.length > 0) {
-      return interestArray.join(", ");
+    const interestObj = getValue("websiteTypeInterest", "website_type_interest", {});
+    
+    // If it's already a string (for backward compatibility)
+    if (typeof interestObj === 'string') return interestObj;
+    
+    // If it's an array, join the values
+    if (Array.isArray(interestObj)) {
+      return interestObj.join(", ");
     }
+    
+    // If it's an object with boolean values (checkbox selections)
+    if (typeof interestObj === 'object' && interestObj !== null) {
+      const websiteTypes: Record<string, string> = {
+        agency: "Agency Website",
+        portfolio: "Portfolio Website",
+        finance: "Finance Website",
+        saas: "SaaS Website",
+        ecommerce: "E-commerce Website",
+        web3: "Web3 Website",
+        crypto: "Crypto Website",
+        webapp: "Web Application",
+        desktopapp: "Desktop Application",
+        mobileapp: "Mobile Application",
+        other: "Other"
+      };
+      
+      const selectedTypes = Object.entries(interestObj)
+        .filter(([_, isSelected]) => isSelected)
+        .map(([key, _]) => websiteTypes[key] || key);
+      
+      return selectedTypes.length > 0 ? selectedTypes.join(", ") : "Not provided";
+    }
+    
     return "Not provided";
   };
 

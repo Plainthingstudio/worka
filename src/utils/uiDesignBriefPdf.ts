@@ -50,6 +50,44 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
         return "Date format error";
       }
     };
+
+    // Helper function to get website type interest as a string of selected options only
+    const getWebsiteTypeInterestString = () => {
+      const interestObj = getValue("websiteTypeInterest", "website_type_interest", {});
+      
+      // If it's already a string (for backward compatibility)
+      if (typeof interestObj === 'string') return interestObj;
+      
+      // If it's an array, join the values
+      if (Array.isArray(interestObj)) {
+        return interestObj.join(", ");
+      }
+      
+      // If it's an object with boolean values (checkbox selections)
+      if (typeof interestObj === 'object' && interestObj !== null) {
+        const websiteTypes: Record<string, string> = {
+          agency: "Agency Website",
+          portfolio: "Portfolio Website",
+          finance: "Finance Website",
+          saas: "SaaS Website",
+          ecommerce: "E-commerce Website",
+          web3: "Web3 Website",
+          crypto: "Crypto Website",
+          webapp: "Web Application",
+          desktopapp: "Desktop Application",
+          mobileapp: "Mobile Application",
+          other: "Other"
+        };
+        
+        const selectedTypes = Object.entries(interestObj)
+          .filter(([_, isSelected]) => isSelected)
+          .map(([key, _]) => websiteTypes[key] || key);
+        
+        return selectedTypes.length > 0 ? selectedTypes.join(", ") : "Not provided";
+      }
+      
+      return "Not provided";
+    };
     
     const doc = new jsPDF();
     let y = 20;
@@ -91,16 +129,10 @@ export const generateUIDesignBriefPDF = async (brief: any) => {
     y = addMultiParagraphField(doc, "Project Description", getValue("projectDescription", "project_description"), y);
     y = checkPageOverflow(doc, y);
     
-    // Website Type Interest
-    const websiteTypeInterest = getValue("websiteTypeInterest", "website_type_interest");
-    if (websiteTypeInterest && websiteTypeInterest !== "Not provided") {
-      const interestText = Array.isArray(websiteTypeInterest) 
-        ? websiteTypeInterest.join(", ") 
-        : typeof websiteTypeInterest === 'object'
-          ? Object.values(websiteTypeInterest).filter(Boolean).join(", ")
-          : String(websiteTypeInterest);
-          
-      y = addField(doc, "Website Type Interest", interestText, y);
+    // Website Type Interest - Show only selected types
+    const websiteTypeInterestText = getWebsiteTypeInterestString();
+    if (websiteTypeInterestText !== "Not provided") {
+      y = addField(doc, "Website Type Interest", websiteTypeInterestText, y);
       y = checkPageOverflow(doc, y);
     }
     
