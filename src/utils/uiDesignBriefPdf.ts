@@ -1,8 +1,15 @@
 
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
-import { format, isValid, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { addLogoToDocument } from "./pdfHelpers";
+import { 
+  addSectionTitle, 
+  addField, 
+  checkPageOverflow,
+  addPdfTitle,
+  addMultiParagraphField
+} from "./pdfUtils";
 
 export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> => {
   try {
@@ -10,18 +17,10 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     
     // Create a new PDF document
     const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    let yPosition = 45;
-    const lineHeight = 7;
+    let yPosition = 20;
     
-    // Add logo and header
-    await addLogoToDocument(doc);
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.text("UI Design Brief", pageWidth / 2, 30, { align: "center" });
-    
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
+    // Add title
+    yPosition = addPdfTitle(doc, "UI Design Brief", yPosition);
     
     // Helper function to safely get values (handles both camelCase and snake_case)
     const getValue = (camelCaseKey: string, snakeCaseKey: string, defaultValue: any = "Not provided") => {
@@ -81,133 +80,116 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
              details && typeof details === 'object' ? [details] : [];
     };
     
-    // Helper to safely format dates
-    const formatDate = (dateValue: any): string => {
-      if (!dateValue) return "Not provided";
-      
-      try {
-        let dateObj;
-        
-        if (typeof dateValue === 'string') {
-          dateObj = parseISO(dateValue);
-        } else {
-          dateObj = new Date(dateValue);
-        }
-        
-        if (isValid(dateObj)) {
-          return format(dateObj, "MMMM d, yyyy");
-        }
-        return "Invalid date";
-      } catch (error) {
-        console.error("Error formatting date:", error);
-        return "Not provided";
-      }
-    };
-    
-    // Helper function to add a section header
-    const addSectionHeader = (text: string) => {
-      if (yPosition > 250) {
-        doc.addPage();
-        yPosition = 20;
-      }
-      
-      doc.setFont("helvetica", "bold");
-      doc.text(text, 20, yPosition);
-      yPosition += lineHeight;
-      doc.setFont("helvetica", "normal");
-    };
-    
-    // Helper function to add a field
-    const addField = (label: string, value: string) => {
-      if (yPosition > 270) {
-        doc.addPage();
-        yPosition = 20;
-      }
-      
-      const text = `${label}: ${value}`;
-      doc.text(text, 20, yPosition);
-      yPosition += lineHeight;
-    };
-    
     // Client Information Section
-    addSectionHeader("Client Information");
-    addField("Name", getValue("name", "name"));
-    addField("Email", getValue("email", "email"));
-    addField("Company", getValue("companyName", "company_name"));
+    yPosition = addSectionTitle(doc, "Client Information", yPosition);
+    yPosition = addField(doc, "Name", getValue("name", "name"), yPosition);
+    yPosition = addField(doc, "Email", getValue("email", "email"), yPosition);
+    yPosition = addField(doc, "Company", getValue("companyName", "company_name"), yPosition);
     if (getValue("phone", "phone") !== "Not provided") {
-      addField("Phone", getValue("phone", "phone"));
+      yPosition = addField(doc, "Phone", getValue("phone", "phone"), yPosition);
     }
-    yPosition += 5;
     
     // Project Information Section
-    addSectionHeader("Project Information");
-    addField("Project Type", getValue("projectType", "project_type"));
-    addField("Project Size", getValue("projectSize", "project_size"));
-    addField("Website Type", getWebsiteTypeInterest());
-    addField("Current Website", getValue("currentWebsite", "current_website"));
-    addField("Website Purpose", getValue("websitePurpose", "website_purpose"));
-    yPosition += 5;
+    yPosition = addSectionTitle(doc, "Project Information", yPosition);
+    yPosition = addField(doc, "Project Type", getValue("projectType", "project_type"), yPosition);
+    yPosition = addField(doc, "Project Size", getValue("projectSize", "project_size"), yPosition);
+    yPosition = addField(doc, "Website Type", getWebsiteTypeInterest(), yPosition);
+    yPosition = addField(doc, "Current Website", getValue("currentWebsite", "current_website"), yPosition);
+    yPosition = addMultiParagraphField(doc, "Website Purpose", getValue("websitePurpose", "website_purpose"), yPosition);
     
     // Company & Target Audience
-    addSectionHeader("Company & Target Audience");
-    addField("About Company", getValue("aboutCompany", "about_company"));
-    addField("Target Audience", getValue("targetAudience", "target_audience"));
-    yPosition += 5;
+    yPosition = addSectionTitle(doc, "Company & Target Audience", yPosition);
+    yPosition = addMultiParagraphField(doc, "About Company", getValue("aboutCompany", "about_company"), yPosition);
+    yPosition = addMultiParagraphField(doc, "Target Audience", getValue("targetAudience", "target_audience"), yPosition);
     
     // Brand & Design
-    addSectionHeader("Brand & Design");
-    addField("Existing Brand Assets", getValue("existingBrandAssets", "existing_brand_assets"));
-    addField("Brand Guidelines", getValue("hasBrandGuidelines", "has_brand_guidelines"));
+    yPosition = addSectionTitle(doc, "Brand & Design", yPosition);
+    yPosition = addField(doc, "Existing Brand Assets", getValue("existingBrandAssets", "existing_brand_assets"), yPosition);
+    yPosition = addField(doc, "Brand Guidelines", getValue("hasBrandGuidelines", "has_brand_guidelines"), yPosition);
     if (getValue("hasBrandGuidelines", "has_brand_guidelines") === "Yes") {
-      addField("Guidelines Details", getValue("brandGuidelinesDetails", "brand_guidelines_details"));
+      yPosition = addMultiParagraphField(doc, "Guidelines Details", getValue("brandGuidelinesDetails", "brand_guidelines_details"), yPosition);
     }
-    addField("Wireframe Status", getValue("hasWireframe", "has_wireframe"));
+    yPosition = addField(doc, "Wireframe Status", getValue("hasWireframe", "has_wireframe"), yPosition);
     if (getValue("hasWireframe", "has_wireframe") === "Yes") {
-      addField("Wireframe Details", getValue("wireframeDetails", "wireframe_details"));
+      yPosition = addMultiParagraphField(doc, "Wireframe Details", getValue("wireframeDetails", "wireframe_details"), yPosition);
     }
-    yPosition += 5;
     
     // Design Preferences
-    addSectionHeader("Design Preferences");
-    addField("General Style", getValue("generalStyle", "general_style"));
-    addField("Color Preferences", getValue("colorPreferences", "color_preferences"));
-    addField("Font Preferences", getValue("fontPreferences", "font_preferences"));
-    addField("Style Preferences", getValue("stylePreferences", "style_preferences"));
-    yPosition += 5;
+    yPosition = addSectionTitle(doc, "Design Preferences", yPosition);
+    yPosition = addField(doc, "General Style", getValue("generalStyle", "general_style"), yPosition);
+    yPosition = addField(doc, "Color Preferences", getValue("colorPreferences", "color_preferences"), yPosition);
+    yPosition = addField(doc, "Font Preferences", getValue("fontPreferences", "font_preferences"), yPosition);
+    yPosition = addMultiParagraphField(doc, "Style Preferences", getValue("stylePreferences", "style_preferences"), yPosition);
+    
+    // References Section
+    const references = [];
+    if (getValue("reference1", "reference1") !== "Not provided") references.push(getValue("reference1", "reference1"));
+    if (getValue("reference2", "reference2") !== "Not provided") references.push(getValue("reference2", "reference2"));
+    if (getValue("reference3", "reference3") !== "Not provided") references.push(getValue("reference3", "reference3"));
+    if (getValue("reference4", "reference4") !== "Not provided") references.push(getValue("reference4", "reference4"));
+    
+    if (references.length > 0) {
+      yPosition = checkPageOverflow(doc, yPosition + 8);
+      yPosition = addField(doc, "Design References", references.map((ref, idx) => `${idx + 1}. ${ref}`).join('\n'), yPosition);
+    }
+    
+    // Competitors Section
+    const competitors = [];
+    if (getValue("competitor1", "competitor1") !== "Not provided") competitors.push(getValue("competitor1", "competitor1"));
+    if (getValue("competitor2", "competitor2") !== "Not provided") competitors.push(getValue("competitor2", "competitor2"));
+    if (getValue("competitor3", "competitor3") !== "Not provided") competitors.push(getValue("competitor3", "competitor3"));
+    if (getValue("competitor4", "competitor4") !== "Not provided") competitors.push(getValue("competitor4", "competitor4"));
+    
+    if (competitors.length > 0) {
+      yPosition = checkPageOverflow(doc, yPosition + 8);
+      yPosition = addField(doc, "Competitors", competitors.map((comp, idx) => `${idx + 1}. ${comp}`).join('\n'), yPosition);
+    }
     
     // Page Details
-    addSectionHeader("Page Information");
-    addField("Number of Pages", getValue("pageCount", "page_count"));
+    yPosition = addSectionTitle(doc, "Page Information", yPosition);
+    yPosition = addField(doc, "Number of Pages", getValue("pageCount", "page_count"), yPosition);
     const pageDetails = getPageDetails();
     if (pageDetails.length > 0) {
-      yPosition += 5;
-      doc.setFont("helvetica", "bold");
-      doc.text("Page Details:", 20, yPosition);
-      yPosition += lineHeight;
-      doc.setFont("helvetica", "normal");
+      yPosition = checkPageOverflow(doc, yPosition + 5);
       
-      pageDetails.forEach((detail, index) => {
-        if (yPosition > 250) {
-          doc.addPage();
-          yPosition = 20;
-        }
+      for (let i = 0; i < pageDetails.length; i++) {
+        const detail = pageDetails[i];
+        yPosition = checkPageOverflow(doc, yPosition + 8);
         
         const name = detail?.name || "Unnamed Page";
         const description = detail?.description || "No description provided";
         
-        doc.text(`Page ${index + 1}: ${name}`, 20, yPosition);
-        yPosition += lineHeight;
-        doc.text(description, 25, yPosition);
-        yPosition += lineHeight + 2;
-      });
+        doc.setFont("helvetica", "bold");
+        doc.text(`Page ${i + 1}: ${name}`, 20, yPosition);
+        doc.setFont("helvetica", "normal");
+        yPosition += 6;
+        
+        // Handle multiline descriptions
+        const wrappedDesc = doc.splitTextToSize(description, 170);
+        doc.text(wrappedDesc, 25, yPosition);
+        yPosition += (wrappedDesc.length * 6) + 4;
+      }
     }
-    yPosition += 5;
     
     // Project Delivery
-    addSectionHeader("Project Delivery");
-    addField("Website Content", getValue("websiteContent", "website_content"));
-    addField("Development Service", getValue("developmentService", "development_service"));
-    addField("Completion Deadline", formatDate(getValue("completionDeadline", "completion_deadline")));
+    yPosition = addSectionTitle(doc, "Project Delivery", yPosition);
+    yPosition = addField(doc, "Website Content", getValue("websiteContent", "website_content"), yPosition);
+    yPosition = addField(doc, "Development Service", getValue("developmentService", "development_service"), yPosition);
+    
+    // Format the date properly for the deadline
+    const deadlineValue = getValue("completionDeadline", "completion_deadline");
+    let formattedDeadline = "Not provided";
+    if (deadlineValue) {
+      try {
+        const deadlineDate = new Date(deadlineValue);
+        if (!isNaN(deadlineDate.getTime())) {
+          formattedDeadline = format(deadlineDate, "MMMM d, yyyy");
+        }
+      } catch (e) {
+        console.error("Error formatting deadline:", e);
+      }
+    }
+    yPosition = addField(doc, "Completion Deadline", formattedDeadline, yPosition);
     
     // Save the PDF
     const fileName = `UI_Design_Brief_${getValue("name", "name").replace(/\s+/g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.pdf`;

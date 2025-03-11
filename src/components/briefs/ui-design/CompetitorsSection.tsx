@@ -1,16 +1,6 @@
 
 import React from "react";
-import { getValue } from "./UIHelperFunctions";
-
-// Helper to check if any competitor is provided
-const hasCompetitors = (briefDetails: any): boolean => {
-  return Boolean(
-    getValue(briefDetails, "competitor1", "competitor1", "") !== "Not provided" || 
-    getValue(briefDetails, "competitor2", "competitor2", "") !== "Not provided" || 
-    getValue(briefDetails, "competitor3", "competitor3", "") !== "Not provided" || 
-    getValue(briefDetails, "competitor4", "competitor4", "") !== "Not provided"
-  );
-};
+import { getValue, hasCompetitors } from "./UIHelperFunctions";
 
 interface CompetitorsSectionProps {
   briefDetails: any;

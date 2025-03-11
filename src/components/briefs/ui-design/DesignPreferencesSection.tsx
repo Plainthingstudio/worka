@@ -1,16 +1,6 @@
 
 import React from "react";
-import { getValue } from "./UIHelperFunctions";
-
-// Helper to check if any reference is provided
-const hasReferences = (briefDetails: any): boolean => {
-  return Boolean(
-    getValue(briefDetails, "reference1", "reference1", "") !== "Not provided" || 
-    getValue(briefDetails, "reference2", "reference2", "") !== "Not provided" || 
-    getValue(briefDetails, "reference3", "reference3", "") !== "Not provided" || 
-    getValue(briefDetails, "reference4", "reference4", "") !== "Not provided"
-  );
-};
+import { getValue, hasReferences } from "./UIHelperFunctions";
 
 interface DesignPreferencesSectionProps {
   briefDetails: any;
