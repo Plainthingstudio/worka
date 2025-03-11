@@ -65,39 +65,40 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
     y = checkPageOverflow(doc, y);
 
     // Logo Preferences
-    const logoFeelings = brief.logoFeelings || brief.logo_feelings;
-    if (logoFeelings) {
-      y = addSectionTitle(doc, "Logo Preferences", y);
-      
-      // Process each logo feeling attribute individually with page break checking after each
-      if (logoFeelings.gender) {
-        y = addField(doc, "Feminine vs Masculine", logoFeelings.gender, y);
-        y = checkPageOverflow(doc, y);
-      }
-      
-      if (logoFeelings.pricing) {
-        y = addField(doc, "Economical vs Luxury", logoFeelings.pricing, y);
-        y = checkPageOverflow(doc, y);
-      }
-      
-      if (logoFeelings.era) {
-        y = addField(doc, "Modern vs Classic", logoFeelings.era, y);
-        y = checkPageOverflow(doc, y);
-      }
-      
-      if (logoFeelings.tone) {
-        y = addField(doc, "Serious vs Playful", logoFeelings.tone, y);
-        y = checkPageOverflow(doc, y);
-      }
-      
-      // Explicitly check for complexity and add with page break check
-      if (logoFeelings.complexity) {
-        console.log("Adding complexity to PDF:", logoFeelings.complexity);
-        y = addField(doc, "Simple vs Complex", logoFeelings.complexity, y);
-        y = checkPageOverflow(doc, y);
-      }
+    // Accessing logoFeelings from both possible structures and ensuring it exists
+    const logoFeelings = brief.logoFeelings || brief.logo_feelings || {};
+    
+    y = addSectionTitle(doc, "Logo Preferences", y);
+    
+    // Process each logo feeling attribute individually with page break checking after each
+    // Explicitly check each property of logoFeelings
+    if (logoFeelings.gender) {
+      y = addField(doc, "Feminine vs Masculine", logoFeelings.gender, y);
+      y = checkPageOverflow(doc, y);
     }
-
+    
+    if (logoFeelings.pricing) {
+      y = addField(doc, "Economical vs Luxury", logoFeelings.pricing, y);
+      y = checkPageOverflow(doc, y);
+    }
+    
+    if (logoFeelings.era) {
+      y = addField(doc, "Modern vs Classic", logoFeelings.era, y);
+      y = checkPageOverflow(doc, y);
+    }
+    
+    if (logoFeelings.tone) {
+      y = addField(doc, "Serious vs Playful", logoFeelings.tone, y);
+      y = checkPageOverflow(doc, y);
+    }
+    
+    // Explicitly check for complexity and ensure it's added
+    if (logoFeelings.complexity) {
+      console.log("Adding complexity to PDF:", logoFeelings.complexity);
+      y = addField(doc, "Simple vs Complex", logoFeelings.complexity, y);
+      y = checkPageOverflow(doc, y);
+    }
+    
     // Logo Type
     const logoType = brief.logoType || brief.logo_type;
     if (logoType) {
@@ -107,9 +108,16 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
 
     // Tone
     const tone = brief.tone;
-    if (tone && tone.length > 0) {
-      y = addField(doc, "Tone", Array.isArray(tone) ? tone.join(", ") : tone, y);
-      y = checkPageOverflow(doc, y);
+    if (tone && Object.keys(tone).length > 0) {
+      // Convert the tone object to an array of selected tones
+      const selectedTones = Object.entries(tone)
+        .filter(([_, isSelected]) => isSelected === true)
+        .map(([key]) => key);
+      
+      if (selectedTones.length > 0) {
+        y = addField(doc, "Tone", selectedTones.join(", "), y);
+        y = checkPageOverflow(doc, y);
+      }
     }
 
     // Target Audience
@@ -212,25 +220,25 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
 
     // Services Required
     const services = brief.services;
-    if (services && services.length > 0) {
+    if (services && Array.isArray(services) && services.length > 0) {
       y = addSectionTitle(doc, "Services Required", y);
-      y = addField(doc, "Services", Array.isArray(services) ? services.join(", ") : services, y);
+      y = addField(doc, "Services", services.join(", "), y);
       y = checkPageOverflow(doc, y);
     }
 
     // Print Media
     const printMedia = brief.printMedia || brief.print_media;
-    if (printMedia && printMedia.length > 0) {
+    if (printMedia && Array.isArray(printMedia) && printMedia.length > 0) {
       y = addSectionTitle(doc, "Print Media", y);
-      y = addField(doc, "Print Media Items", Array.isArray(printMedia) ? printMedia.join(", ") : printMedia, y);
+      y = addField(doc, "Print Media Items", printMedia.join(", "), y);
       y = checkPageOverflow(doc, y);
     }
 
     // Digital Media
     const digitalMedia = brief.digitalMedia || brief.digital_media;
-    if (digitalMedia && digitalMedia.length > 0) {
+    if (digitalMedia && Array.isArray(digitalMedia) && digitalMedia.length > 0) {
       y = addSectionTitle(doc, "Digital Media", y);
-      y = addField(doc, "Digital Media Items", Array.isArray(digitalMedia) ? digitalMedia.join(", ") : digitalMedia, y);
+      y = addField(doc, "Digital Media Items", digitalMedia.join(", "), y);
       y = checkPageOverflow(doc, y);
     }
 
