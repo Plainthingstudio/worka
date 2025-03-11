@@ -35,7 +35,17 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
         return defaultValue;
       }
       
-      return value;
+      // Convert arrays and objects to strings to avoid PDF generation errors
+      if (Array.isArray(value)) {
+        return value.join(", ");
+      }
+      
+      if (typeof value === 'object' && value !== null) {
+        return JSON.stringify(value);
+      }
+      
+      // Ensure we return a string
+      return String(value);
     };
     
     // Helper function to get website type interest as a string
@@ -160,12 +170,12 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
         const description = detail?.description || "No description provided";
         
         doc.setFont("helvetica", "bold");
-        doc.text(`Page ${i + 1}: ${name}`, 20, yPosition);
+        doc.text(`Page ${i + 1}: ${String(name)}`, 20, yPosition);
         doc.setFont("helvetica", "normal");
         yPosition += 6;
         
         // Handle multiline descriptions
-        const wrappedDesc = doc.splitTextToSize(description, 170);
+        const wrappedDesc = doc.splitTextToSize(String(description), 170);
         doc.text(wrappedDesc, 25, yPosition);
         yPosition += (wrappedDesc.length * 6) + 4;
       }

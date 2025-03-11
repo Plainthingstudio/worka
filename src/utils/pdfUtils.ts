@@ -12,6 +12,23 @@ const PAGE_MARGINS = {
 // Document width after applying margins
 const CONTENT_WIDTH = 210 - PAGE_MARGINS.left - PAGE_MARGINS.right;
 
+// Helper function to ensure text is a string
+const ensureString = (text: any): string => {
+  if (text === null || text === undefined) {
+    return "Not provided";
+  }
+  
+  if (Array.isArray(text)) {
+    return text.join(", ");
+  }
+  
+  if (typeof text === 'object') {
+    return JSON.stringify(text);
+  }
+  
+  return String(text);
+};
+
 // Helper function to add a section title
 export const addSectionTitle = (doc: jsPDF, text: string, y: number) => {
   // Check if we need to add a new page before adding the section title
@@ -19,7 +36,7 @@ export const addSectionTitle = (doc: jsPDF, text: string, y: number) => {
   
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14); // Reduced from 16
-  doc.text(text, PAGE_MARGINS.left, y);
+  doc.text(ensureString(text), PAGE_MARGINS.left, y);
   doc.setLineWidth(0.6); // Reduced from 0.8
   doc.line(PAGE_MARGINS.left, y + 2, 210 - PAGE_MARGINS.right, y + 2); // Reduced from y + 3
   doc.setFont("helvetica", "normal");
@@ -28,8 +45,8 @@ export const addSectionTitle = (doc: jsPDF, text: string, y: number) => {
 };
 
 // Helper function to add a field
-export const addField = (doc: jsPDF, label: string, value: string | null | undefined, y: number) => {
-  const safeValue = typeof value === 'string' ? value.trim() : (value || "Not provided");
+export const addField = (doc: jsPDF, label: string, value: any, y: number) => {
+  const safeValue = ensureString(value).trim() || "Not provided";
   
   // Calculate the height this field will take (for page overflow check)
   let estimatedHeight = 9; // Reduced from 12
@@ -47,7 +64,7 @@ export const addField = (doc: jsPDF, label: string, value: string | null | undef
   
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11); // Reduced from 12
-  doc.text(`${label}:`, PAGE_MARGINS.left, y);
+  doc.text(`${ensureString(label)}:`, PAGE_MARGINS.left, y);
   doc.setFont("helvetica", "normal");
   
   // Calculate maximum width available for the text
@@ -81,7 +98,7 @@ export const checkPageOverflow = (doc: jsPDF, y: number, margin: number = PAGE_M
 export const addPdfTitle = (doc: jsPDF, title: string, y: number) => {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18); // Reduced from 22
-  doc.text(title, 105, y, { align: "center" });
+  doc.text(ensureString(title), 105, y, { align: "center" });
   return y + 18; // Reduced from 25
 };
 
@@ -93,8 +110,8 @@ export const addSeparator = (doc: jsPDF, y: number) => {
 };
 
 // Helper function to properly format multi-paragraph text
-export const addMultiParagraphField = (doc: jsPDF, label: string, value: string | null | undefined, y: number) => {
-  const safeValue = typeof value === 'string' ? value.trim() : (value || "Not provided");
+export const addMultiParagraphField = (doc: jsPDF, label: string, value: any, y: number) => {
+  const safeValue = ensureString(value).trim() || "Not provided";
   
   // Estimate the height this text will take
   const paragraphs = safeValue.split(/\n\n+/);
@@ -114,7 +131,7 @@ export const addMultiParagraphField = (doc: jsPDF, label: string, value: string 
   
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11); // Reduced from 12
-  doc.text(`${label}:`, PAGE_MARGINS.left, y);
+  doc.text(`${ensureString(label)}:`, PAGE_MARGINS.left, y);
   doc.setFont("helvetica", "normal");
   
   // Split into paragraphs first (if there are actual paragraphs)
