@@ -1,5 +1,6 @@
 
 import jsPDF from "jspdf";
+import 'jspdf-autotable';
 
 // Define consistent page margins for all sides
 const PAGE_MARGINS = {
@@ -159,4 +160,31 @@ export const addMultiParagraphField = (doc: jsPDF, label: string, value: any, y:
   
   // Return position after all paragraphs with added spacing
   return currentY + 5; // Reduced from 8
+};
+
+// Helper function to add a table to the document
+export const addTableToDocument = (doc: jsPDF, headers: string[], data: string[][], startY: number): number => {
+  if (typeof (doc as any).autoTable !== 'function') {
+    console.error("autoTable is not available. Make sure jspdf-autotable is properly imported");
+    return startY + 10;
+  }
+  
+  try {
+    (doc as any).autoTable({
+      head: [headers],
+      body: data,
+      startY: startY,
+      theme: 'striped',
+      headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { overflow: 'linebreak', fontSize: 10 },
+      columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 'auto' } },
+    });
+
+    // Get the final Y position
+    const finalY = (doc as any).lastAutoTable?.finalY || startY;
+    return finalY + 10;
+  } catch (error) {
+    console.error("Error creating table:", error);
+    return startY + 10;
+  }
 };
