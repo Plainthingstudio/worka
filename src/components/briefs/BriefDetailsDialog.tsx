@@ -8,6 +8,7 @@ import UIDesignBriefDetails from "./UIDesignBriefDetails";
 import GraphicDesignBriefDetails from "./GraphicDesignBriefDetails";
 import IllustrationBriefDetails from "./IllustrationBriefDetails";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface BriefDetailsDialogProps {
   open: boolean;
@@ -43,6 +44,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
           
           if (error) {
             console.error("Error fetching full illustration brief:", error);
+            toast.error("Error loading illustration brief details");
             setFullBriefDetails(briefDetails);
           } else {
             console.log("Full illustration brief fetched:", data);
@@ -62,8 +64,10 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
           
           if (error) {
             console.error("Error fetching full UI brief:", error);
+            toast.error("Error loading UI design brief details");
             setFullBriefDetails(briefDetails);
           } else {
+            console.log("Full UI brief fetched:", data);
             setFullBriefDetails({
               ...data,
               type: "UI Design",
@@ -80,8 +84,10 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
           
           if (error) {
             console.error("Error fetching full graphic brief:", error);
+            toast.error("Error loading graphic design brief details");
             setFullBriefDetails(briefDetails);
           } else {
+            console.log("Full graphic brief fetched:", data);
             setFullBriefDetails({
               ...data,
               type: "Graphic Design",
@@ -90,10 +96,12 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
             });
           }
         } else {
+          console.warn("Unknown brief type:", briefDetails.type);
           setFullBriefDetails(briefDetails);
         }
       } catch (error) {
         console.error("Error fetching full brief details:", error);
+        toast.error("Error loading brief details");
         setFullBriefDetails(briefDetails);
       } finally {
         setIsLoading(false);

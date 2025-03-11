@@ -155,8 +155,11 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
     const details = getValue("illustrationDetails", "illustration_details", []);
     
     // Ensure 'details' is an array and process each detail item properly
-    if (Array.isArray(details) && details.length > 0) {
-      details.forEach((detail: any, index: number) => {
+    const processedDetails = Array.isArray(details) ? details : 
+                            details && typeof details === 'object' ? [details] : [];
+                            
+    if (processedDetails.length > 0) {
+      processedDetails.forEach((detail: any, index: number) => {
         if (detail) {
           // Convert the detail to a string safely, no matter what type it is
           const detailText = typeof detail === 'string' ? detail : 
@@ -167,11 +170,6 @@ export const generateIllustrationBriefPDF = async (brief: any) => {
           y = checkPageOverflow(doc, y);
         }
       });
-    } else if (details && typeof details === 'object' && !Array.isArray(details)) {
-      // Handle case where details is an object but not an array
-      const detailText = JSON.stringify(details);
-      y = addMultiParagraphField(doc, "Illustration Details", detailText, y);
-      y = checkPageOverflow(doc, y);
     } else {
       // If no details or not an array, add a placeholder
       y = addField(doc, "Illustration Details", "No details provided", y);
