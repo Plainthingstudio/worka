@@ -1,6 +1,6 @@
 
 import { jsPDF } from "jspdf";
-import logo from "../assets/logo.png";
+import logo from "@/assets/logo.png";
 
 export const addLogoToDocument = async (doc: jsPDF): Promise<void> => {
   try {
