@@ -85,6 +85,21 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
     );
   };
 
+  // Helper to format deliverables which might be an array or string
+  const formatDeliverables = (deliverables: any): string => {
+    if (!deliverables) return "Not provided";
+    
+    if (Array.isArray(deliverables)) {
+      return deliverables.join(", ");
+    }
+    
+    if (typeof deliverables === 'string') {
+      return deliverables;
+    }
+    
+    return "Not provided";
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -185,7 +200,7 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
       
       <div>
         <h4 className="font-medium">File Formats</h4>
-        <p className="mt-1">{getValue("deliverables", "deliverables")}</p>
+        <p className="mt-1">{formatDeliverables(getValue("deliverables", "deliverables"))}</p>
       </div>
       
       <div>

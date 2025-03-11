@@ -1,18 +1,7 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { format, isValid, parseISO } from 'date-fns';
-import logo from '../assets/logo.png';
-
-// Function to add the logo to the document
-const addLogoToDocument = async (doc: jsPDF): Promise<void> => {
-  try {
-    const imgData = logo;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    doc.addImage(imgData, 'PNG', pageWidth / 2 - 25, 5, 50, 15);
-  } catch (error) {
-    console.error("Error adding logo to PDF:", error);
-  }
-};
+import { addLogoToDocument } from './pdfHelpers';
 
 // Function to add a table to the document
 const addTableToDocument = (doc: jsPDF, headers: string[], data: string[][], startY: number): number => {
@@ -174,8 +163,17 @@ export const generateIllustrationBriefPDF = async (briefData: any): Promise<void
     addBriefDetailSection("General Style", getValue("generalStyle", "general_style"));
     addBriefDetailSection("Color Preferences", getValue("colorPreferences", "color_preferences"));
     addBriefDetailSection("Likes/Dislikes in Design", getValue("likeDislikeDesign", "like_dislike_design"));
-    addBriefDetailSection("Number of Illustrations", getValue("illustrationsCount", "illustrations_count"));
-    addBriefDetailSection("File Formats", getValue("deliverables", "deliverables"));
+    addBriefDetailSection("Number of Illustrations", String(getValue("illustrationsCount", "illustrations_count")));
+    
+    // Handle deliverables which could be a string or array
+    const deliverables = getValue("deliverables", "deliverables");
+    const deliverablesStr = Array.isArray(deliverables) 
+      ? deliverables.join(", ") 
+      : typeof deliverables === 'string' 
+        ? deliverables 
+        : "Not provided";
+    
+    addBriefDetailSection("File Formats", deliverablesStr);
     
     // Competitors Table
     const competitorsHeaders = ["Competitor", "Details"];

@@ -1,3 +1,4 @@
+
 import { jsPDF } from "jspdf";
 import { format, isValid, parseISO } from "date-fns";
 import { addLogoToDocument } from "./pdfHelpers";
@@ -63,7 +64,7 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
         };
         
         const selectedTypes = Object.entries(interestObj)
-          .filter(([_, isSelected]) => isSelected)
+          .filter(([_, isSelected]) => isSelected === true)
           .map(([key, _]) => websiteTypes[key] || key);
         
         return selectedTypes.length > 0 ? selectedTypes.join(", ") : "Not provided";
@@ -173,7 +174,7 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
 
     // Page Details
     addSectionHeader("Page Information");
-    addField("Number of Pages", getValue("pageCount", "page_count"));
+    addField("Number of Pages", String(getValue("pageCount", "page_count")));
     
     const pageDetails = getPageDetails();
     if (pageDetails.length > 0) {
