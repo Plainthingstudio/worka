@@ -56,7 +56,7 @@ const IllustrationBriefDetails: React.FC<IllustrationBriefDetailsProps> = ({ bri
     const details = getValue("illustrationDetails", "illustration_details", []);
     // Ensure details is an array, even if empty
     return Array.isArray(details) ? details : 
-           details && typeof details === 'object' ? [JSON.stringify(details)] : [];
+           details && typeof details === 'object' ? [details] : [];
   };
 
   // Helper to get deliverables safely
