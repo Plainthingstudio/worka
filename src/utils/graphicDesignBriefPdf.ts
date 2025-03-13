@@ -1,4 +1,3 @@
-
 import jsPDF from "jspdf";
 import { format, isValid, parseISO } from "date-fns";
 import { 
@@ -104,20 +103,6 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
     if (logoType) {
       y = addField(doc, "Logo Type", logoType, y);
       y = checkPageOverflow(doc, y);
-    }
-
-    // Tone
-    const tone = brief.tone;
-    if (tone && Object.keys(tone).length > 0) {
-      // Convert the tone object to an array of selected tones
-      const selectedTones = Object.entries(tone)
-        .filter(([_, isSelected]) => isSelected === true)
-        .map(([key]) => key);
-      
-      if (selectedTones.length > 0) {
-        y = addField(doc, "Tone", selectedTones.join(", "), y);
-        y = checkPageOverflow(doc, y);
-      }
     }
 
     // Target Audience

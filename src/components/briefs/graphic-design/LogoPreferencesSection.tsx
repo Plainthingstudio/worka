@@ -10,13 +10,12 @@ interface LogoPreferencesSectionProps {
     complexity?: string;
   } | null;
   logoType: string | null;
-  tone: string[] | null;
+  tone?: string[] | null; // Made optional since we're not using it anymore
 }
 
 const LogoPreferencesSection: React.FC<LogoPreferencesSectionProps> = ({
   logoFeelings,
-  logoType,
-  tone
+  logoType
 }) => {
   console.log("Logo preferences received in section:", logoFeelings);
   
@@ -68,13 +67,7 @@ const LogoPreferencesSection: React.FC<LogoPreferencesSectionProps> = ({
         </div>
       </div>
       
-      {/* Logo Tone section */}
-      {Array.isArray(tone) && tone.length > 0 && (
-        <div>
-          <h4 className="font-medium">Logo Tone</h4>
-          <p className="mt-1">{tone.join(", ")}</p>
-        </div>
-      )}
+      {/* Removed Logo Tone section */}
     </>
   );
 };

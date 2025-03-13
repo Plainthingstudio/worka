@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -96,17 +95,7 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
           <p>{getValue("logoType", "logo_type")}</p>
         </div>
         
-        <div>
-          <p className="font-medium">Tone</p>
-          <p>
-            {typeof briefDetails.tone === 'object' && briefDetails.tone !== null
-              ? Object.entries(briefDetails.tone)
-                  .filter(([_, isSelected]) => isSelected === true)
-                  .map(([key]) => key)
-                  .join(', ') || 'Not provided'
-              : getValue("tone", "tone")}
-          </p>
-        </div>
+        {/* Removed standalone "Tone" section since we're already showing the tone preference in the grid above */}
       </section>
       
       <Separator />
