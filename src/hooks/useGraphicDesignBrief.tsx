@@ -73,6 +73,16 @@ export const useGraphicDesignBrief = () => {
       // Try to get the current user - if logged in, attach user_id
       const { data: { user } } = await supabase.auth.getUser();
 
+      // Log the full form data before submission to verify complexity is included
+      console.log("Submitting form data:", data);
+      console.log("Logo feelings data:", data.logoFeelings);
+
+      // Ensure the complexity field is properly included
+      const logoFeelings = {
+        ...(data.logoFeelings || {}),
+        complexity: data.logoFeelings?.complexity || ""
+      };
+
       // Prepare data for Supabase with correct column names
       const briefData: any = {
         name: data.name || "",
@@ -82,7 +92,7 @@ export const useGraphicDesignBrief = () => {
         about_company: data.aboutCompany || "",
         vision_mission: data.visionMission || "",
         slogan: data.slogan || "",
-        logo_feelings: data.logoFeelings || {},
+        logo_feelings: logoFeelings,
         logo_type: data.logoType || "",
         reference1: data.reference1 || "",
         reference2: data.reference2 || "",

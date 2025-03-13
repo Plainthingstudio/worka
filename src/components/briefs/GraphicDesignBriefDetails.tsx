@@ -98,7 +98,14 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
         
         <div>
           <p className="font-medium">Tone</p>
-          <p>{getValue("tone", "tone")}</p>
+          <p>
+            {typeof briefDetails.tone === 'object' && briefDetails.tone !== null
+              ? Object.entries(briefDetails.tone)
+                  .filter(([_, isSelected]) => isSelected === true)
+                  .map(([key]) => key)
+                  .join(', ') || 'Not provided'
+              : getValue("tone", "tone")}
+          </p>
         </div>
       </section>
       

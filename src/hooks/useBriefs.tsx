@@ -191,37 +191,46 @@ export const useBriefs = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (user) {
-        // We need to determine which table to delete from
-        const brief = briefs.find(b => b.id === id);
-        if (!brief) throw new Error("Brief not found");
-        
-        let error;
-        
-        // Delete from the appropriate table based on type
-        if (brief.type === "UI Design") {
-          const result = await supabase
-            .from('ui_design_briefs')
-            .delete()
-            .eq('id', id);
-          error = result.error;
-        } else if (brief.type === "Graphic Design") {
-          const result = await supabase
-            .from('graphic_design_briefs')
-            .delete()
-            .eq('id', id);
-          error = result.error;
-        } else if (brief.type === "Illustration Design") {
-          const result = await supabase
-            .from('illustration_design_briefs')
-            .delete()
-            .eq('id', id);
-          error = result.error;
-        }
+      // We need to determine which table to delete from
+      const brief = briefs.find(b => b.id === id);
+      if (!brief) throw new Error("Brief not found");
+      
+      // Check if the current user is authorized to delete this brief
+      if (user && brief.user_id && brief.user_id !== user.id) {
+        toast.error("You are not authorized to delete this brief");
+        return;
+      }
+      
+      let error;
+      
+      // Delete from the appropriate table based on type
+      if (brief.type === "UI Design") {
+        const result = await supabase
+          .from('ui_design_briefs')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', user?.id || null); // Only allow deleting if user_id matches
+        error = result.error;
+      } else if (brief.type === "Graphic Design") {
+        const result = await supabase
+          .from('graphic_design_briefs')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', user?.id || null); // Only allow deleting if user_id matches
+        error = result.error;
+      } else if (brief.type === "Illustration Design") {
+        const result = await supabase
+          .from('illustration_design_briefs')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', user?.id || null); // Only allow deleting if user_id matches
+        error = result.error;
+      }
 
-        if (error) throw error;
-      } else {
-        // For demo/local mode
+      if (error) throw error;
+
+      // For demo/local mode
+      if (!user) {
         const storedBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
         const updatedBriefs = storedBriefs.filter((brief: any) => brief.id !== id);
         localStorage.setItem("briefs", JSON.stringify(updatedBriefs));
