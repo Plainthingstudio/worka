@@ -1,7 +1,12 @@
 
 import React from "react";
-import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import CompanyInfoSection from "./graphic-design/CompanyInfoSection";
+import LogoPreferencesSection from "./graphic-design/LogoPreferencesSection";
+import TargetAudienceSection from "./graphic-design/TargetAudienceSection";
+import MarketInformationSection from "./graphic-design/MarketInformationSection";
+import CompetitorsReferencesSection from "./graphic-design/CompetitorsReferencesSection";
+import ServicesMediaSection from "./graphic-design/ServicesMediaSection";
 
 interface GraphicDesignBriefDetailsProps {
   briefDetails: any;
@@ -37,13 +42,11 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       {/* Company Information Section */}
       <section className="space-y-4">
         <h3 className="text-lg font-medium">About Company</h3>
-        <p>{getValue("aboutCompany", "about_company")}</p>
-        
-        <h3 className="text-lg font-medium">Vision and Mission</h3>
-        <p>{getValue("visionMission", "vision_mission")}</p>
-        
-        <h3 className="text-lg font-medium">Slogan</h3>
-        <p>{getValue("slogan", "slogan")}</p>
+        <CompanyInfoSection 
+          aboutCompany={briefDetails.aboutCompany || briefDetails.about_company}
+          visionMission={briefDetails.visionMission || briefDetails.vision_mission}
+          slogan={briefDetails.slogan}
+        />
       </section>
       
       <Separator />
@@ -51,43 +54,10 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       {/* Logo Preferences Section */}
       <section className="space-y-4">
         <h3 className="text-lg font-medium">Logo Preferences</h3>
-        
-        {logoFeelings && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {logoFeelings.gender && (
-              <div>
-                <p className="font-medium">Feminine vs Masculine</p>
-                <p>{displayValue(logoFeelings.gender)}</p>
-              </div>
-            )}
-            
-            {logoFeelings.pricing && (
-              <div>
-                <p className="font-medium">Economical vs Luxury</p>
-                <p>{displayValue(logoFeelings.pricing)}</p>
-              </div>
-            )}
-            
-            {logoFeelings.era && (
-              <div>
-                <p className="font-medium">Modern vs Classic</p>
-                <p>{displayValue(logoFeelings.era)}</p>
-              </div>
-            )}
-            
-            {logoFeelings.tone && (
-              <div>
-                <p className="font-medium">Serious vs Playful</p>
-                <p>{displayValue(logoFeelings.tone)}</p>
-              </div>
-            )}
-          </div>
-        )}
-        
-        <div>
-          <p className="font-medium">Logo Type</p>
-          <p>{getValue("logoType", "logo_type")}</p>
-        </div>
+        <LogoPreferencesSection 
+          logoFeelings={logoFeelings}
+          logoType={briefDetails.logoType || briefDetails.logo_type}
+        />
       </section>
       
       <Separator />
@@ -95,33 +65,13 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       {/* Target Audience Section */}
       <section className="space-y-4">
         <h3 className="text-lg font-medium">Target Audience</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <p className="font-medium">Target Age</p>
-            <p>{getValue("targetAge", "target_age")}</p>
-          </div>
-          
-          <div>
-            <p className="font-medium">Target Gender</p>
-            <p>{getValue("targetGender", "target_gender")}</p>
-          </div>
-          
-          <div>
-            <p className="font-medium">Target Demography</p>
-            <p>{getValue("targetDemography", "target_demography")}</p>
-          </div>
-          
-          <div>
-            <p className="font-medium">Target Profession</p>
-            <p>{getValue("targetProfession", "target_profession")}</p>
-          </div>
-        </div>
-        
-        <div>
-          <p className="font-medium">Target Personality</p>
-          <p>{getValue("targetPersonality", "target_personality")}</p>
-        </div>
+        <TargetAudienceSection 
+          targetAge={briefDetails.targetAge || briefDetails.target_age}
+          targetGender={briefDetails.targetGender || briefDetails.target_gender}
+          targetDemography={briefDetails.targetDemography || briefDetails.target_demography}
+          targetProfession={briefDetails.targetProfession || briefDetails.target_profession}
+          targetPersonality={briefDetails.targetPersonality || briefDetails.target_personality}
+        />
       </section>
       
       <Separator />
@@ -129,31 +79,13 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       {/* Market Information Section */}
       <section className="space-y-4">
         <h3 className="text-lg font-medium">Market Information</h3>
-        
-        <div>
-          <p className="font-medium">Products/Services</p>
-          <p>{getValue("productsServices", "products_services")}</p>
-        </div>
-        
-        <div>
-          <p className="font-medium">Features & Benefits</p>
-          <p>{getValue("featuresAndBenefits", "features_and_benefits")}</p>
-        </div>
-        
-        <div>
-          <p className="font-medium">Market Category</p>
-          <p>{getValue("marketCategory", "market_category")}</p>
-        </div>
-        
-        <div>
-          <p className="font-medium">Brand Positioning</p>
-          <p>{getValue("brandPositioning", "brand_positioning")}</p>
-        </div>
-        
-        <div>
-          <p className="font-medium">Barrier to Entry</p>
-          <p>{getValue("barrierToEntry", "barrier_to_entry")}</p>
-        </div>
+        <MarketInformationSection 
+          productsServices={briefDetails.productsServices || briefDetails.products_services}
+          featuresAndBenefits={briefDetails.featuresAndBenefits || briefDetails.features_and_benefits}
+          marketCategory={briefDetails.marketCategory || briefDetails.market_category}
+          brandPositioning={briefDetails.brandPositioning || briefDetails.brand_positioning}
+          barrierToEntry={briefDetails.barrierToEntry || briefDetails.barrier_to_entry}
+        />
       </section>
       
       <Separator />
@@ -161,33 +93,17 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       {/* Competitors & References Section */}
       <section className="space-y-4">
         <h3 className="text-lg font-medium">Competitors & References</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {["competitor1", "competitor2", "competitor3", "competitor4"].map((key, index) => (
-            briefDetails[key] && (
-              <div key={key}>
-                <p className="font-medium">Competitor {index + 1}</p>
-                <p>{displayValue(briefDetails[key])}</p>
-              </div>
-            )
-          ))}
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          {["reference1", "reference2", "reference3", "reference4"].map((key, index) => (
-            briefDetails[key] && (
-              <div key={key}>
-                <p className="font-medium">Reference {index + 1}</p>
-                <p>{displayValue(briefDetails[key])}</p>
-              </div>
-            )
-          ))}
-        </div>
-        
-        <div>
-          <p className="font-medium">Specific Imagery</p>
-          <p>{getValue("specificImagery", "specific_imagery")}</p>
-        </div>
+        <CompetitorsReferencesSection 
+          competitor1={briefDetails.competitor1}
+          competitor2={briefDetails.competitor2}
+          competitor3={briefDetails.competitor3}
+          competitor4={briefDetails.competitor4}
+          reference1={briefDetails.reference1}
+          reference2={briefDetails.reference2}
+          reference3={briefDetails.reference3}
+          reference4={briefDetails.reference4}
+          specificImagery={briefDetails.specificImagery || briefDetails.specific_imagery}
+        />
       </section>
       
       <Separator />
@@ -195,21 +111,11 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
       {/* Services & Media Section */}
       <section className="space-y-4">
         <h3 className="text-lg font-medium">Services & Media</h3>
-        
-        <div>
-          <p className="font-medium">Services Required</p>
-          <p>{getValue("services", "services")}</p>
-        </div>
-        
-        <div>
-          <p className="font-medium">Print Media</p>
-          <p>{getValue("printMedia", "print_media")}</p>
-        </div>
-        
-        <div>
-          <p className="font-medium">Digital Media</p>
-          <p>{getValue("digitalMedia", "digital_media")}</p>
-        </div>
+        <ServicesMediaSection 
+          services={briefDetails.services}
+          printMedia={briefDetails.printMedia || briefDetails.print_media}
+          digitalMedia={briefDetails.digitalMedia || briefDetails.digital_media}
+        />
       </section>
     </div>
   );

@@ -17,34 +17,32 @@ const TargetAudienceSection: React.FC<TargetAudienceSectionProps> = ({
   targetPersonality
 }) => {
   return (
-    <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <h4 className="font-medium">Target Age</h4>
-          <p className="mt-1">{targetAge || "Not provided"}</p>
-        </div>
-        
-        <div>
-          <h4 className="font-medium">Target Gender</h4>
-          <p className="mt-1">{targetGender || "Not provided"}</p>
-        </div>
-        
-        <div>
-          <h4 className="font-medium">Target Demography</h4>
-          <p className="mt-1">{targetDemography || "Not provided"}</p>
-        </div>
-        
-        <div>
-          <h4 className="font-medium">Target Profession</h4>
-          <p className="mt-1">{targetProfession || "Not provided"}</p>
-        </div>
-      </div>
-
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
+        <h4 className="font-medium">Target Age</h4>
+        <p className="mt-1">{targetAge || "Not provided"}</p>
+      </div>
+      
+      <div>
+        <h4 className="font-medium">Target Gender</h4>
+        <p className="mt-1">{targetGender || "Not provided"}</p>
+      </div>
+      
+      <div>
+        <h4 className="font-medium">Target Demography</h4>
+        <p className="mt-1">{targetDemography || "Not provided"}</p>
+      </div>
+      
+      <div>
+        <h4 className="font-medium">Target Profession</h4>
+        <p className="mt-1">{targetProfession || "Not provided"}</p>
+      </div>
+      
+      <div className="md:col-span-2">
         <h4 className="font-medium">Target Personality</h4>
         <p className="mt-1">{targetPersonality || "Not provided"}</p>
       </div>
-    </>
+    </div>
   );
 };
 
