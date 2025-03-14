@@ -26,11 +26,9 @@ const StepTwo = ({ onNext, onPrevious }: StepTwoProps) => {
 
   const handleNext = async () => {
     const isValid = await trigger([
-      "logoFeelings.style", 
       "logoFeelings.pricing", 
       "logoFeelings.era",
       "logoFeelings.tone",
-      "logoFeelings.complexity",
       "logoFeelings.gender",
       "logoType"
     ]);
@@ -168,39 +166,6 @@ const StepTwo = ({ onNext, onPrevious }: StepTwoProps) => {
                       <RadioGroupItem value="Playful" id="tone-playful" />
                       <FormLabel htmlFor="tone-playful" className="font-normal cursor-pointer">
                         Playful
-                      </FormLabel>
-                    </div>
-                  </RadioGroup>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div>
-          <h3 className="text-lg font-medium mb-4">Simple vs Complex</h3>
-          <FormField
-            control={control}
-            name="logoFeelings.complexity"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <RadioGroup 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                    className="flex items-center gap-8"
-                  >
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="Simple" id="complexity-simple" />
-                      <FormLabel htmlFor="complexity-simple" className="font-normal cursor-pointer">
-                        Simple
-                      </FormLabel>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="Complex" id="complexity-complex" />
-                      <FormLabel htmlFor="complexity-complex" className="font-normal cursor-pointer">
-                        Complex
                       </FormLabel>
                     </div>
                   </RadioGroup>

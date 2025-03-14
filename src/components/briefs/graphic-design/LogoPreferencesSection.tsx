@@ -7,7 +7,6 @@ interface LogoPreferencesSectionProps {
     pricing?: string;
     era?: string;
     tone?: string;
-    complexity?: string;
   } | null;
   logoType: string | null;
   tone?: string[] | null; // Made optional since we're not using it anymore
@@ -51,12 +50,6 @@ const LogoPreferencesSection: React.FC<LogoPreferencesSectionProps> = ({
                 <h5 className="text-sm font-medium">Serious vs Playful</h5>
                 <p>{logoFeelings.tone || "Not provided"}</p>
               </div>
-              
-              {/* Explicitly check for complexity and ensure it's displayed */}
-              <div>
-                <h5 className="text-sm font-medium">Simple vs Complex</h5>
-                <p>{logoFeelings.complexity || "Not provided"}</p>
-              </div>
             </>
           )}
           
@@ -66,8 +59,6 @@ const LogoPreferencesSection: React.FC<LogoPreferencesSectionProps> = ({
           </div>
         </div>
       </div>
-      
-      {/* Removed Logo Tone section */}
     </>
   );
 };

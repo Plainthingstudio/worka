@@ -92,13 +92,6 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
       y = checkPageOverflow(doc, y);
     }
     
-    // Explicitly check for complexity and ensure it's added
-    if (logoFeelings.complexity) {
-      console.log("Adding complexity to PDF:", logoFeelings.complexity);
-      y = addField(doc, "Simple vs Complex", logoFeelings.complexity, y);
-      y = checkPageOverflow(doc, y);
-    }
-    
     // Logo Type
     const logoType = brief.logoType || brief.logo_type;
     if (logoType) {

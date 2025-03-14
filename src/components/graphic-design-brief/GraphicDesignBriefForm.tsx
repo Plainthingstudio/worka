@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Card } from "@/components/ui/card";
@@ -25,7 +24,6 @@ const GraphicDesignBriefForm = () => {
         pricing: "",  // Will be "Economical" or "Luxury"
         era: "",      // Will be "Modern" or "Classic"
         tone: "",     // Will be "Serious" or "Playful"
-        complexity: "", // Will be "Simple" or "Complex"
         gender: ""    // Will be "Feminine" or "Masculine"
       },
       logoType: "",

@@ -16,7 +16,6 @@ export interface GraphicDesignBriefFormValues {
     pricing: string;  // Will be "Economical" or "Luxury"
     era: string;      // Will be "Modern" or "Classic"
     tone: string;     // Will be "Serious" or "Playful"
-    complexity: string; // Will be "Simple" or "Complex"
     gender: string    // Will be "Feminine" or "Masculine"
   };
   tone: Record<string, boolean>;
@@ -73,15 +72,9 @@ export const useGraphicDesignBrief = () => {
       // Try to get the current user - if logged in, attach user_id
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Log the full form data before submission to verify complexity is included
+      // Log the full form data before submission
       console.log("Submitting form data:", data);
       console.log("Logo feelings data:", data.logoFeelings);
-
-      // Ensure the complexity field is properly included
-      const logoFeelings = {
-        ...(data.logoFeelings || {}),
-        complexity: data.logoFeelings?.complexity || ""
-      };
 
       // Prepare data for Supabase with correct column names
       const briefData: any = {
@@ -92,7 +85,7 @@ export const useGraphicDesignBrief = () => {
         about_company: data.aboutCompany || "",
         vision_mission: data.visionMission || "",
         slogan: data.slogan || "",
-        logo_feelings: logoFeelings,
+        logo_feelings: data.logoFeelings || {},
         logo_type: data.logoType || "",
         reference1: data.reference1 || "",
         reference2: data.reference2 || "",

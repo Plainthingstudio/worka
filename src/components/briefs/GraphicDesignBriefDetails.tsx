@@ -81,14 +81,6 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
                 <p>{displayValue(logoFeelings.tone)}</p>
               </div>
             )}
-            
-            {/* Explicitly check for complexity and display it */}
-            {logoFeelings.complexity && (
-              <div>
-                <p className="font-medium">Simple vs Complex</p>
-                <p>{displayValue(logoFeelings.complexity)}</p>
-              </div>
-            )}
           </div>
         )}
         
