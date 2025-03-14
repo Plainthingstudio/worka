@@ -22,14 +22,12 @@ const GraphicDesignBriefForm = () => {
       visionMission: "",
       slogan: "",
       logoFeelings: {
-        style: "",
         pricing: "",  // Will be "Economical" or "Luxury"
         era: "",      // Will be "Modern" or "Classic"
         tone: "",     // Will be "Serious" or "Playful"
         complexity: "", // Will be "Simple" or "Complex"
         gender: ""    // Will be "Feminine" or "Masculine"
       },
-      tone: {},
       logoType: "",
       reference1: "",
       reference2: "",

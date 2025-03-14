@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -81,6 +82,7 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
               </div>
             )}
             
+            {/* Explicitly check for complexity and display it */}
             {logoFeelings.complexity && (
               <div>
                 <p className="font-medium">Simple vs Complex</p>
@@ -94,8 +96,6 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
           <p className="font-medium">Logo Type</p>
           <p>{getValue("logoType", "logo_type")}</p>
         </div>
-        
-        {/* Removed standalone "Tone" section since we're already showing the tone preference in the grid above */}
       </section>
       
       <Separator />

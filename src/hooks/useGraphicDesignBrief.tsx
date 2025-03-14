@@ -12,7 +12,7 @@ export interface GraphicDesignBriefFormValues {
   visionMission: string;
   slogan: string;
   logoFeelings: {
-    style: string;
+    style?: string;
     pricing: string;  // Will be "Economical" or "Luxury"
     era: string;      // Will be "Modern" or "Classic"
     tone: string;     // Will be "Serious" or "Playful"
