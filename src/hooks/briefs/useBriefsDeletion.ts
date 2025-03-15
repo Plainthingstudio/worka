@@ -33,16 +33,19 @@ export const useBriefsDeletion = (
       
       // Delete from the appropriate table based on type
       if (brief.type === "UI Design") {
+        console.log("Deleting from ui_design_briefs table");
         deleteResult = await supabase
           .from('ui_design_briefs')
           .delete()
           .eq('id', id);
       } else if (brief.type === "Graphic Design") {
+        console.log("Deleting from graphic_design_briefs table");
         deleteResult = await supabase
           .from('graphic_design_briefs')
           .delete()
           .eq('id', id);
       } else if (brief.type === "Illustration Design") {
+        console.log("Deleting from illustration_design_briefs table");
         deleteResult = await supabase
           .from('illustration_design_briefs')
           .delete()
@@ -51,10 +54,12 @@ export const useBriefsDeletion = (
 
       if (deleteResult?.error) {
         console.error("Error from Supabase delete operation:", deleteResult.error);
+        toast.error(`Failed to delete brief: ${deleteResult.error.message}`);
         throw deleteResult.error;
       }
 
       console.log("Brief deleted successfully from database");
+      toast.success("Brief deleted successfully");
 
       // Clean up localStorage if needed (for demo/local mode)
       try {
@@ -69,12 +74,13 @@ export const useBriefsDeletion = (
         console.error("Error updating localStorage:", localStorageError);
       }
 
-      // Update local state
-      setBriefs(prevBriefs => prevBriefs.filter(brief => brief.id !== id));
+      // Update local state - Fix the type issue here
+      setBriefs(briefs.filter(brief => brief.id !== id));
       console.log("Brief removed from local state");
       
     } catch (error: any) {
       console.error("Error deleting brief:", error);
+      toast.error(`Error deleting brief: ${error.message || "Unknown error"}`);
       throw error;
     }
   };
