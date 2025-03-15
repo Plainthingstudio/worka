@@ -57,11 +57,15 @@ const Briefs = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedBrief) {
-      deleteBrief(selectedBrief.id);
-      setIsDeleteDialogOpen(false);
-      setSelectedBrief(null);
+      try {
+        await deleteBrief(selectedBrief.id);
+        toast.success("Brief deleted successfully!");
+      } catch (error) {
+        console.error("Error during brief deletion:", error);
+        toast.error("Failed to delete brief. Please try again.");
+      }
     }
   };
 
@@ -126,6 +130,7 @@ const Briefs = () => {
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={confirmDelete}
+        briefName={selectedBrief?.name || selectedBrief?.company_name || "this brief"}
       />
 
       <BriefDetailsDialog
