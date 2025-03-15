@@ -19,7 +19,7 @@ import {
 import { Loader2 } from "lucide-react";
 
 const Briefs = () => {
-  const { briefs, filter, setFilter, search, setSearch, filteredBriefs, isLoading, deleteBrief } = useBriefs();
+  const { briefs, filter, setFilter, search, setSearch, filteredBriefs, isLoading, deleteBrief, fetchBriefs } = useBriefs();
   const [selectedBrief, setSelectedBrief] = React.useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
@@ -47,6 +47,11 @@ const Briefs = () => {
     return () => observer.disconnect();
   }, []);
 
+  // Refresh briefs when the page loads to ensure we have the latest data
+  useEffect(() => {
+    fetchBriefs();
+  }, [fetchBriefs]);
+
   const viewBriefDetails = (brief: any) => {
     setBriefDetails(brief);
     setIsViewDialogOpen(true);
@@ -61,7 +66,7 @@ const Briefs = () => {
     if (selectedBrief) {
       try {
         await deleteBrief(selectedBrief.id);
-        toast.success("Brief deleted successfully!");
+        // Toast message is handled in the deleteBrief function
       } catch (error) {
         console.error("Error during brief deletion:", error);
         toast.error("Failed to delete brief. Please try again.");

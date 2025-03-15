@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface DeleteBriefDialogProps {
   open: boolean;
@@ -24,8 +25,10 @@ const DeleteBriefDialog: React.FC<DeleteBriefDialogProps> = ({
     try {
       await onConfirm();
       onOpenChange(false);
+      toast.success(`${briefName} was permanently deleted`);
     } catch (error) {
       console.error("Error deleting brief:", error);
+      toast.error("Failed to delete brief. Please try again.");
     } finally {
       setIsDeleting(false);
     }

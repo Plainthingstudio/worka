@@ -122,10 +122,14 @@ export const useBriefs = () => {
   const fetchBriefsDirectly = async () => {
     console.log("Fetching briefs directly from tables");
     
-    // Fetch from UI Design briefs without user_id filter
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    // Fetch from UI Design briefs
     const { data: uiData, error: uiError } = await supabase
       .from('ui_design_briefs')
-      .select('*');
+      .select('*')
+      .order('submission_date', { ascending: false });
     
     if (uiError) {
       console.error("UI briefs error:", uiError);
@@ -133,10 +137,11 @@ export const useBriefs = () => {
       console.log("UI briefs data:", uiData);
     }
     
-    // Fetch from Graphic Design briefs without user_id filter
+    // Fetch from Graphic Design briefs
     const { data: graphicData, error: graphicError } = await supabase
       .from('graphic_design_briefs')
-      .select('*');
+      .select('*')
+      .order('submission_date', { ascending: false });
     
     if (graphicError) {
       console.error("Graphic briefs error:", graphicError);
@@ -144,10 +149,11 @@ export const useBriefs = () => {
       console.log("Graphic briefs data:", graphicData);
     }
     
-    // Fetch from Illustration Design briefs without user_id filter
+    // Fetch from Illustration Design briefs
     const { data: illustrationData, error: illustrationError } = await supabase
       .from('illustration_design_briefs')
-      .select('*');
+      .select('*')
+      .order('submission_date', { ascending: false });
     
     if (illustrationError) {
       console.error("Illustration briefs error:", illustrationError);
@@ -194,7 +200,7 @@ export const useBriefs = () => {
       
       if (!user) {
         toast.error("You must be logged in to delete briefs");
-        return;
+        throw new Error("User not authenticated");
       }
       
       // We need to determine which table to delete from
@@ -206,7 +212,7 @@ export const useBriefs = () => {
       // Check if the current user is authorized to delete this brief
       if (brief.user_id && brief.user_id !== user.id) {
         toast.error("You are not authorized to delete this brief");
-        return;
+        throw new Error("User not authorized to delete this brief");
       }
       
       let deleteResult;
@@ -234,13 +240,16 @@ export const useBriefs = () => {
         throw deleteResult.error;
       }
 
-      // Also clean up localStorage if needed (for demo/local mode)
+      console.log("Brief deleted successfully from database");
+
+      // Clean up localStorage if needed (for demo/local mode)
       try {
         const storedBriefs = localStorage.getItem("briefs");
         if (storedBriefs) {
           const parsedBriefs = JSON.parse(storedBriefs);
           const updatedBriefs = parsedBriefs.filter((brief: any) => brief.id !== id);
           localStorage.setItem("briefs", JSON.stringify(updatedBriefs));
+          console.log("Brief removed from localStorage");
         }
       } catch (localStorageError) {
         console.error("Error updating localStorage:", localStorageError);
@@ -248,6 +257,8 @@ export const useBriefs = () => {
 
       // Update local state
       setBriefs(prevBriefs => prevBriefs.filter(brief => brief.id !== id));
+      console.log("Brief removed from local state");
+      
     } catch (error: any) {
       console.error("Error deleting brief:", error);
       throw error;

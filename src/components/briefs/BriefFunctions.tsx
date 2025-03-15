@@ -1,102 +1,64 @@
-
 import React, { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { generateIllustrationBriefPDF, generateUIDesignBriefPDF, generateGraphicDesignBriefPDF } from "@/utils/briefPdfGenerator";
-import BriefDetailsDialog from "./BriefDetailsDialog";
-import DeleteBriefDialog from "./DeleteBriefDialog";
 
-interface Brief {
-  id: number;
-  name: string;
-  email: string;
-  companyName: string;
-  type: string;
-  status: string;
-  submissionDate: string;
+interface DeleteBriefDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => Promise<void>;
+  briefName?: string;
 }
 
-interface BriefFunctionsProps {
-  briefs: Brief[];
-  setBriefs: React.Dispatch<React.SetStateAction<Brief[]>>;
-}
+const DeleteBriefDialog: React.FC<DeleteBriefDialogProps> = ({
+  open,
+  onOpenChange,
+  onConfirm,
+  briefName = "this brief",
+}) => {
+  const [isDeleting, setIsDeleting] = useState(false);
 
-const BriefFunctions: React.FC<BriefFunctionsProps> = ({ briefs, setBriefs }) => {
-  const [selectedBrief, setSelectedBrief] = useState<Brief | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [briefDetails, setBriefDetails] = useState<any>(null);
-
-  const viewBriefDetails = (brief: Brief) => {
-    const storedBriefs = localStorage.getItem("briefs");
-    if (storedBriefs) {
-      const allBriefs = JSON.parse(storedBriefs);
-      const fullBrief = allBriefs.find((b: any) => b.id === brief.id);
-      if (fullBrief) {
-        setBriefDetails(fullBrief);
-        setIsViewDialogOpen(true);
-      }
-    }
-  };
-
-  const handleDeleteBrief = (brief: Brief) => {
-    setSelectedBrief(brief);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = () => {
-    if (selectedBrief) {
-      const updatedBriefs = briefs.filter(brief => brief.id !== selectedBrief.id);
-      localStorage.setItem("briefs", JSON.stringify(updatedBriefs));
-      setBriefs(updatedBriefs);
-      setIsDeleteDialogOpen(false);
-      setSelectedBrief(null);
-      toast.success("Brief deleted successfully!");
-    }
-  };
-
-  const downloadBrief = async (brief: Brief) => {
+  const handleConfirm = async () => {
+    setIsDeleting(true);
     try {
-      const storedBriefs = localStorage.getItem("briefs");
-      if (storedBriefs) {
-        const allBriefs = JSON.parse(storedBriefs);
-        const fullBrief = allBriefs.find((b: any) => b.id === brief.id);
-        if (fullBrief) {
-          if (fullBrief.type === "Illustration Design" || fullBrief.type === "Illustrations") {
-            await generateIllustrationBriefPDF(fullBrief);
-            toast.success("Illustration brief downloaded successfully");
-          } else if (fullBrief.type === "UI Design") {
-            await generateUIDesignBriefPDF(fullBrief);
-            toast.success("UI Design brief downloaded successfully");
-          } else if (fullBrief.type === "Graphic Design") {
-            await generateGraphicDesignBriefPDF(fullBrief);
-            toast.success("Graphic Design brief downloaded successfully");
-          } else {
-            toast.error("Download not supported for this brief type");
-          }
-        }
-      }
+      await onConfirm();
+      onOpenChange(false);
+      toast.success(`${briefName} was permanently deleted`);
     } catch (error) {
-      console.error("Error downloading brief:", error);
-      toast.error("Failed to download brief. Please try again.");
+      console.error("Error deleting brief:", error);
+      toast.error("Failed to delete brief. Please try again.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
-    <>
-      <DeleteBriefDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        onConfirm={confirmDelete}
-      />
-
-      <BriefDetailsDialog
-        open={isViewDialogOpen}
-        onOpenChange={setIsViewDialogOpen}
-        briefDetails={briefDetails}
-        onDownload={downloadBrief}
-      />
-    </>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Delete Brief</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete <strong>{briefName}</strong>? This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isDeleting}>
+            Cancel
+          </Button>
+          <Button variant="destructive" onClick={handleConfirm} disabled={isDeleting}>
+            {isDeleting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting...
+              </>
+            ) : (
+              "Delete"
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
-export default BriefFunctions;
+export default DeleteBriefDialog;
