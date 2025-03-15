@@ -33,6 +33,11 @@ export const renderLogoPreferences = (doc: jsPDF, brief: any, y: number): number
     y = checkPageOverflow(doc, y);
   }
   
+  if (logoFeelings.complexity) {
+    y = addField(doc, "Simple vs Complex", logoFeelings.complexity, y);
+    y = checkPageOverflow(doc, y);
+  }
+  
   // Logo Type
   const logoType = brief.logoType || brief.logo_type;
   if (logoType) {

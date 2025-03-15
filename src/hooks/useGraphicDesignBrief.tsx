@@ -16,7 +16,8 @@ export interface GraphicDesignBriefFormValues {
     pricing: string;  // Will be "Economical" or "Luxury"
     era: string;      // Will be "Modern" or "Classic"
     tone: string;     // Will be "Serious" or "Playful"
-    gender: string    // Will be "Feminine" or "Masculine"
+    gender: string;   // Will be "Feminine" or "Masculine"
+    complexity: string; // Will be "Simple" or "Complex"
   };
   tone: Record<string, boolean>;
   logoType: string;
