@@ -1,12 +1,13 @@
 
 import { useState, useEffect } from 'react';
-import { Client, Project } from '@/types';
+import { Client, Project, TeamMember } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const useStatisticsData = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,13 +68,34 @@ export const useStatisticsData = () => {
           currency: project.currency as any,
           projectType: project.project_type as any,
           categories: project.categories || ['Other'],
+          teamMembers: project.team_members || [],
           createdAt: new Date(project.created_at),
           payments: payments
         };
       });
       
+      // Fetch team members
+      const { data: teamMembersData, error: teamMembersError } = await supabase
+        .from('team_members')
+        .select('*');
+      
+      if (teamMembersError) {
+        throw new Error(`Error fetching team members: ${teamMembersError.message}`);
+      }
+      
+      // Transform team members data
+      const transformedTeamMembers: TeamMember[] = (teamMembersData || []).map(member => ({
+        id: member.id,
+        name: member.name,
+        position: member.position,
+        skills: member.skills || [],
+        startDate: new Date(member.start_date),
+        createdAt: new Date(member.created_at)
+      }));
+      
       setClients(transformedClients);
       setProjects(transformedProjects);
+      setTeamMembers(transformedTeamMembers);
     } catch (error: any) {
       console.error("Error fetching statistics data:", error);
       setError(error.message);
@@ -90,6 +112,7 @@ export const useStatisticsData = () => {
   return {
     clients,
     projects,
+    teamMembers,
     isLoading,
     error,
     fetchData
