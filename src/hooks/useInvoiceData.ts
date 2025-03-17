@@ -66,6 +66,17 @@ export function useInvoiceData(invoiceId: string | undefined) {
         throw new Error(itemsError.message);
       }
 
+      // Fetch client data
+      const { data: clientData, error: clientError } = await supabase
+        .from('clients')
+        .select('name')
+        .eq('id', invoiceData.client_id)
+        .maybeSingle();
+      
+      if (clientError) {
+        console.error("Error fetching client:", clientError);
+      }
+
       console.log("Fetched invoice items from DB in useInvoiceData:", itemsData);
       
       // Transform to our Invoice type
@@ -84,6 +95,7 @@ export function useInvoiceData(invoiceId: string | undefined) {
         id: invoiceData.id,
         invoiceNumber: invoiceData.invoice_number,
         clientId: invoiceData.client_id,
+        clientName: clientData?.name || "Unknown Client",
         date: new Date(invoiceData.date),
         dueDate: new Date(invoiceData.due_date),
         paymentTerms: invoiceData.payment_terms,

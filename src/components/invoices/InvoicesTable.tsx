@@ -8,10 +8,15 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { Eye, Download, Trash, Edit } from "lucide-react";
+import { Eye, Download, Trash, Edit, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { Invoice } from "@/types";
-import { formatDate } from "@/lib/utils";
 import DateCell from "@/components/projects/cells/DateCell";
 import StatusCell from "@/components/projects/cells/StatusCell";
 
@@ -72,37 +77,36 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onViewClick(invoice.id)}
-                  >
-                    <Eye className="h-4 w-4" />
-                    <span className="sr-only">View</span>
-                  </Button>
-                  <Button
-                    variant="ghost" 
-                    size="icon"
-                    onClick={() => onEditClick(invoice.id)}
-                  >
-                    <Edit className="h-4 w-4" />
-                    <span className="sr-only">Edit</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
+                    variant="default"
+                    size="sm"
                     onClick={() => onDownloadClick(invoice)}
                   >
-                    <Download className="h-4 w-4" />
-                    <span className="sr-only">Download</span>
+                    <Download className="h-4 w-4 mr-1" />
+                    Download
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onDeleteClick(invoice.id)}
-                  >
-                    <Trash className="h-4 w-4" />
-                    <span className="sr-only">Delete</span>
-                  </Button>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreVertical className="h-4 w-4" />
+                        <span className="sr-only">Actions</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onViewClick(invoice.id)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onEditClick(invoice.id)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onDeleteClick(invoice.id)}>
+                        <Trash className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </TableCell>
             </TableRow>

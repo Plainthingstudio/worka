@@ -44,7 +44,17 @@ export const useInvoicesFetching = () => {
         throw itemsError;
       }
 
+      // Fetch clients data
+      const { data: clientsData, error: clientsError } = await supabase
+        .from('clients')
+        .select('id, name');
+      
+      if (clientsError) {
+        throw clientsError;
+      }
+
       console.log("Fetched invoice items from DB:", invoiceItemsData);
+      console.log("Fetched clients from DB:", clientsData);
 
       // Helper function to validate status
       const validateStatus = (status: string): "Draft" | "Sent" | "Paid" | "Overdue" => {
@@ -68,12 +78,15 @@ export const useInvoicesFetching = () => {
             amount: Number(item.amount) || 0
           }));
 
-        console.log(`Items for invoice ${invoice.id}:`, items);
+        // Find client name
+        const client = clientsData.find(client => client.id === invoice.client_id);
+        const clientName = client ? client.name : "Unknown Client";
 
         return {
           id: invoice.id,
           invoiceNumber: invoice.invoice_number,
           clientId: invoice.client_id,
+          clientName: clientName,
           date: new Date(invoice.date),
           dueDate: new Date(invoice.due_date),
           paymentTerms: invoice.payment_terms,

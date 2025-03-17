@@ -99,7 +99,7 @@ export interface Invoice {
   id: string;
   invoiceNumber: string;
   clientId: string;
-  client?: Client;
+  clientName?: string;
   date: Date;
   dueDate: Date;
   paymentTerms: string;
@@ -110,10 +110,10 @@ export interface Invoice {
   discountPercentage: number;
   discountAmount: number;
   total: number;
-  notes?: string;
-  termsAndConditions?: string;
+  notes: string;
+  termsAndConditions: string;
   createdAt: Date;
-  status: 'Draft' | 'Sent' | 'Paid' | 'Overdue';
+  status: "Draft" | "Sent" | "Paid" | "Overdue";
 }
 
 export interface DashboardStats {
