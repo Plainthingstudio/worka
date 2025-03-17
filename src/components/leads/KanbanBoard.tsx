@@ -6,6 +6,7 @@ import KanbanHeader from './KanbanHeader';
 import KanbanScrollContainer from './KanbanScrollContainer';
 import LeadDialog from './LeadDialog';
 import DeleteLeadDialog from './DeleteLeadDialog';
+import LeadsList from './LeadsList';
 
 interface KanbanBoardProps {
   leads: Lead[];
@@ -13,6 +14,8 @@ interface KanbanBoardProps {
   onAddLead: (data: any) => Promise<Lead | null>;
   onUpdateLead: (id: string, data: Partial<Lead>) => Promise<boolean>;
   onDeleteLead: (id: string) => Promise<boolean>;
+  viewMode: 'kanban' | 'list';
+  onViewModeChange: (mode: 'kanban' | 'list') => void;
 }
 
 const KanbanBoard: React.FC<KanbanBoardProps> = ({
@@ -20,7 +23,9 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   isLoading,
   onAddLead,
   onUpdateLead,
-  onDeleteLead
+  onDeleteLead,
+  viewMode,
+  onViewModeChange
 }) => {
   const {
     leadsByStage,
@@ -46,22 +51,37 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   } = useKanbanBoard({ leads, onAddLead, onUpdateLead, onDeleteLead });
 
   return (
-    <div className="flex flex-col h-full w-full">
-      <div className="p-4 sm:p-6 flex flex-col h-full">
-        <KanbanHeader onAddLead={handleAddLeadInStage} />
-        
-        <KanbanScrollContainer
-          isLoading={isLoading}
-          stages={LEAD_STAGES}
-          leadsByStage={leadsByStage}
-          onScroll={handleScroll}
-          onScrollLeft={scrollLeft}
-          onScrollRight={scrollRight}
-          onMove={handleMoveLead}
-          onEdit={handleEditClick}
-          onDelete={handleDeleteClick}
-          onAddLead={handleAddLeadInStage}
+    <div className="flex flex-col h-full w-full overflow-hidden">
+      <div className="p-4 sm:p-6 flex flex-col h-full overflow-hidden">
+        <KanbanHeader 
+          onAddLead={handleAddLeadInStage} 
+          viewMode={viewMode}
+          onViewModeChange={onViewModeChange}
         />
+        
+        {viewMode === 'kanban' ? (
+          <KanbanScrollContainer
+            isLoading={isLoading}
+            stages={LEAD_STAGES}
+            leadsByStage={leadsByStage}
+            onScroll={handleScroll}
+            onScrollLeft={scrollLeft}
+            onScrollRight={scrollRight}
+            onMove={handleMoveLead}
+            onEdit={handleEditClick}
+            onDelete={handleDeleteClick}
+            onAddLead={handleAddLeadInStage}
+          />
+        ) : (
+          <LeadsList
+            leads={leads}
+            isLoading={isLoading}
+            onEdit={handleEditClick}
+            onDelete={handleDeleteClick}
+            onStageChange={handleMoveLead}
+            stages={LEAD_STAGES}
+          />
+        )}
       </div>
 
       <LeadDialog
