@@ -47,7 +47,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
   return (
     <div className="flex flex-col h-full w-full">
-      <div className="p-4 sm:p-6 flex flex-col h-full flex-1 min-h-0">
+      <div className="p-4 sm:p-6 flex flex-col flex-grow min-h-0 w-full">
         <KanbanHeader onAddLead={handleAddLeadInStage} />
         
         <KanbanScrollContainer

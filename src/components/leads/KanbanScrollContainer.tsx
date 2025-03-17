@@ -44,7 +44,7 @@ const KanbanScrollContainer: React.FC<KanbanScrollContainerProps> = ({
   }
 
   return (
-    <div className="relative flex-1 overflow-hidden min-h-0 w-full">
+    <div className="relative flex-1 w-full h-full min-h-0 overflow-hidden">
       <div className="absolute left-0 top-1/2 z-10 -translate-y-1/2 ml-1">
         <Button 
           variant="outline" 
