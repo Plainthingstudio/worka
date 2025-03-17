@@ -99,23 +99,21 @@ const Sidebar = () => {
       className={cn(
         "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-border transition-all duration-300 ease-in-out",
         expanded ? "w-56" : "w-14",
-        theme === "dark" 
-          ? "bg-background/95 text-foreground backdrop-blur-lg border-border/40 shadow-xl shadow-black/10" 
-          : "bg-white"
+        "bg-sidebar text-sidebar-foreground"  // Using sidebar-specific variables
       )}
     >
       <div className="flex h-14 items-center justify-between px-3">
         {expanded ? (
           <div className="flex items-center space-x-2">
-            <div className="h-7 w-7 rounded-full bg-primary shadow-lg shadow-primary/30" />
+            <div className="h-7 w-7 rounded-full bg-sidebar-primary shadow-lg shadow-sidebar-primary/30" />
             <span className="text-md font-semibold">Studio</span>
           </div>
         ) : (
-          <div className="mx-auto h-7 w-7 rounded-full bg-primary shadow-lg shadow-primary/30" />
+          <div className="mx-auto h-7 w-7 rounded-full bg-sidebar-primary shadow-lg shadow-sidebar-primary/30" />
         )}
         <button
           onClick={toggleSidebar}
-          className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          className="rounded-md p-1 text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         >
           {expanded ? (
             <ChevronLeft className="h-4 w-4" />
@@ -134,8 +132,8 @@ const Sidebar = () => {
               cn(
                 "flex items-center rounded-md px-2 py-2 text-sm font-medium transition-all",
                 isActive
-                  ? "bg-primary/20 text-primary dark:bg-primary/10 dark:text-primary dark:shadow-md dark:shadow-primary/5"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/20"
+                  ? "bg-sidebar-primary/20 text-sidebar-primary dark:bg-sidebar-primary/10 dark:text-sidebar-primary dark:shadow-md dark:shadow-sidebar-primary/5"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               )
             }
           >
@@ -147,15 +145,15 @@ const Sidebar = () => {
         ))}
       </nav>
 
-      <div className="border-t border-border/50 p-2 space-y-2">
+      <div className="border-t border-sidebar-border/50 p-2 space-y-2">
         <div className={cn("flex", expanded ? "justify-between items-center px-2" : "justify-center")}>
-          {expanded && <span className="text-sm text-muted-foreground">Theme</span>}
+          {expanded && <span className="text-sm text-sidebar-foreground/70">Theme</span>}
           <ThemeToggle className={expanded ? "" : "mx-auto"} />
         </div>
         
         <button
           onClick={handleLogout}
-          className="flex w-full items-center rounded-md px-2 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/20"
+          className="flex w-full items-center rounded-md px-2 py-2 text-sm font-medium text-sidebar-foreground/70 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         >
           <LogOut
             className={cn("h-4 w-4", expanded ? "mr-3" : "mx-auto")}

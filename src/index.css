@@ -74,7 +74,8 @@
     --input: 216 34% 17%;
     --ring: 216 34% 17%;
 
-    --sidebar-background: 224 71% 4%;
+    /* Updated sidebar background and related colors for dark mode */
+    --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 213 31% 91%;
     --sidebar-primary: 210 100% 60%;
     --sidebar-primary-foreground: 222.2 47.4% 11.2%;
