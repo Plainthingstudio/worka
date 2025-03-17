@@ -3,89 +3,114 @@ import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { InvoiceItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { createEmptyItem } from '@/utils/invoiceCalculations';
+import { createEmptyItem, calculateItemAmount } from '@/utils/invoiceCalculations';
 
 export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
   const { toast } = useToast();
   
-  // Initialize with initial items directly, but only once
+  // Initialize with initial items directly
   const [items, setItems] = useState<InvoiceItem[]>(() => {
-    // Process initial items if they exist
-    if (Array.isArray(initialItems) && initialItems.length > 0) {
-      console.log("Initializing useInvoiceItems with:", initialItems);
-      return initialItems.map(item => ({
-        ...item,
-        id: item.id || uuidv4(),
-        description: item.description || "",
-        quantity: Number(item.quantity) || 1,
-        rate: Number(item.rate) || 0,
-        amount: Number(item.amount) || 0
-      }));
+    // Ensure we have a valid array of items
+    if (!Array.isArray(initialItems) || initialItems.length === 0) {
+      console.log("No initialItems provided to useInvoiceItems, creating default empty item");
+      return [createEmptyItem()];
     }
-    // Otherwise create a default empty item
-    return [createEmptyItem()];
+    
+    console.log("Initializing useInvoiceItems with:", initialItems);
+    
+    // Process and validate each item
+    return initialItems.map(item => ({
+      id: item.id || uuidv4(),
+      description: item.description || "",
+      quantity: Number(item.quantity) || 1,
+      rate: Number(item.rate) || 0,
+      amount: item.amount || calculateItemAmount(Number(item.quantity) || 1, Number(item.rate) || 0)
+    }));
   });
 
-  // Update items when initialItems changes (for example, when invoice is loaded from backend)
+  // Update items when initialItems prop changes
   useEffect(() => {
     if (Array.isArray(initialItems) && initialItems.length > 0) {
-      console.log("useInvoiceItems: Updating items from initialItems change:", initialItems);
+      console.log("useInvoiceItems: initialItems prop changed:", initialItems);
       
+      // Process and validate each item
       const processedItems = initialItems.map(item => ({
-        ...item,
         id: item.id || uuidv4(),
         description: item.description || "",
         quantity: Number(item.quantity) || 1,
         rate: Number(item.rate) || 0,
-        amount: Number(item.amount) || 0
+        amount: item.amount || calculateItemAmount(Number(item.quantity) || 1, Number(item.rate) || 0)
       }));
       
-      // Only update if the items have actually changed to prevent infinite loops
-      const currentItemsStr = JSON.stringify(items.map(i => ({ ...i, id: undefined })));
-      const newItemsStr = JSON.stringify(processedItems.map(i => ({ ...i, id: undefined })));
-      
-      if (currentItemsStr !== newItemsStr) {
-        console.log("Items have significant changes, updating state");
+      // Only update if there are significant changes
+      if (JSON.stringify(processedItems) !== JSON.stringify(items)) {
+        console.log("Setting items state with processed initialItems");
         setItems(processedItems);
       }
+    } 
+    // Don't reset to empty item if initialItems is empty after being non-empty
+    else if (!Array.isArray(initialItems) && items.length === 0) {
+      console.log("Setting default empty item because there are no items");
+      setItems([createEmptyItem()]);
     }
-  }, [initialItems, items]);
+  }, [initialItems]);
 
   const addItem = useCallback(() => {
     const newItem = createEmptyItem();
     console.log("Adding new item:", newItem);
-
+    
     setItems(currentItems => {
+      // Ensure currentItems is an array
       const validItems = Array.isArray(currentItems) ? currentItems : [];
       return [...validItems, newItem];
     });
   }, []);
 
   const removeItem = useCallback((itemId: string) => {
-    if (!Array.isArray(items) || items.length <= 1) {
-      toast({
-        title: "Cannot remove item",
-        description: "Invoice must have at least one item.",
-        variant: "destructive"
-      });
-      return;
-    }
+    console.log("Attempting to remove item with ID:", itemId);
     
-    console.log("Removing item with ID:", itemId);
-    setItems(currentItems => currentItems.filter(item => item.id !== itemId));
-  }, [items, toast]);
+    setItems(currentItems => {
+      // Ensure currentItems is an array
+      const validItems = Array.isArray(currentItems) ? currentItems : [createEmptyItem()];
+      
+      // Don't remove the last item
+      if (validItems.length <= 1) {
+        toast({
+          title: "Cannot remove item",
+          description: "Invoice must have at least one item.",
+          variant: "destructive"
+        });
+        return validItems;
+      }
+      
+      return validItems.filter(item => item.id !== itemId);
+    });
+  }, [toast]);
 
   const updateItem = useCallback((id: string, field: keyof InvoiceItem, value: any) => {
     console.log(`Updating item ${id}, field: ${field}, value:`, value);
     
     setItems(currentItems => {
-      if (!Array.isArray(currentItems)) {
-        return [createEmptyItem()];
-      }
+      // Ensure currentItems is an array
+      const validItems = Array.isArray(currentItems) ? currentItems : [createEmptyItem()];
       
-      return currentItems.map(item => 
-        item.id === id ? { ...item, [field]: value } : item
-      );
+      return validItems.map(item => {
+        if (item.id === id) {
+          const updatedItem = { ...item, [field]: value };
+          
+          // Automatically update amount when quantity or rate changes
+          if (field === 'quantity' || field === 'rate') {
+            updatedItem.amount = calculateItemAmount(
+              field === 'quantity' ? Number(value) : Number(item.quantity), 
+              field === 'rate' ? Number(value) : Number(item.rate)
+            );
+            console.log(`Auto-updated amount for item ${id} to:`, updatedItem.amount);
+          }
+          
+          return updatedItem;
+        }
+        return item;
+      });
     });
   }, []);
 

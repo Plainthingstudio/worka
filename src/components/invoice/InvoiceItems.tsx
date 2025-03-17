@@ -20,8 +20,9 @@ const InvoiceItems: React.FC<InvoiceItemsProps> = ({
   onUpdateItem,
   formatCurrency 
 }) => {
-  // Ensure we always have a valid items array to work with
-  const items = Array.isArray(invoice.items) ? invoice.items : [];
+  // Ensure we always have a valid invoice and items array to work with
+  const validInvoice = invoice || { items: [] };
+  const items = Array.isArray(validInvoice.items) ? validInvoice.items : [];
   
   useEffect(() => {
     console.log("InvoiceItems component received invoice items:", items);

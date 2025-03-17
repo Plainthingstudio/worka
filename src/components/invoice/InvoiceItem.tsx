@@ -4,6 +4,7 @@ import { Trash } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { InvoiceItem as InvoiceItemType } from "@/types";
+import { calculateItemAmount } from "@/utils/invoiceCalculations";
 
 interface InvoiceItemProps {
   item: InvoiceItemType;
@@ -18,35 +19,29 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
   onRemove, 
   formatCurrency 
 }) => {
-  // Log item data when component mounts and whenever it changes
-  useEffect(() => {
-    console.log("InvoiceItem component received item:", item);
-  }, [item]);
+  // Validate input data
+  if (!item || typeof item !== 'object') {
+    console.error("Invalid item provided to InvoiceItem component:", item);
+    return null;
+  }
   
-  // Ensure we have valid values, defaulting as needed
-  const itemId = item?.id || '';
-  const description = item?.description || '';
-  const quantity = Number(item?.quantity) || 1;
-  const rate = Number(item?.rate) || 0;
-  const amount = Number(item?.amount) || (quantity * rate);
+  // Ensure we have valid values for rendering
+  const itemId = item.id || '';
+  const description = item.description || '';
+  const quantity = Number(item.quantity) || 1;
+  const rate = Number(item.rate) || 0;
+  const amount = Number(item.amount) || 0;
 
   console.log("Rendering InvoiceItem:", { id: itemId, description, quantity, rate, amount });
 
-  // Update amount when quantity or rate changes
-  useEffect(() => {
-    const calculatedAmount = quantity * rate;
-    if (calculatedAmount !== amount) {
-      console.log(`Updating amount for item ${itemId} to:`, calculatedAmount);
-      onUpdate(itemId, "amount", calculatedAmount);
-    }
-  }, [quantity, rate, amount, itemId, onUpdate]);
-
+  // Handle rate change
   const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value) || 0;
     console.log(`Updating rate for item ${itemId} to:`, value);
     onUpdate(itemId, "rate", value);
   };
 
+  // Handle quantity change
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value) || 1;
     const validValue = value > 0 ? value : 1;
@@ -54,11 +49,13 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
     onUpdate(itemId, "quantity", validValue);
   };
 
+  // Handle description change
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log(`Updating description for item ${itemId} to:`, e.target.value);
     onUpdate(itemId, "description", e.target.value);
   };
 
+  // Handle remove button click
   const handleRemove = () => {
     console.log(`Removing item with ID:`, itemId);
     onRemove(itemId);
