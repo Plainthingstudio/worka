@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Client, Project, TeamMember } from '@/types';
+import { Client, Project, TeamMember, TeamPosition } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -87,7 +87,7 @@ export const useStatisticsData = () => {
       const transformedTeamMembers: TeamMember[] = (teamMembersData || []).map(member => ({
         id: member.id,
         name: member.name,
-        position: member.position,
+        position: member.position as TeamPosition,
         skills: member.skills || [],
         startDate: new Date(member.start_date),
         createdAt: new Date(member.created_at)
