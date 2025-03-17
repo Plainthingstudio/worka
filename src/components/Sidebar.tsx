@@ -13,6 +13,7 @@ import {
   BarChart,
   UserRound,
   Settings,
+  Palette
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "./ThemeProvider";
@@ -76,6 +77,11 @@ const Sidebar = () => {
       icon: FileText,
       label: "Invoices",
       href: "/invoices",
+    },
+    {
+      icon: Palette,
+      label: "Invoice Editor",
+      href: "/invoice-editor",
     },
     {
       icon: FileEdit,

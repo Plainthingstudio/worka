@@ -7,9 +7,22 @@ import { renderInvoiceHeader } from './pdf/invoiceHeaderRenderer';
 import { renderInvoiceItems } from './pdf/invoiceItemsRenderer';
 import { renderInvoiceTotals } from './pdf/invoiceTotalsRenderer';
 import { renderTermsAndNotes } from './pdf/invoiceTermsRenderer';
+import { InvoiceTemplate } from '@/types/template';
+import { defaultTemplate } from '@/hooks/useInvoiceTemplates';
 
 export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
   try {
+    // Get active template from localStorage or use default
+    let activeTemplate: InvoiceTemplate | null = null;
+    const savedTemplates = localStorage.getItem('invoiceTemplates');
+    
+    if (savedTemplates) {
+      const templates = JSON.parse(savedTemplates);
+      activeTemplate = templates.find((t: InvoiceTemplate) => t.isDefault) || null;
+    }
+    
+    const template = activeTemplate || defaultTemplate;
+    
     // Fetch client info from database
     const { data: clientData, error: clientError } = await supabase
       .from('clients')
@@ -30,6 +43,9 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
       unit: 'mm',
       format: 'a4'
     });
+    
+    // Apply template font
+    pdf.setFont(template.style.fontFamily);
     
     // Render invoice components in sequence
     let currentY = renderInvoiceHeader(
