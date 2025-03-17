@@ -11,11 +11,15 @@ interface StatisticsSummaryCardsProps {
 
 const StatisticsSummaryCards: React.FC<StatisticsSummaryCardsProps> = ({ clients, projects }) => {
   const totalEarnings = projects.reduce((sum, project) => {
-    const amountInUSD = project.currency === 'IDR' ? project.fee / 15000 : project.fee;
+    const projectPayments = project.payments ? project.payments.reduce((psum, payment) => {
+      return psum + payment.amount;
+    }, 0) : 0;
+    
+    const amountInUSD = project.currency === 'IDR' ? projectPayments / 15000 : projectPayments;
     return sum + amountInUSD;
   }, 0);
   
-  const averagePayment = totalEarnings / projects.length;
+  const averagePayment = projects.length > 0 ? totalEarnings / projects.length : 0;
   
   const completedProjects = projects.filter(p => p.status === 'Completed').length;
 
@@ -29,13 +33,13 @@ const StatisticsSummaryCards: React.FC<StatisticsSummaryCardsProps> = ({ clients
         <CardContent>
           <div className="text-2xl font-bold">{clients.length}</div>
           <p className="text-xs text-muted-foreground">
-            +{Math.floor(Math.random() * 10) + 1}% from previous period
+            Real clients from database
           </p>
         </CardContent>
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Average Payment</CardTitle>
+          <CardTitle className="text-sm font-medium">Average Revenue</CardTitle>
           <Gauge className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -53,7 +57,7 @@ const StatisticsSummaryCards: React.FC<StatisticsSummaryCardsProps> = ({ clients
         <CardContent>
           <div className="text-2xl font-bold">${totalEarnings.toFixed(2)}</div>
           <p className="text-xs text-muted-foreground">
-            +{Math.floor(Math.random() * 15) + 5}% from previous period
+            Based on {projects.reduce((count, p) => count + (p.payments?.length || 0), 0)} payments
           </p>
         </CardContent>
       </Card>
@@ -65,7 +69,9 @@ const StatisticsSummaryCards: React.FC<StatisticsSummaryCardsProps> = ({ clients
         <CardContent>
           <div className="text-2xl font-bold">{completedProjects}</div>
           <p className="text-xs text-muted-foreground">
-            {((completedProjects / projects.length) * 100).toFixed(0)}% completion rate
+            {projects.length > 0 ?
+              `${((completedProjects / projects.length) * 100).toFixed(0)}% completion rate` :
+              "No projects available"}
           </p>
         </CardContent>
       </Card>

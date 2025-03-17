@@ -1,7 +1,6 @@
 
 import React from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
-import { projects } from "@/mockData";
 import { DateRange, Project } from "@/types";
 import { format, isWithinInterval, subMonths } from "date-fns";
 import { CHART_COLORS } from "@/lib/chart-styles";
@@ -17,19 +16,17 @@ import { TrendingUp } from "lucide-react";
 
 interface ProjectCompletionChartProps {
   dateRange: DateRange;
+  projects: Project[];
 }
 
-const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRange }) => {
-  // Log projects data to debug
-  console.log("All projects:", projects);
-  console.log("Completed projects:", projects.filter(p => p.status === 'Completed'));
-
+const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ 
+  dateRange, 
+  projects 
+}) => {
   const getMonthlyCompletionData = () => {
     const today = new Date();
     const endDate = today;
     const startDate = subMonths(endDate, 5);
-    
-    console.log("Date range for chart:", { startDate, endDate });
     
     const months: string[] = [];
     const monthlyCompletions: { [key: string]: number } = {};
@@ -43,31 +40,23 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
       monthlyCompletions[monthKey] = 0;
     }
     
-    // Count completed projects by month based on the project's deadline
-    // Since we don't have an updatedAt field, we'll use the deadline as the completion date
+    // Count completed projects by month based on the project's createdAt date
+    // since we're assuming completed projects were marked completed around their creation date
+    // (We don't have an updatedAt or completedAt field)
     const completedProjects = projects.filter((project: Project) => project.status === 'Completed');
     
-    console.log("Filtered completed projects:", completedProjects);
-    
     completedProjects.forEach(project => {
-      // Since we don't have an 'updatedAt' field in the Project type,
-      // we'll use the createdAt field for completed projects
       const completionDate = new Date(project.createdAt);
-      
-      console.log(`Project "${project.name}" completion date:`, completionDate);
       
       // Check if within our 6-month window
       if (isWithinInterval(completionDate, { start: startDate, end: endDate })) {
         const monthKey = format(completionDate, "MMM");
-        console.log(`Project "${project.name}" completion falls in month:`, monthKey);
         
         if (monthlyCompletions[monthKey] !== undefined) {
           monthlyCompletions[monthKey]++;
         }
       }
     });
-    
-    console.log("Monthly completions data:", monthlyCompletions);
 
     return months.map(month => ({
       month,
@@ -76,10 +65,9 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
   };
 
   const data = getMonthlyCompletionData();
-  console.log("Chart data:", data);
   
-  const totalCompleted = data.reduce((sum, item) => sum + item.completed, 0);
-  const completionRate = totalCompleted > 0 
+  const totalCompleted = projects.filter(p => p.status === 'Completed').length;
+  const completionRate = projects.length > 0 
     ? ((totalCompleted / projects.length) * 100).toFixed(0) 
     : "0";
     
@@ -154,11 +142,13 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({ dateRan
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm pt-4 pb-4 px-6 mt-auto">
         <div className="flex items-center gap-2 font-medium leading-none">
-          {totalCompleted} projects completed in the last 6 months
+          {totalCompleted} projects completed in total
           <TrendingUp className="h-4 w-4" />
         </div>
         <div className="text-muted-foreground">
-          {completionRate}% overall completion rate
+          {projects.length > 0 ? 
+            `${completionRate}% overall completion rate (${totalCompleted}/${projects.length})` :
+            "No project data available"}
         </div>
       </CardFooter>
     </Card>

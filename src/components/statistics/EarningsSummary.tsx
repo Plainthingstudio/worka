@@ -1,8 +1,7 @@
 
 import React from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { projects } from "@/mockData";
-import { DateRange, Payment } from "@/types";
+import { DateRange, Project, Payment } from "@/types";
 import { format, subMonths, isWithinInterval } from "date-fns";
 import { TrendingUp } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,16 +9,16 @@ import { CHART_COLORS } from "@/lib/chart-styles";
 
 interface EarningsSummaryProps {
   dateRange: DateRange;
+  projects: Project[];
 }
 
 const EarningsSummary: React.FC<EarningsSummaryProps> = ({
-  dateRange
+  dateRange, 
+  projects
 }) => {
   const getMonthlyData = () => {
     const endDate = new Date();
     const startDate = subMonths(endDate, 5); // Last 6 months (current + 5 previous)
-    
-    console.log("Earnings date range:", { startDate, endDate });
 
     // Initialize monthly counts
     const months: string[] = [];
@@ -37,18 +36,18 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({
     }
 
     // Extract all payments from all projects
-    const allPayments: (Payment & { currency: string })[] = [];
+    const allPayments: Array<Payment & { currency: string }> = [];
     projects.forEach(project => {
-      project.payments.forEach(payment => {
-        // Add the project currency to each payment
-        allPayments.push({
-          ...payment,
-          currency: project.currency // Add the currency from the parent project
+      if (project.payments && project.payments.length > 0) {
+        project.payments.forEach(payment => {
+          // Add the project currency to each payment
+          allPayments.push({
+            ...payment,
+            currency: project.currency // Add the currency from the parent project
+          });
         });
-      });
+      }
     });
-    
-    console.log("All payments:", allPayments);
 
     // Sum earnings by payment date
     allPayments.forEach(payment => {
@@ -62,8 +61,6 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({
         }
       }
     });
-    
-    console.log("Monthly earnings data:", monthlyEarnings);
 
     // Create data array
     return months.map(month => ({
@@ -73,8 +70,6 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({
   };
   
   const data = getMonthlyData();
-  console.log("Earnings chart data:", data);
-  
   const totalEarnings = data.reduce((sum, item) => sum + item.earnings, 0);
   const startMonth = format(subMonths(new Date(), 5), "MMMM");
   const endMonth = format(new Date(), "MMMM yyyy");
@@ -165,7 +160,9 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({
           <TrendingUp className="h-4 w-4" />
         </div>
         <div className="text-muted-foreground">
-          Based on payment dates when clients paid
+          {projects.length > 0 ? 
+            `Based on ${projects.length} projects with ${projects.reduce((count, p) => count + (p.payments?.length || 0), 0)} payments` :
+            "No payment data available"}
         </div>
       </CardFooter>
     </Card>

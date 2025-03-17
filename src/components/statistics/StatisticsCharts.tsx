@@ -1,8 +1,7 @@
 
 import React from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { clients } from "@/mockData";
-import { DateRange } from "@/types";
+import { Client, DateRange } from "@/types";
 import { format, subMonths, isWithinInterval } from "date-fns";
 import { TrendingUp } from "lucide-react";
 import { CHART_COLORS } from "@/lib/chart-styles";
@@ -17,9 +16,10 @@ import {
 
 interface StatisticsChartsProps {
   dateRange: DateRange;
+  clients: Client[];
 }
 
-const StatisticsCharts: React.FC<StatisticsChartsProps> = ({ dateRange }) => {
+const StatisticsCharts: React.FC<StatisticsChartsProps> = ({ dateRange, clients }) => {
   const getMonthlyData = () => {
     const endDate = new Date();
     const startDate = subMonths(endDate, 5); // Last 6 months (current + 5 previous)
@@ -130,11 +130,11 @@ const StatisticsCharts: React.FC<StatisticsChartsProps> = ({ dateRange }) => {
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm pt-4 pb-4 px-6 mt-auto">
         <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month
+          {clients.length > 0 ? "Showing real client growth" : "No client data available"}
           <TrendingUp className="h-4 w-4" />
         </div>
         <div className="text-muted-foreground">
-          Showing total clients growth for the last 6 months
+          Based on {clients.length} clients in the database
         </div>
       </CardFooter>
     </Card>
