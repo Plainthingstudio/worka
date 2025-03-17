@@ -15,12 +15,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "./ThemeProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Navbar = ({ title }: { title?: string }) => {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [userName, setUserName] = useState<string>("");
   const [userInitials, setUserInitials] = useState<string>("SM");
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     const getUserProfile = async () => {
@@ -93,26 +95,30 @@ const Navbar = ({ title }: { title?: string }) => {
   };
 
   return (
-    <header className={`sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border px-4 backdrop-blur-md ${
+    <header className={`sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border px-2 sm:px-4 md:px-6 backdrop-blur-md ${
       theme === "dark" ? "bg-background/60 border-border/40 shadow-md shadow-black/5" : "bg-white/80"
     }`}>
       <div className="flex items-center">
-        <h1 className="text-xl font-semibold tracking-tight">{title || "Studio Manager"}</h1>
+        <h1 className="text-lg sm:text-xl font-semibold tracking-tight truncate max-w-[220px] sm:max-w-none">
+          {title || "Studio Manager"}
+        </h1>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="gap-2 dark:hover:bg-accent/20">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-primary/10 text-primary dark:bg-primary/20">
+            <Button variant="ghost" size="sm" className="gap-1 sm:gap-2 dark:hover:bg-accent/20 px-1 sm:px-2">
+              <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
+                <AvatarFallback className="bg-primary/10 text-primary dark:bg-primary/20 text-xs sm:text-sm">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm font-medium">{userName || "Studio Manager"}</span>
+              <span className="text-xs sm:text-sm font-medium hidden xs:inline">
+                {userName || "Studio Manager"}
+              </span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 dark:border-border/40 dark:bg-background/95 dark:backdrop-blur-md">
+          <DropdownMenuContent align="end" className="w-48 sm:w-56 dark:border-border/40 dark:bg-background/95 dark:backdrop-blur-md">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator className="dark:bg-border/40" />
             <DropdownMenuItem asChild>
