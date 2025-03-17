@@ -38,11 +38,11 @@ const LeadColumn: React.FC<LeadColumnProps> = ({
 
   return (
     <div 
-      className="flex flex-col h-[calc(100vh-14rem)] bg-background rounded border border-border"
+      className="flex flex-col h-[calc(100vh-15rem)] md:h-[calc(100vh-16rem)] bg-background rounded border border-border"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <div className="bg-muted/40 rounded-t p-3 font-medium text-sm">
+      <div className="bg-muted/40 rounded-t p-2 sm:p-3 font-medium text-xs sm:text-sm">
         <div className="flex justify-between items-center">
           <span>{title}</span>
           <span className="bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full">
@@ -55,10 +55,10 @@ const LeadColumn: React.FC<LeadColumnProps> = ({
         {leads.length === 0 ? (
           <Button 
             variant="ghost" 
-            className="w-full h-20 border border-dashed rounded-md text-sm text-muted-foreground justify-center gap-2"
+            className="w-full h-16 sm:h-20 border border-dashed rounded-md text-xs sm:text-sm text-muted-foreground justify-center gap-2"
             onClick={onAddLead}
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
             Add Lead
           </Button>
         ) : (
@@ -75,10 +75,10 @@ const LeadColumn: React.FC<LeadColumnProps> = ({
             ))}
             <Button 
               variant="ghost" 
-              className="w-full mt-3 border border-dashed rounded-md text-sm text-muted-foreground justify-center gap-2"
+              className="w-full mt-2 sm:mt-3 border border-dashed rounded-md text-xs sm:text-sm text-muted-foreground justify-center gap-2"
               onClick={onAddLead}
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
               Add Lead
             </Button>
           </>

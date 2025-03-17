@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PlusCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -43,7 +42,6 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   const [currentStage, setCurrentStage] = useState<LeadStage>('Leads');
   const [scrollPosition, setScrollPosition] = useState({ left: 0, maxScroll: 0 });
 
-  // Group leads by stage
   const leadsByStage = LEAD_STAGES.reduce((acc, stage) => {
     acc[stage] = leads.filter(lead => lead.stage === stage);
     return acc;
@@ -123,12 +121,12 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <div>
-          <h1 className="text-2xl font-bold">Leads & Pipeline</h1>
-          <p className="text-muted-foreground">Manage your leads through the sales pipeline.</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Leads & Pipeline</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">Manage your leads through the sales pipeline.</p>
         </div>
-        <Button onClick={() => handleAddLeadInStage('Leads')}>
+        <Button onClick={() => handleAddLeadInStage('Leads')} className="w-full sm:w-auto">
           <PlusCircle className="mr-2 h-4 w-4" />
           Add Lead
         </Button>
@@ -144,7 +142,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
             <Button 
               variant="outline" 
               size="icon" 
-              className="rounded-full shadow-md h-8 w-8" 
+              className="rounded-full shadow-md h-8 w-8 opacity-80 hover:opacity-100" 
               onClick={scrollLeft}
             >
               <ArrowLeft className="h-4 w-4" />
@@ -155,7 +153,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
             <Button 
               variant="outline" 
               size="icon" 
-              className="rounded-full shadow-md h-8 w-8" 
+              className="rounded-full shadow-md h-8 w-8 opacity-80 hover:opacity-100" 
               onClick={scrollRight}
             >
               <ArrowRight className="h-4 w-4" />
@@ -163,13 +161,13 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
           </div>
           
           <ScrollArea 
-            className="h-full px-10 kanban-scroll-container" 
+            className="h-full px-5 sm:px-10 kanban-scroll-container" 
             scrollHideDelay={0}
             onScroll={handleScroll}
           >
             <div className="flex gap-4 pb-4 px-1 min-w-max">
               {LEAD_STAGES.map(stage => (
-                <div key={stage} className="w-80 flex-shrink-0">
+                <div key={stage} className="w-64 sm:w-72 md:w-80 flex-shrink-0">
                   <LeadColumn
                     title={stage}
                     leads={leadsByStage[stage] || []}
@@ -188,7 +186,6 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
         </div>
       )}
 
-      {/* Add Lead Dialog */}
       <LeadDialog
         isOpen={isAddDialogOpen}
         onClose={() => setIsAddDialogOpen(false)}
@@ -197,7 +194,6 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
         isLoading={actionLoading}
       />
 
-      {/* Edit Lead Dialog */}
       <LeadDialog
         isOpen={isEditDialogOpen}
         onClose={() => {
@@ -210,7 +206,6 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
         isLoading={actionLoading}
       />
 
-      {/* Delete Lead Dialog */}
       <DeleteLeadDialog
         isOpen={isDeleteDialogOpen}
         onClose={() => {

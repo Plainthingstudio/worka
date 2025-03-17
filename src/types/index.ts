@@ -144,6 +144,7 @@ export interface Lead {
   source?: string;
   stage: LeadStage;
   notes?: string;
+  address?: string; // Adding address property to fix TypeScript errors
   createdAt: Date;
   updatedAt: Date;
 }
