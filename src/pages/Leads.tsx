@@ -1,10 +1,7 @@
 
 import React, { useState } from "react";
-import Sidebar from "@/components/Sidebar";
-import Navbar from "@/components/Navbar";
 import { useLeads } from '@/hooks/leads/useLeads';
 import KanbanBoard from '@/components/leads/KanbanBoard';
-import { useSidebarWidth } from "@/hooks/useSidebarWidth";
 import { Layout } from "@/components/Layout";
 
 const Leads = () => {
@@ -13,15 +10,17 @@ const Leads = () => {
 
   return (
     <Layout title="Leads & Pipeline">
-      <KanbanBoard
-        leads={leads}
-        isLoading={isLoading}
-        onAddLead={addLead}
-        onUpdateLead={updateLead}
-        onDeleteLead={deleteLead}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-      />
+      <main className="h-[calc(100vh-64px)] overflow-hidden">
+        <KanbanBoard
+          leads={leads}
+          isLoading={isLoading}
+          onAddLead={addLead}
+          onUpdateLead={updateLead}
+          onDeleteLead={deleteLead}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
+      </main>
     </Layout>
   );
 };

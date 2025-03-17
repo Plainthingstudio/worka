@@ -37,14 +37,14 @@ const KanbanScrollContainer: React.FC<KanbanScrollContainerProps> = ({
   
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center h-full">
         <div className="text-lg text-muted-foreground">Loading leads...</div>
       </div>
     );
   }
 
   return (
-    <div className="relative flex-1 h-[calc(100vh-170px)] overflow-hidden">
+    <div className="relative flex-1 h-full w-full overflow-hidden">
       <div className="absolute left-0 top-1/2 z-10 -translate-y-1/2 ml-1">
         <Button 
           variant="outline" 
@@ -68,7 +68,7 @@ const KanbanScrollContainer: React.FC<KanbanScrollContainerProps> = ({
       </div>
       
       <ScrollArea 
-        className="h-full kanban-scroll-container rounded-md border border-border/50" 
+        className="h-full w-full kanban-scroll-container rounded-md border border-border/50" 
         onScroll={onScroll}
       >
         <div className="flex gap-3 p-4 min-w-max h-full">

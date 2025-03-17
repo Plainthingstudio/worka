@@ -38,7 +38,7 @@ const LeadsList: React.FC<LeadsListProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center h-full w-full">
         <p className="text-muted-foreground">Loading leads...</p>
       </div>
     );
@@ -46,7 +46,7 @@ const LeadsList: React.FC<LeadsListProps> = ({
 
   if (leads.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
+      <div className="flex flex-col items-center justify-center h-full w-full">
         <p className="text-muted-foreground mb-4">No leads found</p>
       </div>
     );
