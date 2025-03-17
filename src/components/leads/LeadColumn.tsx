@@ -1,6 +1,8 @@
 
 import React from 'react';
 import { Lead, LeadStage } from '@/types';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import LeadCard from './LeadCard';
 
 interface LeadColumnProps {
@@ -10,6 +12,7 @@ interface LeadColumnProps {
   onEdit: (lead: Lead) => void;
   onDelete: (id: string) => void;
   onDrop: (leadId: string, stage: LeadStage) => void;
+  onAddLead: () => void;
   allStages: LeadStage[];
 }
 
@@ -20,6 +23,7 @@ const LeadColumn: React.FC<LeadColumnProps> = ({
   onEdit, 
   onDelete, 
   onDrop,
+  onAddLead,
   allStages
 }) => {
   const handleDragOver = (e: React.DragEvent) => {
@@ -49,20 +53,35 @@ const LeadColumn: React.FC<LeadColumnProps> = ({
       
       <div className="flex-1 p-2 overflow-y-auto max-h-[calc(100vh-12rem)]">
         {leads.length === 0 ? (
-          <div className="flex items-center justify-center h-20 border border-dashed rounded-md text-sm text-muted-foreground">
-            No leads
-          </div>
+          <Button 
+            variant="ghost" 
+            className="w-full h-20 border border-dashed rounded-md text-sm text-muted-foreground justify-center gap-2"
+            onClick={onAddLead}
+          >
+            <Plus className="h-4 w-4" />
+            Add Lead
+          </Button>
         ) : (
-          leads.map(lead => (
-            <LeadCard 
-              key={lead.id} 
-              lead={lead} 
-              onMove={onMove} 
-              onEdit={onEdit} 
-              onDelete={onDelete}
-              allStages={allStages}
-            />
-          ))
+          <>
+            {leads.map(lead => (
+              <LeadCard 
+                key={lead.id} 
+                lead={lead} 
+                onMove={onMove} 
+                onEdit={onEdit} 
+                onDelete={onDelete}
+                allStages={allStages}
+              />
+            ))}
+            <Button 
+              variant="ghost" 
+              className="w-full mt-3 border border-dashed rounded-md text-sm text-muted-foreground justify-center gap-2"
+              onClick={onAddLead}
+            >
+              <Plus className="h-4 w-4" />
+              Add Lead
+            </Button>
+          </>
         )}
       </div>
     </div>

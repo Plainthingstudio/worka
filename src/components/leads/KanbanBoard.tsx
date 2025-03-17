@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Lead, LeadStage } from '@/types';
 import LeadColumn from './LeadColumn';
 import LeadDialog from './LeadDialog';
@@ -39,6 +40,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | undefined>(undefined);
   const [actionLoading, setActionLoading] = useState(false);
+  const [currentStage, setCurrentStage] = useState<LeadStage>('Leads');
 
   // Group leads by stage
   const leadsByStage = LEAD_STAGES.reduce((acc, stage) => {
@@ -48,7 +50,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
   const handleAddLead = async (data: any) => {
     setActionLoading(true);
-    await onAddLead(data);
+    const newData = { ...data, stage: currentStage };
+    await onAddLead(newData);
     setActionLoading(false);
     setIsAddDialogOpen(false);
   };
@@ -88,11 +91,19 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     setIsDeleteDialogOpen(true);
   };
 
+  const handleAddLeadInStage = (stage: LeadStage) => {
+    setCurrentStage(stage);
+    setIsAddDialogOpen(true);
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Leads & Pipeline</h1>
-        <Button onClick={() => setIsAddDialogOpen(true)}>
+        <div>
+          <h1 className="text-2xl font-bold">Leads & Pipeline</h1>
+          <p className="text-muted-foreground">Manage your leads through the sales pipeline.</p>
+        </div>
+        <Button onClick={() => handleAddLeadInStage('Leads')}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Add Lead
         </Button>
@@ -103,20 +114,24 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
           <div className="text-lg text-muted-foreground">Loading leads...</div>
         </div>
       ) : (
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 overflow-auto pb-4">
-          {LEAD_STAGES.map(stage => (
-            <LeadColumn
-              key={stage}
-              title={stage}
-              leads={leadsByStage[stage] || []}
-              onMove={handleMoveLead}
-              onEdit={handleEditClick}
-              onDelete={handleDeleteClick}
-              onDrop={handleMoveLead}
-              allStages={LEAD_STAGES}
-            />
-          ))}
-        </div>
+        <ScrollArea className="flex-1 w-full pb-4">
+          <div className="flex gap-4 min-w-max pb-4 px-1">
+            {LEAD_STAGES.map(stage => (
+              <div key={stage} className="w-80 flex-shrink-0">
+                <LeadColumn
+                  title={stage}
+                  leads={leadsByStage[stage] || []}
+                  onMove={handleMoveLead}
+                  onEdit={handleEditClick}
+                  onDelete={handleDeleteClick}
+                  onDrop={handleMoveLead}
+                  onAddLead={() => handleAddLeadInStage(stage)}
+                  allStages={LEAD_STAGES}
+                />
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
       )}
 
       {/* Add Lead Dialog */}
@@ -124,7 +139,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
         isOpen={isAddDialogOpen}
         onClose={() => setIsAddDialogOpen(false)}
         onSubmit={handleAddLead}
-        title="Add New Lead"
+        title={`Add New Lead to ${currentStage}`}
         isLoading={actionLoading}
       />
 
