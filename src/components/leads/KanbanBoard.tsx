@@ -54,7 +54,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   return <div className="w-full">
       <KanbanHeader onAddLead={handleAddLeadInStage} viewMode={viewMode} onViewModeChange={onViewModeChange} />
       
-      <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
+      <div className="glass-card rounded-xl border shadow-sm animate-fade-in bg-slate-100">
         <div className="overflow-x-auto p-4 py-[8px] px-[8px]">
           {viewMode === 'kanban' ? <div className="h-[calc(100vh-230px)]">
               <KanbanScrollContainer isLoading={isLoading} stages={LEAD_STAGES} leadsByStage={leadsByStage} onScroll={handleScroll} onScrollLeft={scrollLeft} onScrollRight={scrollRight} onMove={handleMoveLead} onEdit={handleEditClick} onDelete={handleDeleteClick} onAddLead={handleAddLeadInStage} />
