@@ -121,8 +121,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col px-4 py-4 sm:px-6 md:px-8 max-w-[1600px] mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+    <div className="flex flex-col h-full px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-5 lg:px-8 max-w-[1800px] mx-auto w-full">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 sm:mb-6">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold">Leads & Pipeline</h1>
           <p className="text-muted-foreground text-sm sm:text-base">Manage your leads through the sales pipeline.</p>
@@ -143,7 +143,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
             <Button 
               variant="outline" 
               size="icon" 
-              className="rounded-full shadow-md h-8 w-8 opacity-80 hover:opacity-100" 
+              className="rounded-full shadow-md h-8 w-8 opacity-80 hover:opacity-100 bg-background" 
               onClick={scrollLeft}
             >
               <ArrowLeft className="h-4 w-4" />
@@ -154,7 +154,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
             <Button 
               variant="outline" 
               size="icon" 
-              className="rounded-full shadow-md h-8 w-8 opacity-80 hover:opacity-100" 
+              className="rounded-full shadow-md h-8 w-8 opacity-80 hover:opacity-100 bg-background" 
               onClick={scrollRight}
             >
               <ArrowRight className="h-4 w-4" />
@@ -162,13 +162,13 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
           </div>
           
           <ScrollArea 
-            className="h-full px-5 sm:px-6 kanban-scroll-container" 
+            className="h-[calc(100vh-12rem)] md:h-[calc(100vh-13rem)] lg:h-[calc(100vh-14rem)] px-4 kanban-scroll-container" 
             scrollHideDelay={0}
             onScroll={handleScroll}
           >
-            <div className="flex gap-3 sm:gap-4 pb-4 px-1 min-w-max">
+            <div className="flex gap-3 sm:gap-4 pb-4 min-w-max h-full">
               {LEAD_STAGES.map(stage => (
-                <div key={stage} className="w-60 sm:w-64 md:w-72 flex-shrink-0">
+                <div key={stage} className="w-60 sm:w-64 md:w-72 lg:w-80 flex-shrink-0 h-full">
                   <LeadColumn
                     title={stage}
                     leads={leadsByStage[stage] || []}
