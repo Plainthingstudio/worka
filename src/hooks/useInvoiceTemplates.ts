@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { InvoiceTemplate, InvoiceTemplateStyle } from '@/types/template';
@@ -235,18 +234,16 @@ export const InvoiceTemplatesProvider = ({ children }: { children: ReactNode }) 
   };
 
   return (
-    <InvoiceTemplatesContext.Provider
-      value={{
-        templates,
-        activeTemplate,
-        setActiveTemplate,
-        saveTemplate,
-        deleteTemplate,
-        duplicateTemplate,
-        updateTemplateName,
-        updateTemplateStyle
-      }}
-    >
+    <InvoiceTemplatesContext.Provider value={{
+      templates,
+      activeTemplate,
+      setActiveTemplate,
+      saveTemplate,
+      deleteTemplate,
+      duplicateTemplate,
+      updateTemplateName,
+      updateTemplateStyle
+    }}>
       {children}
     </InvoiceTemplatesContext.Provider>
   );
