@@ -94,7 +94,7 @@ const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) =>
                       +{project.categories.length - 2}
                     </Badge>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent side="top" align="center" sideOffset={5}>
                     <p className="font-medium">All Categories:</p>
                     <ul className="text-xs mt-1">
                       {project.categories.map((category, index) => (
@@ -153,7 +153,7 @@ const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) =>
                   {assignedTeamMembers.length}
                 </div>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent side="top" align="center" sideOffset={5}>
                 <p className="font-medium">Assigned Team Members:</p>
                 <ul className="text-xs mt-1">
                   {assignedTeamMembers.map(member => (
