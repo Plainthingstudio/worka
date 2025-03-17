@@ -50,20 +50,18 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
       <div className="p-4 sm:p-6 flex flex-col h-full">
         <KanbanHeader onAddLead={handleAddLeadInStage} />
         
-        <div className="flex-1 min-h-0">
-          <KanbanScrollContainer
-            isLoading={isLoading}
-            stages={LEAD_STAGES}
-            leadsByStage={leadsByStage}
-            onScroll={handleScroll}
-            onScrollLeft={scrollLeft}
-            onScrollRight={scrollRight}
-            onMove={handleMoveLead}
-            onEdit={handleEditClick}
-            onDelete={handleDeleteClick}
-            onAddLead={handleAddLeadInStage}
-          />
-        </div>
+        <KanbanScrollContainer
+          isLoading={isLoading}
+          stages={LEAD_STAGES}
+          leadsByStage={leadsByStage}
+          onScroll={handleScroll}
+          onScrollLeft={scrollLeft}
+          onScrollRight={scrollRight}
+          onMove={handleMoveLead}
+          onEdit={handleEditClick}
+          onDelete={handleDeleteClick}
+          onAddLead={handleAddLeadInStage}
+        />
       </div>
 
       <LeadDialog
