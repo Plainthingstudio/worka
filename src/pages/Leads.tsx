@@ -11,11 +11,7 @@ const Leads = () => {
 
   return (
     <Layout title="Leads & Pipeline">
-      <div 
-        className={`w-full h-full transition-all duration-300 ease-in-out ${
-          isSidebarExpanded ? "ml-0 md:ml-56" : "ml-0 md:ml-14"
-        }`}
-      >
+      <div className="w-full h-full overflow-hidden">
         <KanbanBoard
           leads={leads}
           isLoading={isLoading}

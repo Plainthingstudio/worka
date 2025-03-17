@@ -121,7 +121,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col px-4 py-4 sm:px-6 md:px-8">
+    <div className="h-full flex flex-col px-4 py-4 sm:px-6 md:px-8 max-w-[1600px] mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold">Leads & Pipeline</h1>
