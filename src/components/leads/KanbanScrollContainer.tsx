@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Lead, LeadStage } from '@/types';
 import LeadColumn from './LeadColumn';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface KanbanScrollContainerProps {
   isLoading: boolean;
@@ -31,6 +32,9 @@ const KanbanScrollContainer: React.FC<KanbanScrollContainerProps> = ({
   onDelete,
   onAddLead
 }) => {
+  const isMobile = useIsMobile();
+  const columnWidth = isMobile ? 260 : 280;
+  
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -40,7 +44,7 @@ const KanbanScrollContainer: React.FC<KanbanScrollContainerProps> = ({
   }
 
   return (
-    <div className="relative overflow-hidden h-[calc(100vh-180px)] sm:h-[calc(100vh-190px)] md:h-[calc(100vh-200px)]">
+    <div className="relative flex-1 h-[calc(100vh-210px)] overflow-hidden">
       <div className="absolute left-0 top-1/2 z-10 -translate-y-1/2 ml-1">
         <Button 
           variant="outline" 
@@ -67,9 +71,9 @@ const KanbanScrollContainer: React.FC<KanbanScrollContainerProps> = ({
         className="h-full kanban-scroll-container rounded-md border border-border/50" 
         onScroll={onScroll}
       >
-        <div className="flex gap-3 sm:gap-4 p-4 min-w-max h-full">
+        <div className="flex gap-3 p-4 min-w-max h-full">
           {stages.map(stage => (
-            <div key={stage} className="w-[260px] sm:w-[280px] md:w-[300px] flex-shrink-0 h-full">
+            <div key={stage} className={`w-[${columnWidth}px] flex-shrink-0 h-full`}>
               <LeadColumn
                 title={stage}
                 leads={leadsByStage[stage] || []}
