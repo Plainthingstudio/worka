@@ -38,7 +38,7 @@ const LeadColumn: React.FC<LeadColumnProps> = ({
 
   return (
     <div 
-      className="flex flex-col h-full bg-background"
+      className="flex flex-col h-[calc(100vh-12rem)] bg-background"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
@@ -51,7 +51,7 @@ const LeadColumn: React.FC<LeadColumnProps> = ({
         </div>
       </div>
       
-      <div className="flex-1 p-2 overflow-y-auto max-h-[calc(100vh-12rem)]">
+      <div className="flex-1 p-2 overflow-y-auto">
         {leads.length === 0 ? (
           <Button 
             variant="ghost" 

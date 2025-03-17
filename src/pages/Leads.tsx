@@ -9,7 +9,7 @@ const Leads = () => {
 
   return (
     <Layout title="Leads & Pipeline">
-      <div className="container mx-auto py-6 h-[calc(100vh-4rem)]">
+      <div className="container mx-auto py-6 h-full">
         <KanbanBoard
           leads={leads}
           isLoading={isLoading}

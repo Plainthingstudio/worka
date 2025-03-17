@@ -114,24 +114,26 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
           <div className="text-lg text-muted-foreground">Loading leads...</div>
         </div>
       ) : (
-        <ScrollArea className="flex-1 w-full pb-4">
-          <div className="flex gap-4 min-w-max pb-4 px-1">
-            {LEAD_STAGES.map(stage => (
-              <div key={stage} className="w-80 flex-shrink-0">
-                <LeadColumn
-                  title={stage}
-                  leads={leadsByStage[stage] || []}
-                  onMove={handleMoveLead}
-                  onEdit={handleEditClick}
-                  onDelete={handleDeleteClick}
-                  onDrop={handleMoveLead}
-                  onAddLead={() => handleAddLeadInStage(stage)}
-                  allStages={LEAD_STAGES}
-                />
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full" orientation="horizontal">
+            <div className="flex gap-4 min-w-max pb-4 px-1">
+              {LEAD_STAGES.map(stage => (
+                <div key={stage} className="w-80 flex-shrink-0">
+                  <LeadColumn
+                    title={stage}
+                    leads={leadsByStage[stage] || []}
+                    onMove={handleMoveLead}
+                    onEdit={handleEditClick}
+                    onDelete={handleDeleteClick}
+                    onDrop={handleMoveLead}
+                    onAddLead={() => handleAddLeadInStage(stage)}
+                    allStages={LEAD_STAGES}
+                  />
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
       )}
 
       {/* Add Lead Dialog */}
