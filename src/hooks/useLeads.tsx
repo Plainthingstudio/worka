@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Lead, LeadStage } from '@/types';
+import { Lead, LeadStage, LeadSource } from '@/types';
 
 export const useLeads = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -62,6 +62,7 @@ export const useLeads = () => {
     phone?: string; 
     source?: string; 
     notes?: string;
+    stage?: LeadStage;
   }) => {
     try {
       // Get current user session
@@ -81,7 +82,7 @@ export const useLeads = () => {
           phone: data.phone,
           source: data.source,
           notes: data.notes,
-          stage: 'Leads' as LeadStage, // Default stage
+          stage: data.stage || 'Leads',
           user_id: session.user.id
         })
         .select()
@@ -106,6 +107,12 @@ export const useLeads = () => {
       
       // Update local state
       setLeads(prevLeads => [newLead, ...prevLeads]);
+      
+      // Check if we need to convert to client
+      if (newLead.stage === 'Kickoff') {
+        await convertLeadToClient(newLead);
+      }
+      
       toast.success("Lead created successfully");
       return newLead;
     } catch (error: any) {
@@ -148,6 +155,10 @@ export const useLeads = () => {
         throw error;
       }
       
+      // Get the updated lead for client conversion if needed
+      const updatedLead = leads.find(lead => lead.id === leadId);
+      const newStage = data.stage || (updatedLead?.stage || 'Leads');
+      
       // Update local state
       setLeads(prevLeads => {
         return prevLeads.map(lead => 
@@ -156,10 +167,10 @@ export const useLeads = () => {
       });
       
       // Check if we need to convert to client
-      if (data.stage === 'Kickoff') {
+      if (newStage === 'Kickoff') {
         const leadToConvert = leads.find(lead => lead.id === leadId);
         if (leadToConvert) {
-          await convertLeadToClient(leadToConvert);
+          await convertLeadToClient({ ...leadToConvert, ...data });
         }
       }
       
@@ -220,8 +231,8 @@ export const useLeads = () => {
         .insert({
           name: lead.name,
           email: lead.email,
-          phone: lead.phone,
-          lead_source: lead.source || 'Other',
+          phone: lead.phone || '',
+          lead_source: lead.source as LeadSource || 'Other',
           user_id: session.user.id
         })
         .select()
@@ -231,7 +242,7 @@ export const useLeads = () => {
         throw error;
       }
       
-      toast.success("Lead converted to client successfully");
+      toast.success(`${lead.name} has been converted to a client`);
       return clientData;
     } catch (error: any) {
       console.error("Error converting lead to client:", error);

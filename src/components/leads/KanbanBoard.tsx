@@ -115,7 +115,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
         </div>
       ) : (
         <div className="flex-1 overflow-hidden">
-          <ScrollArea className="h-full" orientation="horizontal">
+          <ScrollArea className="h-full w-full" scrollHideDelay={0}>
             <div className="flex gap-4 min-w-max pb-4 px-1">
               {LEAD_STAGES.map(stage => (
                 <div key={stage} className="w-80 flex-shrink-0">

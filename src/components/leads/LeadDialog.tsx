@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Lead } from '@/types';
 import LeadForm from './LeadForm';
@@ -35,6 +36,11 @@ const LeadDialog: React.FC<LeadDialogProps> = ({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            {lead ? 
+              "Update this lead's information below." : 
+              "Fill out the form below to create a new lead. Leads in the 'Kickoff' stage will automatically be converted to clients."}
+          </DialogDescription>
         </DialogHeader>
         <LeadForm
           onSubmit={handleSubmit}

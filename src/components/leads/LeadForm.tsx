@@ -14,13 +14,20 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Lead, LeadStage } from '@/types';
+import { Lead, LeadSource, LeadStage } from '@/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const leadFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   email: z.string().email({ message: "Please enter a valid email address." }),
   phone: z.string().optional(),
-  source: z.string().optional(),
+  source: z.string().min(1, { message: "Please select a lead source." }),
   notes: z.string().optional(),
   stage: z.string().optional(),
 });
@@ -38,6 +45,16 @@ const LeadForm: React.FC<LeadFormProps> = ({
   initialValues = {}, 
   isLoading = false 
 }) => {
+  // Define lead sources
+  const leadSources: LeadSource[] = [
+    "Dribbble",
+    "Website",
+    "LinkedIn",
+    "Behance",
+    "Direct Email",
+    "Other",
+  ];
+
   // Define default values for the form
   const defaultValues: Partial<LeadFormValues> = {
     name: initialValues.name || '',
@@ -84,35 +101,44 @@ const LeadForm: React.FC<LeadFormProps> = ({
           )}
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Phone Number</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter phone number (optional)" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter phone number" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
           
-          <FormField
-            control={form.control}
-            name="source"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Source</FormLabel>
+        <FormField
+          control={form.control}
+          name="source"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Lead Source</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <Input placeholder="How did you find this lead? (optional)" {...field} />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select lead source" />
+                  </SelectTrigger>
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+                <SelectContent>
+                  {leadSources.map((source) => (
+                    <SelectItem key={source} value={source}>
+                      {source}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
         <FormField
           control={form.control}
@@ -122,7 +148,7 @@ const LeadForm: React.FC<LeadFormProps> = ({
               <FormLabel>Notes</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Any additional information about this lead (optional)" 
+                  placeholder="Any additional information about this lead" 
                   className="min-h-[100px]"
                   {...field} 
                 />
