@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Grid2X2, Table, Rows } from 'lucide-react';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { InvoiceTemplatesProvider, useInvoiceTemplates, defaultTemplate } from '@/hooks/useInvoiceTemplates';
-import { InvoiceTemplate } from '@/types/template';
+import { InvoiceTemplate, InvoiceTemplateStyle } from '@/types/template';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
 import { useSidebarState } from '@/hooks/useSidebarState';
@@ -74,6 +74,11 @@ const InvoiceEditorContent = () => {
   // Handle template description update
   const handleUpdateDescription = (description: string) => {
     saveTemplate({ ...activeTemplate, description });
+  };
+
+  // Auto-save template when position changes
+  const handleStyleUpdate = (style: Partial<InvoiceTemplateStyle>) => {
+    updateTemplateStyle(activeTemplate.id, style);
   };
 
   return (
@@ -164,7 +169,7 @@ const InvoiceEditorContent = () => {
                         template={activeTemplate}
                         onUpdateName={handleUpdateName}
                         onUpdateDescription={handleUpdateDescription}
-                        onUpdateStyle={(style) => updateTemplateStyle(activeTemplate.id, style)}
+                        onUpdateStyle={handleStyleUpdate}
                         onSaveTemplate={() => saveTemplate(activeTemplate)}
                         onDuplicateTemplate={() => duplicateTemplate(activeTemplate.id)}
                         onDeleteTemplate={() => deleteTemplate(activeTemplate.id)}

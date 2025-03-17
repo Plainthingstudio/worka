@@ -1,16 +1,12 @@
 
-import { useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect, ReactNode } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { InvoiceTemplate, InvoiceTemplateStyle } from '@/types/template';
 import { useToast } from '@/hooks/use-toast';
 import { InvoiceTemplatesContext } from './context';
-import { defaultTemplate } from './constants';
-import { createTemplate, updateTemplate, duplicateTemplate } from './templateOperations';
+import { defaultTemplate, defaultTemplateStyle } from './constants';
 
-interface InvoiceTemplatesProviderProps {
-  children: ReactNode;
-}
-
-export const InvoiceTemplatesProvider = ({ children }: InvoiceTemplatesProviderProps) => {
+export const InvoiceTemplatesProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
   const [templates, setTemplates] = useState<InvoiceTemplate[]>([defaultTemplate]);
   const [activeTemplate, setActiveTemplate] = useState<InvoiceTemplate>(defaultTemplate);
@@ -60,7 +56,15 @@ export const InvoiceTemplatesProvider = ({ children }: InvoiceTemplatesProviderP
     if (isUpdate) {
       updatedTemplates = templates.map(t => {
         if (t.id === templateData.id) {
-          return updateTemplate(t, templateData);
+          return {
+            ...t,
+            ...templateData,
+            updatedAt: new Date(),
+            style: {
+              ...t.style,
+              ...(templateData.style || {})
+            }
+          };
         }
         return t;
       });
@@ -72,7 +76,19 @@ export const InvoiceTemplatesProvider = ({ children }: InvoiceTemplatesProviderP
         description: `${newTemplate.name} has been updated.`
       });
     } else {
-      newTemplate = createTemplate(templateData, templates);
+      newTemplate = {
+        id: uuidv4(),
+        name: templateData.name || `Template ${templates.length + 1}`,
+        description: templateData.description || "Invoice template",
+        isDefault: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        style: {
+          ...defaultTemplateStyle,
+          ...(templateData.style || {})
+        }
+      };
+      
       updatedTemplates = [...templates, newTemplate];
       
       toast({
@@ -104,8 +120,8 @@ export const InvoiceTemplatesProvider = ({ children }: InvoiceTemplatesProviderP
     
     // If the active template was deleted, set active to default
     if (activeTemplate.id === id) {
-      const defaultTemp = updatedTemplates.find(t => t.id === 'default') || updatedTemplates[0];
-      setActiveTemplate(defaultTemp);
+      const defaultTemplate = updatedTemplates.find(t => t.id === 'default') || updatedTemplates[0];
+      setActiveTemplate(defaultTemplate);
     }
     
     toast({
@@ -114,13 +130,21 @@ export const InvoiceTemplatesProvider = ({ children }: InvoiceTemplatesProviderP
     });
   };
 
-  const duplicateTemplateById = (id: string): InvoiceTemplate => {
+  const duplicateTemplate = (id: string): InvoiceTemplate => {
     const templateToDuplicate = templates.find(t => t.id === id);
     if (!templateToDuplicate) {
       throw new Error(`Template with ID ${id} not found`);
     }
     
-    const duplicatedTemplate = duplicateTemplate(templateToDuplicate);
+    const duplicatedTemplate: InvoiceTemplate = {
+      ...templateToDuplicate,
+      id: uuidv4(),
+      name: `${templateToDuplicate.name} (Copy)`,
+      isDefault: false,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
     setTemplates([...templates, duplicatedTemplate]);
     
     toast({
@@ -172,18 +196,16 @@ export const InvoiceTemplatesProvider = ({ children }: InvoiceTemplatesProviderP
   };
 
   return (
-    <InvoiceTemplatesContext.Provider
-      value={{
-        templates,
-        activeTemplate,
-        setActiveTemplate,
-        saveTemplate,
-        deleteTemplate,
-        duplicateTemplate: duplicateTemplateById,
-        updateTemplateName,
-        updateTemplateStyle
-      }}
-    >
+    <InvoiceTemplatesContext.Provider value={{
+      templates,
+      activeTemplate,
+      setActiveTemplate,
+      saveTemplate,
+      deleteTemplate,
+      duplicateTemplate,
+      updateTemplateName,
+      updateTemplateStyle
+    }}>
       {children}
     </InvoiceTemplatesContext.Provider>
   );

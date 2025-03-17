@@ -15,7 +15,16 @@ export const defaultTemplateStyle: InvoiceTemplateStyle = {
   showSignature: false,
   headerStyle: 'standard',
   footerStyle: 'standard',
-  tableStyle: 'standard'
+  tableStyle: 'standard',
+  elements: {
+    header: { x: 40, y: 40 },
+    clientInfo: { x: 40, y: 120 },
+    dates: { x: 400, y: 120 },
+    items: { x: 40, y: 220 },
+    totals: { x: 400, y: 400 },
+    notes: { x: 40, y: 450 },
+    signature: { x: 400, y: 500 }
+  }
 };
 
 // Default template
