@@ -43,7 +43,7 @@ export const useLeadOperations = (leads: Lead[], setLeads: React.Dispatch<React.
         source: insertedData.source,
         notes: insertedData.notes,
         stage: insertedData.stage as any,
-        address: insertedData.address,
+        address: insertedData.address || '',
         createdAt: new Date(insertedData.created_at),
         updatedAt: new Date(insertedData.updated_at)
       };
