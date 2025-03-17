@@ -2,26 +2,33 @@
 import React, { useState } from "react";
 import { useLeads } from '@/hooks/leads/useLeads';
 import KanbanBoard from '@/components/leads/KanbanBoard';
-import { Layout } from "@/components/Layout";
+import Sidebar from "@/components/Sidebar";
+import Navbar from "@/components/Navbar";
+import { useSidebarWidth } from "@/hooks/useSidebarWidth";
 
 const Leads = () => {
   const { leads, isLoading, addLead, updateLead, deleteLead } = useLeads();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const { isSidebarExpanded } = useSidebarWidth();
 
   return (
-    <Layout title="Leads & Pipeline">
-      <div className="h-full w-full">
-        <KanbanBoard
-          leads={leads}
-          isLoading={isLoading}
-          onAddLead={addLead}
-          onUpdateLead={updateLead}
-          onDeleteLead={deleteLead}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-        />
+    <div className="flex min-h-screen bg-background">
+      <Sidebar />
+      <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
+        <Navbar title="Leads & Pipeline" />
+        <main className="container mx-auto p-6">
+          <KanbanBoard
+            leads={leads}
+            isLoading={isLoading}
+            onAddLead={addLead}
+            onUpdateLead={updateLead}
+            onDeleteLead={deleteLead}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+          />
+        </main>
       </div>
-    </Layout>
+    </div>
   );
 };
 

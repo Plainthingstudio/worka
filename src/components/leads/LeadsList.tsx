@@ -38,7 +38,7 @@ const LeadsList: React.FC<LeadsListProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full w-full">
+      <div className="flex items-center justify-center h-64">
         <p className="text-muted-foreground">Loading leads...</p>
       </div>
     );
@@ -46,77 +46,75 @@ const LeadsList: React.FC<LeadsListProps> = ({
 
   if (leads.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full w-full">
+      <div className="flex flex-col items-center justify-center h-64">
         <p className="text-muted-foreground mb-4">No leads found</p>
       </div>
     );
   }
 
   return (
-    <div className="h-full w-full overflow-auto border rounded-md">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead>Source</TableHead>
-            <TableHead>Stage</TableHead>
-            <TableHead>Updated</TableHead>
-            <TableHead className="w-[80px]">Actions</TableHead>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Phone</TableHead>
+          <TableHead>Source</TableHead>
+          <TableHead>Stage</TableHead>
+          <TableHead>Updated</TableHead>
+          <TableHead className="w-[80px]">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {leads.map((lead) => (
+          <TableRow key={lead.id}>
+            <TableCell className="font-medium">{lead.name}</TableCell>
+            <TableCell>{lead.email}</TableCell>
+            <TableCell>{lead.phone || "-"}</TableCell>
+            <TableCell>{lead.source || "-"}</TableCell>
+            <TableCell>{lead.stage}</TableCell>
+            <TableCell>{new Date(lead.updatedAt).toLocaleDateString()}</TableCell>
+            <TableCell>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreHorizontal className="h-4 w-4" />
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEdit(lead)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onDelete(lead.id)}>
+                    <Trash className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  <DropdownMenuItem className="font-medium px-2 py-1.5 text-xs text-muted-foreground" disabled>
+                    Move to Stage
+                  </DropdownMenuItem>
+                  
+                  {stages.map((stage) => (
+                    <DropdownMenuItem 
+                      key={stage}
+                      disabled={lead.stage === stage}
+                      onClick={() => onStageChange(lead.id, stage)}
+                      className="pl-4 text-sm"
+                    >
+                      {stage}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {leads.map((lead) => (
-            <TableRow key={lead.id}>
-              <TableCell className="font-medium">{lead.name}</TableCell>
-              <TableCell>{lead.email}</TableCell>
-              <TableCell>{lead.phone || "-"}</TableCell>
-              <TableCell>{lead.source || "-"}</TableCell>
-              <TableCell>{lead.stage}</TableCell>
-              <TableCell>{new Date(lead.updatedAt).toLocaleDateString()}</TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Open menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onEdit(lead)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onDelete(lead.id)}>
-                      <Trash className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                    
-                    <DropdownMenuSeparator />
-                    
-                    <DropdownMenuItem className="font-medium px-2 py-1.5 text-xs text-muted-foreground" disabled>
-                      Move to Stage
-                    </DropdownMenuItem>
-                    
-                    {stages.map((stage) => (
-                      <DropdownMenuItem 
-                        key={stage}
-                        disabled={lead.stage === stage}
-                        onClick={() => onStageChange(lead.id, stage)}
-                        className="pl-4 text-sm"
-                      >
-                        {stage}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+        ))}
+      </TableBody>
+    </Table>
   );
 };
 

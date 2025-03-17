@@ -51,28 +51,30 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   } = useKanbanBoard({ leads, onAddLead, onUpdateLead, onDeleteLead });
 
   return (
-    <div className="flex flex-col h-full w-full">
-      <div className="p-4 sm:p-6 flex flex-col h-full">
-        <KanbanHeader 
-          onAddLead={handleAddLeadInStage} 
-          viewMode={viewMode}
-          onViewModeChange={onViewModeChange}
-        />
-        
-        <div className="flex-1 min-h-0 w-full">
+    <div className="w-full">
+      <KanbanHeader 
+        onAddLead={handleAddLeadInStage} 
+        viewMode={viewMode}
+        onViewModeChange={onViewModeChange}
+      />
+      
+      <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
+        <div className="overflow-x-auto p-4 py-[8px] px-[8px]">
           {viewMode === 'kanban' ? (
-            <KanbanScrollContainer
-              isLoading={isLoading}
-              stages={LEAD_STAGES}
-              leadsByStage={leadsByStage}
-              onScroll={handleScroll}
-              onScrollLeft={scrollLeft}
-              onScrollRight={scrollRight}
-              onMove={handleMoveLead}
-              onEdit={handleEditClick}
-              onDelete={handleDeleteClick}
-              onAddLead={handleAddLeadInStage}
-            />
+            <div className="h-[calc(100vh-230px)]">
+              <KanbanScrollContainer
+                isLoading={isLoading}
+                stages={LEAD_STAGES}
+                leadsByStage={leadsByStage}
+                onScroll={handleScroll}
+                onScrollLeft={scrollLeft}
+                onScrollRight={scrollRight}
+                onMove={handleMoveLead}
+                onEdit={handleEditClick}
+                onDelete={handleDeleteClick}
+                onAddLead={handleAddLeadInStage}
+              />
+            </div>
           ) : (
             <LeadsList
               leads={leads}
