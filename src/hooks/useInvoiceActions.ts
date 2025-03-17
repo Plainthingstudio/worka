@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -36,11 +37,8 @@ export const useInvoiceActions = () => {
     navigate(`/invoices/${invoiceId}`);
   };
 
-  const handleEditInvoice = () => {
-    toast({
-      title: "Editing disabled",
-      description: "Invoice editing has been temporarily disabled.",
-    });
+  const handleEditInvoice = (invoiceId: string) => {
+    navigate(`/invoices/edit/${invoiceId}`);
   };
 
   return {

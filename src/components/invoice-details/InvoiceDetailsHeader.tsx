@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Download, Trash } from "lucide-react";
+import { ArrowLeft, Download, Trash, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Invoice } from "@/types";
 
@@ -9,12 +9,14 @@ interface InvoiceDetailsHeaderProps {
   invoice: Invoice;
   onDeleteClick: () => void;
   onGeneratePDF: () => void;
+  onEditClick: () => void;
 }
 
 const InvoiceDetailsHeader: React.FC<InvoiceDetailsHeaderProps> = ({
   invoice,
   onDeleteClick,
   onGeneratePDF,
+  onEditClick,
 }) => {
   const navigate = useNavigate();
 
@@ -40,6 +42,14 @@ const InvoiceDetailsHeader: React.FC<InvoiceDetailsHeaderProps> = ({
           >
             <Trash className="mr-1 h-4 w-4" />
             Delete
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onEditClick}
+          >
+            <Edit className="mr-1 h-4 w-4" />
+            Edit
           </Button>
           <Button
             variant="default"

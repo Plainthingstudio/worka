@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -179,11 +178,16 @@ const InvoiceDetails = () => {
   };
 
   const generatePDF = () => {
-    // In a real application, this would generate a PDF
     toast({
       title: "PDF Generated",
       description: "In a production app, this would generate and download a PDF.",
     });
+  };
+
+  const handleEdit = () => {
+    if (invoice) {
+      navigate(`/invoices/edit/${invoice.id}`);
+    }
   };
 
   const formatCurrency = (amount: number) => {
@@ -226,6 +230,7 @@ const InvoiceDetails = () => {
             invoice={invoice}
             onDeleteClick={() => setDeleteConfirmOpen(true)}
             onGeneratePDF={generatePDF}
+            onEditClick={handleEdit}
           />
 
           <div className="rounded-lg border bg-card shadow-sm">

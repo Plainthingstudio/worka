@@ -1,29 +1,24 @@
 
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import Sidebar from "@/components/Sidebar";
-import Navbar from "@/components/Navbar";
-import { useInvoices } from "@/hooks/useInvoices";
-import { useSidebarState } from "@/hooks/useSidebarState";
-import { useClients } from "@/hooks/useClients";
-import InvoicesFilter from "@/components/invoices/InvoicesFilter";
-import InvoicesTable from "@/components/invoices/InvoicesTable";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Sidebar from '@/components/Sidebar';
+import Navbar from '@/components/Navbar';
+import InvoicesTable from '@/components/invoices/InvoicesTable';
+import InvoicesFilter from '@/components/invoices/InvoicesFilter';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
+import { useInvoices } from '@/hooks/useInvoices';
+import { useSidebarState } from '@/hooks/useSidebarState';
 
 const Invoices = () => {
   const navigate = useNavigate();
   const { isSidebarExpanded } = useSidebarState();
-  const { toast } = useToast();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const { clients, isLoading: isClientsLoading } = useClients();
+  const [filterStatus, setFilterStatus] = useState('all');
   
   const {
     invoices,
-    isLoading: isInvoicesLoading,
+    isLoading,
     deleteConfirmOpen,
     setDeleteConfirmOpen,
     deleteInvoice,
@@ -33,86 +28,89 @@ const Invoices = () => {
     handleEditInvoice
   } = useInvoices();
 
-  const getClientName = (clientId: string) => {
-    const client = clients.find(c => c.id === clientId);
-    return client ? client.name : "Unknown Client";
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return amount.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   };
 
-  const filteredInvoices = invoices.filter(invoice => {
-    const matchesSearch = invoice.invoiceNumber.toLowerCase().includes(search.toLowerCase()) || 
-                         getClientName(invoice.clientId).toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === "all" || 
-                        (statusFilter === "paid" && invoice.status === "Paid") || 
-                        (statusFilter === "unpaid" && invoice.status !== "Paid") || 
-                        (statusFilter === "overdue" && invoice.status === "Overdue");
-    return matchesSearch && matchesStatus;
-  });
-
-  const isLoading = isInvoicesLoading || isClientsLoading;
+  // Filter invoices based on status
+  const filteredInvoices = filterStatus === 'all'
+    ? invoices
+    : invoices.filter(invoice => invoice.status.toLowerCase() === filterStatus.toLowerCase());
 
   return (
     <div className="flex h-screen bg-muted/10">
       <Sidebar />
-      <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
+      <div 
+        className={`flex-1 w-full transition-all duration-300 ease-in-out ${
+          isSidebarExpanded ? "ml-56" : "ml-14"
+        }`}
+      >
         <Navbar title="Invoices" />
-        <main className="container mx-auto p-6">
-          <div className="mb-8 flex items-center justify-between">
+        <main className="p-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">
-                Invoices
-              </h1>
+              <h1 className="text-2xl font-semibold tracking-tight">Invoices</h1>
               <p className="text-muted-foreground">
-                Track and manage all your client invoices.
+                Manage and track client invoices.
               </p>
             </div>
-            <Button onClick={() => navigate("/invoices/new")} className="whitespace-nowrap">
-              <Plus className="mr-2 h-4 w-4" />
-              Generate New Invoice
-            </Button>
-          </div>
-
-          <InvoicesFilter search={search} setSearch={setSearch} statusFilter={statusFilter} setStatusFilter={setStatusFilter} />
-
-          <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
-            <div className="overflow-x-auto p-4 py-[8px] px-[8px]">
-              {isLoading ? (
-                <div className="flex justify-center items-center p-8">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-                </div>
-              ) : (
-                <InvoicesTable 
-                  invoices={filteredInvoices} 
-                  getClientName={getClientName} 
-                  onView={handleViewInvoice} 
-                  onEdit={handleEditInvoice} 
-                  onDelete={confirmDelete} 
-                  onDownload={handleDownload} 
-                />
-              )}
+            <div className="flex gap-2 self-end md:self-auto">
+              <Button onClick={() => navigate('/invoices/new')}>
+                <Plus className="h-4 w-4 mr-2" />
+                New Invoice
+              </Button>
             </div>
           </div>
+
+          <div className="mb-6">
+            <InvoicesFilter 
+              onFilterChange={setFilterStatus}
+              currentFilter={filterStatus}
+            />
+          </div>
+
+          {isLoading ? (
+            <div className="animate-pulse space-y-4">
+              <div className="h-12 bg-muted rounded"></div>
+              <div className="h-64 bg-muted rounded"></div>
+            </div>
+          ) : (
+            <InvoicesTable 
+              invoices={filteredInvoices}
+              formatCurrency={formatCurrency}
+              onViewClick={handleViewInvoice}
+              onDownloadClick={handleDownload}
+              onDeleteClick={confirmDelete}
+              onEditClick={handleEditInvoice}
+            />
+          )}
         </main>
       </div>
 
-      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Invoice</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this invoice? This action cannot be
-              undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={deleteInvoice}>
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the invoice and remove the data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={deleteInvoice}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
