@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Client, Project, Payment, ProjectStatus } from "@/types";
+import { Client, Project, Payment, ProjectStatus, TeamMember } from "@/types";
 import EditProjectDialog from "./dialogs/EditProjectDialog";
 import DeleteProjectDialog from "./dialogs/DeleteProjectDialog";
 import ChangeStatusDialog from "./dialogs/ChangeStatusDialog";
@@ -11,6 +11,7 @@ import DeletePaymentDialog from "./dialogs/DeletePaymentDialog";
 interface ProjectDialogsProps {
   project: Project;
   clients: Client[];
+  teamMembers?: TeamMember[]; // Added teamMembers as optional prop
   currentPayment: Payment | null;
   selectedStatus: ProjectStatus;
   isEditDialogOpen: boolean;
@@ -37,6 +38,7 @@ interface ProjectDialogsProps {
 const ProjectDialogs = ({
   project,
   clients,
+  teamMembers,
   currentPayment,
   selectedStatus,
   isEditDialogOpen,
