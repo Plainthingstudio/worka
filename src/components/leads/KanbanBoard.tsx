@@ -59,7 +59,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
           onViewModeChange={onViewModeChange}
         />
         
-        <div className="flex flex-col h-full w-full">
+        <div className="flex-1 min-h-0 w-full">
           {viewMode === 'kanban' ? (
             <KanbanScrollContainer
               isLoading={isLoading}

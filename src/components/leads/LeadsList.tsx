@@ -53,7 +53,7 @@ const LeadsList: React.FC<LeadsListProps> = ({
   }
 
   return (
-    <div className="w-full overflow-auto h-full">
+    <div className="h-full w-full overflow-auto border rounded-md">
       <Table>
         <TableHeader>
           <TableRow>

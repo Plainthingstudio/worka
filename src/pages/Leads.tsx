@@ -10,7 +10,7 @@ const Leads = () => {
 
   return (
     <Layout title="Leads & Pipeline">
-      <main className="h-[calc(100vh-64px)] overflow-hidden">
+      <div className="h-full w-full">
         <KanbanBoard
           leads={leads}
           isLoading={isLoading}
@@ -20,7 +20,7 @@ const Leads = () => {
           viewMode={viewMode}
           onViewModeChange={setViewMode}
         />
-      </main>
+      </div>
     </Layout>
   );
 };
