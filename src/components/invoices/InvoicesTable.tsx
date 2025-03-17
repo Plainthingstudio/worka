@@ -35,7 +35,7 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
       onStatusChange(invoiceId, status as "Draft" | "Sent" | "Paid" | "Overdue");
     }
   };
-  return <div className="rounded-md border bg-white">
+  return <div className="rounded-md border bg-white border shadow-sm">
       <Table>
         <TableHeader>
           <TableRow>
