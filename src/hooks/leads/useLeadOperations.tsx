@@ -1,69 +1,14 @@
 
-import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Lead, LeadStage, LeadSource } from '@/types';
+import { Lead, LeadStage } from '@/types';
+import { useLeadConversion } from './useLeadConversion';
+import { AddLeadData } from './types';
 
-export const useLeads = () => {
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export const useLeadOperations = (leads: Lead[], setLeads: React.Dispatch<React.SetStateAction<Lead[]>>) => {
+  const { convertLeadToClient } = useLeadConversion();
 
-  const fetchLeads = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast.error("You must be logged in to view leads");
-        setIsLoading(false);
-        return;
-      }
-      
-      // Fetch leads from Supabase
-      const { data, error } = await supabase
-        .from('leads')
-        .select('*')
-        .order('updated_at', { ascending: false });
-      
-      if (error) {
-        console.error("Error fetching leads:", error);
-        toast.error("Failed to load leads");
-        setIsLoading(false);
-        return;
-      }
-      
-      // Transform Supabase data to match Lead type
-      const transformedLeads = data.map((lead: any) => ({
-        id: lead.id,
-        name: lead.name,
-        email: lead.email,
-        phone: lead.phone,
-        source: lead.source,
-        stage: lead.stage as LeadStage,
-        notes: lead.notes,
-        createdAt: new Date(lead.created_at),
-        updatedAt: new Date(lead.updated_at)
-      }));
-      
-      setLeads(transformedLeads);
-    } catch (error) {
-      console.error("Error fetching leads:", error);
-      toast.error("Failed to load leads");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const addLead = async (data: { 
-    name: string; 
-    email: string; 
-    phone?: string; 
-    source?: string; 
-    notes?: string;
-    stage?: LeadStage;
-  }) => {
+  const addLead = async (data: AddLeadData) => {
     try {
       // Get current user session
       const { data: { session } } = await supabase.auth.getSession();
@@ -82,6 +27,7 @@ export const useLeads = () => {
           phone: data.phone,
           source: data.source,
           notes: data.notes,
+          address: data.address,
           stage: data.stage || 'Leads',
           user_id: session.user.id
         })
@@ -99,6 +45,7 @@ export const useLeads = () => {
         email: leadData.email,
         phone: leadData.phone,
         source: leadData.source,
+        address: leadData.address,
         stage: leadData.stage as LeadStage,
         notes: leadData.notes,
         createdAt: new Date(leadData.created_at),
@@ -142,6 +89,7 @@ export const useLeads = () => {
       if (data.phone !== undefined) updateData.phone = data.phone;
       if (data.source !== undefined) updateData.source = data.source;
       if (data.notes !== undefined) updateData.notes = data.notes;
+      if (data.address !== undefined) updateData.address = data.address;
       if (data.stage) updateData.stage = data.stage;
       
       // Update lead in Supabase
@@ -215,53 +163,9 @@ export const useLeads = () => {
     }
   };
 
-  const convertLeadToClient = async (lead: Lead) => {
-    try {
-      // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast.error("You must be logged in to convert lead to client");
-        return null;
-      }
-      
-      // Insert new client to Supabase
-      const { data: clientData, error } = await supabase
-        .from('clients')
-        .insert({
-          name: lead.name,
-          email: lead.email,
-          phone: lead.phone || '',
-          lead_source: lead.source as LeadSource || 'Other',
-          user_id: session.user.id
-        })
-        .select()
-        .single();
-      
-      if (error) {
-        throw error;
-      }
-      
-      toast.success(`${lead.name} has been converted to a client`);
-      return clientData;
-    } catch (error: any) {
-      console.error("Error converting lead to client:", error);
-      toast.error(error.message || "Failed to convert lead to client");
-      return null;
-    }
-  };
-
-  // Load leads on component mount
-  useEffect(() => {
-    fetchLeads();
-  }, []);
-
   return {
-    leads,
-    isLoading,
     addLead,
     updateLead,
-    deleteLead,
-    fetchLeads
+    deleteLead
   };
 };

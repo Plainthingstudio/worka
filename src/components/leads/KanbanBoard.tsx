@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { PlusCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Lead, LeadStage } from '@/types';
 import LeadColumn from './LeadColumn';
 import LeadDialog from './LeadDialog';
@@ -165,7 +165,6 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
           <ScrollArea 
             className="h-full px-10 kanban-scroll-container" 
             scrollHideDelay={0}
-            orientation="horizontal"
             onScroll={handleScroll}
           >
             <div className="flex gap-4 pb-4 px-1 min-w-max">
@@ -184,6 +183,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 </div>
               ))}
             </div>
+            <ScrollBar orientation="horizontal" />
           </ScrollArea>
         </div>
       )}

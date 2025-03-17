@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Layout } from '@/components/Layout';
-import { useLeads } from '@/hooks/useLeads';
+import { useLeads } from '@/hooks/leads/useLeads';
 import KanbanBoard from '@/components/leads/KanbanBoard';
 
 const Leads = () => {
