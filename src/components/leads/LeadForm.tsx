@@ -30,6 +30,7 @@ const leadFormSchema = z.object({
   source: z.string().min(1, { message: "Please select a lead source." }),
   notes: z.string().optional(),
   stage: z.string().optional(),
+  address: z.string().optional(),
 });
 
 type LeadFormValues = z.infer<typeof leadFormSchema>;
@@ -63,6 +64,7 @@ const LeadForm: React.FC<LeadFormProps> = ({
     source: initialValues.source || '',
     notes: initialValues.notes || '',
     stage: initialValues.stage || 'Leads',
+    address: '',
   };
 
   const form = useForm<LeadFormValues>({
@@ -94,7 +96,7 @@ const LeadForm: React.FC<LeadFormProps> = ({
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="Enter email address" {...field} />
+                <Input placeholder="Enter email address" type="email" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -109,6 +111,24 @@ const LeadForm: React.FC<LeadFormProps> = ({
               <FormLabel>Phone</FormLabel>
               <FormControl>
                 <Input placeholder="Enter phone number" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Address</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Enter address (optional)" 
+                  className="resize-none min-h-[80px]"
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -149,7 +169,7 @@ const LeadForm: React.FC<LeadFormProps> = ({
               <FormControl>
                 <Textarea 
                   placeholder="Any additional information about this lead" 
-                  className="min-h-[100px]"
+                  className="min-h-[100px] resize-none"
                   {...field} 
                 />
               </FormControl>

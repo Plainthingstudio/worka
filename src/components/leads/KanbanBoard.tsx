@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Lead, LeadStage } from '@/types';
@@ -41,6 +41,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   const [selectedLead, setSelectedLead] = useState<Lead | undefined>(undefined);
   const [actionLoading, setActionLoading] = useState(false);
   const [currentStage, setCurrentStage] = useState<LeadStage>('Leads');
+  const [scrollPosition, setScrollPosition] = useState({ left: 0, maxScroll: 0 });
 
   // Group leads by stage
   const leadsByStage = LEAD_STAGES.reduce((acc, stage) => {
@@ -96,6 +97,30 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     setIsAddDialogOpen(true);
   };
 
+  const handleScroll = (api: any) => {
+    if (api) {
+      const { scrollLeft, scrollWidth, clientWidth } = api.scrollerElement;
+      setScrollPosition({
+        left: scrollLeft,
+        maxScroll: scrollWidth - clientWidth
+      });
+    }
+  };
+
+  const scrollLeft = () => {
+    const container = document.querySelector('.kanban-scroll-container');
+    if (container) {
+      container.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    const container = document.querySelector('.kanban-scroll-container');
+    if (container) {
+      container.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
@@ -114,9 +139,36 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
           <div className="text-lg text-muted-foreground">Loading leads...</div>
         </div>
       ) : (
-        <div className="flex-1 overflow-hidden">
-          <ScrollArea className="h-full w-full" scrollHideDelay={0}>
-            <div className="flex gap-4 min-w-max pb-4 px-1">
+        <div className="flex-1 relative overflow-hidden">
+          <div className="absolute left-0 top-1/2 z-10 -translate-y-1/2">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="rounded-full shadow-md h-8 w-8" 
+              onClick={scrollLeft}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="absolute right-0 top-1/2 z-10 -translate-y-1/2">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="rounded-full shadow-md h-8 w-8" 
+              onClick={scrollRight}
+            >
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <ScrollArea 
+            className="h-full px-10 kanban-scroll-container" 
+            scrollHideDelay={0}
+            orientation="horizontal"
+            onScroll={handleScroll}
+          >
+            <div className="flex gap-4 pb-4 px-1 min-w-max">
               {LEAD_STAGES.map(stage => (
                 <div key={stage} className="w-80 flex-shrink-0">
                   <LeadColumn

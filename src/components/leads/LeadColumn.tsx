@@ -38,11 +38,11 @@ const LeadColumn: React.FC<LeadColumnProps> = ({
 
   return (
     <div 
-      className="flex flex-col h-[calc(100vh-12rem)] bg-background"
+      className="flex flex-col h-[calc(100vh-14rem)] bg-background rounded border border-border"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <div className="bg-muted/40 rounded-t-md p-3 font-medium text-sm">
+      <div className="bg-muted/40 rounded-t p-3 font-medium text-sm">
         <div className="flex justify-between items-center">
           <span>{title}</span>
           <span className="bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full">
