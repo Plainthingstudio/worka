@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { PlusCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -120,7 +121,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col px-4 py-4 sm:px-6 md:px-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold">Leads & Pipeline</h1>
@@ -161,13 +162,13 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
           </div>
           
           <ScrollArea 
-            className="h-full px-5 sm:px-10 kanban-scroll-container" 
+            className="h-full px-5 sm:px-6 kanban-scroll-container" 
             scrollHideDelay={0}
             onScroll={handleScroll}
           >
-            <div className="flex gap-4 pb-4 px-1 min-w-max">
+            <div className="flex gap-3 sm:gap-4 pb-4 px-1 min-w-max">
               {LEAD_STAGES.map(stage => (
-                <div key={stage} className="w-64 sm:w-72 md:w-80 flex-shrink-0">
+                <div key={stage} className="w-60 sm:w-64 md:w-72 flex-shrink-0">
                   <LeadColumn
                     title={stage}
                     leads={leadsByStage[stage] || []}

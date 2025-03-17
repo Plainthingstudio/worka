@@ -38,7 +38,7 @@ const LeadColumn: React.FC<LeadColumnProps> = ({
 
   return (
     <div 
-      className="flex flex-col h-[calc(100vh-15rem)] md:h-[calc(100vh-16rem)] bg-background rounded border border-border"
+      className="flex flex-col h-[calc(100vh-15rem)] sm:h-[calc(100vh-15.5rem)] md:h-[calc(100vh-16rem)] bg-background rounded border border-border"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
