@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useInvoicesFetching } from './useInvoicesFetching';
 import { useInvoiceActions } from './useInvoiceActions';
 import { useInvoiceCrud } from './useInvoiceCrud';
+import { Invoice } from '@/types';
 
 export const useInvoices = () => {
   const {
@@ -24,7 +25,7 @@ export const useInvoices = () => {
     handleEditInvoice
   } = useInvoiceActions();
 
-  const { deleteInvoice: deleteSingleInvoice } = useInvoiceCrud(
+  const { deleteInvoice: deleteSingleInvoice, saveInvoice } = useInvoiceCrud(
     setInvoices,
     setIsLoading,
     fetchInvoices
@@ -54,6 +55,7 @@ export const useInvoices = () => {
     handleDownload,
     handleViewInvoice,
     handleEditInvoice,
-    fetchInvoices
+    fetchInvoices,
+    saveInvoice
   };
 };

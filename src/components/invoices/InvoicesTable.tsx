@@ -107,7 +107,15 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
                     </SelectContent>
                   </Select>
                 ) : (
-                  <StatusCell status={invoice.status} />
+                  <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                    invoice.status === "Draft" ? "bg-yellow-100 text-yellow-800" :
+                    invoice.status === "Sent" ? "bg-blue-100 text-blue-800" :
+                    invoice.status === "Paid" ? "bg-green-100 text-green-800" :
+                    invoice.status === "Overdue" ? "bg-red-100 text-red-800" :
+                    "bg-gray-100 text-gray-800"
+                  }`}>
+                    {invoice.status}
+                  </div>
                 )}
               </TableCell>
               <TableCell className="text-right">
