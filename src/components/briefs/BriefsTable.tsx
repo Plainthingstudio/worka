@@ -1,4 +1,3 @@
-
 import React from "react";
 import { format } from "date-fns";
 import { Eye, Download, Trash, LayoutDashboard, Palette, PencilRuler, ImageIcon, Clock, CheckCircle, AlertCircle, CircleDashed } from "lucide-react";
@@ -6,15 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Brief } from "@/types/brief";
-
 interface BriefsTableProps {
   briefs: Brief[];
   onView: (brief: Brief) => void;
   onDownload: (brief: Brief) => void;
   onDelete: (brief: Brief) => void;
 }
-
-const BriefsTable: React.FC<BriefsTableProps> = ({ briefs, onView, onDownload, onDelete }) => {
+const BriefsTable: React.FC<BriefsTableProps> = ({
+  briefs,
+  onView,
+  onDownload,
+  onDelete
+}) => {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "UI Design":
@@ -27,7 +29,6 @@ const BriefsTable: React.FC<BriefsTableProps> = ({ briefs, onView, onDownload, o
         return <ImageIcon className="h-4 w-4" />;
     }
   };
-
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "New":
@@ -42,7 +43,6 @@ const BriefsTable: React.FC<BriefsTableProps> = ({ briefs, onView, onDownload, o
         return <CircleDashed className="h-4 w-4" />;
     }
   };
-
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case "New":
@@ -57,15 +57,12 @@ const BriefsTable: React.FC<BriefsTableProps> = ({ briefs, onView, onDownload, o
         return "bg-gray-50 text-gray-600 ring-gray-500/10 ring-inset";
     }
   };
-
   const getCompanyName = (brief: Brief) => {
     return brief.companyName || brief.company_name || "";
   };
-
   const getSubmissionDate = (brief: Brief) => {
     const dateString = brief.submissionDate || brief.submission_date;
     if (!dateString) return "N/A";
-    
     try {
       return format(new Date(dateString), "MMM d, yyyy");
     } catch (error) {
@@ -73,9 +70,7 @@ const BriefsTable: React.FC<BriefsTableProps> = ({ briefs, onView, onDownload, o
       return "Invalid date";
     }
   };
-
-  return (
-    <div className="rounded-md border">
+  return <div className="rounded-md border bg-white border shadow-sm">
       <Table>
         <TableHeader>
           <TableRow>
@@ -88,9 +83,7 @@ const BriefsTable: React.FC<BriefsTableProps> = ({ briefs, onView, onDownload, o
           </TableRow>
         </TableHeader>
         <TableBody>
-          {briefs.length > 0 ? (
-            briefs.map((brief) => (
-              <TableRow key={brief.id}>
+          {briefs.length > 0 ? briefs.map(brief => <TableRow key={brief.id}>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     {getTypeIcon(brief.type)}
@@ -129,19 +122,13 @@ const BriefsTable: React.FC<BriefsTableProps> = ({ briefs, onView, onDownload, o
                     </Button>
                   </div>
                 </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
+              </TableRow>) : <TableRow>
               <TableCell colSpan={6} className="h-24 text-center">
                 No briefs found
               </TableCell>
-            </TableRow>
-          )}
+            </TableRow>}
         </TableBody>
       </Table>
-    </div>
-  );
+    </div>;
 };
-
 export default BriefsTable;
