@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format } from 'date-fns';
 import { InvoiceTemplate } from '@/types/template';
@@ -6,13 +5,17 @@ import DraggableElement from './DraggableElement';
 
 interface TemplatePreviewProps {
   template: InvoiceTemplate;
-  isEditing: boolean;
+  isEditing?: boolean;
+  isActive?: boolean;
+  onClick?: () => void;
   onElementPositionChange?: (elementType: string, position: { x: number; y: number }) => void;
 }
 
 const TemplatePreview: React.FC<TemplatePreviewProps> = ({ 
   template, 
-  isEditing,
+  isEditing = false,
+  isActive = false,
+  onClick,
   onElementPositionChange 
 }) => {
   const style = template.style;
@@ -26,7 +29,6 @@ const TemplatePreview: React.FC<TemplatePreviewProps> = ({
     signature: { x: 400, y: 500 }
   };
 
-  // Sample data for preview
   const sampleData = {
     invoiceNumber: "INV-001",
     date: new Date(),
@@ -54,12 +56,15 @@ const TemplatePreview: React.FC<TemplatePreviewProps> = ({
 
   return (
     <div 
-      className="relative w-full h-full bg-white overflow-hidden rounded-md shadow-sm border"
+      className={`relative w-full h-full bg-white overflow-hidden rounded-md shadow-sm border ${
+        isActive ? 'ring-2 ring-primary' : ''
+      } ${onClick ? 'cursor-pointer' : ''}`}
       style={{ 
         minHeight: '800px',
         fontFamily: style.fontFamily,
         color: style.primaryColor
       }}
+      onClick={onClick}
     >
       {/* Header with Logo */}
       <DraggableElement

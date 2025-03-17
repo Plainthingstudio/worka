@@ -128,28 +128,32 @@ const TemplateStyleEditor: React.FC<TemplateStyleEditorProps> = ({
             <div>
               <Label>Primary Color</Label>
               <ColorPickerInput
-                color={template.style.primaryColor}
+                label="Primary Color"
+                value={template.style.primaryColor}
                 onChange={(color) => handleStyleChange('primaryColor', color)}
               />
             </div>
             <div>
               <Label>Secondary Color</Label>
               <ColorPickerInput
-                color={template.style.secondaryColor}
+                label="Secondary Color"
+                value={template.style.secondaryColor}
                 onChange={(color) => handleStyleChange('secondaryColor', color)}
               />
             </div>
             <div>
               <Label>Accent Color</Label>
               <ColorPickerInput
-                color={template.style.accentColor}
+                label="Accent Color"
+                value={template.style.accentColor}
                 onChange={(color) => handleStyleChange('accentColor', color)}
               />
             </div>
             <div>
               <Label>Border Color</Label>
               <ColorPickerInput
-                color={template.style.borderColor}
+                label="Border Color"
+                value={template.style.borderColor}
                 onChange={(color) => handleStyleChange('borderColor', color)}
               />
             </div>

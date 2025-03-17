@@ -37,12 +37,14 @@ const TemplatesList: React.FC<TemplatesListProps> = ({
       <ScrollArea className="flex-1">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pr-4">
           {templates.map((template) => (
-            <TemplatePreview
-              key={template.id}
-              template={template}
-              isActive={activeTemplate.id === template.id}
-              onClick={() => onSelectTemplate(template)}
-            />
+            <div key={template.id} className="aspect-[8.5/11] h-[180px]">
+              <TemplatePreview
+                template={template}
+                isActive={activeTemplate.id === template.id}
+                onClick={() => onSelectTemplate(template)}
+                isEditing={false}
+              />
+            </div>
           ))}
         </div>
       </ScrollArea>

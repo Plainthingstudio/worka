@@ -8,14 +8,18 @@ interface ColorPickerInputProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  color?: string; // Added for backward compatibility
 }
 
 const ColorPickerInput: React.FC<ColorPickerInputProps> = ({
   label,
   value,
+  color, // Accept color prop (for backward compatibility)
   onChange
 }) => {
-  const [inputValue, setInputValue] = useState(value);
+  // Use color prop if provided, otherwise use value
+  const actualValue = color || value;
+  const [inputValue, setInputValue] = useState(actualValue);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -28,7 +32,7 @@ const ColorPickerInput: React.FC<ColorPickerInputProps> = ({
       <div className="flex items-center gap-2">
         <div 
           className="h-10 w-10 rounded-md border"
-          style={{ backgroundColor: value }} 
+          style={{ backgroundColor: actualValue }} 
         />
         <div className="flex-1 relative">
           <Input
@@ -42,7 +46,7 @@ const ColorPickerInput: React.FC<ColorPickerInputProps> = ({
         </div>
         <Input
           type="color"
-          value={value}
+          value={actualValue}
           onChange={handleInputChange}
           className="w-10 p-0 border-0"
         />
