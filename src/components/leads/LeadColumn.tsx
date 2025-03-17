@@ -51,7 +51,7 @@ const LeadColumn: React.FC<LeadColumnProps> = ({
         </div>
       </div>
       
-      <div className="flex-1 p-3 overflow-y-auto min-h-0">
+      <div className="flex-1 p-3 overflow-y-auto">
         {leads.length === 0 ? (
           <Button 
             variant="ghost" 
