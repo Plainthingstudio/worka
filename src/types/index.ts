@@ -1,3 +1,4 @@
+
 export type LeadSource = 'Dribbble' | 'Website' | 'LinkedIn' | 'Behance' | 'Direct Email' | 'Other';
 
 export type ProjectStatus = 'Planning' | 'In progress' | 'Completed' | 'Paused' | 'Cancelled';
@@ -121,4 +122,28 @@ export interface DashboardStats {
   totalProjects: number;
   totalEarnings: number;
   activeProjects: number;
+}
+
+// New type definitions for Leads & Pipeline feature
+export type LeadStage = 
+  | 'Leads'
+  | 'First Meeting'
+  | 'Follow up 1'
+  | 'Follow up 2'
+  | 'Provide Moodboard'
+  | 'Follow up 3'
+  | 'Down Payment'
+  | 'Kickoff'
+  | 'Finish';
+
+export interface Lead {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  source?: string;
+  stage: LeadStage;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

@@ -24,6 +24,7 @@ import IllustrationsBrief from '@/pages/IllustrationsBrief';
 import ThankYou from '@/pages/ThankYou';
 import Settings from '@/pages/Settings';
 import NotFound from '@/pages/NotFound';
+import Leads from '@/pages/Leads';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:projectId" element={<ProjectDetails />} />
           <Route path="/clients" element={<Clients />} />
+          <Route path="/leads" element={<Leads />} />
           <Route path="/invoices" element={<Invoices />} />
           <Route path="/invoices/new" element={<InvoiceForm />} />
           <Route path="/invoices/edit/:invoiceId" element={<InvoiceForm />} />

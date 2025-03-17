@@ -13,7 +13,8 @@ import {
   BarChart,
   UserRound,
   Settings,
-  Palette
+  Palette,
+  FolderKanban
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "./ThemeProvider";
@@ -62,6 +63,11 @@ const Sidebar = () => {
       icon: Users,
       label: "Clients",
       href: "/clients",
+    },
+    {
+      icon: FolderKanban,
+      label: "Leads & Pipeline",
+      href: "/leads",
     },
     {
       icon: ListChecks,
