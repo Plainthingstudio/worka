@@ -14,7 +14,7 @@ export const Layout = ({ children, title }: LayoutProps) => {
       <Sidebar />
       <div className="flex flex-col flex-1 w-full overflow-hidden">
         <Navbar title={title} />
-        <main className="flex-1 w-full overflow-hidden">
+        <main className="flex-1 w-full overflow-auto">
           {children}
         </main>
       </div>

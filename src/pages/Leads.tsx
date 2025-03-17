@@ -9,7 +9,7 @@ const Leads = () => {
 
   return (
     <Layout title="Leads & Pipeline">
-      <div className="w-full h-full">
+      <div className="w-full h-full overflow-hidden">
         <KanbanBoard
           leads={leads}
           isLoading={isLoading}

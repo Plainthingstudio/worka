@@ -38,27 +38,27 @@ const LeadColumn: React.FC<LeadColumnProps> = ({
 
   return (
     <div 
-      className="flex flex-col h-full min-h-[calc(100vh-15rem)] sm:min-h-[calc(100vh-15.5rem)] md:min-h-[calc(100vh-16rem)] bg-background rounded-md border border-border shadow-sm"
+      className="flex flex-col h-full bg-background rounded-md border border-border shadow-sm"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <div className="bg-muted/40 rounded-t-md p-2 sm:p-3 font-medium text-xs sm:text-sm">
+      <div className="bg-muted/40 rounded-t-md p-3 font-medium text-sm">
         <div className="flex justify-between items-center">
-          <span>{title}</span>
+          <span className="truncate">{title}</span>
           <span className="bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full">
             {leads.length}
           </span>
         </div>
       </div>
       
-      <div className="flex-1 p-2 overflow-y-auto">
+      <div className="flex-1 p-3 overflow-y-auto">
         {leads.length === 0 ? (
           <Button 
             variant="ghost" 
-            className="w-full h-16 sm:h-20 border border-dashed border-border/60 rounded-md text-xs sm:text-sm text-muted-foreground justify-center gap-2"
+            className="w-full h-20 border border-dashed border-border/60 rounded-md text-sm text-muted-foreground justify-center gap-2"
             onClick={onAddLead}
           >
-            <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+            <Plus className="h-4 w-4" />
             Add Lead
           </Button>
         ) : (
@@ -75,10 +75,10 @@ const LeadColumn: React.FC<LeadColumnProps> = ({
             ))}
             <Button 
               variant="ghost" 
-              className="w-full mt-2 sm:mt-3 border border-dashed border-border/60 rounded-md text-xs sm:text-sm text-muted-foreground justify-center gap-2"
+              className="w-full mt-3 border border-dashed border-border/60 rounded-md text-sm text-muted-foreground justify-center gap-2"
               onClick={onAddLead}
             >
-              <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+              <Plus className="h-4 w-4" />
               Add Lead
             </Button>
           </>
