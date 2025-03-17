@@ -1,8 +1,8 @@
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useInvoicesFetching } from './useInvoicesFetching';
-import { useInvoiceCrud } from './useInvoiceCrud';
 import { useInvoiceActions } from './useInvoiceActions';
+import { useInvoiceCrud } from './useInvoiceCrud';
 
 export const useInvoices = () => {
   const {
@@ -12,11 +12,6 @@ export const useInvoices = () => {
     setIsLoading,
     fetchInvoices
   } = useInvoicesFetching();
-
-  const {
-    saveInvoice,
-    deleteInvoice: deleteInvoiceFromDB
-  } = useInvoiceCrud(setInvoices, setIsLoading, fetchInvoices);
 
   const {
     deleteConfirmOpen,
@@ -29,17 +24,23 @@ export const useInvoices = () => {
     handleEditInvoice
   } = useInvoiceActions();
 
-  // Delete invoice wrapper that uses the dialog state
-  const deleteInvoice = async () => {
-    await deleteInvoiceFromDB(invoiceToDelete);
-    setDeleteConfirmOpen(false);
-    setInvoiceToDelete(null);
-  };
+  const { deleteInvoice: deleteSingleInvoice } = useInvoiceCrud(
+    setInvoices,
+    setIsLoading,
+    fetchInvoices
+  );
 
-  // Fetch invoices on component mount
   useEffect(() => {
     fetchInvoices();
   }, [fetchInvoices]);
+
+  const deleteInvoice = async () => {
+    if (invoiceToDelete) {
+      await deleteSingleInvoice(invoiceToDelete);
+      setDeleteConfirmOpen(false);
+      setInvoiceToDelete(null);
+    }
+  };
 
   return {
     invoices,
@@ -47,12 +48,12 @@ export const useInvoices = () => {
     deleteConfirmOpen,
     setDeleteConfirmOpen,
     invoiceToDelete,
-    fetchInvoices,
-    saveInvoice,
+    setInvoiceToDelete,
     deleteInvoice,
     confirmDelete,
     handleDownload,
     handleViewInvoice,
-    handleEditInvoice
+    handleEditInvoice,
+    fetchInvoices
   };
 };

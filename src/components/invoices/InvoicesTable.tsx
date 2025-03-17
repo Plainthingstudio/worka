@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { 
   Table, 
   TableBody, 
@@ -14,11 +14,19 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
+  DropdownMenuSeparator 
 } from "@/components/ui/dropdown-menu";
 import { Invoice } from "@/types";
 import DateCell from "@/components/projects/cells/DateCell";
 import StatusCell from "@/components/projects/cells/StatusCell";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface InvoicesTableProps {
   invoices: Invoice[];
@@ -26,6 +34,7 @@ interface InvoicesTableProps {
   onDownloadClick: (invoice: Invoice) => void;
   onDeleteClick: (invoiceId: string) => void;
   onEditClick: (invoiceId: string) => void;
+  onStatusChange?: (invoiceId: string, newStatus: "Draft" | "Sent" | "Paid" | "Overdue") => void;
   formatCurrency: (amount: number) => string;
 }
 
@@ -35,6 +44,7 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
   onDownloadClick,
   onDeleteClick,
   onEditClick,
+  onStatusChange,
   formatCurrency
 }) => {
   if (!invoices || invoices.length === 0) {
@@ -44,6 +54,15 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
       </div>
     );
   }
+
+  const handleStatusChange = (invoiceId: string, status: string) => {
+    if (onStatusChange) {
+      onStatusChange(
+        invoiceId, 
+        status as "Draft" | "Sent" | "Paid" | "Overdue"
+      );
+    }
+  };
 
   return (
     <div className="rounded-md border">
@@ -72,7 +91,24 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
               <TableCell>{invoice.clientName || "Unknown Client"}</TableCell>
               <TableCell className="text-right">${formatCurrency(invoice.total)}</TableCell>
               <TableCell>
-                <StatusCell status={invoice.status} />
+                {onStatusChange ? (
+                  <Select
+                    defaultValue={invoice.status}
+                    onValueChange={(value) => handleStatusChange(invoice.id, value)}
+                  >
+                    <SelectTrigger className="w-[130px]">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Draft">Draft</SelectItem>
+                      <SelectItem value="Sent">Sent</SelectItem>
+                      <SelectItem value="Paid">Paid</SelectItem>
+                      <SelectItem value="Overdue">Overdue</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <StatusCell status={invoice.status} />
+                )}
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
@@ -101,7 +137,11 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
                         <Edit className="h-4 w-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onDeleteClick(invoice.id)}>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => onDeleteClick(invoice.id)}
+                        className="text-destructive"
+                      >
                         <Trash className="h-4 w-4 mr-2" />
                         Delete
                       </DropdownMenuItem>

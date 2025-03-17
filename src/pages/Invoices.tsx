@@ -10,6 +10,7 @@ import InvoicesFilter from '@/components/invoices/InvoicesFilter';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { useInvoices } from '@/hooks/useInvoices';
 import { useSidebarState } from '@/hooks/useSidebarState';
+import { useInvoiceStatus } from '@/hooks/useInvoiceStatus';
 
 const Invoices = () => {
   const navigate = useNavigate();
@@ -25,8 +26,11 @@ const Invoices = () => {
     confirmDelete,
     handleDownload,
     handleViewInvoice,
-    handleEditInvoice
+    handleEditInvoice,
+    fetchInvoices
   } = useInvoices();
+
+  const { updateInvoiceStatus } = useInvoiceStatus(fetchInvoices);
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -86,6 +90,7 @@ const Invoices = () => {
               onDownloadClick={handleDownload}
               onDeleteClick={confirmDelete}
               onEditClick={handleEditInvoice}
+              onStatusChange={updateInvoiceStatus}
             />
           )}
         </main>
