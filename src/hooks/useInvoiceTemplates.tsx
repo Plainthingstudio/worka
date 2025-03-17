@@ -234,16 +234,18 @@ export const InvoiceTemplatesProvider = ({ children }: { children: ReactNode }) 
   };
 
   return (
-    <InvoiceTemplatesContext.Provider value={{
-      templates,
-      activeTemplate,
-      setActiveTemplate,
-      saveTemplate,
-      deleteTemplate,
-      duplicateTemplate,
-      updateTemplateName,
-      updateTemplateStyle
-    }}>
+    <InvoiceTemplatesContext.Provider 
+      value={{
+        templates,
+        activeTemplate,
+        setActiveTemplate,
+        saveTemplate,
+        deleteTemplate,
+        duplicateTemplate,
+        updateTemplateName,
+        updateTemplateStyle
+      }}
+    >
       {children}
     </InvoiceTemplatesContext.Provider>
   );
