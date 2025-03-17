@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import BriefsHeader from "@/components/briefs/BriefsHeader";
@@ -17,6 +17,7 @@ import {
   generateGraphicDesignBriefPDF 
 } from "@/utils/briefPdfGenerator";
 import { Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Briefs = () => {
   const { briefs, filter, setFilter, search, setSearch, filteredBriefs, isLoading, deleteBrief, fetchBriefs } = useBriefs();
@@ -25,6 +26,7 @@ const Briefs = () => {
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
   const [briefDetails, setBriefDetails] = React.useState<any>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Listen for sidebar state changes
   useEffect(() => {
@@ -47,10 +49,25 @@ const Briefs = () => {
     return () => observer.disconnect();
   }, []);
 
-  // Refresh briefs when the page loads to ensure we have the latest data
+  // Fetch briefs only once when component mounts
   useEffect(() => {
-    fetchBriefs();
-  }, [fetchBriefs]);
+    console.log("Initial briefs fetch on component mount");
+    
+    const loadBriefs = async () => {
+      try {
+        await fetchBriefs();
+      } catch (error) {
+        console.error("Error during initial briefs fetch:", error);
+      } finally {
+        setIsInitialLoad(false);
+      }
+    };
+    
+    loadBriefs();
+    
+    // Don't include fetchBriefs in dependency array to prevent re-fetching
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const viewBriefDetails = (brief: any) => {
     setBriefDetails(brief);
@@ -66,6 +83,8 @@ const Briefs = () => {
     if (selectedBrief) {
       try {
         await deleteBrief(selectedBrief.id);
+        // Close the dialog after successful deletion
+        setIsDeleteDialogOpen(false);
         // Toast message is handled in the deleteBrief function
       } catch (error) {
         console.error("Error during brief deletion:", error);
@@ -94,6 +113,40 @@ const Briefs = () => {
     }
   };
 
+  const renderLoadingState = () => (
+    <div className="space-y-4">
+      <div className="flex justify-center items-center h-12 mb-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-lg font-medium">Loading briefs...</span>
+      </div>
+      
+      <div className="rounded-md border">
+        <div className="p-4">
+          <div className="grid grid-cols-6 gap-4 mb-4">
+            <Skeleton className="h-6 col-span-1" />
+            <Skeleton className="h-6 col-span-1" />
+            <Skeleton className="h-6 col-span-1" />
+            <Skeleton className="h-6 col-span-1" />
+            <Skeleton className="h-6 col-span-1" />
+            <Skeleton className="h-6 col-span-1" />
+          </div>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="py-4 border-t">
+              <div className="grid grid-cols-6 gap-4">
+                <Skeleton className="h-10 col-span-1" />
+                <Skeleton className="h-10 col-span-1" />
+                <Skeleton className="h-10 col-span-1" />
+                <Skeleton className="h-10 col-span-1" />
+                <Skeleton className="h-10 col-span-1" />
+                <Skeleton className="h-10 col-span-1" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
@@ -113,11 +166,8 @@ const Briefs = () => {
             setSearch={setSearch}
           />
           
-          {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="ml-2">Loading briefs...</span>
-            </div>
+          {isLoading && isInitialLoad ? (
+            renderLoadingState()
           ) : (
             <BriefsTable 
               briefs={filteredBriefs} 

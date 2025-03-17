@@ -65,7 +65,13 @@ const BriefsTable: React.FC<BriefsTableProps> = ({ briefs, onView, onDownload, o
   const getSubmissionDate = (brief: Brief) => {
     const dateString = brief.submissionDate || brief.submission_date;
     if (!dateString) return "N/A";
-    return format(new Date(dateString), "MMM d, yyyy");
+    
+    try {
+      return format(new Date(dateString), "MMM d, yyyy");
+    } catch (error) {
+      console.error("Invalid date format:", dateString, error);
+      return "Invalid date";
+    }
   };
 
   return (
@@ -93,18 +99,18 @@ const BriefsTable: React.FC<BriefsTableProps> = ({ briefs, onView, onDownload, o
                 </TableCell>
                 <TableCell>
                   <div>
-                    <div className="font-medium">{brief.name}</div>
-                    <div className="text-sm text-muted-foreground">{brief.email}</div>
+                    <div className="font-medium">{brief.name || "Unknown"}</div>
+                    <div className="text-sm text-muted-foreground">{brief.email || "No email"}</div>
                   </div>
                 </TableCell>
-                <TableCell>{getCompanyName(brief)}</TableCell>
+                <TableCell>{getCompanyName(brief) || "N/A"}</TableCell>
                 <TableCell>
                   {getSubmissionDate(brief)}
                 </TableCell>
                 <TableCell>
-                  <Badge className={`inline-flex items-center gap-1 w-fit ${getStatusBadgeClass(brief.status)}`}>
-                    {getStatusIcon(brief.status)}
-                    <span>{brief.status}</span>
+                  <Badge className={`inline-flex items-center gap-1 w-fit ${getStatusBadgeClass(brief.status || "New")}`}>
+                    {getStatusIcon(brief.status || "New")}
+                    <span>{brief.status || "New"}</span>
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
