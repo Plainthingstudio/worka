@@ -87,9 +87,23 @@ const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) =>
             ))}
             
             {project.categories.length > 2 && (
-              <Badge variant="outline" className="text-xs">
-                +{project.categories.length - 2}
-              </Badge>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="outline" className="text-xs cursor-help">
+                      +{project.categories.length - 2}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="font-medium">All Categories:</p>
+                    <ul className="text-xs mt-1">
+                      {project.categories.map((category, index) => (
+                        <li key={index}>• {category}</li>
+                      ))}
+                    </ul>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </div>
         ) : (
