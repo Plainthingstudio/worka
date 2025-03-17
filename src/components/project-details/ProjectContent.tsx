@@ -1,14 +1,16 @@
+
 import React from "react";
 import ProjectHeader from "@/components/project-details/ProjectHeader";
 import ProjectInfo from "@/components/project-details/ProjectInfo";
 import PaymentSummary from "@/components/project-details/PaymentSummary";
 import PaymentHistory from "@/components/project-details/PaymentHistory";
 import ProjectDialogs from "@/components/project-details/ProjectDialogs";
-import { Project, Client, Payment, ProjectStatus } from "@/types";
+import { Project, Client, Payment, ProjectStatus, TeamMember } from "@/types";
 
 interface ProjectContentProps {
   project: Project;
   client: Client;
+  teamMembers?: TeamMember[];
   currentPayment: Payment | null;
   dialogState: {
     isEditDialogOpen: boolean;
@@ -46,6 +48,7 @@ interface ProjectContentProps {
 const ProjectContent = ({
   project,
   client,
+  teamMembers,
   currentPayment,
   dialogState,
   selectedStatus,
@@ -90,6 +93,7 @@ const ProjectContent = ({
       <ProjectDialogs
         project={project}
         clients={[client]}
+        teamMembers={teamMembers}
         currentPayment={currentPayment}
         selectedStatus={selectedStatus}
         isEditDialogOpen={dialogState.isEditDialogOpen}

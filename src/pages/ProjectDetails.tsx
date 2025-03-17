@@ -12,6 +12,7 @@ const ProjectDetails = () => {
   const {
     project,
     client,
+    teamMembers,
     currentPayment,
     selectedStatus,
     isEditDialogOpen,
@@ -80,6 +81,7 @@ const ProjectDetails = () => {
           <ProjectContent
             project={project}
             client={client}
+            teamMembers={teamMembers}
             currentPayment={currentPayment}
             dialogState={dialogState}
             selectedStatus={selectedStatus}

@@ -18,6 +18,7 @@ interface EditProjectDialogProps {
   onSave: (data: any) => void;
   project: Project;
   clients: Client[];
+  teamMembers?: TeamMember[]; // Make teamMembers optional prop
 }
 
 const EditProjectDialog = ({
@@ -26,11 +27,14 @@ const EditProjectDialog = ({
   onSave,
   project,
   clients,
+  teamMembers: providedTeamMembers,
 }: EditProjectDialogProps) => {
-  // Fetch team members from Supabase
-  const { data: teamMembers = [] } = useQuery({
+  // Fetch team members from Supabase only if not provided as props
+  const { data: fetchedTeamMembers = [], isLoading } = useQuery({
     queryKey: ['teamMembers'],
     queryFn: async () => {
+      if (providedTeamMembers) return providedTeamMembers;
+      
       const { data, error } = await supabase
         .from('team_members')
         .select('*');
@@ -49,7 +53,11 @@ const EditProjectDialog = ({
         createdAt: new Date(member.created_at)
       }));
     },
+    enabled: isOpen && !providedTeamMembers, // Only run query if dialog is open and teamMembers not provided
   });
+
+  // Use provided team members or fetched ones
+  const teamMembers = providedTeamMembers || fetchedTeamMembers;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -61,13 +69,19 @@ const EditProjectDialog = ({
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[70vh] overflow-y-auto pr-2">
-          <ProjectForm
-            project={project}
-            clients={clients}
-            teamMembers={teamMembers}
-            onSave={onSave}
-            onCancel={onClose}
-          />
+          {isLoading && !providedTeamMembers ? (
+            <div className="flex justify-center p-4">
+              <p>Loading team members...</p>
+            </div>
+          ) : (
+            <ProjectForm
+              project={project}
+              clients={clients}
+              teamMembers={teamMembers}
+              onSave={onSave}
+              onCancel={onClose}
+            />
+          )}
         </div>
       </DialogContent>
     </Dialog>

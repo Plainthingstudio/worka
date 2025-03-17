@@ -3,10 +3,12 @@ import { useProjectData } from "./useProjectData";
 import { useProjectDialogs } from "./useProjectDialogs";
 import { useProjectOperations } from "./useProjectOperations";
 import { usePaymentOperations } from "./usePaymentOperations";
+import { useStatisticsData } from "./useStatisticsData";
 import { ProjectStatus } from "@/types";
 
 export const useProjectDetails = (projectId: string | undefined) => {
-  const { project, setProject, client, isLoading } = useProjectData(projectId);
+  const { project, setProject, client, isLoading: projectLoading } = useProjectData(projectId);
+  const { teamMembers, isLoading: statisticsLoading } = useStatisticsData();
   
   const {
     isEditDialogOpen,
@@ -67,6 +69,7 @@ export const useProjectDetails = (projectId: string | undefined) => {
   return {
     project,
     client,
+    teamMembers,
     currentPayment,
     selectedStatus,
     isEditDialogOpen,
@@ -91,6 +94,6 @@ export const useProjectDetails = (projectId: string | undefined) => {
     handleDeletePayment,
     openEditPaymentDialog,
     openDeletePaymentDialog,
-    isLoading
+    isLoading: projectLoading || statisticsLoading
   };
 };
