@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Lead } from '@/types';
 import { useKanbanBoard, LEAD_STAGES } from '@/hooks/leads/useKanbanBoard';
@@ -6,6 +7,7 @@ import KanbanScrollContainer from './KanbanScrollContainer';
 import LeadDialog from './LeadDialog';
 import DeleteLeadDialog from './DeleteLeadDialog';
 import LeadsList from './LeadsList';
+
 interface KanbanBoardProps {
   leads: Lead[];
   isLoading: boolean;
@@ -15,6 +17,7 @@ interface KanbanBoardProps {
   viewMode: 'kanban' | 'list';
   onViewModeChange: (mode: 'kanban' | 'list') => void;
 }
+
 const KanbanBoard: React.FC<KanbanBoardProps> = ({
   leads,
   isLoading,
@@ -51,26 +54,72 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     onUpdateLead,
     onDeleteLead
   });
-  return <div className="w-full">
-      <KanbanHeader onAddLead={handleAddLeadInStage} viewMode={viewMode} onViewModeChange={onViewModeChange} />
+
+  return (
+    <div className="flex flex-col w-full h-full">
+      <KanbanHeader 
+        onAddLead={handleAddLeadInStage} 
+        viewMode={viewMode} 
+        onViewModeChange={onViewModeChange} 
+      />
       
-      <div className="glass-card rounded-xl border shadow-sm animate-fade-in bg-slate-100">
-        <div className="overflow-x-auto p-4 py-[8px] px-[8px]">
-          {viewMode === 'kanban' ? <div className="h-[calc(100vh-230px)]">
-              <KanbanScrollContainer isLoading={isLoading} stages={LEAD_STAGES} leadsByStage={leadsByStage} onScroll={handleScroll} onScrollLeft={scrollLeft} onScrollRight={scrollRight} onMove={handleMoveLead} onEdit={handleEditClick} onDelete={handleDeleteClick} onAddLead={handleAddLeadInStage} />
-            </div> : <LeadsList leads={leads} isLoading={isLoading} onEdit={handleEditClick} onDelete={handleDeleteClick} onStageChange={handleMoveLead} stages={LEAD_STAGES} />}
+      <div className="flex-1 glass-card rounded-lg border shadow-sm animate-fade-in">
+        <div className="h-full overflow-hidden p-2 sm:p-4">
+          {viewMode === 'kanban' ? (
+            <div className="h-[calc(100vh-180px)] md:h-[calc(100vh-200px)]">
+              <KanbanScrollContainer 
+                isLoading={isLoading} 
+                stages={LEAD_STAGES} 
+                leadsByStage={leadsByStage} 
+                onScroll={handleScroll} 
+                onScrollLeft={scrollLeft} 
+                onScrollRight={scrollRight} 
+                onMove={handleMoveLead} 
+                onEdit={handleEditClick} 
+                onDelete={handleDeleteClick} 
+                onAddLead={handleAddLeadInStage} 
+              />
+            </div>
+          ) : (
+            <div className="h-[calc(100vh-180px)] md:h-[calc(100vh-200px)] overflow-auto">
+              <LeadsList 
+                leads={leads} 
+                isLoading={isLoading} 
+                onEdit={handleEditClick} 
+                onDelete={handleDeleteClick} 
+                onStageChange={handleMoveLead} 
+                stages={LEAD_STAGES} 
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      <LeadDialog isOpen={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)} onSubmit={handleAddLead} title={`Add New Lead to ${currentStage}`} isLoading={actionLoading} />
+      <LeadDialog 
+        isOpen={isAddDialogOpen} 
+        onClose={() => setIsAddDialogOpen(false)} 
+        onSubmit={handleAddLead} 
+        title={`Add New Lead to ${currentStage}`} 
+        isLoading={actionLoading} 
+      />
 
-      <LeadDialog isOpen={isEditDialogOpen} onClose={() => {
-      setIsEditDialogOpen(false);
-    }} onSubmit={handleEditLead} lead={selectedLead} title="Edit Lead" isLoading={actionLoading} />
+      <LeadDialog 
+        isOpen={isEditDialogOpen} 
+        onClose={() => { setIsEditDialogOpen(false); }} 
+        onSubmit={handleEditLead} 
+        lead={selectedLead} 
+        title="Edit Lead" 
+        isLoading={actionLoading} 
+      />
 
-      <DeleteLeadDialog isOpen={isDeleteDialogOpen} onClose={() => {
-      setIsDeleteDialogOpen(false);
-    }} onConfirm={handleDeleteLead} isLoading={actionLoading} />
-    </div>;
+      <DeleteLeadDialog 
+        isOpen={isDeleteDialogOpen} 
+        onClose={() => { setIsDeleteDialogOpen(false); }} 
+        onConfirm={handleDeleteLead} 
+        isLoading={actionLoading} 
+      />
+    </div>
+  );
 };
+
 export default KanbanBoard;

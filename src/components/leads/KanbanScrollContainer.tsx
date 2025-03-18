@@ -33,11 +33,11 @@ const KanbanScrollContainer: React.FC<KanbanScrollContainerProps> = ({
   onAddLead
 }) => {
   const isMobile = useIsMobile();
-  const columnWidth = isMobile ? 260 : 280;
+  const columnWidth = isMobile ? 250 : 280;
   
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center h-full">
+      <div className="flex items-center justify-center h-full">
         <div className="text-lg text-muted-foreground">Loading leads...</div>
       </div>
     );
@@ -68,7 +68,7 @@ const KanbanScrollContainer: React.FC<KanbanScrollContainerProps> = ({
       </div>
       
       <ScrollArea 
-        className="h-full w-full kanban-scroll-container rounded-md border border-border/50" 
+        className="h-full w-full kanban-scroll-container rounded-md border border-border/30"
         onScroll={onScroll}
       >
         <div className="flex gap-3 p-4 min-w-max h-full">

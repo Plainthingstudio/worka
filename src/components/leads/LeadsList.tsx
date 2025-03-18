@@ -53,68 +53,70 @@ const LeadsList: React.FC<LeadsListProps> = ({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Phone</TableHead>
-          <TableHead>Source</TableHead>
-          <TableHead>Stage</TableHead>
-          <TableHead>Updated</TableHead>
-          <TableHead className="w-[80px]">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {leads.map((lead) => (
-          <TableRow key={lead.id}>
-            <TableCell className="font-medium">{lead.name}</TableCell>
-            <TableCell>{lead.email}</TableCell>
-            <TableCell>{lead.phone || "-"}</TableCell>
-            <TableCell>{lead.source || "-"}</TableCell>
-            <TableCell>{lead.stage}</TableCell>
-            <TableCell>{new Date(lead.updatedAt).toLocaleDateString()}</TableCell>
-            <TableCell>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreHorizontal className="h-4 w-4" />
-                    <span className="sr-only">Open menu</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => onEdit(lead)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onDelete(lead.id)}>
-                    <Trash className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuSeparator />
-                  
-                  <DropdownMenuItem className="font-medium px-2 py-1.5 text-xs text-muted-foreground" disabled>
-                    Move to Stage
-                  </DropdownMenuItem>
-                  
-                  {stages.map((stage) => (
-                    <DropdownMenuItem 
-                      key={stage}
-                      disabled={lead.stage === stage}
-                      onClick={() => onStageChange(lead.id, stage)}
-                      className="pl-4 text-sm"
-                    >
-                      {stage}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </TableCell>
+    <div className="w-full h-full overflow-auto rounded-md">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead className="hidden md:table-cell">Email</TableHead>
+            <TableHead className="hidden lg:table-cell">Phone</TableHead>
+            <TableHead className="hidden md:table-cell">Source</TableHead>
+            <TableHead>Stage</TableHead>
+            <TableHead className="hidden lg:table-cell">Updated</TableHead>
+            <TableHead className="w-[80px]">Actions</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {leads.map((lead) => (
+            <TableRow key={lead.id}>
+              <TableCell className="font-medium">{lead.name}</TableCell>
+              <TableCell className="hidden md:table-cell">{lead.email}</TableCell>
+              <TableCell className="hidden lg:table-cell">{lead.phone || "-"}</TableCell>
+              <TableCell className="hidden md:table-cell">{lead.source || "-"}</TableCell>
+              <TableCell>{lead.stage}</TableCell>
+              <TableCell className="hidden lg:table-cell">{new Date(lead.updatedAt).toLocaleDateString()}</TableCell>
+              <TableCell>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreHorizontal className="h-4 w-4" />
+                      <span className="sr-only">Open menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => onEdit(lead)}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onDelete(lead.id)}>
+                      <Trash className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuSeparator />
+                    
+                    <DropdownMenuItem className="font-medium px-2 py-1.5 text-xs text-muted-foreground" disabled>
+                      Move to Stage
+                    </DropdownMenuItem>
+                    
+                    {stages.map((stage) => (
+                      <DropdownMenuItem 
+                        key={stage}
+                        disabled={lead.stage === stage}
+                        onClick={() => onStageChange(lead.id, stage)}
+                        className="pl-4 text-sm"
+                      >
+                        {stage}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 
