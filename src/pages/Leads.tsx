@@ -18,7 +18,7 @@ const Leads = () => {
   } = useSidebarWidth();
   return <div className="flex min-h-screen bg-background">
       <Sidebar />
-      <div className="flex-1 w-full transition-all duration-300 ease-in-out ml-14 ml-56 overflow-hidden">
+      <div className="flex-1 w-full transition-all duration-300 ease-in-out ml-14 ml-56">
         <Navbar title="Leads & Pipeline" />
         <main className="flex-1 container mx-auto p-4 md:p-6 overflow-hidden">
           <KanbanBoard leads={leads} isLoading={isLoading} onAddLead={addLead} onUpdateLead={updateLead} onDeleteLead={deleteLead} viewMode={viewMode} onViewModeChange={setViewMode} />
