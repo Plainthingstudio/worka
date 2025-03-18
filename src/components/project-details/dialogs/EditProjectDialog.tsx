@@ -44,7 +44,15 @@ const EditProjectDialog = ({
         return [];
       }
       
-      return data;
+      // Transform the raw data to match TeamMember type
+      return data.map((member): TeamMember => ({
+        id: member.id,
+        name: member.name,
+        position: member.position,
+        skills: member.skills || [],
+        startDate: new Date(member.start_date),
+        createdAt: new Date(member.created_at)
+      }));
     },
     enabled: isOpen && !providedTeamMembers,
   });
@@ -82,3 +90,4 @@ const EditProjectDialog = ({
 };
 
 export default EditProjectDialog;
+
