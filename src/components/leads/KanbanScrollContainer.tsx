@@ -45,7 +45,7 @@ const KanbanScrollContainer: React.FC<KanbanScrollContainerProps> = ({
 
   return (
     <div className="relative h-full w-full">
-      <div className="absolute left-0 top-1/2 z-10 -translate-y-1/2 ml-1">
+      <div className="absolute left-1 top-1/2 z-10 -translate-y-1/2">
         <Button 
           variant="outline" 
           size="icon" 
@@ -56,7 +56,7 @@ const KanbanScrollContainer: React.FC<KanbanScrollContainerProps> = ({
         </Button>
       </div>
       
-      <div className="absolute right-0 top-1/2 z-10 -translate-y-1/2 mr-1">
+      <div className="absolute right-1 top-1/2 z-10 -translate-y-1/2">
         <Button 
           variant="outline" 
           size="icon" 
@@ -68,10 +68,10 @@ const KanbanScrollContainer: React.FC<KanbanScrollContainerProps> = ({
       </div>
       
       <ScrollArea 
-        className="h-full w-full kanban-scroll-container rounded-md border border-border/30 px-4"
+        className="h-full w-full kanban-scroll-container rounded-md border border-border/30 px-6"
         onScroll={onScroll}
       >
-        <div className="flex gap-4 p-4 min-w-max h-full pr-8">
+        <div className="flex gap-5 p-4 min-w-max h-full pr-10 pl-3">
           {stages.map(stage => (
             <div key={stage} style={{width: `${columnWidth}px`}} className="flex-shrink-0 h-full">
               <LeadColumn
