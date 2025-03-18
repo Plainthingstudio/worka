@@ -26,10 +26,35 @@ const EditProjectDialog = ({
   onClose,
   onSave,
   project,
-  clients,
   teamMembers: providedTeamMembers,
 }: EditProjectDialogProps) => {
-  const { data: fetchedTeamMembers = [], isLoading } = useQuery({
+  // Fetch all clients
+  const { data: allClients = [], isLoading: isLoadingClients } = useQuery({
+    queryKey: ['clients'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*');
+      
+      if (error) {
+        console.error("Error fetching clients:", error);
+        return [];
+      }
+      
+      return data.map((client): Client => ({
+        id: client.id,
+        name: client.name,
+        email: client.email,
+        phone: client.phone || "",
+        address: client.address || "",
+        leadSource: client.lead_source || "Website",
+        createdAt: new Date(client.created_at)
+      }));
+    },
+    enabled: isOpen,
+  });
+
+  const { data: fetchedTeamMembers = [], isLoading: isLoadingTeamMembers } = useQuery({
     queryKey: ['teamMembers'],
     queryFn: async () => {
       if (providedTeamMembers) return providedTeamMembers;
@@ -43,11 +68,10 @@ const EditProjectDialog = ({
         return [];
       }
       
-      // Transform the raw data to match TeamMember type
       return data.map((member): TeamMember => ({
         id: member.id,
         name: member.name,
-        position: member.position as TeamPosition, // Cast position to TeamPosition
+        position: member.position as TeamPosition,
         skills: member.skills || [],
         startDate: new Date(member.start_date),
         createdAt: new Date(member.created_at)
@@ -56,14 +80,14 @@ const EditProjectDialog = ({
     enabled: isOpen && !providedTeamMembers,
   });
 
-  // Use provided team members or fetched ones
   const teamMembers = providedTeamMembers || fetchedTeamMembers;
 
-  // Add an async function to handle saving
   const handleSave = async (data: any) => {
     await onSave(data);
-    onClose(); // Close the dialog after saving
+    onClose();
   };
+
+  const isLoading = isLoadingClients || isLoadingTeamMembers;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -75,14 +99,14 @@ const EditProjectDialog = ({
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[70vh] overflow-y-auto pr-2">
-          {isLoading && !providedTeamMembers ? (
+          {isLoading ? (
             <div className="flex justify-center p-4">
-              <p>Loading team members...</p>
+              <p>Loading...</p>
             </div>
           ) : (
             <ProjectForm
               project={project}
-              clients={clients}
+              clients={allClients}
               teamMembers={teamMembers}
               onSave={handleSave}
               onCancel={onClose}
