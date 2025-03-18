@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './components/ThemeProvider';
 import { Toaster } from '@/components/ui/toaster';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Import your pages
 import Index from '@/pages/Index';
@@ -26,38 +27,43 @@ import Settings from '@/pages/Settings';
 import NotFound from '@/pages/NotFound';
 import Leads from '@/pages/Leads';
 
+// Create a client
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <ThemeProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/login" element={<Navigate to="/auth" replace />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/projects/:projectId" element={<ProjectDetails />} />
-          <Route path="/clients" element={<Clients />} />
-          <Route path="/leads" element={<Leads />} />
-          <Route path="/invoices" element={<Invoices />} />
-          <Route path="/invoices/new" element={<InvoiceForm />} />
-          <Route path="/invoices/edit/:invoiceId" element={<InvoiceForm />} />
-          <Route path="/invoices/:invoiceId" element={<InvoiceDetails />} />
-          <Route path="/invoice-editor" element={<InvoiceEditor />} />
-          <Route path="/statistics" element={<Statistics />} />
-          <Route path="/briefs" element={<Briefs />} />
-          <Route path="/team" element={<Team />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/graphic-design-brief" element={<GraphicDesignBrief />} />
-          <Route path="/ui-design-brief" element={<UIDesignBrief />} />
-          <Route path="/illustrations-brief" element={<IllustrationsBrief />} />
-          <Route path="/thank-you" element={<ThankYou />} />
-          <Route path="/404" element={<NotFound />} />
-          <Route path="*" element={<Navigate to="/404" />} />
-        </Routes>
-      </Router>
-      <Toaster />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/login" element={<Navigate to="/auth" replace />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/projects/:projectId" element={<ProjectDetails />} />
+            <Route path="/clients" element={<Clients />} />
+            <Route path="/leads" element={<Leads />} />
+            <Route path="/invoices" element={<Invoices />} />
+            <Route path="/invoices/new" element={<InvoiceForm />} />
+            <Route path="/invoices/edit/:invoiceId" element={<InvoiceForm />} />
+            <Route path="/invoices/:invoiceId" element={<InvoiceDetails />} />
+            <Route path="/invoice-editor" element={<InvoiceEditor />} />
+            <Route path="/statistics" element={<Statistics />} />
+            <Route path="/briefs" element={<Briefs />} />
+            <Route path="/team" element={<Team />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/graphic-design-brief" element={<GraphicDesignBrief />} />
+            <Route path="/ui-design-brief" element={<UIDesignBrief />} />
+            <Route path="/illustrations-brief" element={<IllustrationsBrief />} />
+            <Route path="/thank-you" element={<ThankYou />} />
+            <Route path="/404" element={<NotFound />} />
+            <Route path="*" element={<Navigate to="/404" />} />
+          </Routes>
+        </Router>
+        <Toaster />
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 
