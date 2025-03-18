@@ -1,4 +1,3 @@
-
 import { useProjectData } from "./useProjectData";
 import { useProjectDialogs } from "./useProjectDialogs";
 import { useProjectOperations } from "./useProjectOperations";
@@ -7,7 +6,7 @@ import { useStatisticsData } from "./useStatisticsData";
 import { ProjectStatus } from "@/types";
 
 export const useProjectDetails = (projectId: string | undefined) => {
-  const { project, setProject, client, isLoading: projectLoading } = useProjectData(projectId);
+  const { project, setProject, client, isLoading: projectLoading, refetchClient } = useProjectData(projectId);
   const { teamMembers, isLoading: statisticsLoading } = useStatisticsData();
   
   const {
@@ -36,7 +35,7 @@ export const useProjectDetails = (projectId: string | undefined) => {
     handleDeleteProject,
     handleMarkAsCompleted,
     handleChangeStatus: changeProjectStatus
-  } = useProjectOperations(project, setProject);
+  } = useProjectOperations(project, setProject, refetchClient);
 
   const {
     handleAddPayment,
@@ -94,6 +93,7 @@ export const useProjectDetails = (projectId: string | undefined) => {
     handleDeletePayment,
     openEditPaymentDialog,
     openDeletePaymentDialog,
-    isLoading: projectLoading || statisticsLoading
+    isLoading: projectLoading || statisticsLoading,
+    refetchClient
   };
 };

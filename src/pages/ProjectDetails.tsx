@@ -60,7 +60,7 @@ const ProjectDetails = () => {
     onCloseDeletePaymentDialog: () => {
       setIsDeletePaymentDialogOpen(false);
     },
-    onEditProject: (data: any) => handleEditProject(data, refetchClient),
+    onEditProject: (data: any) => handleEditProject(data),
     onDeleteProject: handleDeleteProject,
     onChangeStatusSubmit: handleChangeStatus,
     onStatusChange: (status: any) => setSelectedStatus(status),
