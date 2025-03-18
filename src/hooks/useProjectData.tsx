@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Project, Client, ProjectStatus, Currency, ProjectType, LeadSource } from "@/types";
@@ -11,6 +11,37 @@ export const useProjectData = (projectId: string | undefined) => {
   const [client, setClient] = useState<Client | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchClientData = useCallback(async (clientId: string) => {
+    try {
+      const { data: clientData, error: clientError } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('id', clientId)
+        .single();
+      
+      if (clientError) {
+        console.error("Error fetching client:", clientError);
+        toast.error("Client information not available");
+        return;
+      }
+      
+      if (clientData) {
+        const transformedClient: Client = {
+          id: clientData.id,
+          name: clientData.name,
+          email: clientData.email,
+          phone: clientData.phone || "",
+          address: clientData.address || "",
+          leadSource: clientData.lead_source as LeadSource || "Website",
+          createdAt: new Date(clientData.created_at),
+        };
+        setClient(transformedClient);
+      }
+    } catch (error) {
+      console.error("Error fetching client details:", error);
+    }
+  }, []);
+
   useEffect(() => {
     const fetchProjectData = async () => {
       if (!projectId) {
@@ -21,7 +52,6 @@ export const useProjectData = (projectId: string | undefined) => {
       try {
         setIsLoading(true);
         
-        // Fetch the project with its payments
         const { data: projectData, error: projectError } = await supabase
           .from('projects')
           .select('*, payments(*)')
@@ -41,28 +71,16 @@ export const useProjectData = (projectId: string | undefined) => {
           return;
         }
         
-        // Get the client information
-        const { data: clientData, error: clientError } = await supabase
-          .from('clients')
-          .select('*')
-          .eq('id', projectData.client_id)
-          .single();
-        
-        if (clientError) {
-          console.error("Error fetching client:", clientError);
-          toast.error("Client information not available");
-        }
-        
-        // Transform the project data with proper type casting
+        // Transform project data
         const transformedProject: Project = {
           id: projectData.id,
           name: projectData.name,
           clientId: projectData.client_id,
-          status: projectData.status as ProjectStatus, // Cast to ProjectStatus
+          status: projectData.status as ProjectStatus,
           deadline: new Date(projectData.deadline),
           fee: projectData.fee,
-          currency: projectData.currency as Currency, // Cast to Currency
-          projectType: projectData.project_type as ProjectType, // Cast to ProjectType
+          currency: projectData.currency as Currency,
+          projectType: projectData.project_type as ProjectType,
           categories: projectData.categories || [],
           teamMembers: projectData.team_members || [],
           createdAt: new Date(projectData.created_at),
@@ -78,17 +96,9 @@ export const useProjectData = (projectId: string | undefined) => {
         
         setProject(transformedProject);
         
-        if (clientData) {
-          const transformedClient: Client = {
-            id: clientData.id,
-            name: clientData.name,
-            email: clientData.email,
-            phone: clientData.phone || "",
-            address: clientData.address || "",
-            leadSource: clientData.lead_source as LeadSource || "Website", // Cast to LeadSource with default
-            createdAt: new Date(clientData.created_at),
-          };
-          setClient(transformedClient);
+        // Fetch client data
+        if (projectData.client_id) {
+          await fetchClientData(projectData.client_id);
         }
       } catch (error) {
         console.error("Error fetching project details:", error);
@@ -100,7 +110,13 @@ export const useProjectData = (projectId: string | undefined) => {
     };
 
     fetchProjectData();
-  }, [projectId, navigate]);
+  }, [projectId, navigate, fetchClientData]);
 
-  return { project, setProject, client, isLoading };
+  return { 
+    project, 
+    setProject, 
+    client, 
+    isLoading,
+    refetchClient: () => project?.clientId ? fetchClientData(project.clientId) : null 
+  };
 };

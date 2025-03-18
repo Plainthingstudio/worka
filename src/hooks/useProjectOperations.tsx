@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { Project, ProjectStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useProjectOperations = (project: Project | null, setProject: (project: Project) => void) => {
+export const useProjectOperations = (project: Project | null, setProject: (project: Project) => void, refetchClient?: () => void) => {
   const handleEditProject = async (data: any) => {
     if (!project) return;
 
@@ -28,6 +28,12 @@ export const useProjectOperations = (project: Project | null, setProject: (proje
 
       const updatedProject = { ...project, ...data };
       setProject(updatedProject);
+      
+      // Refetch client data if the client ID has changed
+      if (data.clientId !== project.clientId && refetchClient) {
+        refetchClient();
+      }
+      
       toast.success("Project updated successfully");
     } catch (error) {
       console.error('Error updating project:', error);

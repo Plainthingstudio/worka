@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useParams } from "react-router-dom";
 import { useProjectDetails } from "@/hooks/useProjectDetails";
@@ -37,7 +36,8 @@ const ProjectDetails = () => {
     handleDeletePayment,
     openEditPaymentDialog,
     openDeletePaymentDialog,
-    isLoading
+    isLoading,
+    refetchClient
   } = useProjectDetails(projectId);
 
   const dialogState = {
@@ -60,7 +60,7 @@ const ProjectDetails = () => {
     onCloseDeletePaymentDialog: () => {
       setIsDeletePaymentDialogOpen(false);
     },
-    onEditProject: handleEditProject,
+    onEditProject: (data: any) => handleEditProject(data, refetchClient),
     onDeleteProject: handleDeleteProject,
     onChangeStatusSubmit: handleChangeStatus,
     onStatusChange: (status: any) => setSelectedStatus(status),
