@@ -3,7 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Pencil, Trash, CheckCircle, X, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Project, ProjectStatus } from "@/types";
+import { Project } from "@/types";
 
 interface ProjectHeaderProps {
   project: Project;

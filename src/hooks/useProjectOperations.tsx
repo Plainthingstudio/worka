@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { Project, ProjectStatus } from "@/types";
 import { projects } from "@/mockData";
