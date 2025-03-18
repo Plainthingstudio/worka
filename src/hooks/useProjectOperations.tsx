@@ -8,12 +8,23 @@ export const useProjectOperations = (project: Project | null, setProject: (proje
     if (!project) return;
 
     try {
-      const { error } = await supabase
+      // Update the project in Supabase
+      const { error: updateError } = await supabase
         .from('projects')
-        .update(data)
+        .update({
+          name: data.name,
+          client_id: data.clientId,
+          status: data.status,
+          deadline: data.deadline.toISOString(),
+          fee: data.fee,
+          currency: data.currency,
+          project_type: data.projectType,
+          categories: data.categories,
+          team_members: data.teamMembers || []
+        })
         .eq('id', project.id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       const updatedProject = { ...project, ...data };
       setProject(updatedProject);

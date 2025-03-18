@@ -18,7 +18,7 @@ interface EditProjectDialogProps {
   onSave: (data: any) => void;
   project: Project;
   clients: Client[];
-  teamMembers?: TeamMember[]; // Make teamMembers optional prop
+  teamMembers?: TeamMember[];
 }
 
 const EditProjectDialog = ({
@@ -44,16 +44,9 @@ const EditProjectDialog = ({
         return [];
       }
       
-      return data.map((member: any): TeamMember => ({
-        id: member.id,
-        name: member.name,
-        position: member.position,
-        skills: member.skills || [],
-        startDate: new Date(member.start_date),
-        createdAt: new Date(member.created_at)
-      }));
+      return data;
     },
-    enabled: isOpen && !providedTeamMembers, // Only run query if dialog is open and teamMembers not provided
+    enabled: isOpen && !providedTeamMembers,
   });
 
   // Use provided team members or fetched ones
