@@ -43,9 +43,9 @@ const KanbanView: React.FC<KanbanViewProps> = ({
         className="h-full w-full kanban-scroll-container rounded-md border border-border/30"
         onScroll={onScroll}
       >
-        <div className="flex flex-nowrap gap-5 p-4 h-full pl-4 pr-12 overflow-x-auto">
+        <div className="flex flex-nowrap gap-5 p-4 h-full pl-4 pr-12 w-full overflow-x-auto">
           {stages.map(stage => (
-            <div key={stage} style={{width: `${columnWidth}px`, flex: '0 0 auto'}} className="h-full">
+            <div key={stage} style={{minWidth: `${columnWidth}px`, flex: '1 0 auto'}} className="h-full">
               <LeadColumn
                 title={stage}
                 leads={leadsByStage[stage] || []}
