@@ -1,9 +1,7 @@
-
 import { toast } from "sonner";
 import { Project, ProjectStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import Lottie from "lottie-react";
 
 export const useProjectOperations = (project: Project | null, setProject: (project: Project) => void, refetchClient?: () => void) => {
   const [showConfetti, setShowConfetti] = useState(false);

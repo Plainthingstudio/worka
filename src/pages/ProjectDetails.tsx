@@ -83,12 +83,23 @@ const ProjectDetails = () => {
         project && client ? (
           <>
             {showConfetti && (
-              <div className="fixed inset-0 z-50 pointer-events-none">
+              <div className="fixed inset-0 z-[9999] pointer-events-none flex items-center justify-center">
                 <Lottie
-                  animationData={"https://lottie.host/c0b936d0-8660-4cae-bcbd-b18f19933fb1/vlT7zSzyGL.lottie"}
+                  animationData={{
+                    "v": "5.5.7",
+                    "fr": 29.9700012207031,
+                    "ip": 0,
+                    "op": 180.00000733155,
+                    "w": 1920,
+                    "h": 1080,
+                    "nm": "confetti",
+                    "ddd": 0,
+                    "assets": [],
+                    "layers": []
+                  }}
                   loop={true}
                   autoplay={true}
-                  style={{ height: '100%', width: '100%' }}
+                  style={{ width: '100%', height: '100%', position: 'absolute' }}
                 />
               </div>
             )}
