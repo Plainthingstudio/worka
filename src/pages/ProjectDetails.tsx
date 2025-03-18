@@ -5,6 +5,7 @@ import { useProjectDetails } from "@/hooks/useProjectDetails";
 import ProjectDetailsLayout from "@/components/project-details/ProjectDetailsLayout";
 import ProjectContent from "@/components/project-details/ProjectContent";
 import ProjectsLoading from "@/components/projects/ProjectsLoading";
+import Lottie from "lottie-react";
 
 const ProjectDetails = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -38,7 +39,8 @@ const ProjectDetails = () => {
     openEditPaymentDialog,
     openDeletePaymentDialog,
     isLoading,
-    refetchClient
+    refetchClient,
+    showConfetti
   } = useProjectDetails(projectId);
 
   const dialogState = {
@@ -79,25 +81,37 @@ const ProjectDetails = () => {
         <ProjectsLoading />
       ) : (
         project && client ? (
-          <ProjectContent
-            project={project}
-            client={client}
-            teamMembers={teamMembers}
-            currentPayment={currentPayment}
-            dialogState={dialogState}
-            selectedStatus={selectedStatus}
-            onEdit={() => setIsEditDialogOpen(true)}
-            onDelete={() => setIsDeleteDialogOpen(true)}
-            onMarkAsCompleted={handleMarkAsCompleted}
-            onChangeStatus={() => {
-              setSelectedStatus("In progress");
-              setIsStatusDialogOpen(true);
-            }}
-            onAddPayment={() => setIsPaymentDialogOpen(true)}
-            onEditPayment={openEditPaymentDialog}
-            onDeletePayment={openDeletePaymentDialog}
-            handlers={handlers}
-          />
+          <>
+            {showConfetti && (
+              <div className="fixed inset-0 z-50 pointer-events-none">
+                <Lottie
+                  animationData={"https://lottie.host/c0b936d0-8660-4cae-bcbd-b18f19933fb1/vlT7zSzyGL.lottie"}
+                  loop={true}
+                  autoplay={true}
+                  style={{ height: '100%', width: '100%' }}
+                />
+              </div>
+            )}
+            <ProjectContent
+              project={project}
+              client={client}
+              teamMembers={teamMembers}
+              currentPayment={currentPayment}
+              dialogState={dialogState}
+              selectedStatus={selectedStatus}
+              onEdit={() => setIsEditDialogOpen(true)}
+              onDelete={() => setIsDeleteDialogOpen(true)}
+              onMarkAsCompleted={handleMarkAsCompleted}
+              onChangeStatus={() => {
+                setSelectedStatus("In progress");
+                setIsStatusDialogOpen(true);
+              }}
+              onAddPayment={() => setIsPaymentDialogOpen(true)}
+              onEditPayment={openEditPaymentDialog}
+              onDeletePayment={openDeletePaymentDialog}
+              handlers={handlers}
+            />
+          </>
         ) : (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="flex items-center gap-2 mb-4">

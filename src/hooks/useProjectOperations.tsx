@@ -2,8 +2,12 @@
 import { toast } from "sonner";
 import { Project, ProjectStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import Lottie from "lottie-react";
 
 export const useProjectOperations = (project: Project | null, setProject: (project: Project) => void, refetchClient?: () => void) => {
+  const [showConfetti, setShowConfetti] = useState(false);
+  
   const handleEditProject = async (data: any) => {
     if (!project) return;
 
@@ -74,6 +78,13 @@ export const useProjectOperations = (project: Project | null, setProject: (proje
 
       const updatedProject = { ...project, status: "Completed" as ProjectStatus };
       setProject(updatedProject);
+      setShowConfetti(true);
+      
+      // Hide confetti after 5 seconds
+      setTimeout(() => {
+        setShowConfetti(false);
+      }, 5000);
+      
       toast.success("Project marked as completed");
     } catch (error) {
       console.error('Error marking project as completed:', error);
@@ -105,6 +116,8 @@ export const useProjectOperations = (project: Project | null, setProject: (proje
     handleEditProject,
     handleDeleteProject,
     handleMarkAsCompleted,
-    handleChangeStatus
+    handleChangeStatus,
+    showConfetti,
+    setShowConfetti
   };
 };

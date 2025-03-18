@@ -1,3 +1,4 @@
+
 import { useProjectData } from "./useProjectData";
 import { useProjectDialogs } from "./useProjectDialogs";
 import { useProjectOperations } from "./useProjectOperations";
@@ -34,7 +35,8 @@ export const useProjectDetails = (projectId: string | undefined) => {
     handleEditProject,
     handleDeleteProject,
     handleMarkAsCompleted,
-    handleChangeStatus: changeProjectStatus
+    handleChangeStatus: changeProjectStatus,
+    showConfetti
   } = useProjectOperations(project, setProject, refetchClient);
 
   const {
@@ -94,6 +96,7 @@ export const useProjectDetails = (projectId: string | undefined) => {
     openEditPaymentDialog,
     openDeletePaymentDialog,
     isLoading: projectLoading || statisticsLoading,
-    refetchClient
+    refetchClient,
+    showConfetti
   };
 };
