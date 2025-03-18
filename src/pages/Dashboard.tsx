@@ -177,8 +177,8 @@ const Dashboard = () => {
   }
 
   return (
-    <Layout title="Dashboard Overview">
-      <div className="container mx-auto px-4 md:px-6 py-6 max-w-7xl">
+    <Layout title="Dashboard">
+      <div className="w-full max-w-full px-4 py-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard
@@ -216,13 +216,13 @@ const Dashboard = () => {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
-          <div className="glass-card rounded-xl border shadow-sm overflow-x-auto">
+          <div className="bg-white rounded-lg border shadow-sm overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead className="hidden md:table-cell">Email</TableHead>
-                  <TableHead className="hidden lg:table-cell">Phone</TableHead>
+                  <TableHead className="hidden md:table-cell">Phone</TableHead>
                   <TableHead>Source</TableHead>
                 </TableRow>
               </TableHeader>
@@ -238,7 +238,7 @@ const Dashboard = () => {
                     <TableRow key={client.id}>
                       <TableCell className="font-medium">{client.name}</TableCell>
                       <TableCell className="hidden md:table-cell">{client.email}</TableCell>
-                      <TableCell className="hidden lg:table-cell">{client.phone}</TableCell>
+                      <TableCell className="hidden md:table-cell">{client.phone}</TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="text-xs">
                           {client.leadSource}
@@ -261,13 +261,13 @@ const Dashboard = () => {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
-          <div className="glass-card rounded-xl border shadow-sm overflow-x-auto">
+          <div className="bg-white rounded-lg border shadow-sm overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Project Name</TableHead>
                   <TableHead className="hidden md:table-cell">Client</TableHead>
-                  <TableHead className="hidden lg:table-cell">Deadline</TableHead>
+                  <TableHead className="hidden md:table-cell">Deadline</TableHead>
                   <TableHead className="hidden md:table-cell">Type</TableHead>
                   <TableHead>Fee</TableHead>
                 </TableRow>
@@ -284,7 +284,7 @@ const Dashboard = () => {
                     <TableRow key={project.id} onClick={() => navigate(`/projects/${project.id}`)} className="cursor-pointer hover:bg-accent/50">
                       <TableCell className="font-medium">{project.name}</TableCell>
                       <TableCell className="hidden md:table-cell">{getClientById(project.clientId)}</TableCell>
-                      <TableCell className="hidden lg:table-cell text-muted-foreground">
+                      <TableCell className="hidden md:table-cell text-muted-foreground">
                         {format(new Date(project.deadline), "MMM dd, yyyy")}
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
