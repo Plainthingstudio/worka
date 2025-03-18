@@ -56,7 +56,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   });
 
   return (
-    <div className="flex flex-col w-full max-w-[1200px] mx-auto">
+    <div className="flex flex-col w-full max-w-[1400px] mx-auto">
       <KanbanHeader 
         onAddLead={handleAddLeadInStage}
         viewMode={viewMode}
