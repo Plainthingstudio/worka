@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import { Lead, LeadStage } from '@/types';
 import { 
   Table,
@@ -18,6 +19,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import { useClients } from '@/hooks/useClients';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LeadsListProps {
   leads: Lead[];
@@ -62,6 +66,47 @@ const LeadsList: React.FC<LeadsListProps> = ({
   onStageChange,
   stages
 }) => {
+  const { addClient } = useClients();
+  
+  // Check for leads in "Kickoff" stage and add them as clients
+  useEffect(() => {
+    const kickoffLeads = leads.filter(lead => lead.stage === 'Kickoff');
+    
+    // Process each kickoff lead to add as client if not already a client
+    kickoffLeads.forEach(async (lead) => {
+      try {
+        // Check if this lead exists in clients table by email
+        const { data: existingClients, error: checkError } = await supabase
+          .from('clients')
+          .select('email')
+          .eq('email', lead.email);
+          
+        if (checkError) throw checkError;
+        
+        // If client with this email doesn't exist, add them
+        if (!existingClients || existingClients.length === 0) {
+          // Convert lead to client format
+          const newClient = {
+            name: lead.name,
+            email: lead.email,
+            phone: lead.phone || '',
+            address: lead.address || '',
+            leadSource: lead.source || 'Other'
+          };
+          
+          // Add to clients table
+          const success = await addClient(newClient);
+          if (success) {
+            toast.success(`Lead "${lead.name}" automatically added to clients`);
+          }
+        }
+      } catch (error) {
+        console.error('Error adding kickoff lead as client:', error);
+        toast.error('Failed to add lead as client automatically');
+      }
+    });
+  }, [leads, addClient]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">

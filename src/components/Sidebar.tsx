@@ -60,14 +60,14 @@ const Sidebar = () => {
       href: "/dashboard",
     },
     {
-      icon: Users,
-      label: "Clients",
-      href: "/clients",
-    },
-    {
       icon: FolderKanban,
       label: "Leads & Pipeline",
       href: "/leads",
+    },
+    {
+      icon: Users,
+      label: "Clients",
+      href: "/clients",
     },
     {
       icon: ListChecks,
