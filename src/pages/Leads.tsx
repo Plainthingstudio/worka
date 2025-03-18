@@ -23,7 +23,12 @@ const Leads = () => {
       <Sidebar />
       <div className={`flex-1 flex flex-col w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
         <Navbar title="Leads & Pipeline" />
-        <main className="flex-1 container mx-auto p-4 md:p-6 overflow-hidden">
+        <main className="flex-1 container mx-auto px-4 py-6 max-w-[1600px]">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold tracking-tight">Leads & Pipeline</h1>
+            <p className="text-muted-foreground">Manage your leads through the sales pipeline.</p>
+          </div>
+          
           <KanbanBoard 
             leads={leads} 
             isLoading={isLoading} 

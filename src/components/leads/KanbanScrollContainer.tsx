@@ -68,10 +68,10 @@ const KanbanScrollContainer: React.FC<KanbanScrollContainerProps> = ({
       </div>
       
       <ScrollArea 
-        className="h-full w-full kanban-scroll-container rounded-md border border-border/30"
+        className="h-full w-full kanban-scroll-container rounded-md border border-border/30 px-4"
         onScroll={onScroll}
       >
-        <div className="flex gap-3 p-4 min-w-max h-full">
+        <div className="flex gap-4 p-4 min-w-max h-full pr-8">
           {stages.map(stage => (
             <div key={stage} style={{width: `${columnWidth}px`}} className="flex-shrink-0 h-full">
               <LeadColumn

@@ -56,17 +56,17 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   });
 
   return (
-    <div className="flex flex-col w-full h-full">
+    <div className="flex flex-col w-full">
       <KanbanHeader 
         onAddLead={handleAddLeadInStage} 
         viewMode={viewMode} 
         onViewModeChange={onViewModeChange} 
       />
       
-      <div className="flex-1 glass-card rounded-lg border shadow-sm animate-fade-in">
-        <div className="h-full overflow-hidden p-2 sm:p-4">
+      <div className="glass-card rounded-lg border shadow-sm animate-fade-in">
+        <div className="overflow-hidden p-2 sm:p-4">
           {viewMode === 'kanban' ? (
-            <div className="h-[calc(100vh-180px)] md:h-[calc(100vh-200px)]">
+            <div className="h-[calc(100vh-230px)] md:h-[calc(100vh-230px)]">
               <KanbanScrollContainer 
                 isLoading={isLoading} 
                 stages={LEAD_STAGES} 
@@ -81,7 +81,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
               />
             </div>
           ) : (
-            <div className="h-[calc(100vh-180px)] md:h-[calc(100vh-200px)] overflow-auto">
+            <div className="h-[calc(100vh-230px)] md:h-[calc(100vh-230px)] overflow-auto">
               <LeadsList 
                 leads={leads} 
                 isLoading={isLoading} 
