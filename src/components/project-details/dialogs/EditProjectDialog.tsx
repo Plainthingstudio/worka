@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import ProjectForm from "@/components/ProjectForm";
-import { Client, Project, TeamMember } from "@/types";
+import { Client, Project, TeamMember, TeamPosition } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -29,7 +29,6 @@ const EditProjectDialog = ({
   clients,
   teamMembers: providedTeamMembers,
 }: EditProjectDialogProps) => {
-  // Fetch team members from Supabase only if not provided as props
   const { data: fetchedTeamMembers = [], isLoading } = useQuery({
     queryKey: ['teamMembers'],
     queryFn: async () => {
@@ -48,7 +47,7 @@ const EditProjectDialog = ({
       return data.map((member): TeamMember => ({
         id: member.id,
         name: member.name,
-        position: member.position,
+        position: member.position as TeamPosition, // Cast position to TeamPosition
         skills: member.skills || [],
         startDate: new Date(member.start_date),
         createdAt: new Date(member.created_at)
@@ -59,6 +58,12 @@ const EditProjectDialog = ({
 
   // Use provided team members or fetched ones
   const teamMembers = providedTeamMembers || fetchedTeamMembers;
+
+  // Add an async function to handle saving
+  const handleSave = async (data: any) => {
+    await onSave(data);
+    onClose(); // Close the dialog after saving
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -79,7 +84,7 @@ const EditProjectDialog = ({
               project={project}
               clients={clients}
               teamMembers={teamMembers}
-              onSave={onSave}
+              onSave={handleSave}
               onCancel={onClose}
             />
           )}
@@ -90,4 +95,3 @@ const EditProjectDialog = ({
 };
 
 export default EditProjectDialog;
-
