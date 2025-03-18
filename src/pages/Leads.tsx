@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useLeads } from '@/hooks/leads/useLeads';
 import KanbanBoard from '@/components/leads/KanbanBoard';
 import Sidebar from "@/components/Sidebar";
@@ -16,6 +16,7 @@ const Leads = () => {
   } = useLeads();
   
   const { isSidebarExpanded } = useSidebarWidth();
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -29,7 +30,8 @@ const Leads = () => {
             onAddLead={addLead} 
             onUpdateLead={updateLead} 
             onDeleteLead={deleteLead} 
-            viewMode="list" 
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
         </main>
       </div>
