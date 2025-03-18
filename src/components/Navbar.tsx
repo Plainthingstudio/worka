@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { LogOut, User, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,11 +26,9 @@ const Navbar = ({ title }: { title?: string }) => {
   useEffect(() => {
     const getUserProfile = async () => {
       try {
-        // Get current user session
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
-          // Try to get user profile from profiles table
           const { data, error } = await supabase
             .from('profiles')
             .select('full_name')
@@ -46,7 +43,6 @@ const Navbar = ({ title }: { title?: string }) => {
           if (data && data.full_name) {
             setUserName(data.full_name);
             
-            // Create initials from full name
             const nameParts = data.full_name.split(' ');
             const initials = nameParts.length > 1 
               ? `${nameParts[0][0]}${nameParts[1][0]}`
@@ -54,9 +50,7 @@ const Navbar = ({ title }: { title?: string }) => {
             
             setUserInitials(initials.toUpperCase());
           } else {
-            // Use email as fallback
             setUserName(user.email || "Studio Manager");
-            // Create initials from email
             if (user.email) {
               const emailName = user.email.split('@')[0];
               setUserInitials(emailName.substring(0, 2).toUpperCase());
@@ -73,14 +67,8 @@ const Navbar = ({ title }: { title?: string }) => {
   
   const handleLogout = async () => {
     try {
-      // First clear localStorage to immediately update UI state
       localStorage.removeItem("isLoggedIn");
-      
-      // Use navigate with replace to avoid back button issues
-      // Do this before the async operation to ensure immediate UI response
       navigate("/auth", { replace: true });
-      
-      // Then perform the actual sign out from Supabase
       const { error } = await supabase.auth.signOut();
       
       if (error) {

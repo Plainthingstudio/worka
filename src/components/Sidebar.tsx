@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
@@ -36,15 +35,15 @@ const Sidebar = () => {
       // First clear localStorage to immediately update UI state
       localStorage.removeItem("isLoggedIn");
       
-      // Navigate immediately to provide responsive UI feedback
-      navigate("/auth", { replace: true });
-      
       // Then perform the actual sign out from Supabase
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         throw error;
       }
+      
+      // Navigate to auth page after successful logout
+      navigate("/auth", { replace: true });
       
       toast.success("Successfully logged out");
     } catch (error: any) {
