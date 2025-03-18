@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useLeads } from '@/hooks/leads/useLeads';
 import KanbanBoard from '@/components/leads/KanbanBoard';
 import Sidebar from "@/components/Sidebar";
@@ -15,7 +15,6 @@ const Leads = () => {
     deleteLead
   } = useLeads();
   
-  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const { isSidebarExpanded } = useSidebarWidth();
 
   return (
@@ -30,8 +29,7 @@ const Leads = () => {
             onAddLead={addLead} 
             onUpdateLead={updateLead} 
             onDeleteLead={deleteLead} 
-            viewMode={viewMode} 
-            onViewModeChange={setViewMode} 
+            viewMode="list" 
           />
         </main>
       </div>
