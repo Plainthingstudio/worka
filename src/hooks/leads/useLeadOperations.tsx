@@ -48,7 +48,8 @@ export const useLeadOperations = (leads: Lead[], setLeads: React.Dispatch<React.
         updatedAt: new Date(insertedData.updated_at)
       };
 
-      setLeads(prev => [...prev, formattedLead]);
+      // Add new lead to the beginning of the array instead of the end
+      setLeads(prev => [formattedLead, ...prev]);
       toast.success('Lead added successfully');
       return formattedLead;
     } catch (error: any) {

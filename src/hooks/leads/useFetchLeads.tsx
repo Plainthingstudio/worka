@@ -21,11 +21,11 @@ export const useFetchLeads = () => {
         return;
       }
       
-      // Fetch leads from Supabase
+      // Fetch leads from Supabase ordered by creation date (newest first)
       const { data, error } = await supabase
         .from('leads')
         .select('*')
-        .order('updated_at', { ascending: false });
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error("Error fetching leads:", error);
