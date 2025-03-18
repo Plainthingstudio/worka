@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import ProjectForm from "@/components/ProjectForm";
-import { Client, Project, TeamMember, TeamPosition } from "@/types";
+import { Client, Project, TeamMember, TeamPosition, LeadSource } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -47,7 +47,7 @@ const EditProjectDialog = ({
         email: client.email,
         phone: client.phone || "",
         address: client.address || "",
-        leadSource: client.lead_source || "Website",
+        leadSource: (client.lead_source as LeadSource) || "Website",
         createdAt: new Date(client.created_at)
       }));
     },
