@@ -66,7 +66,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
       <div className="glass-card rounded-lg border shadow-sm animate-fade-in overflow-hidden">
         <div className="p-0 sm:p-2">
           {viewMode === 'kanban' ? (
-            <div className="h-[calc(100vh-200px)] md:h-[calc(100vh-200px)]">
+            <div className="h-[calc(100vh-210px)] md:h-[calc(100vh-210px)]">
               <KanbanScrollContainer 
                 isLoading={isLoading} 
                 stages={LEAD_STAGES} 
