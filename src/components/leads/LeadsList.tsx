@@ -10,6 +10,7 @@ import {
   TableRow
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Edit, Trash, MoreHorizontal } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -27,6 +28,28 @@ interface LeadsListProps {
   onStageChange: (id: string, stage: LeadStage) => void;
   stages: LeadStage[];
 }
+
+// Helper function to get appropriate badge variant based on lead stage
+const getStageBadgeVariant = (stage: string) => {
+  switch (stage) {
+    case 'Leads':
+      return 'secondary';
+    case 'First Contact':
+      return 'outline';
+    case 'First Meeting':
+      return 'project-based';
+    case 'Proposal':
+      return 'monthly-retainer';
+    case 'Negotiation':
+      return 'monthly-pay';
+    case 'Won':
+      return 'completed';
+    case 'Lost':
+      return 'cancelled';
+    default:
+      return 'secondary';
+  }
+};
 
 const LeadsList: React.FC<LeadsListProps> = ({
   leads,
@@ -73,7 +96,11 @@ const LeadsList: React.FC<LeadsListProps> = ({
               <TableCell className="hidden md:table-cell">{lead.email}</TableCell>
               <TableCell className="hidden lg:table-cell">{lead.phone || "-"}</TableCell>
               <TableCell className="hidden md:table-cell">{lead.source || "-"}</TableCell>
-              <TableCell>{lead.stage}</TableCell>
+              <TableCell>
+                <Badge variant={getStageBadgeVariant(lead.stage)}>
+                  {lead.stage}
+                </Badge>
+              </TableCell>
               <TableCell className="hidden lg:table-cell">{new Date(lead.updatedAt).toLocaleDateString()}</TableCell>
               <TableCell>
                 <DropdownMenu>
