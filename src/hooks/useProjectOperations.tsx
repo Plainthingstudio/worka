@@ -1,58 +1,86 @@
+
 import { toast } from "sonner";
 import { Project, ProjectStatus } from "@/types";
-import { projects } from "@/mockData";
-import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useProjectOperations = (project: Project | null, setProject: (project: Project) => void) => {
-  const navigate = useNavigate();
-
-  const handleEditProject = (data: any) => {
+  const handleEditProject = async (data: any) => {
     if (!project) return;
 
-    const projectIndex = projects.findIndex((p) => p.id === project.id);
-    if (projectIndex !== -1) {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update(data)
+        .eq('id', project.id);
+
+      if (error) throw error;
+
       const updatedProject = { ...project, ...data };
-      projects[projectIndex] = updatedProject;
-      
       setProject(updatedProject);
       toast.success("Project updated successfully");
+    } catch (error) {
+      console.error('Error updating project:', error);
+      toast.error("Failed to update project");
     }
   };
 
-  const handleDeleteProject = () => {
+  const handleDeleteProject = async () => {
     if (!project) return;
 
-    const projectIndex = projects.findIndex((p) => p.id === project.id);
-    if (projectIndex !== -1) {
-      projects.splice(projectIndex, 1);
-      toast.success("Project deleted successfully");
-      navigate("/projects");
-    }
-  };
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', project.id);
 
-  const handleMarkAsCompleted = () => {
-    if (!project) return;
-
-    const projectIndex = projects.findIndex((p) => p.id === project.id);
-    if (projectIndex !== -1) {
-      const updatedProject = { ...project, status: "Completed" as ProjectStatus };
-      projects[projectIndex] = updatedProject;
+      if (error) throw error;
       
+      toast.success("Project deleted successfully");
+      return true;
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      toast.error("Failed to delete project");
+      return false;
+    }
+  };
+
+  const handleMarkAsCompleted = async () => {
+    if (!project) return;
+
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ status: 'Completed' })
+        .eq('id', project.id);
+
+      if (error) throw error;
+
+      const updatedProject = { ...project, status: "Completed" as ProjectStatus };
       setProject(updatedProject);
       toast.success("Project marked as completed");
+    } catch (error) {
+      console.error('Error marking project as completed:', error);
+      toast.error("Failed to mark project as completed");
     }
   };
 
-  const handleChangeStatus = (selectedStatus: ProjectStatus) => {
+  const handleChangeStatus = async (selectedStatus: ProjectStatus) => {
     if (!project) return;
 
-    const projectIndex = projects.findIndex((p) => p.id === project.id);
-    if (projectIndex !== -1) {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ status: selectedStatus })
+        .eq('id', project.id);
+
+      if (error) throw error;
+
       const updatedProject = { ...project, status: selectedStatus };
-      projects[projectIndex] = updatedProject;
-      
       setProject(updatedProject);
       toast.success(`Project status changed to ${selectedStatus}`);
+    } catch (error) {
+      console.error('Error changing project status:', error);
+      toast.error("Failed to change project status");
     }
   };
 
