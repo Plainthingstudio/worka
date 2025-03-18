@@ -5,7 +5,7 @@ import { ThemeProvider } from './components/ThemeProvider';
 import { Toaster } from '@/components/ui/toaster';
 
 // Import your pages
-import Index from '@/pages/Index';
+import Dashboard from '@/pages/Dashboard';
 import Projects from '@/pages/Projects';
 import ProjectDetails from '@/pages/ProjectDetails';
 import Clients from '@/pages/Clients';
@@ -17,7 +17,6 @@ import Statistics from '@/pages/Statistics';
 import Briefs from '@/pages/Briefs';
 import Team from '@/pages/Team';
 import Auth from '@/pages/Auth';
-import Dashboard from '@/pages/Dashboard';
 import GraphicDesignBrief from '@/pages/GraphicDesignBrief';
 import UIDesignBrief from '@/pages/UIDesignBrief';
 import IllustrationsBrief from '@/pages/IllustrationsBrief';
@@ -31,8 +30,8 @@ function App() {
     <ThemeProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/dashboard" element={<Navigate to="/" replace />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/login" element={<Auth />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/projects" element={<Projects />} />
