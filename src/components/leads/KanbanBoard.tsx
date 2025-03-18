@@ -7,6 +7,8 @@ import LeadsList from './LeadsList';
 import LeadDialog from './LeadDialog';
 import DeleteLeadDialog from './DeleteLeadDialog';
 import KanbanView from './KanbanView';
+import { useClients } from '@/hooks/useClients';
+import { toast } from 'sonner';
 
 interface KanbanBoardProps {
   leads: Lead[];
@@ -27,6 +29,9 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   viewMode,
   onViewModeChange
 }) => {
+  // Get the client adding functionality from useClients hook
+  const { addClient } = useClients();
+
   const {
     leadsByStage,
     isAddDialogOpen,
@@ -41,7 +46,6 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     handleAddLead,
     handleEditLead,
     handleDeleteLead,
-    handleMoveLead,
     handleEditClick,
     handleDeleteClick,
     handleAddLeadInStage,
@@ -54,6 +58,42 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     onUpdateLead,
     onDeleteLead
   });
+
+  // Create a wrapper for handleMoveLead to add the lead to clients when moved to Kickoff stage
+  const handleMoveLead = async (leadId: string, stage: typeof LEAD_STAGES[number]) => {
+    // First, update the lead stage
+    const success = await onUpdateLead(leadId, { stage });
+    
+    // If update was successful and the lead is being moved to "Kickoff" stage
+    if (success && stage === 'Kickoff') {
+      // Find the lead that was updated
+      const lead = leads.find(l => l.id === leadId);
+      
+      if (lead) {
+        try {
+          // Convert lead to client format
+          const newClient = {
+            name: lead.name,
+            email: lead.email,
+            phone: lead.phone || '',
+            address: lead.address || '',
+            leadSource: lead.source || 'Other'
+          };
+          
+          // Add to clients table
+          const clientAdded = await addClient(newClient);
+          if (clientAdded) {
+            toast.success(`"${lead.name}" automatically added to clients list`);
+          }
+        } catch (error) {
+          console.error('Error adding lead as client:', error);
+          toast.error('Failed to add lead as client automatically');
+        }
+      }
+    }
+    
+    return success;
+  };
 
   return (
     <div className="flex flex-col w-full max-w-[1400px] mx-auto">
