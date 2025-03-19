@@ -25,32 +25,35 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     // Format client address with truncation if necessary
     const clientAddress = client.address || 'No address provided';
     
-    // Generate HTML content for the invoice with new design
-    // Removed fixed width and adjusted margins to properly fit within A4
+    // Generate HTML content for the invoice with updated design
     const invoiceHtml = `
       <div id="invoice-container" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; width: 100%; margin: 0 auto; padding: 0; background: white; overflow: hidden;">
         <!-- Header Section with light blue background and logo -->
-        <div style="background-color: #e6f2ff; padding: 25px 30px; position: relative;">
+        <div style="background-color: #e6f2ff; padding: 25px 30px 80px 30px; position: relative; margin-bottom: 45px;">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <!-- Logo placeholder - white rounded square -->
-            <div style="width: 80px; height: 80px; background-color: white; border-radius: 16px; margin-right: 20px;"></div>
+            <!-- Logo placeholder - white rounded square with shadow and overflow -->
+            <div style="position: relative; z-index: 10;">
+              <div style="width: 100px; height: 100px; background-color: white; border-radius: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-right: 20px; position: relative; top: 40px;"></div>
+            </div>
             
-            <!-- Invoice number in a pill/capsule style -->
-            <div style="background-color: white; border-radius: 50px; padding: 6px 14px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-              ${invoice.invoiceNumber}
+            <!-- Invoice number in a pill/capsule style - centered text with shadow -->
+            <div style="background-color: white; border-radius: 50px; padding: 10px 20px; font-weight: 500; box-shadow: 0 4px 10px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center;">
+              <span style="font-size: 14px; letter-spacing: 0.5px;">INV-${invoice.invoiceNumber}</span>
             </div>
           </div>
         </div>
         
-        <!-- From and To Sections -->
-        <div style="padding: 30px 30px 15px 30px; display: flex; justify-content: space-between;">
+        <!-- From and To Sections - moved up to overlap the blue section -->
+        <div style="padding: 0 30px; display: flex; justify-content: space-between; margin-top: -55px; margin-bottom: 30px;">
           <!-- From section -->
           <div style="width: 30%;">
-            <p style="font-size: 12px; color: #6B7280; margin: 0 0 6px 0;">From</p>
-            <h2 style="font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Plainthing Studio</h2>
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">(612) 856 - 0989</p>
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">contact@maurosicard.com</p>
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0; line-height: 1.4;">
+            <div style="background-color: #e6f2ff; display: inline-block; padding: 6px 16px; border-radius: 50px; margin-bottom: 10px;">
+              <p style="font-size: 14px; color: #3B82F6; margin: 0; font-weight: 500;">From</p>
+            </div>
+            <h2 style="font-size: 18px; font-weight: 600; margin: 0 0 12px 0;">Plainthing Studio</h2>
+            <p style="font-size: 14px; color: #64748B; margin: 0 0 4px 0;">(612) 856 - 0989</p>
+            <p style="font-size: 14px; color: #64748B; margin: 0 0 4px 0;">contact@maurosicard.com</p>
+            <p style="font-size: 14px; color: #64748B; margin: 0 0 4px 0; line-height: 1.5;">
               Pablo Alto, San Francisco, CA 92102,<br>
               United States of America
             </p>
@@ -58,23 +61,27 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
           
           <!-- To section -->
           <div style="width: 30%;">
-            <p style="font-size: 12px; color: #6B7280; margin: 0 0 6px 0;">Invoice to:</p>
-            <h2 style="font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">${client.name}</h2>
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">${client.phone || '(612) 856 - 0989'}</p>
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">${client.email}</p>
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0; line-height: 1.4;">
+            <div style="background-color: #e6f2ff; display: inline-block; padding: 6px 16px; border-radius: 50px; margin-bottom: 10px;">
+              <p style="font-size: 14px; color: #3B82F6; margin: 0; font-weight: 500;">Invoice to:</p>
+            </div>
+            <h2 style="font-size: 18px; font-weight: 600; margin: 0 0 12px 0;">${client.name}</h2>
+            <p style="font-size: 14px; color: #64748B; margin: 0 0 4px 0;">${client.phone || '(612) 856 - 0989'}</p>
+            <p style="font-size: 14px; color: #64748B; margin: 0 0 4px 0;">${client.email}</p>
+            <p style="font-size: 14px; color: #64748B; margin: 0 0 4px 0; line-height: 1.5;">
               ${clientAddress.replace(/,/g, ',<br>')}
             </p>
           </div>
           
           <!-- Date section -->
           <div style="width: 30%;">
-            <p style="font-size: 12px; color: #6B7280; margin: 0 0 6px 0;">Date:</p>
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">Issued</p>
-            <h2 style="font-size: 16px; font-weight: 600; margin: 0 0 18px 0;">${formattedDate}</h2>
+            <div style="background-color: #e6f2ff; display: inline-block; padding: 6px 16px; border-radius: 50px; margin-bottom: 10px;">
+              <p style="font-size: 14px; color: #3B82F6; margin: 0; font-weight: 500;">Date:</p>
+            </div>
+            <p style="font-size: 14px; color: #64748B; margin: 0 0 4px 0;">Issued</p>
+            <h2 style="font-size: 18px; font-weight: 600; margin: 0 0 18px 0;">${formattedDate}</h2>
             
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">Payment Due</p>
-            <h2 style="font-size: 16px; font-weight: 600; margin: 0;">${formattedDueDate}</h2>
+            <p style="font-size: 14px; color: #64748B; margin: 0 0 4px 0;">Payment Due</p>
+            <h2 style="font-size: 18px; font-weight: 600; margin: 0;">${formattedDueDate}</h2>
           </div>
         </div>
         
