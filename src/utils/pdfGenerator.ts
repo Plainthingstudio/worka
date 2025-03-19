@@ -22,6 +22,20 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     const formattedDate = format(new Date(invoice.date), "MMMM dd, yyyy");
     const formattedDueDate = format(new Date(invoice.dueDate), "MMMM dd, yyyy");
     
+    // Format for the new date sections
+    const dateParts = {
+      issued: {
+        month: format(new Date(invoice.date), "MMMM"),
+        day: format(new Date(invoice.date), "dd,"),
+        year: format(new Date(invoice.date), "yyyy")
+      },
+      due: {
+        month: format(new Date(invoice.dueDate), "MMMM"),
+        day: format(new Date(invoice.dueDate), "dd,"),
+        year: format(new Date(invoice.dueDate), "yyyy")
+      }
+    };
+    
     // Format client address with truncation if necessary
     const clientAddress = client.address || 'No address provided';
     
@@ -38,43 +52,93 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
           
           <!-- Invoice number in a pill/capsule style - updated styling -->
           <div style="position: absolute; right: 30px; top: 52px; padding-left: 8px; padding-right: 8px; padding-top: 5px; padding-bottom: 5px; background: white; box-shadow: 0px 1px 2px rgba(54, 61, 85, 0.08); overflow: hidden; border-radius: 25px; justify-content: center; align-items: center; gap: 10px; display: inline-flex;">
-            <div style="text-align: right; color: #19213D; font-size: 10px; font-weight: 500; text-transform: uppercase; line-height: 12px; letter-spacing: 0.40px; word-wrap: break-word;">${invoice.invoiceNumber}</div>
+            <div style="text-align: right; color: #19213D; font-size: 10px; font-family: Inter; font-weight: 500; text-transform: uppercase; line-height: 12px; letter-spacing: 0.40px; word-wrap: break-word">${invoice.invoiceNumber}</div>
           </div>
         </div>
         
-        <!-- From and To Sections - Updated with space-between distribution -->
-        <div style="padding: 30px 30px 15px 30px; display: flex; justify-content: space-between; margin-top: 35px;">
+        <!-- Updated From, To, and Date Sections with new design -->
+        <div style="padding: 30px 30px 15px 30px; margin-top: 35px; width: 100%; justify-content: space-between; align-items: flex-start; display: inline-flex; flex-wrap: wrap; align-content: flex-start">
           <!-- From section -->
-          <div style="width: 30%;">
-            <p style="font-size: 12px; color: #6B7280; margin: 0 0 6px 0;">From</p>
-            <h2 style="font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Plainthing Studio</h2>
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">(612) 856 - 0989</p>
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">contact@maurosicard.com</p>
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0; line-height: 1.4;">
-              Pablo Alto, San Francisco, CA 92102,<br>
-              United States of America
-            </p>
+          <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
+            <div style="padding-left: 4px; padding-right: 4px; padding-top: 3px; padding-bottom: 3px; background: #E3EFFF; border-radius: 4px; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
+              <div style="color: #2388FF; font-size: 8px; font-family: Inter; font-weight: 500; line-height: 12px; word-wrap: break-word">From</div>
+            </div>
+            <div style="align-self: stretch; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex">
+              <div style="width: 178px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
+                <div style="flex: 1 1 0; color: #19213D; font-size: 12px; font-family: Inter; font-weight: 600; line-height: 16px; word-wrap: break-word">Plainthing Studio</div>
+              </div>
+              <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 4px; display: flex">
+                <div style="justify-content: flex-start; align-items: flex-start; display: inline-flex">
+                  <div style="color: #5D6481; font-size: 8px; font-family: Inter; font-weight: 400; line-height: 12px; word-wrap: break-word">(612) 856 - 0989</div>
+                </div>
+                <div style="justify-content: flex-start; align-items: flex-start; display: inline-flex">
+                  <div style="color: #5D6481; font-size: 8px; font-family: Inter; font-weight: 400; line-height: 12px; word-wrap: break-word">contact@maurosicard.com</div>
+                </div>
+                <div style="width: 140px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
+                  <div style="flex: 1 1 0; color: #5D6481; font-size: 8px; font-family: Inter; font-weight: 400; line-height: 12px; word-wrap: break-word">Pablo Alto, San Francisco, CA 92102, United States of America</div>
+                </div>
+              </div>
+            </div>
           </div>
           
           <!-- To section -->
-          <div style="width: 30%;">
-            <p style="font-size: 12px; color: #6B7280; margin: 0 0 6px 0;">Invoice to:</p>
-            <h2 style="font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">${client.name}</h2>
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">${client.phone || '(612) 856 - 0989'}</p>
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">${client.email}</p>
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0; line-height: 1.4;">
-              ${clientAddress.replace(/,/g, ',<br>')}
-            </p>
+          <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
+            <div style="padding-left: 4px; padding-right: 4px; padding-top: 3px; padding-bottom: 3px; background: #E3EFFF; border-radius: 4px; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
+              <div style="color: #2388FF; font-size: 8px; font-family: Inter; font-weight: 500; line-height: 12px; word-wrap: break-word">Invoice to:</div>
+            </div>
+            <div style="align-self: stretch; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex">
+              <div style="width: 178px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
+                <div style="flex: 1 1 0; color: #19213D; font-size: 12px; font-family: Inter; font-weight: 600; line-height: 16px; word-wrap: break-word">${client.name}</div>
+              </div>
+              <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 4px; display: flex">
+                <div style="justify-content: flex-start; align-items: flex-start; display: inline-flex">
+                  <div style="color: #5D6481; font-size: 8px; font-family: Inter; font-weight: 400; line-height: 12px; word-wrap: break-word">${client.phone || '(612) 856 - 0989'}</div>
+                </div>
+                <div style="justify-content: flex-start; align-items: flex-start; display: inline-flex">
+                  <div style="color: #5D6481; font-size: 8px; font-family: Inter; font-weight: 400; line-height: 12px; word-wrap: break-word">${client.email}</div>
+                </div>
+                <div style="width: 140px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
+                  <div style="flex: 1 1 0; color: #5D6481; font-size: 8px; font-family: Inter; font-weight: 400; line-height: 12px; word-wrap: break-word">${clientAddress}</div>
+                </div>
+              </div>
+            </div>
           </div>
           
           <!-- Date section -->
-          <div style="width: 30%;">
-            <p style="font-size: 12px; color: #6B7280; margin: 0 0 6px 0;">Date:</p>
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">Issued</p>
-            <h2 style="font-size: 16px; font-weight: 600; margin: 0 0 18px 0;">${formattedDate}</h2>
-            
-            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">Payment Due</p>
-            <h2 style="font-size: 16px; font-weight: 600; margin: 0;">${formattedDueDate}</h2>
+          <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
+            <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: flex">
+              <div style="padding-left: 4px; padding-right: 4px; padding-top: 3px; padding-bottom: 3px; background: #E3EFFF; border-radius: 4px; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
+                <div style="color: #2388FF; font-size: 8px; font-family: Inter; font-weight: 500; line-height: 12px; word-wrap: break-word">Date:</div>
+              </div>
+              <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 4px; display: flex">
+                <div style="color: #5D6481; font-size: 8px; font-family: Inter; font-weight: 400; line-height: 12px; word-wrap: break-word">Issued</div>
+                <div style="justify-content: flex-start; align-items: flex-start; gap: 2px; display: inline-flex">
+                  <div style="justify-content: flex-start; align-items: flex-start; gap: 20px; display: flex">
+                    <div style="color: #19213D; font-size: 12px; font-family: Inter; font-weight: 600; line-height: 16px; word-wrap: break-word">${dateParts.issued.month}</div>
+                  </div>
+                  <div style="justify-content: flex-start; align-items: flex-start; gap: 20px; display: flex">
+                    <div style="color: #19213D; font-size: 12px; font-family: Inter; font-weight: 600; line-height: 16px; word-wrap: break-word">${dateParts.issued.day}</div>
+                  </div>
+                  <div style="justify-content: flex-start; align-items: flex-start; gap: 20px; display: flex">
+                    <div style="color: #19213D; font-size: 12px; font-family: Inter; font-weight: 600; line-height: 16px; word-wrap: break-word">${dateParts.issued.year}</div>
+                  </div>
+                </div>
+              </div>
+              <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 4px; display: flex">
+                <div style="color: #5D6481; font-size: 8px; font-family: Inter; font-weight: 400; line-height: 12px; word-wrap: break-word">Payment Due</div>
+                <div style="justify-content: flex-start; align-items: flex-start; gap: 2px; display: inline-flex">
+                  <div style="justify-content: flex-start; align-items: flex-start; gap: 20px; display: flex">
+                    <div style="color: #19213D; font-size: 12px; font-family: Inter; font-weight: 600; line-height: 16px; word-wrap: break-word">${dateParts.due.month}</div>
+                  </div>
+                  <div style="justify-content: flex-start; align-items: flex-start; gap: 20px; display: flex">
+                    <div style="color: #19213D; font-size: 12px; font-family: Inter; font-weight: 600; line-height: 16px; word-wrap: break-word">${dateParts.due.day}</div>
+                  </div>
+                  <div style="justify-content: flex-start; align-items: flex-start; gap: 20px; display: flex">
+                    <div style="color: #19213D; font-size: 12px; font-family: Inter; font-weight: 600; line-height: 16px; word-wrap: break-word">${dateParts.due.year}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         
