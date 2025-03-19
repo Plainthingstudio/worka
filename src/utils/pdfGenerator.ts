@@ -27,9 +27,9 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     
     // Generate HTML content for the invoice
     const invoiceHtml = `
-      <div id="invoice-container" style="font-family: Helvetica, Arial, sans-serif; color: #333; max-width: 800px; margin: 0 auto; padding: 10px 10px 0 10px;">
+      <div id="invoice-container" style="font-family: Helvetica, sans-serif; color: #333; max-width: 800px; margin: 0 auto; padding: 5px 5px 0 5px;">
         <!-- Header Section -->
-        <div style="background-color: #f0f8ff; padding: 30px; border-radius: 16px; margin: 10px 10px 0 10px;">
+        <div style="background-color: #f0f8ff; padding: 30px; border-radius: 16px; margin: 5px 5px 0 5px;">
           <div style="display: flex; justify-content: space-between; align-items: start;">
             <div style="max-width: 350px;">
               <h1 style="font-size: 32px; margin: 0 0 40px 0; font-weight: bold;">Invoice</h1>
@@ -55,7 +55,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
         </div>
         
         <!-- Items Table -->
-        <div style="padding: 30px 30px 0 30px;">
+        <div style="padding: 30px 30px 0 30px; font-family: Helvetica, sans-serif;">
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;">
             <thead>
               <tr style="border-bottom: 1px solid #eee; text-align: left;">
@@ -101,7 +101,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
         </div>
         
         <!-- Footer Section -->
-        <div style="padding: 0 30px 30px 30px; display: flex; justify-content: space-between;">
+        <div style="padding: 0 30px 30px 30px; display: flex; justify-content: space-between; font-family: Helvetica, sans-serif;">
           <div style="width: 20%;">
             <div style="width: 60px; height: 60px; background-color: #f0f8ff; margin-bottom: 15px;"></div>
             <h3 style="font-size: 18px; margin: 0 0 5px 0;">Pin Box</h3>
