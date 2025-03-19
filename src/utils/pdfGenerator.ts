@@ -22,17 +22,24 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     const formattedDate = format(new Date(invoice.date), "dd MMMM, yyyy");
     const formattedDueDate = format(new Date(invoice.dueDate), "dd MMMM, yyyy");
     
+    // Format client address with truncation if necessary
+    const clientAddress = client.address || 'No address provided';
+    
     // Generate HTML content for the invoice
     const invoiceHtml = `
       <div id="invoice-container" style="font-family: Helvetica, Arial, sans-serif; color: #333; max-width: 800px; margin: 0 auto; padding: 0;">
         <!-- Header Section -->
         <div style="background-color: #f0f8ff; padding: 30px; border-radius: 10px 10px 0 0;">
           <div style="display: flex; justify-content: space-between; align-items: start;">
-            <div>
+            <div style="max-width: 350px; overflow: hidden;">
               <h1 style="font-size: 32px; margin: 0 0 40px 0; font-weight: bold;">Invoice</h1>
               <p style="color: #666; margin: 0 0 5px 0;">Billed to:</p>
-              <h2 style="font-size: 18px; margin: 0 0 5px 0;">${client.name}</h2>
-              <p style="color: #666; margin: 0;">${client.address || 'No address provided'} ${client.phone ? `/ ${client.phone}` : ''}</p>
+              <h2 style="font-size: 18px; margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${client.name}</h2>
+              <p style="color: #666; margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">
+                ${clientAddress}
+                ${client.phone ? `<br><span style="white-space: nowrap;">${client.phone}</span>` : ''}
+                ${client.email ? `<br><span style="white-space: nowrap;">${client.email}</span>` : ''}
+              </p>
             </div>
             <div style="text-align: right;">
               <p style="color: #666; margin: 0 0 5px 0;">Invoice no:</p>
