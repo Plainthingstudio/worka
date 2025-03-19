@@ -2,7 +2,6 @@
 import jsPDF from 'jspdf';
 import { Invoice } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { PAGE_CONFIG, COLORS } from './pdf/pdfStyles';
 import { format } from 'date-fns';
 import { InvoiceTemplate } from '@/types/template';
 import { defaultTemplate } from '@/hooks/useInvoiceTemplates';
@@ -35,198 +34,215 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     const client = clientData;
     
     // Initialize PDF document with points unit
-    const pdf = new jsPDF({
+    const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'pt',
       format: 'a4'
     });
+
+    // Set default font
+    doc.setFont("helvetica");
     
-    // Apply template font
-    pdf.setFont(template.style.fontFamily || "helvetica");
+    // Document margins
+    const margin = {
+      left: 50,
+      right: 50,
+      top: 40
+    };
     
-    // Header section
-    // Add text: "Invoice"
-    pdf.setFontSize(27);
-    pdf.setTextColor(0, 0, 0);
-    pdf.text("Invoice", 68, 40);
+    // HEADER SECTION
+    // Add "Invoice" title
+    doc.setFontSize(27);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Invoice", margin.left, margin.top);
     
-    // Add text: "Invoice no:"
-    pdf.setFontSize(12);
-    pdf.setTextColor(121, 137, 150);
-    pdf.text("Invoice no:", 541, 38);
+    // Add Invoice number
+    doc.setFontSize(12);
+    doc.setTextColor(121, 137, 150);
+    doc.text("Invoice no:", 500, margin.top);
     
-    // Add invoice number
-    pdf.setFontSize(18);
-    pdf.setTextColor(25, 34, 41);
-    pdf.text(invoice.invoiceNumber, 543, 56);
+    doc.setFontSize(18);
+    doc.setTextColor(25, 34, 41);
+    doc.text(invoice.invoiceNumber, 520, margin.top + 23);
     
-    // Client Section
-    // Add text: "Billed to:"
-    pdf.setFontSize(13);
-    pdf.setTextColor(121, 137, 150);
-    pdf.text("Billed to:", 50, 144);
+    // CLIENT SECTION
+    const clientSectionY = 120;
     
-    // Add client name
-    pdf.setFontSize(17);
-    pdf.setTextColor(25, 34, 41);
-    pdf.text(client.name, 70, 174);
+    // Billed to label
+    doc.setFontSize(13);
+    doc.setTextColor(121, 137, 150);
+    doc.text("Billed to:", margin.left, clientSectionY);
     
-    // Add client address
-    pdf.setFontSize(12);
-    pdf.setTextColor(121, 137, 150);
-    pdf.text(client.address || "Address not provided", 83, 195);
+    // Client name
+    doc.setFontSize(17);
+    doc.setTextColor(25, 34, 41);
+    doc.text(client.name, margin.left, clientSectionY + 30);
     
-    // Date Section
-    // Add text: "Issued on:"
-    pdf.setFontSize(12);
-    pdf.setTextColor(121, 137, 150);
-    pdf.text("Issued on:", 538, 140);
+    // Client address
+    doc.setFontSize(12);
+    doc.setTextColor(121, 137, 150);
+    const addressText = client.address || "Address not provided";
+    doc.text(addressText, margin.left, clientSectionY + 55);
     
-    // Add issue date
-    pdf.setFontSize(13);
-    pdf.setTextColor(25, 34, 41);
+    // Add light blue background to right half
+    const bgHeight = 230;
+    doc.setFillColor(245, 250, 255);
+    doc.rect(margin.left + 300, clientSectionY - 10, 245, bgHeight, 'F');
+    
+    // DATE SECTION
+    // Issued date
+    doc.setFontSize(12);
+    doc.setTextColor(121, 137, 150);
+    doc.text("Issued on:", 450, clientSectionY);
+    
+    doc.setFontSize(13);
+    doc.setTextColor(25, 34, 41);
     const formattedIssueDate = format(new Date(invoice.date), "dd MMMM, yyyy");
-    pdf.text(formattedIssueDate, 522, 157);
+    doc.text(formattedIssueDate, 450, clientSectionY + 20);
     
-    // Add text: "Payment Due:"
-    pdf.setFontSize(12);
-    pdf.setTextColor(121, 137, 150);
-    pdf.text("Payment Due:", 530, 186);
+    // Due date
+    doc.setFontSize(12);
+    doc.setTextColor(121, 137, 150);
+    doc.text("Payment Due:", 450, clientSectionY + 50);
     
-    // Add due date
-    pdf.setFontSize(13);
-    pdf.setTextColor(25, 34, 41);
+    doc.setFontSize(13);
+    doc.setTextColor(25, 34, 41);
     const formattedDueDate = format(new Date(invoice.dueDate), "dd MMMM, yyyy");
-    pdf.text(formattedDueDate, 522, 202);
+    doc.text(formattedDueDate, 450, clientSectionY + 70);
     
-    // Add blue rectangle background
-    pdf.setFillColor(240, 247, 255);
-    pdf.setDrawColor(59, 130, 246);
-    pdf.setLineWidth(0);
-    pdf.rect(297, 125, 585, 241, "F");
+    // TABLE HEADER
+    const tableStartY = 350;
     
-    // Table Header
-    pdf.setFontSize(13);
-    pdf.setTextColor(121, 137, 150);
-    pdf.text("Services", 49, 272);
-    pdf.text("Qty", 290, 273);
-    pdf.text("Price", 408, 273);
-    pdf.text("Subtotal", 538, 273);
+    doc.setFontSize(13);
+    doc.setTextColor(121, 137, 150);
+    doc.text("Services", margin.left, tableStartY);
+    doc.text("Qty", 375, tableStartY);
+    doc.text("Price", 450, tableStartY);
+    doc.text("Subtotal", 525, tableStartY);
     
-    // Table Items
-    let currentY = 306;
-    const rowHeight = 46;
+    // Light separator line
+    doc.setDrawColor(230, 230, 230);
+    doc.setLineWidth(0.5);
+    doc.line(margin.left, tableStartY + 10, 545, tableStartY + 10);
     
+    // TABLE ITEMS
+    let currentY = tableStartY + 40;
+    const rowHeight = 40;
+    
+    // Add table rows with light blue background for even rows
     invoice.items.forEach((item, index) => {
-      pdf.setFontSize(13);
-      pdf.setTextColor(17, 18, 19);
-      pdf.text(item.description, 44, currentY);
+      // Add light background to even rows
+      if (index % 2 === 1) {
+        doc.setFillColor(245, 250, 255);
+        doc.rect(margin.left, currentY - 20, 495, rowHeight, 'F');
+      }
       
-      pdf.setTextColor(130, 135, 140);
-      pdf.text(item.quantity.toString(), 291, currentY);
-      pdf.text(`$${item.rate.toFixed(2)}`, 407, currentY - 1);
+      doc.setFontSize(13);
+      doc.setTextColor(17, 18, 19);
+      doc.text(item.description, margin.left, currentY);
       
-      pdf.setTextColor(17, 18, 19);
-      pdf.text(`$${item.amount.toFixed(2)}`, 544, currentY - 2);
+      doc.setTextColor(130, 135, 140);
+      doc.text(item.quantity.toString(), 375, currentY);
+      doc.text(`$${item.rate.toFixed(2)}`, 450, currentY);
+      
+      doc.setTextColor(17, 18, 19);
+      doc.text(`$${item.amount.toFixed(2)}`, 525, currentY);
       
       currentY += rowHeight;
     });
     
-    // Totals Section
-    currentY = 507;
+    // TOTALS SECTION
+    const totalsStartY = Math.max(currentY + 30, 660);
+    const totalsRightAlign = 545;
     
     // Add subtotal
-    pdf.setFontSize(13);
-    pdf.setTextColor(0, 0, 0);
-    pdf.text("Subtotal", 399, currentY);
+    doc.setFontSize(13);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Subtotal", 450, totalsStartY);
     
-    pdf.setTextColor(130, 135, 140);
-    pdf.text(`$${invoice.subtotal.toFixed(2)}`, 539, currentY - 2);
+    doc.setTextColor(130, 135, 140);
+    doc.text(`$${invoice.subtotal.toFixed(2)}`, totalsRightAlign, totalsStartY, { align: 'right' });
     
     // Add discount
-    currentY += 27;
-    pdf.setTextColor(0, 0, 0);
-    pdf.text("Discount", 402, currentY);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Discount", 450, totalsStartY + 30);
     
-    pdf.setTextColor(130, 135, 140);
+    doc.setTextColor(130, 135, 140);
     const discountText = invoice.discountAmount > 0 ? `$${invoice.discountAmount.toFixed(2)}` : "0";
-    pdf.text(discountText, 555, currentY - 1);
+    doc.text(discountText, totalsRightAlign, totalsStartY + 30, { align: 'right' });
     
     // Add tax
-    currentY += 30;
-    pdf.setTextColor(0, 0, 0);
-    pdf.text("TAX:", 388, currentY);
+    doc.setTextColor(0, 0, 0);
+    doc.text("TAX:", 450, totalsStartY + 60);
     
-    pdf.setTextColor(130, 135, 140);
+    doc.setTextColor(130, 135, 140);
     const taxText = invoice.taxAmount > 0 ? `$${invoice.taxAmount.toFixed(2)}` : "0";
-    pdf.text(taxText, 555, currentY - 3);
+    doc.text(taxText, totalsRightAlign, totalsStartY + 60, { align: 'right' });
     
-    // Add highlighted total box
-    pdf.setFillColor(240, 247, 255);
-    pdf.setDrawColor(59, 130, 246);
-    pdf.setLineWidth(0);
-    pdf.rect(466, 598, 200, 33, "F");
+    // Add total with highlight
+    const totalBoxY = totalsStartY + 90;
+    doc.setFillColor(245, 250, 255);
+    doc.rect(450, totalBoxY - 20, 95, 35, 'F');
     
-    // Add total
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFontSize(13);
-    pdf.text("Total", 389, 599);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(13);
+    doc.text("Total", 450, totalBoxY);
     
-    pdf.setFontSize(17);
-    pdf.text(`$${invoice.total.toFixed(2)}`, 533, 599);
+    doc.setFontSize(17);
+    doc.text(`$${invoice.total.toFixed(2)}`, totalsRightAlign, totalBoxY, { align: 'right' });
     
-    // Footer section
+    // FOOTER SECTION
+    const footerY = 780;
+    
     // Company logo box
-    pdf.setFillColor(240, 247, 255);
-    pdf.setDrawColor(59, 130, 246);
-    pdf.setLineWidth(0);
-    pdf.rect(52, 672, 48, 42, "F");
+    doc.setFillColor(245, 250, 255);
+    doc.rect(margin.left, footerY - 20, 50, 50, 'F');
     
     // Company name
-    pdf.setFontSize(17);
-    pdf.setTextColor(0, 0, 0);
-    pdf.text("Pin Box", 90, 713);
+    doc.setFontSize(17);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Pin Box", margin.left + 60, footerY);
     
-    // Company website
-    pdf.setFontSize(10);
-    pdf.setTextColor(126, 140, 154);
-    pdf.text("www.pinbox.io", 77, 738);
-    
-    // Company email
-    pdf.text("support@pinbox.io", 89, 751);
+    // Company website and email
+    doc.setFontSize(10);
+    doc.setTextColor(126, 140, 154);
+    doc.text("www.pinbox.io", margin.left + 60, footerY + 20);
+    doc.text("support@pinbox.io", margin.left + 60, footerY + 35);
     
     // Notes section
-    pdf.setFontSize(13);
-    pdf.setTextColor(0, 0, 0);
-    pdf.text("Notes", 275, 711);
+    const notesX = 230;
+    doc.setFontSize(13);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Notes", notesX, footerY);
     
     // Notes content
-    pdf.setFontSize(10);
-    pdf.setTextColor(126, 140, 154);
+    doc.setFontSize(10);
+    doc.setTextColor(126, 140, 154);
     const notesText = invoice.notes && invoice.notes.trim().length > 0 
       ? invoice.notes 
       : "No additional notes";
     
-    const notesLines = pdf.splitTextToSize(notesText, 120);
-    pdf.text(notesLines, 306, 751);
+    const notesLines = doc.splitTextToSize(notesText, 120);
+    doc.text(notesLines, notesX, footerY + 20);
     
     // Terms section
-    pdf.setFontSize(13);
-    pdf.setTextColor(0, 0, 0);
-    pdf.text("Terms & Conditions", 444, 711);
+    const termsX = 390;
+    doc.setFontSize(13);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Terms & Conditions", termsX, footerY);
     
     // Terms content
-    pdf.setFontSize(10);
-    pdf.setTextColor(126, 140, 154);
+    doc.setFontSize(10);
+    doc.setTextColor(126, 140, 154);
     const termsText = invoice.termsAndConditions && invoice.termsAndConditions.trim().length > 0 
       ? invoice.termsAndConditions 
-      : "No terms and conditions specified";
+      : "Payment is due within the specified term. Please make the payment to the specified account.";
     
-    const termsLines = pdf.splitTextToSize(termsText, 120);
-    pdf.text(termsLines, 438, 751);
+    const termsLines = doc.splitTextToSize(termsText, 150);
+    doc.text(termsLines, termsX, footerY + 20);
     
     // Save the PDF
-    pdf.save(`Invoice_${invoice.invoiceNumber}.pdf`);
+    doc.save(`Invoice_${invoice.invoiceNumber}.pdf`);
   } catch (error) {
     console.error('Error generating PDF:', error);
     throw new Error('Failed to generate PDF');

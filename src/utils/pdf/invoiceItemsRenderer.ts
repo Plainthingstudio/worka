@@ -13,8 +13,8 @@ export const renderInvoiceItems = (
 ): number => {
   const { margin } = PAGE_CONFIG;
   
-  // Use the predefined table header Y position
-  let currentY = TABLE_CONFIG.header.y;
+  // Table header position
+  let currentY = startY;
   
   // Add table headers with proper styling
   doc.setFontSize(FONTS.size.subheading);
@@ -27,16 +27,16 @@ export const renderInvoiceItems = (
   doc.text("Price", TABLE_CONFIG.columns.price.x, currentY);
   doc.text("Subtotal", TABLE_CONFIG.columns.amount.x, currentY);
   
-  // Light line after headers
+  // Light separator line after headers
   doc.setDrawColor(...COLORS.line.light);
   doc.setLineWidth(0.2);
-  doc.line(margin.left, currentY + 5, PAGE_CONFIG.width - margin.right, currentY + 5);
+  doc.line(margin.left, currentY + 10, PAGE_CONFIG.width - margin.right, currentY + 10);
   
   // Reset font for table rows
   doc.setFont(FONTS.family.main, FONTS.style.normal);
   doc.setFontSize(FONTS.size.subheading);
   
-  currentY += 33; // Start of first row
+  currentY += 40; // Start of first row with more spacing
   
   // Draw table rows
   items.forEach((item, index) => {
@@ -44,6 +44,18 @@ export const renderInvoiceItems = (
     if (currentY > PAGE_CONFIG.height - 150) {
       doc.addPage();
       currentY = 50;
+    }
+    
+    // Add zebra striping (light background for even rows)
+    if (index % 2 === 1) {
+      doc.setFillColor(...COLORS.background.highlight);
+      doc.rect(
+        margin.left, 
+        currentY - 20, 
+        PAGE_CONFIG.width - margin.left - margin.right,
+        TABLE_CONFIG.row.height, 
+        "F"
+      );
     }
     
     // Item description - dark text
@@ -60,13 +72,6 @@ export const renderInvoiceItems = (
     // Amount - dark text
     doc.setTextColor(...COLORS.text.dark);
     doc.text(`$${item.amount.toFixed(2)}`, TABLE_CONFIG.columns.amount.x, currentY);
-    
-    // Add row separator
-    if (index < items.length - 1) {
-      doc.setDrawColor(...COLORS.line.light);
-      doc.setLineWidth(0.1);
-      doc.line(margin.left, currentY + 10, PAGE_CONFIG.width - margin.right, currentY + 10);
-    }
     
     currentY += TABLE_CONFIG.row.height;
   });

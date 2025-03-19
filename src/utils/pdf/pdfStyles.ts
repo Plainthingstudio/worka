@@ -38,7 +38,7 @@ export const FONTS = {
 // Color configurations
 export const COLORS = {
   background: {
-    highlight: [240, 247, 255] as [number, number, number], // #f0f7ff
+    highlight: [245, 250, 255] as [number, number, number], // Lighter blue #f5faff
     light: [255, 255, 255] as [number, number, number],
   },
   text: {
@@ -49,7 +49,7 @@ export const COLORS = {
   },
   line: {
     dark: [59, 130, 246] as [number, number, number], // #3b82f6
-    light: [200, 200, 200] as [number, number, number]
+    light: [230, 230, 230] as [number, number, number] // #e6e6e6
   }
 };
 
@@ -62,7 +62,7 @@ export const LINE_WIDTH = {
 // Table layout configurations for improved spacing
 export const TABLE_CONFIG = {
   header: {
-    y: 270, // Header Y position
+    y: 350, // Header Y position
   },
   columns: {
     description: {
@@ -70,13 +70,13 @@ export const TABLE_CONFIG = {
       width: CONTENT_WIDTH * 0.45,
     },
     quantity: {
-      x: 290,
+      x: 375,
     },
     price: {
-      x: 408,
+      x: 450,
     },
     amount: {
-      x: 538,
+      x: 525,
     }
   },
   row: {
@@ -88,60 +88,60 @@ export const TABLE_CONFIG = {
 export const INVOICE_BLOCKS = {
   // Company logo and info
   logo: {
-    x: 52,
-    y: 672,
-    width: 48,
-    height: 42,
+    x: 50,
+    y: 780,
+    width: 50,
+    height: 50,
   },
   // Client info section
   client: {
     label: {
       x: 50,
-      y: 144,
+      y: 120,
     },
     name: {
-      x: 70,
-      y: 174,
+      x: 50,
+      y: 150,
     },
     address: {
-      x: 83,
-      y: 195,
+      x: 50,
+      y: 175,
     }
   },
   // Invoice details section
   invoice: {
     title: {
-      x: 68,
+      x: 50,
       y: 40,
     },
     number: {
       label: {
-        x: 541, 
-        y: 38,
+        x: 500, 
+        y: 40,
       },
       value: {
-        x: 543,
-        y: 56,
+        x: 520,
+        y: 63,
       }
     },
     date: {
       label: {
-        x: 538,
-        y: 140,
+        x: 450,
+        y: 120,
       },
       value: {
-        x: 522,
-        y: 157,
+        x: 450,
+        y: 140,
       }
     },
     due: {
       label: {
-        x: 530,
-        y: 186,
+        x: 450,
+        y: 170,
       },
       value: {
-        x: 522,
-        y: 202,
+        x: 450,
+        y: 190,
       }
     }
   },
@@ -149,48 +149,48 @@ export const INVOICE_BLOCKS = {
   totals: {
     subtotal: {
       label: {
-        x: 399,
-        y: 507,
+        x: 450,
+        y: 660,
       },
       value: {
-        x: 539,
-        y: 505,
+        x: 545,
+        y: 660,
       }
     },
     discount: {
       label: {
-        x: 402,
-        y: 534,
+        x: 450,
+        y: 690,
       },
       value: {
-        x: 555,
-        y: 533,
+        x: 545,
+        y: 690,
       }
     },
     tax: {
       label: {
-        x: 388,
-        y: 564,
+        x: 450,
+        y: 720,
       },
       value: {
-        x: 555,
-        y: 561,
+        x: 545,
+        y: 720,
       }
     },
     total: {
       label: {
-        x: 389,
-        y: 599,
+        x: 450,
+        y: 760,
       },
       value: {
-        x: 533,
-        y: 599,
+        x: 545,
+        y: 760,
       },
       box: {
-        x: 466,
-        y: 598,
-        width: 200,
-        height: 33,
+        x: 450,
+        y: 740,
+        width: 95,
+        height: 35,
       }
     }
   },
@@ -198,36 +198,36 @@ export const INVOICE_BLOCKS = {
   footer: {
     company: {
       name: {
-        x: 90,
-        y: 713,
+        x: 110,
+        y: 780,
       },
       website: {
-        x: 77,
-        y: 738,
+        x: 110,
+        y: 800,
       },
       email: {
-        x: 89,
-        y: 751,
+        x: 110,
+        y: 815,
       }
     },
     notes: {
       title: {
-        x: 275,
-        y: 711,
+        x: 230,
+        y: 780,
       },
       content: {
-        x: 306,
-        y: 751,
+        x: 230,
+        y: 800,
       }
     },
     terms: {
       title: {
-        x: 444,
-        y: 711,
+        x: 390,
+        y: 780,
       },
       content: {
-        x: 438,
-        y: 751,
+        x: 390,
+        y: 800,
       }
     }
   }
