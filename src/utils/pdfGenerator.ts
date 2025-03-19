@@ -26,25 +26,27 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     const clientAddress = client.address || 'No address provided';
     
     // Generate HTML content for the invoice with new design
-    // Fixed header height to exactly 135px with white box overlapping
+    // Removed fixed width and adjusted margins to properly fit within A4
     const invoiceHtml = `
       <div id="invoice-container" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; width: 100%; margin: 0 auto; padding: 0; background: white; overflow: hidden;">
-        <!-- Header Section with light blue background and logo - exactly 135px height -->
-        <div style="background-color: #e6f2ff; height: 135px; padding: 0; position: relative;">
-          <!-- Logo placeholder - white rounded square that overlaps the blue background -->
-          <div style="width: 90px; height: 90px; background-color: white; border-radius: 16px; position: absolute; top: 25px; left: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);"></div>
-          
-          <!-- Invoice number in a pill/capsule style - positioned in the upper right -->
-          <div style="background-color: white; border-radius: 50px; padding: 6px 20px; font-weight: 500; position: absolute; top: 25px; right: 40px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-            ${invoice.invoiceNumber}
+        <!-- Header Section with light blue background and logo -->
+        <div style="background-color: #e6f2ff; padding: 25px 30px; position: relative;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <!-- Logo placeholder - white rounded square -->
+            <div style="width: 80px; height: 80px; background-color: white; border-radius: 16px; margin-right: 20px;"></div>
+            
+            <!-- Invoice number in a pill/capsule style -->
+            <div style="background-color: white; border-radius: 50px; padding: 6px 14px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+              ${invoice.invoiceNumber}
+            </div>
           </div>
         </div>
         
-        <!-- From and To Sections - starting below the blue background with white box overlapping -->
-        <div style="padding: 10px 30px 15px 30px; display: flex; justify-content: space-between; position: relative; margin-top: -25px;">
-          <!-- From section - in a white box that overlaps the blue header -->
-          <div style="width: 30%; background-color: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-            <p style="font-size: 12px; color: #3B82F6; display: inline-block; padding: 3px 8px; border-radius: 4px; margin: 0 0 10px 0;">From</p>
+        <!-- From and To Sections -->
+        <div style="padding: 30px 30px 15px 30px; display: flex; justify-content: space-between;">
+          <!-- From section -->
+          <div style="width: 30%;">
+            <p style="font-size: 12px; color: #6B7280; margin: 0 0 6px 0;">From</p>
             <h2 style="font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Plainthing Studio</h2>
             <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">(612) 856 - 0989</p>
             <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">contact@maurosicard.com</p>
@@ -54,9 +56,9 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
             </p>
           </div>
           
-          <!-- To section - in a white box -->
-          <div style="width: 30%; background-color: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-            <p style="font-size: 12px; color: #3B82F6; display: inline-block; padding: 3px 8px; border-radius: 4px; margin: 0 0 10px 0;">Invoice to</p>
+          <!-- To section -->
+          <div style="width: 30%;">
+            <p style="font-size: 12px; color: #6B7280; margin: 0 0 6px 0;">Invoice to:</p>
             <h2 style="font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">${client.name}</h2>
             <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">${client.phone || '(612) 856 - 0989'}</p>
             <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">${client.email}</p>
@@ -65,23 +67,19 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
             </p>
           </div>
           
-          <!-- Date section - in a white box -->
-          <div style="width: 30%; background-color: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-            <p style="font-size: 12px; color: #3B82F6; display: inline-block; padding: 3px 8px; border-radius: 4px; margin: 0 0 10px 0;">Date</p>
-            <div style="margin-bottom: 15px;">
-              <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">Issued</p>
-              <h2 style="font-size: 16px; font-weight: 600; margin: 0;">${formattedDate}</h2>
-            </div>
+          <!-- Date section -->
+          <div style="width: 30%;">
+            <p style="font-size: 12px; color: #6B7280; margin: 0 0 6px 0;">Date:</p>
+            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">Issued</p>
+            <h2 style="font-size: 16px; font-weight: 600; margin: 0 0 18px 0;">${formattedDate}</h2>
             
-            <div>
-              <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">Payment Due</p>
-              <h2 style="font-size: 16px; font-weight: 600; margin: 0;">${formattedDueDate}</h2>
-            </div>
+            <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">Payment Due</p>
+            <h2 style="font-size: 16px; font-weight: 600; margin: 0;">${formattedDueDate}</h2>
           </div>
         </div>
         
-        <!-- Items Table - with extra padding to avoid overlap with boxes above -->
-        <div style="padding: 25px 30px 15px 30px;">
+        <!-- Items Table -->
+        <div style="padding: 15px 30px;">
           <!-- Table Header -->
           <div style="display: flex; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 8px;">
             <div style="flex: 2; font-weight: 500; font-size: 14px; color: #4B5563;">Item</div>
