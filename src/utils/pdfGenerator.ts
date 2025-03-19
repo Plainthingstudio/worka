@@ -27,9 +27,9 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     
     // Generate HTML content for the invoice
     const invoiceHtml = `
-      <div id="invoice-container" style="font-family: Helvetica, Arial, sans-serif; color: #333; max-width: 800px; margin: 0 auto; padding: 0;">
+      <div id="invoice-container" style="font-family: Helvetica, Arial, sans-serif; color: #333; max-width: 800px; margin: 0 auto; padding: 10px 10px 0 10px;">
         <!-- Header Section -->
-        <div style="background-color: #f0f8ff; padding: 30px; border-radius: 10px 10px 0 0;">
+        <div style="background-color: #f0f8ff; padding: 30px; border-radius: 16px; margin: 10px 10px 0 10px;">
           <div style="display: flex; justify-content: space-between; align-items: start;">
             <div style="max-width: 350px;">
               <h1 style="font-size: 32px; margin: 0 0 40px 0; font-weight: bold;">Invoice</h1>
