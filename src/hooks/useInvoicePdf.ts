@@ -14,6 +14,7 @@ export function useInvoicePdf() {
         title: "PDF Generated",
         description: "Invoice PDF has been created and downloaded.",
       });
+      return true;
     } catch (error) {
       console.error("Error generating PDF:", error);
       toast({
@@ -21,6 +22,7 @@ export function useInvoicePdf() {
         title: "Error",
         description: "Failed to generate PDF. Please try again.",
       });
+      return false;
     }
   }, [toast]);
 

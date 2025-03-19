@@ -26,16 +26,20 @@ const InvoiceActions: React.FC<InvoiceActionsProps> = ({
     onSubmit();
   };
   
-  const handleGeneratePDF = () => {
+  const handleGeneratePDF = async () => {
+    toast({
+      title: "Generating PDF",
+      description: "Please wait while we generate your invoice PDF...",
+    });
+    
     try {
-      // Just call the provided onGeneratePDF function which already handles everything
-      onGeneratePDF();
+      await onGeneratePDF();
     } catch (error) {
       console.error("Error generating PDF:", error);
       toast({
+        variant: "destructive",
         title: "Error",
         description: "Failed to generate PDF. Please try again.",
-        variant: "destructive"
       });
     }
   };

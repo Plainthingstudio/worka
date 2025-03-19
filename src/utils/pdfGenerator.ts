@@ -115,40 +115,52 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
       </div>
     `;
     
-    // Create a temporary container for the invoice
-    const container = document.createElement('div');
-    container.innerHTML = invoiceHtml;
+    // Create a temporary div element
+    const element = document.createElement('div');
+    element.innerHTML = invoiceHtml;
     
-    // IMPORTANT: Append container to the document body
-    document.body.appendChild(container);
+    // Get the invoice container from the temporary element
+    const invoiceElement = element.firstElementChild;
     
-    // Options for html2pdf
-    const options = {
-      margin: 0,
-      filename: `Invoice_${invoice.invoiceNumber}.pdf`,
-      image: { type: 'jpeg', quality: 1 },
-      html2canvas: { 
-        scale: 2,
-        logging: false,
-        dpi: 192,
-        letterRendering: true,
-        useCORS: true
-      },
-      jsPDF: { 
-        unit: 'pt', 
-        format: 'a4', 
-        orientation: 'portrait',
-        compress: true 
+    // Append to document body (required for proper rendering)
+    if (invoiceElement) {
+      document.body.appendChild(invoiceElement);
+    } else {
+      throw new Error('Failed to create invoice element');
+    }
+    
+    try {
+      // Options for html2pdf
+      const options = {
+        margin: 0,
+        filename: `Invoice_${invoice.invoiceNumber}.pdf`,
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { 
+          scale: 2,
+          logging: false,
+          dpi: 192,
+          letterRendering: true,
+          useCORS: true
+        },
+        jsPDF: { 
+          unit: 'pt', 
+          format: 'a4', 
+          orientation: 'portrait',
+          compress: true 
+        }
+      };
+      
+      // Generate PDF using the actual DOM element
+      await html2pdf()
+        .from(invoiceElement)
+        .set(options)
+        .save();
+    } finally {
+      // Clean up - always remove the element from DOM
+      if (invoiceElement && invoiceElement.parentNode) {
+        invoiceElement.parentNode.removeChild(invoiceElement);
       }
-    };
-    
-    // Generate PDF - FIX: Use the first child element directly as source
-    const element = container.firstChild;
-    await html2pdf().from(element).set(options).save();
-    
-    // Clean up
-    document.body.removeChild(container);
-    
+    }
   } catch (error) {
     console.error('Error generating PDF:', error);
     throw new Error('Failed to generate PDF');
