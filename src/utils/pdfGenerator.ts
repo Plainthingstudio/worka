@@ -26,24 +26,24 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     const clientAddress = client.address || 'No address provided';
     
     // Generate HTML content for the invoice with new design
-    // Removed fixed width and adjusted margins to properly fit within A4
     const invoiceHtml = `
       <div id="invoice-container" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; width: 100%; margin: 0 auto; padding: 0; background: white; overflow: hidden;">
-        <!-- Header Section with light blue background and logo -->
-        <div style="background-color: #e6f2ff; padding: 25px 30px; position: relative;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <!-- Logo placeholder - white rounded square -->
-            <div style="width: 80px; height: 80px; background-color: white; border-radius: 16px; margin-right: 20px;"></div>
-            
-            <!-- Invoice number in a pill/capsule style -->
-            <div style="background-color: white; border-radius: 50px; padding: 6px 14px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-              ${invoice.invoiceNumber}
-            </div>
+        <!-- Header Section with specific design -->
+        <div style="position: relative; width: 100%;">
+          <!-- Blue background header -->
+          <div style="width: 100%; height: 135px; background-color: #E3EFFF; position: relative;"></div>
+          
+          <!-- Logo placeholder - white rounded square with shadow -->
+          <div style="width: 112px; height: 112px; position: absolute; left: 40px; top: 52px; background-color: white; border-radius: 24px; box-shadow: 0px 2px 19px rgba(47.78, 94.96, 150.87, 0.07); border: 0.60px #EBEFF6 solid;"></div>
+          
+          <!-- Invoice number in a pill/capsule style -->
+          <div style="position: absolute; right: 30px; top: 52px; background-color: white; border-radius: 25px; padding: 5px 8px; box-shadow: 0px 1px 2px rgba(54, 61, 85, 0.08); display: inline-flex; justify-content: center; align-items: center;">
+            <div style="text-align: right; color: #19213D; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.40px;">${invoice.invoiceNumber}</div>
           </div>
         </div>
         
         <!-- From and To Sections -->
-        <div style="padding: 30px 30px 15px 30px; display: flex; justify-content: space-between;">
+        <div style="padding: 30px 30px 15px 30px; display: flex; justify-content: space-between; margin-top: 35px;">
           <!-- From section -->
           <div style="width: 30%;">
             <p style="font-size: 12px; color: #6B7280; margin: 0 0 6px 0;">From</p>
