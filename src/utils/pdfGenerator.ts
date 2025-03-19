@@ -25,11 +25,11 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     // Format client address with no truncation
     const clientAddress = client.address || 'No address provided';
     
-    // Generate HTML content for the invoice - completely redesigned modern layout
+    // Generate HTML content for the invoice - simplified, cleaner layout
     const invoiceHtml = `
-      <div id="invoice-container" style="font-family: Inter, Helvetica, sans-serif; width: 595px; height: 842px; position: relative; background: white; overflow: hidden; margin: 0 auto; box-shadow: 0px 10px 20px rgba(37, 49, 76, 0.15);">
+      <div id="invoice-container" style="font-family: Helvetica, Arial, sans-serif; width: 595px; height: 842px; position: relative; background: white; margin: 0 auto;">
         <!-- Top blue header banner -->
-        <div style="width: 595px; height: 135px; left: 0px; top: 0px; position: absolute; background: #E3EFFF"></div>
+        <div style="width: 100%; height: 170px; position: absolute; top: 0; left: 0; background: #E3EFFF;"></div>
         
         <!-- Logo container (white box in top-left) -->
         <div style="width: 112px; height: 112px; left: 40px; top: 52px; position: absolute; background: white; box-shadow: 0px 2px 19px rgba(47, 94, 150, 0.07); border-radius: 24px; border: 0.60px #EBEFF6 solid; display: flex; align-items: center; justify-content: center;">
@@ -38,11 +38,11 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
         
         <!-- Invoice number pill -->
         <div style="padding: 5px 8px; right: 40px; top: 52px; position: absolute; background: white; box-shadow: 0px 1px 2px rgba(54, 61, 85, 0.08); border-radius: 25px; display: inline-flex; align-items: center;">
-          <div style="text-align: right; color: #19213D; font-size: 10px; font-family: Inter, Helvetica, sans-serif; font-weight: 500; text-transform: uppercase; letter-spacing: 0.4px;">${invoice.invoiceNumber}</div>
+          <div style="text-align: right; color: #19213D; font-size: 10px; font-family: Helvetica, Arial, sans-serif; font-weight: 500; text-transform: uppercase; letter-spacing: 0.4px;">${invoice.invoiceNumber}</div>
         </div>
         
         <!-- Main content container -->
-        <div style="width: 523px; left: 40px; top: 184px; position: absolute; display: flex; flex-direction: column; gap: 24px;">
+        <div style="width: 523px; left: 40px; top: 210px; position: absolute; display: flex; flex-direction: column; gap: 24px;">
           <!-- From/To/Date section -->
           <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
             <!-- From section -->
@@ -54,7 +54,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
                 <div style="color: #19213D; font-size: 12px; font-weight: 600; line-height: 16px;">Pin Box</div>
                 <div style="display: flex; flex-direction: column; gap: 4px;">
                   <div style="color: #5D6481; font-size: 8px; font-weight: 400; line-height: 12px;">support@pinbox.io</div>
-                  <div style="color: #5D6481; font-size: 8px; font-weight: 400; line-height: 12px; max-width: 140px;">www.pinbox.io</div>
+                  <div style="color: #5D6481; font-size: 8px; font-weight: 400; line-height: 12px;">www.pinbox.io</div>
                 </div>
               </div>
             </div>
@@ -83,17 +83,13 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
               <!-- Issue date -->
               <div style="display: flex; flex-direction: column; gap: 4px;">
                 <div style="color: #5D6481; font-size: 8px; font-weight: 400; line-height: 12px;">Issued</div>
-                <div style="display: flex; gap: 2px;">
-                  <div style="color: #19213D; font-size: 12px; font-weight: 600; line-height: 16px;">${formattedDate}</div>
-                </div>
+                <div style="color: #19213D; font-size: 12px; font-weight: 600; line-height: 16px;">${formattedDate}</div>
               </div>
               
               <!-- Payment due date -->
               <div style="display: flex; flex-direction: column; gap: 4px;">
                 <div style="color: #5D6481; font-size: 8px; font-weight: 400; line-height: 12px;">Payment Due</div>
-                <div style="display: flex; gap: 2px;">
-                  <div style="color: #19213D; font-size: 12px; font-weight: 600; line-height: 16px;">${formattedDueDate}</div>
-                </div>
+                <div style="color: #19213D; font-size: 12px; font-weight: 600; line-height: 16px;">${formattedDueDate}</div>
               </div>
             </div>
           </div>
