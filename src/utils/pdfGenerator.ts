@@ -27,22 +27,22 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     
     // Generate HTML content for the invoice - clean, modern layout matching the provided design
     const invoiceHtml = `
-      <div id="invoice-container" style="font-family: Arial, sans-serif; width: 595px; height: 842px; position: relative; background: white; margin: 0 auto; padding: 0;">
+      <div id="invoice-container" style="font-family: Arial, sans-serif; width: 800px; height: 1132px; position: relative; background: white; margin: 0 auto; padding: 0;">
         <!-- Top blue header banner with correct height -->
         <div style="width: 100%; height: 180px; position: absolute; top: 0; left: 0; background: #E9F2FF; margin: 0; padding: 0;"></div>
         
         <!-- Logo container with better positioning -->
-        <div style="width: 120px; height: 120px; position: absolute; left: 50px; top: 30px; background: white; border-radius: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.05);">
+        <div style="width: 120px; height: 120px; position: absolute; left: 60px; top: 30px; background: white; border-radius: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.05);">
           <div style="font-size: 18px; font-weight: bold; color: #19213D;">Pin Box</div>
         </div>
         
         <!-- Invoice number - better positioned -->
-        <div style="position: absolute; right: 50px; top: 30px; background: white; border-radius: 20px; padding: 6px 12px; box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);">
+        <div style="position: absolute; right: 60px; top: 30px; background: white; border-radius: 20px; padding: 6px 12px; box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);">
           <div style="text-align: right; color: #19213D; font-size: 12px; font-weight: 500;">${invoice.invoiceNumber}</div>
         </div>
         
         <!-- Content container with proper spacing -->
-        <div style="position: absolute; width: 495px; left: 50px; top: 210px; display: flex; flex-direction: column; gap: 30px;">
+        <div style="position: absolute; width: 680px; left: 60px; top: 210px; display: flex; flex-direction: column; gap: 30px;">
           <!-- From/To/Date info with better spacing -->
           <div style="display: flex; justify-content: space-between; width: 100%;">
             <!-- From section -->
@@ -196,7 +196,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
         },
         jsPDF: { 
           unit: 'pt', 
-          format: 'a4', 
+          format: [800, 1132], // Changed from 'a4' to custom dimensions that match our container
           orientation: 'portrait',
           compress: true 
         }
