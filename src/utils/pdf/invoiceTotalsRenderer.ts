@@ -16,65 +16,85 @@ export const renderInvoiceTotals = (
   total: number
 ): number => {
   const { margin } = PAGE_CONFIG;
+  const { totals } = INVOICE_BLOCKS;
   
   // Set Y position for totals section, ensure proper spacing from previous section
-  let currentY = startY + 20;
+  let currentY = startY + 10; // Reduced spacing
   
-  // Set positions for totals section
-  const totalsX = 380;
+  // Set positions for totals section - adjusted to right align like reference
+  const totalsX = 430;
   const valuesX = PAGE_CONFIG.width - margin.right;
   
   // Add subtotal
   doc.setFontSize(FONTS.size.subheading);
   doc.setFont(FONTS.family.main, FONTS.style.normal);
-  doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
+  doc.setTextColor(COLORS.text.dark[0], COLORS.text.dark[1], COLORS.text.dark[2]);
   doc.text("Subtotal", totalsX, currentY);
   
   doc.setTextColor(COLORS.text.dark[0], COLORS.text.dark[1], COLORS.text.dark[2]);
-  doc.text(`$${subtotal.toFixed(0)}`, valuesX, currentY, { align: "right" });
+  doc.text(`$${subtotal.toLocaleString()}`, valuesX, currentY, { align: "right" });
   
   currentY += 25;
   
   // Add discount if applicable
   if (discountAmount > 0) {
-    doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
+    doc.setTextColor(COLORS.text.dark[0], COLORS.text.dark[1], COLORS.text.dark[2]);
     doc.text("Discount", totalsX, currentY);
     
     doc.setTextColor(COLORS.text.dark[0], COLORS.text.dark[1], COLORS.text.dark[2]);
-    doc.text(`$${discountAmount.toFixed(0)}`, valuesX, currentY, { align: "right" });
+    doc.text(`$${discountAmount.toLocaleString()}`, valuesX, currentY, { align: "right" });
+    
+    currentY += 25;
+  } else {
+    // Show 0 discount like in reference
+    doc.setTextColor(COLORS.text.dark[0], COLORS.text.dark[1], COLORS.text.dark[2]);
+    doc.text("Discount", totalsX, currentY);
+    
+    doc.setTextColor(COLORS.text.dark[0], COLORS.text.dark[1], COLORS.text.dark[2]);
+    doc.text("0", valuesX, currentY, { align: "right" });
     
     currentY += 25;
   }
   
   // Add tax if applicable
   if (taxAmount > 0) {
-    doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
-    doc.text(`Tax (${taxPercentage}%)`, totalsX, currentY);
+    doc.setTextColor(COLORS.text.dark[0], COLORS.text.dark[1], COLORS.text.dark[2]);
+    doc.text(`TAX:`, totalsX, currentY);
     
     doc.setTextColor(COLORS.text.dark[0], COLORS.text.dark[1], COLORS.text.dark[2]);
-    doc.text(`$${taxAmount.toFixed(0)}`, valuesX, currentY, { align: "right" });
+    doc.text(`$${taxAmount.toLocaleString()}`, valuesX, currentY, { align: "right" });
+    
+    currentY += 25;
+  } else {
+    // Show 0 tax like in reference
+    doc.setTextColor(COLORS.text.dark[0], COLORS.text.dark[1], COLORS.text.dark[2]);
+    doc.text("TAX:", totalsX, currentY);
+    
+    doc.setTextColor(COLORS.text.dark[0], COLORS.text.dark[1], COLORS.text.dark[2]);
+    doc.text("0", valuesX, currentY, { align: "right" });
     
     currentY += 25;
   }
   
-  // Add highlighted total
+  // Add highlighted total with light blue background
   doc.setFillColor(COLORS.background.highlight[0], COLORS.background.highlight[1], COLORS.background.highlight[2]);
   doc.rect(
-    totalsX - 20, 
+    totals.total.box.x, 
     currentY - 15, 
-    190, 
-    30, 
+    totals.total.box.width, 
+    totals.total.box.height, 
     "F"
   );
   
-  // Add total
+  // Add total label
   doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
   doc.setFontSize(FONTS.size.heading);
   doc.setFont(FONTS.family.main, FONTS.style.bold);
   doc.text("Total", totalsX, currentY);
   
-  doc.setFontSize(FONTS.size.subtitle);
-  doc.text(`$${total.toFixed(0)}`, valuesX, currentY, { align: "right" });
+  // Add total value
+  doc.setFontSize(FONTS.size.heading);
+  doc.text(`$${total.toLocaleString()}`, valuesX, currentY, { align: "right" });
   
-  return currentY + 40;
+  return currentY + 40; // Reduced spacing
 };

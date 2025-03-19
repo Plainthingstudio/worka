@@ -22,11 +22,13 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
       throw new Error('Client information could not be retrieved');
     }
     
-    // Initialize PDF document
+    // Initialize PDF document with minimal compression for better quality
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'pt',
-      format: 'a4'
+      format: 'a4',
+      compress: true,
+      precision: 2
     });
 
     // Set default font

@@ -13,15 +13,15 @@ export const renderInvoiceItems = (
 ): number => {
   const { margin } = PAGE_CONFIG;
   
-  // Table header position
-  let currentY = startY + 10;
+  // Table header position - reduced space
+  let currentY = startY + 5;
   
   // Add table headers with proper styling
   doc.setFontSize(FONTS.size.subheading);
-  doc.setFont(FONTS.family.main, FONTS.style.bold);
+  doc.setFont(FONTS.family.main, FONTS.style.normal);
   doc.setTextColor(COLORS.text.body[0], COLORS.text.body[1], COLORS.text.body[2]);
   
-  // Table header columns 
+  // Table header columns - matching reference layout
   doc.text("Services", TABLE_CONFIG.columns.description.x, currentY);
   doc.text("Qty", TABLE_CONFIG.columns.quantity.x, currentY);
   doc.text("Price", TABLE_CONFIG.columns.price.x, currentY);
@@ -36,7 +36,7 @@ export const renderInvoiceItems = (
   doc.setFont(FONTS.family.main, FONTS.style.normal);
   doc.setFontSize(FONTS.size.body);
   
-  currentY += 20; // Start of first row with more spacing
+  currentY += 20; // Start of first row
   
   // Draw table rows
   items.forEach((item, index) => {
@@ -46,7 +46,7 @@ export const renderInvoiceItems = (
       currentY = 50;
     }
     
-    // Add zebra striping (light background for even rows)
+    // Only add zebra striping for even rows (remove to match reference)
     if (index % 2 === 1) {
       doc.setFillColor(COLORS.background.highlight[0], COLORS.background.highlight[1], COLORS.background.highlight[2]);
       doc.rect(
@@ -63,19 +63,19 @@ export const renderInvoiceItems = (
     doc.text(item.description, TABLE_CONFIG.columns.description.x, currentY);
     
     // Quantity - gray text
-    doc.setTextColor(COLORS.text.muted[0], COLORS.text.muted[1], COLORS.text.muted[2]);
+    doc.setTextColor(COLORS.text.body[0], COLORS.text.body[1], COLORS.text.body[2]);
     doc.text(item.quantity.toString(), TABLE_CONFIG.columns.quantity.x, currentY);
     
-    // Price - gray text
+    // Price - gray text with $ sign
     doc.text(`$${item.rate.toFixed(0)}`, TABLE_CONFIG.columns.price.x, currentY);
     
-    // Amount - dark text
+    // Amount - dark text with $ sign
     doc.setTextColor(COLORS.text.dark[0], COLORS.text.dark[1], COLORS.text.dark[2]);
     doc.text(`$${item.amount.toFixed(0)}`, TABLE_CONFIG.columns.amount.x, currentY, { align: "right" });
     
     currentY += TABLE_CONFIG.row.height;
   });
   
-  // Return the final Y position
-  return currentY + 15;
+  // Return the final Y position - with less padding
+  return currentY + 10;
 };

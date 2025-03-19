@@ -19,22 +19,23 @@ export const renderInvoiceHeader = (
   const { margin } = PAGE_CONFIG;
   const { invoice, client } = INVOICE_BLOCKS;
   
-  // Add light blue background for header
+  // Add light blue background for header - using lighter blue
   doc.setFillColor(COLORS.background.highlight[0], COLORS.background.highlight[1], COLORS.background.highlight[2]);
   doc.rect(margin.left, margin.top, PAGE_CONFIG.width - margin.left - margin.right, INVOICE_BLOCKS.header.height, "F");
   
-  // Add "Invoice" title
+  // Add "Invoice" title - larger and bolder
   doc.setFontSize(FONTS.size.title);
   doc.setFont(FONTS.family.main, FONTS.style.bold);
   doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
   doc.text("Invoice", invoice.title.x, invoice.title.y);
   
-  // Add invoice number details
+  // Add invoice number details - moved right to match reference
   doc.setFontSize(FONTS.size.body);
   doc.setFont(FONTS.family.main, FONTS.style.normal);
   doc.setTextColor(COLORS.text.body[0], COLORS.text.body[1], COLORS.text.body[2]);
   doc.text("Invoice no:", invoice.number.label.x, invoice.number.label.y, { align: "right" });
   
+  // Invoice number value
   doc.setFontSize(FONTS.size.subtitle);
   doc.setFont(FONTS.family.main, FONTS.style.bold);
   doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
@@ -46,13 +47,13 @@ export const renderInvoiceHeader = (
   doc.setTextColor(COLORS.text.body[0], COLORS.text.body[1], COLORS.text.body[2]);
   doc.text("Billed to:", client.label.x, client.label.y);
   
-  // Add client name
+  // Add client name - bolder to match reference
   doc.setFontSize(FONTS.size.heading);
   doc.setFont(FONTS.family.main, FONTS.style.bold);
   doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
   doc.text(clientName, client.name.x, client.name.y);
   
-  // Add client address and contact info
+  // Add client address and contact info - lighter text
   doc.setFontSize(FONTS.size.body);
   doc.setFont(FONTS.family.main, FONTS.style.normal);
   doc.setTextColor(COLORS.text.body[0], COLORS.text.body[1], COLORS.text.body[2]);
@@ -65,12 +66,13 @@ export const renderInvoiceHeader = (
   
   doc.text(addressText, client.address.x, client.address.y);
   
-  // Add invoice date details
+  // Add invoice date details - aligned right
   doc.setFontSize(FONTS.size.body);
   doc.setFont(FONTS.family.main, FONTS.style.normal);
   doc.setTextColor(COLORS.text.body[0], COLORS.text.body[1], COLORS.text.body[2]);
   doc.text("Issued on:", invoice.date.label.x, invoice.date.label.y, { align: "right" });
   
+  // Date value
   doc.setFontSize(FONTS.size.subheading);
   doc.setFont(FONTS.family.main, FONTS.style.bold);
   doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
@@ -82,11 +84,12 @@ export const renderInvoiceHeader = (
   doc.setTextColor(COLORS.text.body[0], COLORS.text.body[1], COLORS.text.body[2]);
   doc.text("Payment Due:", invoice.due.label.x, invoice.due.label.y, { align: "right" });
   
+  // Due date value
   doc.setFontSize(FONTS.size.subheading);
   doc.setFont(FONTS.family.main, FONTS.style.bold);
   doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
   doc.text(format(new Date(dueDate), "dd MMMM, yyyy"), invoice.due.value.x, invoice.due.value.y, { align: "right" });
   
-  // Return the Y position after the header section
-  return INVOICE_BLOCKS.header.height + margin.top + 40;
+  // Return the Y position - reduced to minimize space
+  return INVOICE_BLOCKS.header.height + margin.top + 20;
 };
