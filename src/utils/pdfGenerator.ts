@@ -118,6 +118,8 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     // Create a temporary container for the invoice
     const container = document.createElement('div');
     container.innerHTML = invoiceHtml;
+    
+    // IMPORTANT: Append container to the document body
     document.body.appendChild(container);
     
     // Options for html2pdf
@@ -129,7 +131,8 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
         scale: 2,
         logging: false,
         dpi: 192,
-        letterRendering: true
+        letterRendering: true,
+        useCORS: true
       },
       jsPDF: { 
         unit: 'pt', 
@@ -139,8 +142,9 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
       }
     };
     
-    // Generate PDF
-    await html2pdf().from(container.firstChild).set(options).save();
+    // Generate PDF - FIX: Use the first child element directly as source
+    const element = container.firstChild;
+    await html2pdf().from(element).set(options).save();
     
     // Clean up
     document.body.removeChild(container);
