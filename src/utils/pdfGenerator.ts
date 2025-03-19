@@ -28,8 +28,8 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     // Generate HTML content for the invoice with updated design
     const invoiceHtml = `
       <div id="invoice-container" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; width: 100%; margin: 0; padding: 0; background: white; max-width: 210mm;">
-        <!-- Header Section with light blue background and logo -->
-        <div style="background-color: #e6f2ff; padding: 25px 20px 60px 20px; position: relative; margin-bottom: 10px; width: 100%;">
+        <!-- Header Section with light blue background -->
+        <div style="background-color: #e6f2ff; padding: 25px 20px 40px 20px; position: relative; width: 100%; margin-bottom: 30px;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
             <!-- Logo placeholder with overlap effect -->
             <div style="position: relative; z-index: 10;">
@@ -45,13 +45,13 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
         
         <!-- Header cutout shapes -->
         <div style="display: flex; justify-content: space-between; width: 100%;">
-          <div style="width: 120px; height: 30px; background-color: white; border-top-left-radius: 30px; margin-top: -30px; margin-left: 0;"></div>
-          <div style="width: 120px; height: 30px; background-color: white; border-top-left-radius: 30px; margin-top: -30px; margin-left: -60px;"></div>
-          <div style="width: 120px; height: 30px; background-color: white; border-top-left-radius: 30px; margin-top: -30px; margin-right: 0;"></div>
+          <div style="width: 120px; height: 30px; background-color: white; border-top-left-radius: 30px; margin-top: -50px; margin-left: 0; position: relative; z-index: 5;"></div>
+          <div style="width: 120px; height: 30px; background-color: white; border-top-left-radius: 30px; margin-top: -50px; margin-left: -60px; position: relative; z-index: 5;"></div>
+          <div style="width: 120px; height: 30px; background-color: white; border-top-left-radius: 30px; margin-top: -50px; margin-right: 0; position: relative; z-index: 5;"></div>
         </div>
         
-        <!-- From and To Sections - moved up to overlap the blue section -->
-        <div style="padding: 0 20px; display: flex; justify-content: space-between; margin-top: -25px; margin-bottom: 30px; width: 100%;">
+        <!-- From and To Sections -->
+        <div style="padding: 0 20px; display: flex; justify-content: space-between; margin-top: -15px; margin-bottom: 30px; width: 100%; position: relative; z-index: 10;">
           <!-- From section -->
           <div style="width: 32%;">
             <div style="background-color: #e6f2ff; display: inline-block; padding: 6px 16px; border-radius: 50px; margin-bottom: 10px;">
