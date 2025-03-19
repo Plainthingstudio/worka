@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { Project, ProjectStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -76,11 +77,15 @@ export const useProjectOperations = (project: Project | null, setProject: (proje
 
       const updatedProject = { ...project, status: "Completed" as ProjectStatus };
       setProject(updatedProject);
+      
+      // Show confetti animation
       setShowConfetti(true);
+      console.log("Setting showConfetti to true");
       
       // Hide confetti after 5 seconds
       setTimeout(() => {
         setShowConfetti(false);
+        console.log("Setting showConfetti to false");
       }, 5000);
       
       toast.success("Project marked as completed");
