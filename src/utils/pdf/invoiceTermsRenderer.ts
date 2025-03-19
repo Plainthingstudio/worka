@@ -13,57 +13,62 @@ export const renderTermsAndNotes = (
 ): number => {
   const { margin } = PAGE_CONFIG;
   const { footer, logo } = INVOICE_BLOCKS;
-  let currentY = Math.max(startY + 20, 672); // Ensure we don't start too high
+  
+  // Ensure we position the footer at a reasonable position
+  let currentY = Math.max(startY + 20, footer.company.name.y - 100);
   
   // Add company logo box
   doc.setFillColor(COLORS.background.highlight[0], COLORS.background.highlight[1], COLORS.background.highlight[2]);
-  doc.setDrawColor(COLORS.line.dark[0], COLORS.line.dark[1], COLORS.line.dark[2]);
-  doc.setLineWidth(0);
-  doc.rect(logo.x, logo.y, logo.width, logo.height, "F");
+  doc.rect(logo.x, currentY, logo.width, logo.height, "F");
   
   // Add company name
   doc.setFontSize(FONTS.size.heading);
-  doc.setFont(FONTS.family.main, FONTS.style.normal);
+  doc.setFont(FONTS.family.main, FONTS.style.bold);
   doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
-  doc.text("Pin Box", footer.company.name.x, footer.company.name.y);
+  doc.text("Pin Box", logo.x, currentY + logo.height + 20);
   
   // Add company website
   doc.setFontSize(FONTS.size.small);
+  doc.setFont(FONTS.family.main, FONTS.style.normal);
   doc.setTextColor(COLORS.text.body[0], COLORS.text.body[1], COLORS.text.body[2]);
-  doc.text("www.pinbox.io", footer.company.website.x, footer.company.website.y);
+  doc.text("www.pinbox.io", logo.x, currentY + logo.height + 35);
   
   // Add company email
-  doc.text("support@pinbox.io", footer.company.email.x, footer.company.email.y);
+  doc.text("support@pinbox.io", logo.x, currentY + logo.height + 50);
   
   // Add notes section
   doc.setFontSize(FONTS.size.subheading);
+  doc.setFont(FONTS.family.main, FONTS.style.bold);
   doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
-  doc.text("Notes", footer.notes.title.x, footer.notes.title.y);
+  doc.text("Notes", margin.left + 190, currentY + logo.height + 20);
   
   // Add notes content
   doc.setFontSize(FONTS.size.small);
+  doc.setFont(FONTS.family.main, FONTS.style.normal);
   doc.setTextColor(COLORS.text.body[0], COLORS.text.body[1], COLORS.text.body[2]);
   const notesText = notes && notes.trim().length > 0 
     ? notes 
     : "No additional notes";
   
-  const notesLines = doc.splitTextToSize(notesText, 120);
-  doc.text(notesLines, footer.notes.content.x, footer.notes.content.y);
+  const notesLines = doc.splitTextToSize(notesText, 150);
+  doc.text(notesLines, margin.left + 190, currentY + logo.height + 35);
   
   // Add terms section
   doc.setFontSize(FONTS.size.subheading);
+  doc.setFont(FONTS.family.main, FONTS.style.bold);
   doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
-  doc.text("Terms & Conditions", footer.terms.title.x, footer.terms.title.y);
+  doc.text("Terms & Conditions", margin.left + 360, currentY + logo.height + 20);
   
   // Add terms content
   doc.setFontSize(FONTS.size.small);
+  doc.setFont(FONTS.family.main, FONTS.style.normal);
   doc.setTextColor(COLORS.text.body[0], COLORS.text.body[1], COLORS.text.body[2]);
   const termsText = termsAndConditions && termsAndConditions.trim().length > 0 
     ? termsAndConditions 
     : "No terms and conditions specified";
   
-  const termsLines = doc.splitTextToSize(termsText, 120);
-  doc.text(termsLines, footer.terms.content.x, footer.terms.content.y);
+  const termsLines = doc.splitTextToSize(termsText, 150);
+  doc.text(termsLines, margin.left + 360, currentY + logo.height + 35);
   
   return currentY;
 };

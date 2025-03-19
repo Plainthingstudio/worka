@@ -25,11 +25,11 @@ export const renderInvoiceItems = (
   doc.text("Services", TABLE_CONFIG.columns.description.x, currentY);
   doc.text("Qty", TABLE_CONFIG.columns.quantity.x, currentY);
   doc.text("Price", TABLE_CONFIG.columns.price.x, currentY);
-  doc.text("Subtotal", TABLE_CONFIG.columns.amount.x, currentY);
+  doc.text("Subtotal", TABLE_CONFIG.columns.amount.x, currentY, { align: "right" });
   
   // Light separator line after headers
   doc.setDrawColor(COLORS.line.light[0], COLORS.line.light[1], COLORS.line.light[2]);
-  doc.setLineWidth(0.2);
+  doc.setLineWidth(0.5);
   doc.line(margin.left, currentY + 10, PAGE_CONFIG.width - margin.right, currentY + 10);
   
   // Reset font for table rows
@@ -41,7 +41,7 @@ export const renderInvoiceItems = (
   // Draw table rows
   items.forEach((item, index) => {
     // Check if we need a new page
-    if (currentY > PAGE_CONFIG.height - 150) {
+    if (currentY > PAGE_CONFIG.height - 250) {
       doc.addPage();
       currentY = 50;
     }
@@ -67,11 +67,11 @@ export const renderInvoiceItems = (
     doc.text(item.quantity.toString(), TABLE_CONFIG.columns.quantity.x, currentY);
     
     // Price - gray text
-    doc.text(`$${item.rate.toFixed(2)}`, TABLE_CONFIG.columns.price.x, currentY);
+    doc.text(`$${item.rate.toFixed(0)}`, TABLE_CONFIG.columns.price.x, currentY);
     
     // Amount - dark text
     doc.setTextColor(COLORS.text.dark[0], COLORS.text.dark[1], COLORS.text.dark[2]);
-    doc.text(`$${item.amount.toFixed(2)}`, TABLE_CONFIG.columns.amount.x, currentY);
+    doc.text(`$${item.amount.toFixed(0)}`, TABLE_CONFIG.columns.amount.x, currentY, { align: "right" });
     
     currentY += TABLE_CONFIG.row.height;
   });

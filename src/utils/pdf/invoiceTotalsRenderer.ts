@@ -18,38 +18,45 @@ export const renderInvoiceTotals = (
   const { totals } = INVOICE_BLOCKS;
   const { margin } = PAGE_CONFIG;
   
+  // Set Y position for totals section, either use startY or fixed position if startY is too small
+  let currentY = Math.max(startY, totals.subtotal.label.y - 50);
+  
   // Add subtotal
   doc.setFontSize(FONTS.size.subheading);
   doc.setFont(FONTS.family.main, FONTS.style.normal);
   doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
-  doc.text("Subtotal", totals.subtotal.label.x, totals.subtotal.label.y);
+  doc.text("Subtotal", totals.subtotal.label.x, currentY);
   
-  doc.setTextColor(COLORS.text.muted[0], COLORS.text.muted[1], COLORS.text.muted[2]);
-  doc.text(`$${subtotal.toFixed(2)}`, totals.subtotal.value.x, totals.subtotal.value.y);
+  doc.setTextColor(COLORS.text.dark[0], COLORS.text.dark[1], COLORS.text.dark[2]);
+  doc.text(`$${subtotal.toFixed(0)}`, totals.subtotal.value.x, currentY, { align: "right" });
   
-  // Add discount
+  currentY += 30;
+  
+  // Add discount if applicable
   doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
-  doc.text("Discount", totals.discount.label.x, totals.discount.label.y);
+  doc.text("Discount", totals.discount.label.x, currentY);
   
-  doc.setTextColor(COLORS.text.muted[0], COLORS.text.muted[1], COLORS.text.muted[2]);
-  const discountText = discountAmount > 0 ? `$${discountAmount.toFixed(2)}` : "0";
-  doc.text(discountText, totals.discount.value.x, totals.discount.value.y);
+  doc.setTextColor(COLORS.text.dark[0], COLORS.text.dark[1], COLORS.text.dark[2]);
+  const discountText = discountAmount > 0 ? `$${discountAmount.toFixed(0)}` : "0";
+  doc.text(discountText, totals.discount.value.x, currentY, { align: "right" });
   
-  // Add tax
+  currentY += 30;
+  
+  // Add tax if applicable
   doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
-  doc.text("TAX:", totals.tax.label.x, totals.tax.label.y);
+  doc.text("TAX:", totals.tax.label.x, currentY);
   
-  doc.setTextColor(COLORS.text.muted[0], COLORS.text.muted[1], COLORS.text.muted[2]);
-  const taxText = taxAmount > 0 ? `$${taxAmount.toFixed(2)}` : "0";
-  doc.text(taxText, totals.tax.value.x, totals.tax.value.y);
+  doc.setTextColor(COLORS.text.dark[0], COLORS.text.dark[1], COLORS.text.dark[2]);
+  const taxText = taxAmount > 0 ? `$${taxAmount.toFixed(0)}` : "0";
+  doc.text(taxText, totals.tax.value.x, currentY, { align: "right" });
+  
+  currentY += 40;
   
   // Add highlighted total box
   doc.setFillColor(COLORS.background.highlight[0], COLORS.background.highlight[1], COLORS.background.highlight[2]);
-  doc.setDrawColor(COLORS.line.dark[0], COLORS.line.dark[1], COLORS.line.dark[2]);
-  doc.setLineWidth(0);
   doc.rect(
     totals.total.box.x, 
-    totals.total.box.y, 
+    currentY - 15, 
     totals.total.box.width, 
     totals.total.box.height, 
     "F"
@@ -58,10 +65,11 @@ export const renderInvoiceTotals = (
   // Add total
   doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
   doc.setFontSize(FONTS.size.subheading);
-  doc.text("Total", totals.total.label.x, totals.total.label.y);
+  doc.text("Total", totals.total.label.x, currentY);
   
   doc.setFontSize(FONTS.size.heading);
-  doc.text(`$${total.toFixed(2)}`, totals.total.value.x, totals.total.value.y);
+  doc.setFont(FONTS.family.main, FONTS.style.bold);
+  doc.text(`$${total.toFixed(0)}`, totals.total.value.x, currentY, { align: "right" });
   
-  return totals.total.box.y + totals.total.box.height + 20;
+  return currentY + totals.total.box.height + 20;
 };

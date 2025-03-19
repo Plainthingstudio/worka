@@ -2,7 +2,7 @@
 import jsPDF from 'jspdf';
 import { Invoice } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { FONTS, COLORS, PAGE_CONFIG, POSITIONS } from './pdf/pdfStyles';
+import { FONTS } from './pdf/pdfStyles';
 import { renderInvoiceHeader } from './pdf/invoiceHeaderRenderer';
 import { renderInvoiceItems } from './pdf/invoiceItemsRenderer';
 import { renderInvoiceTotals } from './pdf/invoiceTotalsRenderer';
