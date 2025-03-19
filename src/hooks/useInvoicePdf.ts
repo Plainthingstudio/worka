@@ -18,7 +18,7 @@ export function useInvoicePdf() {
       
       toast({
         title: "PDF Generated",
-        description: "Invoice PDF has been created and downloaded.",
+        description: "Invoice PDF has been created and downloaded in A4 format.",
       });
       return true;
     } catch (error) {
