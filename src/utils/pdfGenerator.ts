@@ -31,14 +31,14 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
         <!-- Header Section -->
         <div style="background-color: #f0f8ff; padding: 30px; border-radius: 10px 10px 0 0;">
           <div style="display: flex; justify-content: space-between; align-items: start;">
-            <div style="max-width: 350px; overflow: hidden;">
+            <div style="max-width: 350px;">
               <h1 style="font-size: 32px; margin: 0 0 40px 0; font-weight: bold;">Invoice</h1>
               <p style="color: #666; margin: 0 0 5px 0;">Billed to:</p>
-              <h2 style="font-size: 16px; margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${client.name}</h2>
-              <p style="color: #666; margin: 0; font-size: 12px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.3;">
+              <h2 style="font-size: 16px; margin: 0 0 5px 0;">${client.name}</h2>
+              <p style="color: #666; margin: 0; font-size: 12px; line-height: 1.4;">
                 ${clientAddress}
-                ${client.phone ? `<br><span style="white-space: nowrap;">${client.phone}</span>` : ''}
-                ${client.email ? `<br><span style="white-space: nowrap;">${client.email}</span>` : ''}
+                ${client.phone ? `<br>${client.phone}` : ''}
+                ${client.email ? `<br>${client.email}` : ''}
               </p>
             </div>
             <div style="text-align: right;">
