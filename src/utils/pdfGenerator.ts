@@ -3,37 +3,23 @@ import jsPDF from 'jspdf';
 import { Invoice } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { InvoiceTemplate } from '@/types/template';
-import { defaultTemplate } from '@/hooks/useInvoiceTemplates';
+import { COLORS, FONTS, PAGE_CONFIG, POSITIONS } from './pdf/pdfStyles';
 
 export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
   try {
-    // Get active template from localStorage or use default
-    let activeTemplate: InvoiceTemplate | null = null;
-    const savedTemplates = localStorage.getItem('invoiceTemplates');
-    
-    if (savedTemplates) {
-      const templates = JSON.parse(savedTemplates);
-      activeTemplate = templates.find((t: InvoiceTemplate) => t.isDefault) || null;
-    }
-    
-    const template = activeTemplate || defaultTemplate;
-    
     // Fetch client info from database
-    const { data: clientData, error: clientError } = await supabase
+    const { data: client, error: clientError } = await supabase
       .from('clients')
       .select('*')
       .eq('id', invoice.clientId)
       .single();
     
-    if (clientError || !clientData) {
+    if (clientError || !client) {
       console.error('Error fetching client data:', clientError?.message || 'Client not found');
       throw new Error('Client information could not be retrieved');
     }
     
-    const client = clientData;
-    
-    // Initialize PDF document with points unit
+    // Initialize PDF document
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'pt',
@@ -41,205 +27,202 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     });
 
     // Set default font
-    doc.setFont("helvetica");
+    doc.setFont(FONTS.family.main);
     
-    // Document margins
-    const margin = {
-      left: 50,
-      right: 50,
-      top: 40
-    };
+    // Add blue background rectangle
+    doc.setFillColor(...COLORS.background.highlight);
+    doc.setDrawColor(...COLORS.accent.blue);
+    doc.setLineWidth(0);
+    doc.rect(
+      POSITIONS.blueRectangle.x, 
+      POSITIONS.blueRectangle.y, 
+      POSITIONS.blueRectangle.width, 
+      POSITIONS.blueRectangle.height, 
+      "F"
+    );
     
-    // HEADER SECTION
+    // INVOICE HEADER
     // Add "Invoice" title
-    doc.setFontSize(27);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Invoice", margin.left, margin.top);
+    doc.setFontSize(FONTS.size.title);
+    doc.setTextColor(...COLORS.text.black);
+    doc.text("Invoice", POSITIONS.invoice.title.x, POSITIONS.invoice.title.y);
     
-    // Add Invoice number
-    doc.setFontSize(12);
-    doc.setTextColor(121, 137, 150);
-    doc.text("Invoice no:", 500, margin.top);
+    // Add Invoice number label
+    doc.setFontSize(FONTS.size.body);
+    doc.setTextColor(...COLORS.text.body);
+    doc.text("Invoice no:", POSITIONS.invoice.numberLabel.x, POSITIONS.invoice.numberLabel.y);
     
-    doc.setFontSize(18);
-    doc.setTextColor(25, 34, 41);
-    doc.text(invoice.invoiceNumber, 520, margin.top + 23);
+    // Add Invoice number value
+    doc.setFontSize(FONTS.size.subtitle);
+    doc.setTextColor(...COLORS.text.dark);
+    doc.text(invoice.invoiceNumber, POSITIONS.invoice.numberValue.x, POSITIONS.invoice.numberValue.y);
     
     // CLIENT SECTION
-    const clientSectionY = 120;
+    // Add "Billed to" label
+    doc.setFontSize(FONTS.size.subheading);
+    doc.setTextColor(...COLORS.text.body);
+    doc.text("Billed to:", POSITIONS.client.billToLabel.x, POSITIONS.client.billToLabel.y);
     
-    // Billed to label
-    doc.setFontSize(13);
-    doc.setTextColor(121, 137, 150);
-    doc.text("Billed to:", margin.left, clientSectionY);
+    // Add client name
+    doc.setFontSize(FONTS.size.heading);
+    doc.setTextColor(...COLORS.text.dark);
+    doc.text(client.name, POSITIONS.client.name.x, POSITIONS.client.name.y);
     
-    // Client name
-    doc.setFontSize(17);
-    doc.setTextColor(25, 34, 41);
-    doc.text(client.name, margin.left, clientSectionY + 30);
-    
-    // Client address
-    doc.setFontSize(12);
-    doc.setTextColor(121, 137, 150);
+    // Add client address
+    doc.setFontSize(FONTS.size.body);
+    doc.setTextColor(...COLORS.text.body);
     const addressText = client.address || "Address not provided";
-    doc.text(addressText, margin.left, clientSectionY + 55);
+    doc.text(addressText, POSITIONS.client.address.x, POSITIONS.client.address.y);
     
-    // Add light blue background to right half
-    const bgHeight = 230;
-    doc.setFillColor(245, 250, 255);
-    doc.rect(margin.left + 300, clientSectionY - 10, 245, bgHeight, 'F');
+    // DATES SECTION
+    // Issued date label
+    doc.setFontSize(FONTS.size.body);
+    doc.setTextColor(...COLORS.text.body);
+    doc.text("Issued on:", POSITIONS.dates.issuedLabel.x, POSITIONS.dates.issuedLabel.y);
     
-    // DATE SECTION
-    // Issued date
-    doc.setFontSize(12);
-    doc.setTextColor(121, 137, 150);
-    doc.text("Issued on:", 450, clientSectionY);
-    
-    doc.setFontSize(13);
-    doc.setTextColor(25, 34, 41);
+    // Issued date value
+    doc.setFontSize(FONTS.size.subheading);
+    doc.setTextColor(...COLORS.text.dark);
     const formattedIssueDate = format(new Date(invoice.date), "dd MMMM, yyyy");
-    doc.text(formattedIssueDate, 450, clientSectionY + 20);
+    doc.text(formattedIssueDate, POSITIONS.dates.issuedValue.x, POSITIONS.dates.issuedValue.y);
     
-    // Due date
-    doc.setFontSize(12);
-    doc.setTextColor(121, 137, 150);
-    doc.text("Payment Due:", 450, clientSectionY + 50);
+    // Due date label
+    doc.setFontSize(FONTS.size.body);
+    doc.setTextColor(...COLORS.text.body);
+    doc.text("Payment Due:", POSITIONS.dates.dueLabel.x, POSITIONS.dates.dueLabel.y);
     
-    doc.setFontSize(13);
-    doc.setTextColor(25, 34, 41);
+    // Due date value
+    doc.setFontSize(FONTS.size.subheading);
+    doc.setTextColor(...COLORS.text.dark);
     const formattedDueDate = format(new Date(invoice.dueDate), "dd MMMM, yyyy");
-    doc.text(formattedDueDate, 450, clientSectionY + 70);
+    doc.text(formattedDueDate, POSITIONS.dates.dueValue.x, POSITIONS.dates.dueValue.y);
     
     // TABLE HEADER
-    const tableStartY = 350;
-    
-    doc.setFontSize(13);
-    doc.setTextColor(121, 137, 150);
-    doc.text("Services", margin.left, tableStartY);
-    doc.text("Qty", 375, tableStartY);
-    doc.text("Price", 450, tableStartY);
-    doc.text("Subtotal", 525, tableStartY);
+    doc.setFontSize(FONTS.size.subheading);
+    doc.setTextColor(...COLORS.text.body);
+    doc.text("Services", POSITIONS.tableHeader.services.x, POSITIONS.tableHeader.services.y);
+    doc.text("Qty", POSITIONS.tableHeader.qty.x, POSITIONS.tableHeader.qty.y);
+    doc.text("Price", POSITIONS.tableHeader.price.x, POSITIONS.tableHeader.price.y);
+    doc.text("Subtotal", POSITIONS.tableHeader.subtotal.x, POSITIONS.tableHeader.subtotal.y);
     
     // Light separator line
-    doc.setDrawColor(230, 230, 230);
+    doc.setDrawColor(...COLORS.accent.lightGray);
     doc.setLineWidth(0.5);
-    doc.line(margin.left, tableStartY + 10, 545, tableStartY + 10);
+    doc.line(PAGE_CONFIG.margin.left, POSITIONS.tableHeader.services.y + 10, 545, POSITIONS.tableHeader.services.y + 10);
     
     // TABLE ITEMS
-    let currentY = tableStartY + 40;
-    const rowHeight = 40;
+    let currentY = POSITIONS.item.description.y;
+    const rowHeight = 46;
     
-    // Add table rows with light blue background for even rows
     invoice.items.forEach((item, index) => {
-      // Add light background to even rows
-      if (index % 2 === 1) {
-        doc.setFillColor(245, 250, 255);
-        doc.rect(margin.left, currentY - 20, 495, rowHeight, 'F');
-      }
+      // Add description (dark text)
+      doc.setFontSize(FONTS.size.subheading);
+      doc.setTextColor(...COLORS.text.dark);
+      doc.text(item.description, POSITIONS.item.description.x, currentY);
       
-      doc.setFontSize(13);
-      doc.setTextColor(17, 18, 19);
-      doc.text(item.description, margin.left, currentY);
+      // Add quantity (muted text)
+      doc.setTextColor(...COLORS.text.muted);
+      doc.text(item.quantity.toString(), POSITIONS.item.quantity.x, currentY);
       
-      doc.setTextColor(130, 135, 140);
-      doc.text(item.quantity.toString(), 375, currentY);
-      doc.text(`$${item.rate.toFixed(2)}`, 450, currentY);
+      // Add price (muted text)
+      doc.text(`$${item.rate.toFixed(2)}`, POSITIONS.item.price.x, currentY);
       
-      doc.setTextColor(17, 18, 19);
-      doc.text(`$${item.amount.toFixed(2)}`, 525, currentY);
+      // Add amount (dark text)
+      doc.setTextColor(...COLORS.text.dark);
+      doc.text(`$${item.amount.toFixed(2)}`, POSITIONS.item.amount.x, currentY);
       
       currentY += rowHeight;
     });
     
     // TOTALS SECTION
-    const totalsStartY = Math.max(currentY + 30, 660);
-    const totalsRightAlign = 545;
-    
     // Add subtotal
-    doc.setFontSize(13);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Subtotal", 450, totalsStartY);
+    doc.setFontSize(FONTS.size.subheading);
+    doc.setTextColor(...COLORS.text.black);
+    doc.text("Subtotal", POSITIONS.totals.subtotalLabel.x, POSITIONS.totals.subtotalLabel.y);
     
-    doc.setTextColor(130, 135, 140);
-    doc.text(`$${invoice.subtotal.toFixed(2)}`, totalsRightAlign, totalsStartY, { align: 'right' });
+    doc.setTextColor(...COLORS.text.muted);
+    doc.text(`$${invoice.subtotal.toFixed(2)}`, POSITIONS.totals.subtotalValue.x, POSITIONS.totals.subtotalValue.y);
     
     // Add discount
-    doc.setTextColor(0, 0, 0);
-    doc.text("Discount", 450, totalsStartY + 30);
+    doc.setTextColor(...COLORS.text.black);
+    doc.text("Discount", POSITIONS.totals.discountLabel.x, POSITIONS.totals.discountLabel.y);
     
-    doc.setTextColor(130, 135, 140);
+    doc.setTextColor(...COLORS.text.muted);
     const discountText = invoice.discountAmount > 0 ? `$${invoice.discountAmount.toFixed(2)}` : "0";
-    doc.text(discountText, totalsRightAlign, totalsStartY + 30, { align: 'right' });
+    doc.text(discountText, POSITIONS.totals.discountValue.x, POSITIONS.totals.discountValue.y);
     
     // Add tax
-    doc.setTextColor(0, 0, 0);
-    doc.text("TAX:", 450, totalsStartY + 60);
+    doc.setTextColor(...COLORS.text.black);
+    doc.text("TAX:", POSITIONS.totals.taxLabel.x, POSITIONS.totals.taxLabel.y);
     
-    doc.setTextColor(130, 135, 140);
+    doc.setTextColor(...COLORS.text.muted);
     const taxText = invoice.taxAmount > 0 ? `$${invoice.taxAmount.toFixed(2)}` : "0";
-    doc.text(taxText, totalsRightAlign, totalsStartY + 60, { align: 'right' });
+    doc.text(taxText, POSITIONS.totals.taxValue.x, POSITIONS.totals.taxValue.y);
     
-    // Add total with highlight
-    const totalBoxY = totalsStartY + 90;
-    doc.setFillColor(245, 250, 255);
-    doc.rect(450, totalBoxY - 20, 95, 35, 'F');
+    // Add total with highlight box
+    doc.setFillColor(...COLORS.background.highlight);
+    doc.rect(
+      POSITIONS.totals.totalBox.x, 
+      POSITIONS.totals.totalBox.y, 
+      POSITIONS.totals.totalBox.width, 
+      POSITIONS.totals.totalBox.height, 
+      "F"
+    );
     
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(13);
-    doc.text("Total", 450, totalBoxY);
+    doc.setTextColor(...COLORS.text.black);
+    doc.setFontSize(FONTS.size.subheading);
+    doc.text("Total", POSITIONS.totals.totalLabel.x, POSITIONS.totals.totalLabel.y);
     
-    doc.setFontSize(17);
-    doc.text(`$${invoice.total.toFixed(2)}`, totalsRightAlign, totalBoxY, { align: 'right' });
+    doc.setFontSize(FONTS.size.heading);
+    doc.text(`$${invoice.total.toFixed(2)}`, POSITIONS.totals.totalValue.x, POSITIONS.totals.totalValue.y);
     
     // FOOTER SECTION
-    const footerY = 780;
-    
     // Company logo box
-    doc.setFillColor(245, 250, 255);
-    doc.rect(margin.left, footerY - 20, 50, 50, 'F');
+    doc.setFillColor(...COLORS.background.highlight);
+    doc.rect(
+      POSITIONS.footer.companyBox.x, 
+      POSITIONS.footer.companyBox.y, 
+      POSITIONS.footer.companyBox.width, 
+      POSITIONS.footer.companyBox.height, 
+      "F"
+    );
     
     // Company name
-    doc.setFontSize(17);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Pin Box", margin.left + 60, footerY);
+    doc.setFontSize(FONTS.size.heading);
+    doc.setTextColor(...COLORS.text.black);
+    doc.text("Pin Box", POSITIONS.footer.companyName.x, POSITIONS.footer.companyName.y);
     
-    // Company website and email
-    doc.setFontSize(10);
-    doc.setTextColor(126, 140, 154);
-    doc.text("www.pinbox.io", margin.left + 60, footerY + 20);
-    doc.text("support@pinbox.io", margin.left + 60, footerY + 35);
+    // Company website
+    doc.setFontSize(FONTS.size.small);
+    doc.setTextColor(...COLORS.text.body);
+    doc.text("www.pinbox.io", POSITIONS.footer.companyWebsite.x, POSITIONS.footer.companyWebsite.y);
+    
+    // Company email
+    doc.text("support@pinbox.io", POSITIONS.footer.companyEmail.x, POSITIONS.footer.companyEmail.y);
     
     // Notes section
-    const notesX = 230;
-    doc.setFontSize(13);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Notes", notesX, footerY);
+    doc.setFontSize(FONTS.size.subheading);
+    doc.setTextColor(...COLORS.text.black);
+    doc.text("Notes", POSITIONS.footer.notesTitle.x, POSITIONS.footer.notesTitle.y);
     
     // Notes content
-    doc.setFontSize(10);
-    doc.setTextColor(126, 140, 154);
-    const notesText = invoice.notes && invoice.notes.trim().length > 0 
-      ? invoice.notes 
-      : "No additional notes";
-    
+    doc.setFontSize(FONTS.size.small);
+    doc.setTextColor(...COLORS.text.body);
+    const notesText = invoice.notes || "No additional notes";
     const notesLines = doc.splitTextToSize(notesText, 120);
-    doc.text(notesLines, notesX, footerY + 20);
+    doc.text(notesLines, POSITIONS.footer.notesContent.x, POSITIONS.footer.notesContent.y);
     
     // Terms section
-    const termsX = 390;
-    doc.setFontSize(13);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Terms & Conditions", termsX, footerY);
+    doc.setFontSize(FONTS.size.subheading);
+    doc.setTextColor(...COLORS.text.black);
+    doc.text("Terms & Conditions", POSITIONS.footer.termsTitle.x, POSITIONS.footer.termsTitle.y);
     
     // Terms content
-    doc.setFontSize(10);
-    doc.setTextColor(126, 140, 154);
-    const termsText = invoice.termsAndConditions && invoice.termsAndConditions.trim().length > 0 
-      ? invoice.termsAndConditions 
-      : "Payment is due within the specified term. Please make the payment to the specified account.";
-    
-    const termsLines = doc.splitTextToSize(termsText, 150);
-    doc.text(termsLines, termsX, footerY + 20);
+    doc.setFontSize(FONTS.size.small);
+    doc.setTextColor(...COLORS.text.body);
+    const termsText = invoice.termsAndConditions || "Payment is due within the specified term.";
+    const termsLines = doc.splitTextToSize(termsText, 120);
+    doc.text(termsLines, POSITIONS.footer.termsContent.x, POSITIONS.footer.termsContent.y);
     
     // Save the PDF
     doc.save(`Invoice_${invoice.invoiceNumber}.pdf`);
