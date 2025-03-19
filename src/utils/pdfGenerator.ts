@@ -34,8 +34,8 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
             <div style="max-width: 350px; overflow: hidden;">
               <h1 style="font-size: 32px; margin: 0 0 40px 0; font-weight: bold;">Invoice</h1>
               <p style="color: #666; margin: 0 0 5px 0;">Billed to:</p>
-              <h2 style="font-size: 18px; margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${client.name}</h2>
-              <p style="color: #666; margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">
+              <h2 style="font-size: 16px; margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${client.name}</h2>
+              <p style="color: #666; margin: 0; font-size: 12px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.3;">
                 ${clientAddress}
                 ${client.phone ? `<br><span style="white-space: nowrap;">${client.phone}</span>` : ''}
                 ${client.email ? `<br><span style="white-space: nowrap;">${client.email}</span>` : ''}
