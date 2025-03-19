@@ -50,7 +50,6 @@
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.10.3",
     "input-otp": "^1.2.4",
-    "inter": "^2.1.0",
     "jspdf": "^3.0.0",
     "jspdf-autotable": "^5.0.2",
     "lottie-react": "^2.4.0",
