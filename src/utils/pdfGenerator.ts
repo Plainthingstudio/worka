@@ -44,7 +44,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
         <div style="padding: 10px 30px 15px 30px; display: flex; justify-content: space-between; position: relative; margin-top: -25px;">
           <!-- From section - in a white box that overlaps the blue header -->
           <div style="width: 30%; background-color: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-            <p style="font-size: 12px; color: #3B82F6; background-color: #EFF6FF; display: inline-block; padding: 3px 8px; border-radius: 4px; margin: 0 0 10px 0;">From</p>
+            <p style="font-size: 12px; color: #3B82F6; display: inline-block; padding: 3px 8px; border-radius: 4px; margin: 0 0 10px 0;">From</p>
             <h2 style="font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Plainthing Studio</h2>
             <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">(612) 856 - 0989</p>
             <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">contact@maurosicard.com</p>
@@ -56,7 +56,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
           
           <!-- To section - in a white box -->
           <div style="width: 30%; background-color: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-            <p style="font-size: 12px; color: #3B82F6; background-color: #EFF6FF; display: inline-block; padding: 3px 8px; border-radius: 4px; margin: 0 0 10px 0;">Invoice to</p>
+            <p style="font-size: 12px; color: #3B82F6; display: inline-block; padding: 3px 8px; border-radius: 4px; margin: 0 0 10px 0;">Invoice to</p>
             <h2 style="font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">${client.name}</h2>
             <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">${client.phone || '(612) 856 - 0989'}</p>
             <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">${client.email}</p>
@@ -67,7 +67,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
           
           <!-- Date section - in a white box -->
           <div style="width: 30%; background-color: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-            <p style="font-size: 12px; color: #3B82F6; background-color: #EFF6FF; display: inline-block; padding: 3px 8px; border-radius: 4px; margin: 0 0 10px 0;">Date</p>
+            <p style="font-size: 12px; color: #3B82F6; display: inline-block; padding: 3px 8px; border-radius: 4px; margin: 0 0 10px 0;">Date</p>
             <div style="margin-bottom: 15px;">
               <p style="font-size: 13px; color: #4B5563; margin: 0 0 3px 0;">Issued</p>
               <h2 style="font-size: 16px; font-weight: 600; margin: 0;">${formattedDate}</h2>
