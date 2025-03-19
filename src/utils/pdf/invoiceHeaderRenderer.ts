@@ -1,8 +1,7 @@
 
 import jsPDF from 'jspdf';
 import { format } from 'date-fns';
-import { PAGE_CONFIG, FONTS } from './pdfStyles';
-import { addField } from './pdfHelpers';
+import { PAGE_CONFIG, FONTS, COLORS, INVOICE_BLOCKS } from './pdfStyles';
 
 /**
  * Renders the invoice header section including company info, invoice details, and bill-to section
@@ -18,67 +17,70 @@ export const renderInvoiceHeader = (
   clientPhone?: string
 ): number => {
   const { margin } = PAGE_CONFIG;
-  let currentY = margin.top;
+  const { invoice, client } = INVOICE_BLOCKS;
   
-  // Add company name (top left)
-  doc.setFontSize(FONTS.size.subtitle);
-  doc.setFont(FONTS.family.main, FONTS.style.bold);
-  doc.text("Pin Box", margin.left, currentY + 10);
-  doc.setFontSize(FONTS.size.small);
-  doc.setFont(FONTS.family.main, FONTS.style.normal);
-  doc.text("Private Limited", margin.left, currentY + 16);
+  // Add blue rectangle behind client info
+  doc.setFillColor(...COLORS.background.highlight);
+  doc.setDrawColor(...COLORS.line.dark);
+  doc.setLineWidth(0);
+  doc.rect(297, 125, 595 - 2*margin.left, 241, "F");
   
-  // Add INVOICE header (top right)
+  // Add "Invoice" title (top left)
   doc.setFontSize(FONTS.size.title);
-  doc.setFont(FONTS.family.main, FONTS.style.bold);
-  doc.text("Invoice", PAGE_CONFIG.width - margin.right, currentY + 5, { align: "right" });
-  
-  // Add invoice details (top right, below INVOICE)
-  doc.setFontSize(FONTS.size.subheading);
-  doc.setFont(FONTS.family.main, FONTS.style.bold);
-  doc.text("Invoice#:", PAGE_CONFIG.width - margin.right - 55, currentY + 20);
-  doc.text("Date:", PAGE_CONFIG.width - margin.right - 55, currentY + 27);
-  doc.text("Due Date:", PAGE_CONFIG.width - margin.right - 55, currentY + 34);
-  
   doc.setFont(FONTS.family.main, FONTS.style.normal);
-  doc.text(invoiceNumber, PAGE_CONFIG.width - margin.right, currentY + 20, { align: "right" });
-  doc.text(format(new Date(invoiceDate), "dd/MM/yyyy"), PAGE_CONFIG.width - margin.right, currentY + 27, { align: "right" });
-  doc.text(format(new Date(dueDate), "dd/MM/yyyy"), PAGE_CONFIG.width - margin.right, currentY + 34, { align: "right" });
+  doc.setTextColor(...COLORS.text.black);
+  doc.text("Invoice", invoice.title.x, invoice.title.y);
   
-  // Add "Total Due:" section
-  doc.setFontSize(FONTS.size.subheading);
-  doc.setFont(FONTS.family.main, FONTS.style.bold);
-  doc.text("Total Due:", PAGE_CONFIG.width - margin.right, currentY + 47, { align: "right" });
-  doc.text(`USD: $ ${total.toFixed(2)}`, PAGE_CONFIG.width - margin.right, currentY + 54, { align: "right" });
-  
-  // Add billed to section (left) - with clear header
-  doc.setFontSize(FONTS.size.subheading);
-  doc.setFont(FONTS.family.main, FONTS.style.bold);
-  doc.text("Bill To:", margin.left, currentY + 40);
+  // Add invoice number details (top right)
+  doc.setFontSize(FONTS.size.body);
   doc.setFont(FONTS.family.main, FONTS.style.normal);
-  doc.text(clientName, margin.left, currentY + 47);
+  doc.setTextColor(...COLORS.text.body);
+  doc.text("Invoice no:", invoice.number.label.x, invoice.number.label.y);
   
-  // Handle client address and phone with better wrapping
-  let billingY = currentY + 54;
-  if (clientAddress) {
-    const addressWidth = (PAGE_CONFIG.width - margin.left - margin.right) * 0.45;
-    const addressLines = doc.splitTextToSize(clientAddress, addressWidth);
-    doc.text(addressLines, margin.left, billingY);
-    billingY += addressLines.length * 7;
-  } else {
-    doc.text("No address provided", margin.left, billingY);
-    billingY += 7;
-  }
+  doc.setFontSize(FONTS.size.subtitle);
+  doc.setTextColor(...COLORS.text.dark);
+  doc.text(invoiceNumber, invoice.number.value.x, invoice.number.value.y);
   
-  // Add phone number after address
+  // Add "Billed to:" section (left)
+  doc.setFontSize(FONTS.size.subheading);
+  doc.setTextColor(...COLORS.text.body);
+  doc.text("Billed to:", client.label.x, client.label.y);
+  
+  // Add client name
+  doc.setFontSize(FONTS.size.heading);
+  doc.setTextColor(...COLORS.text.dark);
+  doc.text(clientName, client.name.x, client.name.y);
+  
+  // Add client address and contact info
+  doc.setFontSize(FONTS.size.body);
+  doc.setTextColor(...COLORS.text.body);
+  
+  // Build address text with any available info
+  let addressText = clientAddress || "No address provided";
   if (clientPhone) {
-    doc.text(clientPhone, margin.left, billingY);
-    billingY += 7;
-  } else {
-    doc.text("No phone provided", margin.left, billingY);
-    billingY += 7;
+    addressText += "\n" + clientPhone;
   }
   
-  // Return the Y position after the header section (add some padding)
-  return billingY;
+  doc.text(addressText, client.address.x, client.address.y);
+  
+  // Add invoice date details
+  doc.setFontSize(FONTS.size.body);
+  doc.setTextColor(...COLORS.text.body);
+  doc.text("Issued on:", invoice.date.label.x, invoice.date.label.y);
+  
+  doc.setFontSize(FONTS.size.subheading);
+  doc.setTextColor(...COLORS.text.dark);
+  doc.text(format(new Date(invoiceDate), "dd MMMM, yyyy"), invoice.date.value.x, invoice.date.value.y);
+  
+  // Add due date details
+  doc.setFontSize(FONTS.size.body);
+  doc.setTextColor(...COLORS.text.body);
+  doc.text("Payment Due:", invoice.due.label.x, invoice.due.label.y);
+  
+  doc.setFontSize(FONTS.size.subheading);
+  doc.setTextColor(...COLORS.text.dark);
+  doc.text(format(new Date(dueDate), "dd MMMM, yyyy"), invoice.due.value.x, invoice.due.value.y);
+  
+  // Return the Y position after the client info section
+  return 375; // After the blue rectangle
 };

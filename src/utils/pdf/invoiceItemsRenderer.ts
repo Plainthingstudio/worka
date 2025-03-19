@@ -1,8 +1,7 @@
 
 import jsPDF from 'jspdf';
 import { InvoiceItem } from '@/types';
-import { PAGE_CONFIG, FONTS, COLORS, LINE_WIDTH, TABLE_CONFIG, CONTENT_WIDTH } from './pdfStyles';
-import { checkPageOverflow } from './pdfHelpers';
+import { PAGE_CONFIG, FONTS, COLORS, TABLE_CONFIG } from './pdfStyles';
 
 /**
  * Renders the invoice items table
@@ -13,62 +12,65 @@ export const renderInvoiceItems = (
   startY: number
 ): number => {
   const { margin } = PAGE_CONFIG;
-  // Use the passed startY position, but ensure minimum spacing
-  let currentY = Math.max(startY + 15, TABLE_CONFIG.header.y);
   
-  // Add table headers with proper spacing
+  // Use the predefined table header Y position
+  let currentY = TABLE_CONFIG.header.y;
+  
+  // Add table headers with proper styling
   doc.setFontSize(FONTS.size.subheading);
-  doc.setFont(FONTS.family.main, FONTS.style.bold);
-  
-  // Table header columns with improved positioning
-  doc.text("ITEM DESCRIPTION", TABLE_CONFIG.columns.description.x, currentY);
-  doc.text("PRICE", TABLE_CONFIG.columns.price.x, currentY);
-  doc.text("QTY", TABLE_CONFIG.columns.quantity.x, currentY);
-  doc.text("TOTAL", TABLE_CONFIG.columns.amount.x, currentY, { align: "right" });
-  
-  // Table header underline
-  doc.setDrawColor(...COLORS.line.dark);
-  doc.setLineWidth(LINE_WIDTH.thick);
-  doc.line(margin.left, currentY + 2, PAGE_CONFIG.width - margin.right, currentY + 2);
-  
-  // Reset to normal font for table rows
   doc.setFont(FONTS.family.main, FONTS.style.normal);
-  doc.setFontSize(FONTS.size.body);
-  currentY += 10;
+  doc.setTextColor(...COLORS.text.body);
+  
+  // Table header columns 
+  doc.text("Services", TABLE_CONFIG.columns.description.x, currentY);
+  doc.text("Qty", TABLE_CONFIG.columns.quantity.x, currentY);
+  doc.text("Price", TABLE_CONFIG.columns.price.x, currentY);
+  doc.text("Subtotal", TABLE_CONFIG.columns.amount.x, currentY);
+  
+  // Light line after headers
+  doc.setDrawColor(...COLORS.line.light);
+  doc.setLineWidth(0.2);
+  doc.line(margin.left, currentY + 5, PAGE_CONFIG.width - margin.right, currentY + 5);
+  
+  // Reset font for table rows
+  doc.setFont(FONTS.family.main, FONTS.style.normal);
+  doc.setFontSize(FONTS.size.subheading);
+  
+  currentY += 33; // Start of first row
   
   // Draw table rows
   items.forEach((item, index) => {
     // Check if we need a new page
-    if (currentY > PAGE_CONFIG.height - 50) {
+    if (currentY > PAGE_CONFIG.height - 150) {
       doc.addPage();
-      currentY = 30;
+      currentY = 50;
     }
     
-    // Handle long item descriptions
-    const descriptionWidth = TABLE_CONFIG.columns.description.width;
-    const wrappedDescription = doc.splitTextToSize(item.description, descriptionWidth);
+    // Item description - dark text
+    doc.setTextColor(...COLORS.text.dark);
+    doc.text(item.description, TABLE_CONFIG.columns.description.x, currentY);
     
-    // Draw the item's details with proper alignment
-    doc.text(wrappedDescription, TABLE_CONFIG.columns.description.x, currentY);
-    doc.text(`$${item.rate.toFixed(2)}`, TABLE_CONFIG.columns.price.x, currentY);
+    // Quantity - gray text
+    doc.setTextColor(...COLORS.text.muted);
     doc.text(item.quantity.toString(), TABLE_CONFIG.columns.quantity.x, currentY);
-    doc.text(`$${item.amount.toFixed(2)}`, TABLE_CONFIG.columns.amount.x, currentY, { align: "right" });
     
-    // Calculate row height based on description length
-    const rowHeight = Math.max(wrappedDescription.length * 6, 12);
+    // Price - gray text
+    doc.text(`$${item.rate.toFixed(2)}`, TABLE_CONFIG.columns.price.x, currentY);
     
-    // Draw separator line between items (except for the last item)
+    // Amount - dark text
+    doc.setTextColor(...COLORS.text.dark);
+    doc.text(`$${item.amount.toFixed(2)}`, TABLE_CONFIG.columns.amount.x, currentY);
+    
+    // Add row separator
     if (index < items.length - 1) {
       doc.setDrawColor(...COLORS.line.light);
-      doc.setLineWidth(LINE_WIDTH.thin);
-      
-      const lineY = currentY + rowHeight - 2;
-      doc.line(margin.left, lineY, PAGE_CONFIG.width - margin.right, lineY);
+      doc.setLineWidth(0.1);
+      doc.line(margin.left, currentY + 10, PAGE_CONFIG.width - margin.right, currentY + 10);
     }
     
-    currentY += rowHeight + 3;
+    currentY += TABLE_CONFIG.row.height;
   });
   
   // Return the final Y position
-  return currentY + 5; // Add a little extra spacing
+  return currentY + 15;
 };

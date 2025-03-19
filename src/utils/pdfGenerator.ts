@@ -2,7 +2,7 @@
 import jsPDF from 'jspdf';
 import { Invoice } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { PAGE_CONFIG, COLORS, LINE_WIDTH } from './pdf/pdfStyles';
+import { PAGE_CONFIG, COLORS } from './pdf/pdfStyles';
 import { renderInvoiceHeader } from './pdf/invoiceHeaderRenderer';
 import { renderInvoiceItems } from './pdf/invoiceItemsRenderer';
 import { renderInvoiceTotals } from './pdf/invoiceTotalsRenderer';
@@ -37,15 +37,15 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     
     const client = clientData;
     
-    // Initialize PDF document
+    // Initialize PDF document with points unit
     const pdf = new jsPDF({
       orientation: 'portrait',
-      unit: 'mm',
+      unit: 'pt',
       format: 'a4'
     });
     
     // Apply template font
-    pdf.setFont(template.style.fontFamily);
+    pdf.setFont(template.style.fontFamily || "helvetica");
     
     // Render invoice components in sequence
     let currentY = renderInvoiceHeader(
@@ -78,11 +78,6 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
       invoice.termsAndConditions,
       invoice.notes
     );
-    
-    // Add very light shadow effect to the whole document
-    pdf.setDrawColor(...COLORS.line.light);
-    pdf.setLineWidth(LINE_WIDTH.thin);
-    pdf.rect(5, 5, PAGE_CONFIG.width - 10, PAGE_CONFIG.height - 10, 'S');
     
     // Save the PDF
     pdf.save(`Invoice_${invoice.invoiceNumber}.pdf`);

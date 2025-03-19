@@ -1,6 +1,6 @@
 
 import jsPDF from 'jspdf';
-import { PAGE_CONFIG, FONTS, LINE_WIDTH } from './pdfStyles';
+import { PAGE_CONFIG, FONTS, COLORS, INVOICE_BLOCKS } from './pdfStyles';
 
 /**
  * Renders the invoice totals section
@@ -15,47 +15,53 @@ export const renderInvoiceTotals = (
   discountAmount: number,
   total: number
 ): number => {
+  const { totals } = INVOICE_BLOCKS;
   const { margin } = PAGE_CONFIG;
-  let currentY = startY + 10; // Increased spacing after items
   
-  // Draw line before totals
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(LINE_WIDTH.thick);
-  doc.line(margin.left, currentY, PAGE_CONFIG.width - margin.right, currentY);
-  currentY += 15; // Increased spacing
-  
-  // Add totals section with better alignment
-  const totalsX = PAGE_CONFIG.width - margin.right - 100; // Moved left for more space
-  const valuesX = PAGE_CONFIG.width - margin.right;
-  
+  // Add subtotal
   doc.setFontSize(FONTS.size.subheading);
+  doc.setFont(FONTS.family.main, FONTS.style.normal);
+  doc.setTextColor(...COLORS.text.black);
+  doc.text("Subtotal", totals.subtotal.label.x, totals.subtotal.label.y);
   
-  // Subtotal
-  doc.text("SUB TOTAL", totalsX, currentY);
-  doc.text(`$${subtotal.toFixed(2)}`, valuesX, currentY, { align: "right" });
-  currentY += 10; // Increased spacing
+  doc.setTextColor(...COLORS.text.muted);
+  doc.text(`$${subtotal.toFixed(2)}`, totals.subtotal.value.x, totals.subtotal.value.y);
   
-  // Tax
-  doc.text(`Tax Vat ${taxPercentage}%`, totalsX, currentY);
-  doc.text(`$${taxAmount.toFixed(2)}`, valuesX, currentY, { align: "right" });
-  currentY += 10; // Increased spacing
+  // Add discount
+  doc.setTextColor(...COLORS.text.black);
+  doc.text("Discount", totals.discount.label.x, totals.discount.label.y);
   
-  // Discount
-  doc.text(`Discount ${discountPercentage}%`, totalsX, currentY);
-  doc.text(`- $${discountAmount.toFixed(2)}`, valuesX, currentY, { align: "right" });
-  currentY += 15; // Increased spacing
+  doc.setTextColor(...COLORS.text.muted);
+  const discountText = discountAmount > 0 ? `$${discountAmount.toFixed(2)}` : "0";
+  doc.text(discountText, totals.discount.value.x, totals.discount.value.y);
   
-  // Draw line before grand total
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(LINE_WIDTH.thick);
-  doc.line(totalsX - 20, currentY, valuesX, currentY);
-  currentY += 15; // Increased spacing
+  // Add tax
+  doc.setTextColor(...COLORS.text.black);
+  doc.text("TAX:", totals.tax.label.x, totals.tax.label.y);
   
-  // Grand total with larger font
-  doc.setFont(FONTS.family.main, FONTS.style.bold);
+  doc.setTextColor(...COLORS.text.muted);
+  const taxText = taxAmount > 0 ? `$${taxAmount.toFixed(2)}` : "0";
+  doc.text(taxText, totals.tax.value.x, totals.tax.value.y);
+  
+  // Add highlighted total box
+  doc.setFillColor(...COLORS.background.highlight);
+  doc.setDrawColor(...COLORS.line.dark);
+  doc.setLineWidth(0);
+  doc.rect(
+    totals.total.box.x, 
+    totals.total.box.y, 
+    totals.total.box.width, 
+    totals.total.box.height, 
+    "F"
+  );
+  
+  // Add total
+  doc.setTextColor(...COLORS.text.black);
+  doc.setFontSize(FONTS.size.subheading);
+  doc.text("Total", totals.total.label.x, totals.total.label.y);
+  
   doc.setFontSize(FONTS.size.heading);
-  doc.text("Grand Total", totalsX, currentY);
-  doc.text(`$${total.toFixed(2)}`, valuesX, currentY, { align: "right" });
+  doc.text(`$${total.toFixed(2)}`, totals.total.value.x, totals.total.value.y);
   
-  return currentY + 15; // Return new position with additional spacing
+  return totals.total.box.y + totals.total.box.height + 20;
 };

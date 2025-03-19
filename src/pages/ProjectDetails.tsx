@@ -6,7 +6,6 @@ import ProjectDetailsLayout from "@/components/project-details/ProjectDetailsLay
 import ProjectContent from "@/components/project-details/ProjectContent";
 import ProjectsLoading from "@/components/projects/ProjectsLoading";
 import Lottie from "lottie-react";
-import confettiAnimation from "@/assets/confetti-animation.json";
 
 const ProjectDetails = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -73,6 +72,189 @@ const ProjectDetails = () => {
     onDeletePaymentSubmit: handleDeletePayment,
   };
 
+  // Confetti animation data
+  const confettiAnimation = {
+    v: "5.7.6",
+    fr: 30,
+    ip: 0,
+    op: 90,
+    w: 1920,
+    h: 1080,
+    nm: "Confetti",
+    ddd: 0,
+    assets: [],
+    layers: [
+      {
+        ddd: 0,
+        ind: 1,
+        ty: 4,
+        nm: "Confetti",
+        sr: 1,
+        ks: {
+          o: { a: 0, k: 100 },
+          r: { a: 0, k: 0 },
+          p: { a: 0, k: [960, 540, 0] },
+          a: { a: 0, k: [0, 0, 0] },
+          s: { a: 0, k: [100, 100, 100] }
+        },
+        ao: 0,
+        shapes: [
+          {
+            ty: "gr",
+            it: [
+              {
+                ty: "rc",
+                d: 1,
+                s: { a: 0, k: [15, 15] },
+                p: { a: 0, k: [0, 0] },
+                r: { a: 0, k: 0 },
+                nm: "Rectangle Path 1",
+                mn: "ADBE Vector Shape - Rect"
+              },
+              {
+                ty: "fl",
+                c: { a: 0, k: [0.9, 0.2, 0.2, 1] },
+                o: { a: 0, k: 100 },
+                r: 1,
+                nm: "Fill 1",
+                mn: "ADBE Vector Graphic - Fill"
+              },
+              {
+                ty: "rp",
+                c: { a: 0, k: 50 },
+                o: { a: 0, k: 0 },
+                m: 1,
+                a: { a: 0, k: 0 },
+                ix: 3,
+                tr: {
+                  ty: "tr",
+                  p: { 
+                    a: 1, 
+                    k: [
+                      { t: 0, s: [0, -500], i: { x: 0.4, y: 0 }, o: { x: 0.6, y: 1 }, e: [0, 500] }, 
+                      { t: 60 }
+                    ] 
+                  },
+                  a: { a: 0, k: [0, 0] },
+                  s: { a: 0, k: [100, 100] },
+                  r: { a: 1, k: [{ t: 0, s: [0], i: { x: 0.4, y: 0 }, o: { x: 0.6, y: 1 }, e: [360] }, { t: 60 }] },
+                  o: { a: 0, k: 100 }
+                }
+              }
+            ],
+            nm: "Rectangle",
+            np: 3,
+            cix: 2,
+            ix: 1,
+            mn: "ADBE Vector Group"
+          },
+          {
+            ty: "gr",
+            it: [
+              {
+                ty: "rc",
+                d: 1,
+                s: { a: 0, k: [15, 15] },
+                p: { a: 0, k: [0, 0] },
+                r: { a: 0, k: 0 },
+                nm: "Rectangle Path 1",
+                mn: "ADBE Vector Shape - Rect"
+              },
+              {
+                ty: "fl",
+                c: { a: 0, k: [0.2, 0.5, 0.9, 1] },
+                o: { a: 0, k: 100 },
+                r: 1,
+                nm: "Fill 1",
+                mn: "ADBE Vector Graphic - Fill"
+              },
+              {
+                ty: "rp",
+                c: { a: 0, k: 50 },
+                o: { a: 0, k: 0 },
+                m: 1,
+                a: { a: 0, k: 0 },
+                ix: 3,
+                tr: {
+                  ty: "tr",
+                  p: { 
+                    a: 1, 
+                    k: [
+                      { t: 10, s: [0, -500], i: { x: 0.4, y: 0 }, o: { x: 0.6, y: 1 }, e: [0, 500] }, 
+                      { t: 70 }
+                    ] 
+                  },
+                  a: { a: 0, k: [0, 0] },
+                  s: { a: 0, k: [100, 100] },
+                  r: { a: 1, k: [{ t: 10, s: [0], i: { x: 0.4, y: 0 }, o: { x: 0.6, y: 1 }, e: [360] }, { t: 70 }] },
+                  o: { a: 0, k: 100 }
+                }
+              }
+            ],
+            nm: "Rectangle",
+            np: 3,
+            cix: 2,
+            ix: 2,
+            mn: "ADBE Vector Group"
+          },
+          {
+            ty: "gr",
+            it: [
+              {
+                ty: "rc",
+                d: 1,
+                s: { a: 0, k: [15, 15] },
+                p: { a: 0, k: [0, 0] },
+                r: { a: 0, k: 0 },
+                nm: "Rectangle Path 1",
+                mn: "ADBE Vector Shape - Rect"
+              },
+              {
+                ty: "fl",
+                c: { a: 0, k: [0.2, 0.9, 0.3, 1] },
+                o: { a: 0, k: 100 },
+                r: this.v,
+                nm: "Fill 1",
+                mn: "ADBE Vector Graphic - Fill"
+              },
+              {
+                ty: "rp",
+                c: { a: 0, k: 50 },
+                o: { a: 0, k: 0 },
+                m: 1,
+                a: { a: 0, k: 0 },
+                ix: 3,
+                tr: {
+                  ty: "tr",
+                  p: { 
+                    a: 1, 
+                    k: [
+                      { t: 20, s: [0, -500], i: { x: 0.4, y: 0 }, o: { x: 0.6, y: 1 }, e: [0, 500] }, 
+                      { t: 80 }
+                    ] 
+                  },
+                  a: { a: 0, k: [0, 0] },
+                  s: { a: 0, k: [100, 100] },
+                  r: { a: 1, k: [{ t: 20, s: [0], i: { x: 0.4, y: 0 }, o: { x: 0.6, y: 1 }, e: [360] }, { t: 80 }] },
+                  o: { a: 0, k: 100 }
+                }
+              }
+            ],
+            nm: "Rectangle",
+            np: 3,
+            cix: 2,
+            ix: 3,
+            mn: "ADBE Vector Group"
+          }
+        ],
+        ip: 0,
+        op: 90,
+        st: 0,
+        bm: 0
+      }
+    ]
+  };
+
   return (
     <ProjectDetailsLayout 
       title="Project Details" 
@@ -86,87 +268,7 @@ const ProjectDetails = () => {
             {showConfetti && (
               <div className="fixed inset-0 z-[9999] pointer-events-none flex items-center justify-center">
                 <Lottie
-                  animationData={{
-                    "v": "5.5.7",
-                    "fr": 30,
-                    "ip": 0,
-                    "op": 180,
-                    "w": 1920,
-                    "h": 1080,
-                    "nm": "confetti",
-                    "ddd": 0,
-                    "assets": [],
-                    "layers": [
-                      {
-                        "ddd": 0,
-                        "ind": 1,
-                        "ty": 4,
-                        "nm": "confetti",
-                        "sr": 1,
-                        "ks": {
-                          "o": {"a": 0, "k": 100},
-                          "r": {"a": 0, "k": 0},
-                          "p": {"a": 0, "k": [960, 540, 0]},
-                          "a": {"a": 0, "k": [0, 0, 0]},
-                          "s": {"a": 0, "k": [100, 100, 100]}
-                        },
-                        "ao": 0,
-                        "shapes": [
-                          {
-                            "ty": "gr",
-                            "it": [
-                              {
-                                "ty": "rc",
-                                "d": 1,
-                                "s": {"a": 0, "k": [20, 20]},
-                                "p": {"a": 0, "k": [0, 0]},
-                                "r": {"a": 0, "k": 0},
-                                "nm": "Rectangle Path",
-                                "mn": "ADBE Vector Shape - Rect"
-                              },
-                              {
-                                "ty": "fl",
-                                "c": {"a": 0, "k": [0.9, 0.2, 0.2, 1]},
-                                "o": {"a": 0, "k": 100},
-                                "r": 1,
-                                "nm": "Fill 1",
-                                "mn": "ADBE Vector Graphic - Fill"
-                              },
-                              {
-                                "ty": "rp",
-                                "c": {"a": 0, "k": 50},
-                                "o": {"a": 0, "k": 0},
-                                "m": 1,
-                                "a": {"a": 0, "k": 0},
-                                "ix": 3,
-                                "tr": {
-                                  "ty": "tr",
-                                  "p": {"a": 1, "k": [{"t": 0, "s": [0, -500], "i": {"x": 0.4, "y": 0}, "o": {"x": 0.6, "y": 1}, "e": [0, 500]}, {"t": 120}]},
-                                  "a": {"a": 0, "k": [0, 0]},
-                                  "s": {"a": 0, "k": [100, 100]},
-                                  "r": {"a": 1, "k": [{"t": 0, "s": [0], "i": {"x": 0.4, "y": 0}, "o": {"x": 0.6, "y": 1}, "e": [360]}, {"t": 120}]},
-                                  "o": {"a": 0, "k": 100},
-                                  "sk": {"a": 0, "k": 0},
-                                  "sa": {"a": 0, "k": 0}
-                                },
-                                "nm": "Transform",
-                                "mn": "ADBE Vector Group"
-                              }
-                            ],
-                            "nm": "Rectangle",
-                            "np": 3,
-                            "cix": 2,
-                            "ix": 1,
-                            "mn": "ADBE Vector Group"
-                          }
-                        ],
-                        "ip": 0,
-                        "op": 180,
-                        "st": 0,
-                        "bm": 0
-                      }
-                    ]
-                  }}
+                  animationData={confettiAnimation}
                   loop={true}
                   autoplay={true}
                   style={{ width: '100%', height: '100%', position: 'absolute' }}
