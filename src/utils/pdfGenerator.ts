@@ -19,104 +19,182 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     }
 
     // Format dates
-    const formattedDate = format(new Date(invoice.date), "dd MMMM, yyyy");
-    const formattedDueDate = format(new Date(invoice.dueDate), "dd MMMM, yyyy");
+    const formattedDate = format(new Date(invoice.date), "MMMM d, yyyy");
+    const formattedDueDate = format(new Date(invoice.dueDate), "MMMM d, yyyy");
     
-    // Format client address with truncation if necessary
+    // Format client address with no truncation
     const clientAddress = client.address || 'No address provided';
     
-    // Generate HTML content for the invoice
+    // Generate HTML content for the invoice - completely redesigned modern layout
     const invoiceHtml = `
-      <div id="invoice-container" style="font-family: Helvetica, sans-serif; color: #333; max-width: 800px; margin: 0 auto; padding: 5px 5px 0 5px;">
-        <!-- Header Section -->
-        <div style="background-color: #f0f8ff; padding: 30px; border-radius: 16px; margin: 5px 5px 0 5px;">
-          <div style="display: flex; justify-content: space-between; align-items: start;">
-            <div style="max-width: 350px;">
-              <h1 style="font-size: 32px; margin: 0 0 40px 0; font-weight: bold;">Invoice</h1>
-              <p style="color: #666; margin: 0 0 5px 0;">Billed to:</p>
-              <h2 style="font-size: 16px; margin: 0 0 5px 0;">${client.name}</h2>
-              <p style="color: #666; margin: 0; font-size: 12px; line-height: 1.4;">
-                ${clientAddress}
-                ${client.phone ? `<br>${client.phone}` : ''}
-                ${client.email ? `<br>${client.email}` : ''}
-              </p>
-            </div>
-            <div style="text-align: right;">
-              <p style="color: #666; margin: 0 0 5px 0;">Invoice no:</p>
-              <h3 style="font-size: 18px; margin: 0 0 30px 0; font-weight: bold;">${invoice.invoiceNumber}</h3>
-              
-              <p style="color: #666; margin: 0 0 5px 0;">Issued on:</p>
-              <p style="font-weight: 600; font-size: 16px; margin: 0 0 15px 0;">${formattedDate}</p>
-              
-              <p style="color: #666; margin: 0 0 5px 0;">Payment Due:</p>
-              <p style="font-weight: 600; font-size: 16px; margin: 0;">${formattedDueDate}</p>
-            </div>
-          </div>
+      <div id="invoice-container" style="font-family: Inter, Helvetica, sans-serif; width: 595px; height: 842px; position: relative; background: white; overflow: hidden; margin: 0 auto; box-shadow: 0px 10px 20px rgba(37, 49, 76, 0.15);">
+        <!-- Top blue header banner -->
+        <div style="width: 595px; height: 135px; left: 0px; top: 0px; position: absolute; background: #E3EFFF"></div>
+        
+        <!-- Logo container (white box in top-left) -->
+        <div style="width: 112px; height: 112px; left: 40px; top: 52px; position: absolute; background: white; box-shadow: 0px 2px 19px rgba(47, 94, 150, 0.07); border-radius: 24px; border: 0.60px #EBEFF6 solid; display: flex; align-items: center; justify-content: center;">
+          <div style="font-size: 18px; font-weight: bold; color: #19213D;">Pin Box</div>
         </div>
         
-        <!-- Items Table -->
-        <div style="padding: 30px 30px 0 30px; font-family: Helvetica, sans-serif;">
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;">
-            <thead>
-              <tr style="border-bottom: 1px solid #eee; text-align: left;">
-                <th style="padding: 10px 10px 10px 0; color: #666;">Services</th>
-                <th style="padding: 10px; color: #666; text-align: center;">Qty</th>
-                <th style="padding: 10px; color: #666; text-align: right;">Price</th>
-                <th style="padding: 10px 0 10px 10px; color: #666; text-align: right;">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${invoice.items.map(item => `
-                <tr style="border-bottom: 1px solid #f6f6f6;">
-                  <td style="padding: 15px 10px 15px 0;">${item.description}</td>
-                  <td style="padding: 15px 10px; color: #666; text-align: center;">${item.quantity}</td>
-                  <td style="padding: 15px 10px; color: #666; text-align: right;">$${item.rate.toLocaleString()}</td>
-                  <td style="padding: 15px 0 15px 10px; text-align: right;">$${item.amount.toLocaleString()}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-          
-          <!-- Totals Section -->
-          <div style="display: flex; justify-content: flex-end; margin-bottom: 60px;">
-            <div style="width: 250px;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                <span style="color: #333; font-weight: 500;">Subtotal</span>
-                <span style="font-weight: 500;">$${invoice.subtotal.toLocaleString()}</span>
+        <!-- Invoice number pill -->
+        <div style="padding: 5px 8px; right: 40px; top: 52px; position: absolute; background: white; box-shadow: 0px 1px 2px rgba(54, 61, 85, 0.08); border-radius: 25px; display: inline-flex; align-items: center;">
+          <div style="text-align: right; color: #19213D; font-size: 10px; font-family: Inter, Helvetica, sans-serif; font-weight: 500; text-transform: uppercase; letter-spacing: 0.4px;">${invoice.invoiceNumber}</div>
+        </div>
+        
+        <!-- Main content container -->
+        <div style="width: 523px; left: 40px; top: 184px; position: absolute; display: flex; flex-direction: column; gap: 24px;">
+          <!-- From/To/Date section -->
+          <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+            <!-- From section -->
+            <div style="display: inline-flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+              <div style="background: #E3EFFF; border-radius: 4px; padding: 3px 4px;">
+                <div style="color: #2388FF; font-size: 8px; font-weight: 500; line-height: 12px;">From</div>
               </div>
-              <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                <span style="color: #333; font-weight: 500;">Discount</span>
-                <span style="font-weight: 500;">${invoice.discountAmount > 0 ? `$${invoice.discountAmount.toLocaleString()}` : '0'}</span>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="color: #19213D; font-size: 12px; font-weight: 600; line-height: 16px;">Pin Box</div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <div style="color: #5D6481; font-size: 8px; font-weight: 400; line-height: 12px;">support@pinbox.io</div>
+                  <div style="color: #5D6481; font-size: 8px; font-weight: 400; line-height: 12px; max-width: 140px;">www.pinbox.io</div>
+                </div>
               </div>
-              <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                <span style="color: #333; font-weight: 500;">TAX:</span>
-                <span style="font-weight: 500;">${invoice.taxAmount > 0 ? `$${invoice.taxAmount.toLocaleString()}` : '0'}</span>
+            </div>
+            
+            <!-- Invoice to section -->
+            <div style="display: inline-flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+              <div style="background: #E3EFFF; border-radius: 4px; padding: 3px 4px;">
+                <div style="color: #2388FF; font-size: 8px; font-weight: 500; line-height: 12px;">Invoice to:</div>
               </div>
-              <div style="display: flex; justify-content: space-between; padding: 10px; background-color: #f0f8ff; border-radius: 5px; margin-top: 10px;">
-                <span style="font-weight: bold; font-size: 18px;">Total</span>
-                <span style="font-weight: bold; font-size: 18px;">$${invoice.total.toLocaleString()}</span>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="color: #19213D; font-size: 12px; font-weight: 600; line-height: 16px;">${client.name}</div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  ${client.phone ? `<div style="color: #5D6481; font-size: 8px; font-weight: 400; line-height: 12px;">${client.phone}</div>` : ''}
+                  ${client.email ? `<div style="color: #5D6481; font-size: 8px; font-weight: 400; line-height: 12px;">${client.email}</div>` : ''}
+                  <div style="color: #5D6481; font-size: 8px; font-weight: 400; line-height: 12px; max-width: 140px;">${clientAddress}</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Date section -->
+            <div style="display: inline-flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+              <div style="background: #E3EFFF; border-radius: 4px; padding: 3px 4px;">
+                <div style="color: #2388FF; font-size: 8px; font-weight: 500; line-height: 12px;">Date:</div>
+              </div>
+              
+              <!-- Issue date -->
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="color: #5D6481; font-size: 8px; font-weight: 400; line-height: 12px;">Issued</div>
+                <div style="display: flex; gap: 2px;">
+                  <div style="color: #19213D; font-size: 12px; font-weight: 600; line-height: 16px;">${formattedDate}</div>
+                </div>
+              </div>
+              
+              <!-- Payment due date -->
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="color: #5D6481; font-size: 8px; font-weight: 400; line-height: 12px;">Payment Due</div>
+                <div style="display: flex; gap: 2px;">
+                  <div style="color: #19213D; font-size: 12px; font-weight: 600; line-height: 16px;">${formattedDueDate}</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        
-        <!-- Footer Section -->
-        <div style="padding: 0 30px 30px 30px; display: flex; justify-content: space-between; font-family: Helvetica, sans-serif;">
-          <div style="width: 20%;">
-            <div style="width: 60px; height: 60px; background-color: #f0f8ff; margin-bottom: 15px;"></div>
-            <h3 style="font-size: 18px; margin: 0 0 5px 0;">Pin Box</h3>
-            <p style="color: #666; margin: 0 0 3px 0; font-size: 14px;">www.pinbox.io</p>
-            <p style="color: #666; margin: 0; font-size: 14px;">support@pinbox.io</p>
+          
+          <!-- Items Table -->
+          <div style="display: flex; flex-direction: column;">
+            <!-- Table header -->
+            <div style="height: 39px; position: relative; background: #F6F8FC; border-radius: 8px; margin-bottom: 10px;">
+              <div style="left: 12px; top: 12.50px; position: absolute; color: #19213D; font-size: 10px; font-weight: 600; line-height: 14px;">Item</div>
+              <div style="left: 333px; top: 12.50px; position: absolute; text-align: right; color: #19213D; font-size: 10px; font-weight: 600; line-height: 14px;">Price</div>
+              <div style="left: 408px; top: 12.50px; position: absolute; color: #19213D; font-size: 10px; font-weight: 600; line-height: 14px;">Qty</div>
+              <div style="right: 12px; top: 12.50px; position: absolute; color: #19213D; font-size: 10px; font-weight: 600; line-height: 14px;">Total</div>
+            </div>
+            
+            <!-- Table rows -->
+            ${invoice.items.map(item => `
+              <div style="padding: 16px 8px 16px 13px; border-bottom: 0.60px #F6F8FC solid; display: flex; justify-content: space-between; align-items: center;">
+                <div style="width: 272px; display: flex; gap: 12px;">
+                  <div style="color: #19213D; font-size: 10px; font-weight: 600; line-height: 14px;">${item.description}</div>
+                </div>
+                <div style="width: 200px; display: flex; justify-content: space-between;">
+                  <div style="width: 110px; display: flex; justify-content: space-between;">
+                    <div style="display: flex; gap: 2px;">
+                      <div style="color: #5D6481; font-size: 10px; font-weight: 400; line-height: 14px;">$</div>
+                      <div style="color: #5D6481; font-size: 10px; font-weight: 400; line-height: 14px;">${item.rate.toLocaleString()}</div>
+                    </div>
+                    <div style="color: #5D6481; font-size: 10px; font-weight: 400; line-height: 14px;">${item.quantity}</div>
+                  </div>
+                  <div style="display: flex; gap: 2px;">
+                    <div style="color: #19213D; font-size: 10px; font-weight: 600; line-height: 14px;">$</div>
+                    <div style="color: #19213D; font-size: 10px; font-weight: 600; line-height: 14px;">${item.amount.toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
           </div>
           
-          <div style="width: 25%;">
-            <h4 style="font-size: 16px; margin: 0 0 10px 0;">Notes</h4>
-            <p style="color: #666; margin: 0; font-size: 14px;">${invoice.notes || 'No additional notes'}</p>
-          </div>
-          
-          <div style="width: 25%;">
-            <h4 style="font-size: 16px; margin: 0 0 10px 0;">Terms & Conditions</h4>
-            <p style="color: #666; margin: 0; font-size: 14px;">${invoice.termsAndConditions || 'Payment due within 14 days of receipt.'}</p>
+          <!-- Totals and Footer Section -->
+          <div style="height: 262px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end;">
+            <!-- Totals -->
+            <div style="width: 249px; display: flex; flex-direction: column; gap: 8px;">
+              <!-- Subtotal line -->
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="padding: 0 8px; display: flex; justify-content: space-between; align-items: center;">
+                  <div style="color: #19213D; font-size: 10px; font-weight: 600; line-height: 14px;">Subtotal</div>
+                  <div style="display: flex; gap: 2px;">
+                    <div style="color: #868DA6; font-size: 10px; font-weight: 400; line-height: 14px;">$</div>
+                    <div style="color: #868DA6; font-size: 10px; font-weight: 400; line-height: 14px;">${invoice.subtotal.toLocaleString()}</div>
+                  </div>
+                </div>
+                
+                <!-- Discount line -->
+                <div style="padding: 0 8px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <span style="color: #19213D; font-size: 10px; font-weight: 600; line-height: 14px;">Discount </span>
+                    ${invoice.discountAmount > 0 ? `<span style="color: #868DA6; font-size: 10px; font-weight: 600; line-height: 14px;">(Special Offer)</span>` : ''}
+                  </div>
+                  <div style="display: flex; gap: 2px;">
+                    <div style="color: #868DA6; font-size: 10px; font-weight: 400; line-height: 14px;">$</div>
+                    <div style="color: #868DA6; font-size: 10px; font-weight: 400; line-height: 14px;">${invoice.discountAmount.toLocaleString()}</div>
+                  </div>
+                </div>
+                
+                <!-- Tax line -->
+                <div style="padding: 0 8px; display: flex; justify-content: space-between; align-items: center;">
+                  <div style="color: #19213D; font-size: 10px; font-weight: 600; line-height: 14px;">TAX:</div>
+                  <div style="display: flex; gap: 2px;">
+                    <div style="color: #2388FF; font-size: 10px; font-weight: 400; line-height: 14px;">$</div>
+                    <div style="color: #2388FF; font-size: 10px; font-weight: 400; line-height: 14px;">${invoice.taxAmount.toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Total box -->
+              <div style="width: 249px; padding: 10px 8px; background: #F6F8FC; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="color: #19213D; font-size: 10px; font-weight: 600; line-height: 14px;">Invoice total</div>
+                <div style="display: flex; gap: 2px;">
+                  <div style="color: #19213D; font-size: 10px; font-weight: 600; line-height: 14px;">$</div>
+                  <div style="color: #19213D; font-size: 10px; font-weight: 600; line-height: 14px;">${invoice.total.toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Terms and Notes -->
+            <div style="display: flex; width: 100%; gap: 50px;">
+              <!-- Terms column -->
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+                <div style="color: #19213D; font-size: 8px; font-weight: 600; line-height: 12px;">Terms & Conditions:</div>
+                <div style="width: 220px;">
+                  <div style="color: #868DA6; font-size: 8px; font-weight: 400; line-height: 12px;">${invoice.termsAndConditions || 'Payment due within 14 days of receipt.'}</div>
+                </div>
+              </div>
+              
+              <!-- Notes column -->
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+                <div style="color: #19213D; font-size: 8px; font-weight: 600; line-height: 12px;">Notes</div>
+                <div style="width: 220px;">
+                  <div style="color: #868DA6; font-size: 8px; font-weight: 400; line-height: 12px;">${invoice.notes || 'No additional notes'}</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
