@@ -213,7 +213,8 @@ const ProjectDetails = () => {
                 ty: "fl",
                 c: { a: 0, k: [0.2, 0.9, 0.3, 1] },
                 o: { a: 0, k: 100 },
-                r: this.v,
+                // Fix the problem: Remove this.v which is undefined and use 1 instead
+                r: 1,
                 nm: "Fill 1",
                 mn: "ADBE Vector Graphic - Fill"
               },
