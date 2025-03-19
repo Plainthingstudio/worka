@@ -16,20 +16,20 @@ export const renderTermsAndNotes = (
   let currentY = Math.max(startY + 20, 672); // Ensure we don't start too high
   
   // Add company logo box
-  doc.setFillColor(...COLORS.background.highlight);
-  doc.setDrawColor(...COLORS.line.dark);
+  doc.setFillColor(COLORS.background.highlight[0], COLORS.background.highlight[1], COLORS.background.highlight[2]);
+  doc.setDrawColor(COLORS.line.dark[0], COLORS.line.dark[1], COLORS.line.dark[2]);
   doc.setLineWidth(0);
   doc.rect(logo.x, logo.y, logo.width, logo.height, "F");
   
   // Add company name
   doc.setFontSize(FONTS.size.heading);
   doc.setFont(FONTS.family.main, FONTS.style.normal);
-  doc.setTextColor(...COLORS.text.black);
+  doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
   doc.text("Pin Box", footer.company.name.x, footer.company.name.y);
   
   // Add company website
   doc.setFontSize(FONTS.size.small);
-  doc.setTextColor(...COLORS.text.body);
+  doc.setTextColor(COLORS.text.body[0], COLORS.text.body[1], COLORS.text.body[2]);
   doc.text("www.pinbox.io", footer.company.website.x, footer.company.website.y);
   
   // Add company email
@@ -37,12 +37,12 @@ export const renderTermsAndNotes = (
   
   // Add notes section
   doc.setFontSize(FONTS.size.subheading);
-  doc.setTextColor(...COLORS.text.black);
+  doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
   doc.text("Notes", footer.notes.title.x, footer.notes.title.y);
   
   // Add notes content
   doc.setFontSize(FONTS.size.small);
-  doc.setTextColor(...COLORS.text.body);
+  doc.setTextColor(COLORS.text.body[0], COLORS.text.body[1], COLORS.text.body[2]);
   const notesText = notes && notes.trim().length > 0 
     ? notes 
     : "No additional notes";
@@ -52,12 +52,12 @@ export const renderTermsAndNotes = (
   
   // Add terms section
   doc.setFontSize(FONTS.size.subheading);
-  doc.setTextColor(...COLORS.text.black);
+  doc.setTextColor(COLORS.text.black[0], COLORS.text.black[1], COLORS.text.black[2]);
   doc.text("Terms & Conditions", footer.terms.title.x, footer.terms.title.y);
   
   // Add terms content
   doc.setFontSize(FONTS.size.small);
-  doc.setTextColor(...COLORS.text.body);
+  doc.setTextColor(COLORS.text.body[0], COLORS.text.body[1], COLORS.text.body[2]);
   const termsText = termsAndConditions && termsAndConditions.trim().length > 0 
     ? termsAndConditions 
     : "No terms and conditions specified";
