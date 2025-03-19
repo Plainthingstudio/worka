@@ -26,8 +26,9 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     const clientAddress = client.address || 'No address provided';
     
     // Generate HTML content for the invoice with new design
+    // Removed fixed width and adjusted margins to properly fit within A4
     const invoiceHtml = `
-      <div id="invoice-container" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; width: 100%; max-width: 595px; margin: 0 auto; padding: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: white; border-radius: 10px; overflow: hidden;">
+      <div id="invoice-container" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; width: 100%; margin: 0 auto; padding: 0; background: white; overflow: hidden;">
         <!-- Header Section with light blue background and logo -->
         <div style="background-color: #e6f2ff; padding: 25px 30px; position: relative;">
           <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -157,13 +158,13 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     }
     
     try {
-      // Options for html2pdf - Updated to use A4 paper size
+      // Options for html2pdf - Updated to use A4 paper size with proper margins
       const options = {
-        margin: 0,
+        margin: 0, // Remove margins to use full width
         filename: `Invoice_${invoice.invoiceNumber}.pdf`,
-        image: { type: 'jpeg', quality: 1 },
+        image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
-          scale: 2,
+          scale: 2, // Higher scale for better quality
           useCORS: true,
           logging: false,
           backgroundColor: null
@@ -173,6 +174,8 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
           format: 'a4', // A4 paper size (210mm × 297mm)
           orientation: 'portrait',
           compress: true,
+          putOnlyUsedFonts: true,
+          precision: 16 // Higher precision for better text rendering
         }
       };
       
