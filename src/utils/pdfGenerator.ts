@@ -27,26 +27,33 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     
     // Generate HTML content for the invoice with updated design
     const invoiceHtml = `
-      <div id="invoice-container" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; width: 100%; margin: 0 auto; padding: 0; background: white; overflow: hidden;">
+      <div id="invoice-container" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; width: 100%; margin: 0; padding: 0; background: white; max-width: 210mm;">
         <!-- Header Section with light blue background and logo -->
-        <div style="background-color: #e6f2ff; padding: 25px 30px 80px 30px; position: relative; margin-bottom: 45px;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <!-- Logo placeholder - white rounded square with shadow and overflow -->
+        <div style="background-color: #e6f2ff; padding: 25px 20px 60px 20px; position: relative; margin-bottom: 10px; width: 100%;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+            <!-- Logo placeholder with overlap effect -->
             <div style="position: relative; z-index: 10;">
-              <div style="width: 100px; height: 100px; background-color: white; border-radius: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-right: 20px; position: relative; top: 40px;"></div>
+              <div style="width: 100px; height: 100px; background-color: white; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); position: relative; top: 20px;"></div>
             </div>
             
             <!-- Invoice number in a pill/capsule style - centered text with shadow -->
-            <div style="background-color: white; border-radius: 50px; padding: 10px 20px; font-weight: 500; box-shadow: 0 4px 10px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center;">
+            <div style="background-color: white; border-radius: 50px; padding: 10px 25px; font-weight: 500; box-shadow: 0 4px 10px rgba(0,0,0,0.08); text-align: center; min-width: 120px;">
               <span style="font-size: 14px; letter-spacing: 0.5px;">INV-${invoice.invoiceNumber}</span>
             </div>
           </div>
         </div>
         
+        <!-- Header cutout shapes -->
+        <div style="display: flex; justify-content: space-between; width: 100%;">
+          <div style="width: 120px; height: 30px; background-color: white; border-top-left-radius: 30px; margin-top: -30px; margin-left: 0;"></div>
+          <div style="width: 120px; height: 30px; background-color: white; border-top-left-radius: 30px; margin-top: -30px; margin-left: -60px;"></div>
+          <div style="width: 120px; height: 30px; background-color: white; border-top-left-radius: 30px; margin-top: -30px; margin-right: 0;"></div>
+        </div>
+        
         <!-- From and To Sections - moved up to overlap the blue section -->
-        <div style="padding: 0 30px; display: flex; justify-content: space-between; margin-top: -55px; margin-bottom: 30px;">
+        <div style="padding: 0 20px; display: flex; justify-content: space-between; margin-top: -25px; margin-bottom: 30px; width: 100%;">
           <!-- From section -->
-          <div style="width: 30%;">
+          <div style="width: 32%;">
             <div style="background-color: #e6f2ff; display: inline-block; padding: 6px 16px; border-radius: 50px; margin-bottom: 10px;">
               <p style="font-size: 14px; color: #3B82F6; margin: 0; font-weight: 500;">From</p>
             </div>
@@ -60,7 +67,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
           </div>
           
           <!-- To section -->
-          <div style="width: 30%;">
+          <div style="width: 32%;">
             <div style="background-color: #e6f2ff; display: inline-block; padding: 6px 16px; border-radius: 50px; margin-bottom: 10px;">
               <p style="font-size: 14px; color: #3B82F6; margin: 0; font-weight: 500;">Invoice to:</p>
             </div>
@@ -73,7 +80,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
           </div>
           
           <!-- Date section -->
-          <div style="width: 30%;">
+          <div style="width: 32%;">
             <div style="background-color: #e6f2ff; display: inline-block; padding: 6px 16px; border-radius: 50px; margin-bottom: 10px;">
               <p style="font-size: 14px; color: #3B82F6; margin: 0; font-weight: 500;">Date:</p>
             </div>
@@ -86,9 +93,9 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
         </div>
         
         <!-- Items Table -->
-        <div style="padding: 15px 30px;">
+        <div style="padding: 15px 20px; width: 100%;">
           <!-- Table Header -->
-          <div style="display: flex; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 8px;">
+          <div style="display: flex; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 8px; width: 100%;">
             <div style="flex: 2; font-weight: 500; font-size: 14px; color: #4B5563;">Item</div>
             <div style="flex: 1; font-weight: 500; font-size: 14px; color: #4B5563; text-align: right;">Price</div>
             <div style="flex: 1; font-weight: 500; font-size: 14px; color: #4B5563; text-align: right;">Qty</div>
@@ -97,7 +104,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
           
           <!-- Table Content -->
           ${invoice.items.map(item => `
-            <div style="display: flex; padding: 15px 0; border-bottom: 1px solid #f3f4f6;">
+            <div style="display: flex; padding: 15px 0; border-bottom: 1px solid #f3f4f6; width: 100%;">
               <div style="flex: 2; font-size: 14px;">${item.description}</div>
               <div style="flex: 1; font-size: 14px; text-align: right;">$ ${item.rate.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
               <div style="flex: 1; font-size: 14px; text-align: right;">${item.quantity}</div>
@@ -106,7 +113,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
           `).join('')}
           
           <!-- Summary Section -->
-          <div style="display: flex; justify-content: flex-end; margin-top: 25px;">
+          <div style="display: flex; justify-content: flex-end; margin-top: 25px; width: 100%;">
             <div style="width: 250px;">
               <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                 <span style="color: #4B5563; font-size: 14px;">Subtotal</span>
@@ -132,7 +139,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
         </div>
         
         <!-- Terms and Notes -->
-        <div style="padding: 30px 30px 40px 30px; display: flex; justify-content: space-between;">
+        <div style="padding: 20px 20px 40px 20px; display: flex; justify-content: space-between; width: 100%;">
           <div style="width: 48%;">
             <h3 style="font-size: 15px; font-weight: 600; margin: 0 0 12px 0;">Terms & Conditions:</h3>
             <p style="font-size: 13px; color: #6B7280; line-height: 1.5; margin: 0;">
@@ -167,14 +174,15 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
     try {
       // Options for html2pdf - Updated to use A4 paper size with proper margins
       const options = {
-        margin: 0, // Remove margins to use full width
+        margin: [0, 0, 0, 0], // Remove margins completely [top, right, bottom, left]
         filename: `Invoice_${invoice.invoiceNumber}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
           scale: 2, // Higher scale for better quality
           useCORS: true,
           logging: false,
-          backgroundColor: null
+          backgroundColor: null,
+          windowWidth: 210 * 3.779528, // A4 width in pixels (210mm = ~793px)
         },
         jsPDF: { 
           unit: 'mm', 
