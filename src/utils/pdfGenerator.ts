@@ -42,7 +42,7 @@ export const generateInvoicePDF = async (invoice: Invoice): Promise<void> => {
           </div>
         </div>
         
-        <!-- From and To Sections -->
+        <!-- From and To Sections - Updated with space-between distribution -->
         <div style="padding: 30px 30px 15px 30px; display: flex; justify-content: space-between; margin-top: 35px;">
           <!-- From section -->
           <div style="width: 30%;">
