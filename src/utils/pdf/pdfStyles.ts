@@ -26,11 +26,11 @@ export const FONTS = {
     bold: "bold",
   },
   size: {
-    title: 28,
-    subtitle: 18, 
-    heading: 17,
-    subheading: 13,
-    body: 12,
+    title: 24,
+    subtitle: 16, 
+    heading: 14,
+    subheading: 12,
+    body: 11,
     small: 10,
   }
 };
@@ -43,7 +43,7 @@ export const COLORS = {
   },
   text: {
     dark: [25, 34, 41] as [number, number, number], // #192229
-    body: [121, 137, 150] as [number, number, number], // #798996
+    body: [100, 110, 120] as [number, number, number], // #646e78
     muted: [130, 135, 140] as [number, number, number], // #82878c
     black: [0, 0, 0] as [number, number, number],
   },
@@ -65,114 +65,16 @@ export const LINE_WIDTH = {
 };
 
 // Fixed positions for invoice elements - simplified for clean design
-export const POSITIONS = {
-  // Header section
-  header: {
-    x: PAGE_CONFIG.margin.left,
-    y: PAGE_CONFIG.margin.top + 40,
-    width: CONTENT_WIDTH,
-    height: 200
-  },
-  
-  // Invoice title and info
-  invoice: {
-    title: { x: PAGE_CONFIG.margin.left, y: PAGE_CONFIG.margin.top + 40 },
-    number: { 
-      label: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right - 80, y: PAGE_CONFIG.margin.top + 75 },
-      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: PAGE_CONFIG.margin.top + 100 }
-    }
-  },
-  
-  // Client section
-  client: {
-    label: { x: PAGE_CONFIG.margin.left, y: PAGE_CONFIG.margin.top + 120 },
-    name: { x: PAGE_CONFIG.margin.left, y: PAGE_CONFIG.margin.top + 150 },
-    address: { x: PAGE_CONFIG.margin.left, y: PAGE_CONFIG.margin.top + 170 }
-  },
-  
-  // Date info positions
-  dates: {
-    issued: { 
-      label: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right - 100, y: PAGE_CONFIG.margin.top + 130 },
-      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: PAGE_CONFIG.margin.top + 150 }
-    },
-    due: { 
-      label: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right - 100, y: PAGE_CONFIG.margin.top + 180 },
-      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: PAGE_CONFIG.margin.top + 200 }
-    }
-  },
-  
-  // Table positions
-  table: {
-    startY: PAGE_CONFIG.margin.top + 240,
-    headers: {
-      service: { x: PAGE_CONFIG.margin.left, y: 0 },
-      quantity: { x: 300, y: 0 },
-      price: { x: 400, y: 0 },
-      amount: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right - 10, y: 0 }
-    },
-    row: {
-      height: 40
-    }
-  },
-  
-  // Totals section
-  totals: {
-    startY: 650,
-    subtotal: { 
-      label: { x: 400, y: 0 },
-      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: 0 }
-    },
-    discount: {
-      label: { x: 400, y: 30 },
-      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: 30 }
-    },
-    tax: {
-      label: { x: 400, y: 60 },
-      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: 60 }
-    },
-    total: {
-      label: { x: 400, y: 100 },
-      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: 100 },
-      box: { 
-        x: 380, 
-        y: 85, 
-        width: 165, 
-        height: 30 
-      }
-    }
-  },
-  
-  // Footer section
-  footer: {
-    startY: 750,
-    company: {
-      box: { x: PAGE_CONFIG.margin.left, y: 0, width: 60, height: 60 },
-      name: { x: PAGE_CONFIG.margin.left, y: 70 },
-      website: { x: PAGE_CONFIG.margin.left, y: 85 },
-      email: { x: PAGE_CONFIG.margin.left, y: 100 }
-    },
-    notes: {
-      title: { x: 240, y: 70 },
-      content: { x: 240, y: 85 }
-    },
-    terms: {
-      title: { x: 400, y: 70 },
-      content: { x: 400, y: 85 }
-    }
-  }
-};
-
-// Table configuration 
 export const TABLE_CONFIG = {
+  startY: 250,
   columns: {
     description: { x: PAGE_CONFIG.margin.left, y: 0 },
-    quantity: { x: 300, y: 0 },
-    price: { x: 400, y: 0 },
-    amount: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right - 10, y: 0 }
+    quantity: { x: 350, y: 0 },
+    price: { x: 420, y: 0 },
+    amount: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: 0 }
   },
   row: {
-    height: 40
+    height: 30
   }
 };
 
@@ -182,70 +84,70 @@ export const INVOICE_BLOCKS = {
     x: PAGE_CONFIG.margin.left,
     y: PAGE_CONFIG.margin.top,
     width: CONTENT_WIDTH,
-    height: 200,
+    height: 160,
   },
   invoice: {
-    title: { x: PAGE_CONFIG.margin.left, y: PAGE_CONFIG.margin.top + 40 },
+    title: { x: PAGE_CONFIG.margin.left, y: PAGE_CONFIG.margin.top + 30 },
     number: {
-      label: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right - 80, y: PAGE_CONFIG.margin.top + 75 },
-      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: PAGE_CONFIG.margin.top + 100 }
+      label: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right - 80, y: PAGE_CONFIG.margin.top + 60 },
+      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: PAGE_CONFIG.margin.top + 80 }
     },
     date: {
-      label: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right - 100, y: PAGE_CONFIG.margin.top + 130 },
-      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: PAGE_CONFIG.margin.top + 150 }
+      label: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right - 100, y: PAGE_CONFIG.margin.top + 110 },
+      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: PAGE_CONFIG.margin.top + 130 }
     },
     due: {
-      label: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right - 100, y: PAGE_CONFIG.margin.top + 180 },
-      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: PAGE_CONFIG.margin.top + 200 }
+      label: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right - 100, y: PAGE_CONFIG.margin.top + 150 },
+      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: PAGE_CONFIG.margin.top + 170 }
     }
   },
   client: {
-    label: { x: PAGE_CONFIG.margin.left, y: PAGE_CONFIG.margin.top + 120 },
-    name: { x: PAGE_CONFIG.margin.left, y: PAGE_CONFIG.margin.top + 150 },
-    address: { x: PAGE_CONFIG.margin.left, y: PAGE_CONFIG.margin.top + 170 }
+    label: { x: PAGE_CONFIG.margin.left, y: PAGE_CONFIG.margin.top + 100 },
+    name: { x: PAGE_CONFIG.margin.left, y: PAGE_CONFIG.margin.top + 120 },
+    address: { x: PAGE_CONFIG.margin.left, y: PAGE_CONFIG.margin.top + 140 }
   },
   logo: { 
     x: PAGE_CONFIG.margin.left, 
-    y: 750, 
+    y: 680, 
     width: 60, 
     height: 60 
   },
   footer: {
     company: {
-      name: { x: PAGE_CONFIG.margin.left, y: 820 },
-      website: { x: PAGE_CONFIG.margin.left, y: 835 },
-      email: { x: PAGE_CONFIG.margin.left, y: 850 }
+      name: { x: PAGE_CONFIG.margin.left, y: 750 },
+      website: { x: PAGE_CONFIG.margin.left, y: 770 },
+      email: { x: PAGE_CONFIG.margin.left, y: 790 }
     },
     notes: {
-      title: { x: 240, y: 820 },
-      content: { x: 240, y: 835 }
+      title: { x: 210, y: 750 },
+      content: { x: 210, y: 770 }
     },
     terms: {
-      title: { x: 400, y: 820 },
-      content: { x: 400, y: 835 }
+      title: { x: 370, y: 750 },
+      content: { x: 370, y: 770 }
     }
   },
   totals: {
     subtotal: {
-      label: { x: 400, y: 650 },
-      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: 650 }
+      label: { x: 400, y: 0 },
+      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: 0 }
     },
     discount: {
-      label: { x: 400, y: 680 },
-      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: 680 }
+      label: { x: 400, y: 0 },
+      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: 0 }
     },
     tax: {
-      label: { x: 400, y: 710 },
-      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: 710 }
+      label: { x: 400, y: 0 },
+      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: 0 }
     },
     total: {
-      label: { x: 400, y: 750 },
-      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: 750 },
+      label: { x: 400, y: 0 },
+      value: { x: PAGE_CONFIG.width - PAGE_CONFIG.margin.right, y: 0 },
       box: { 
         x: 380, 
-        y: 735, 
+        y: 0, 
         width: 165, 
-        height: 30 
+        height: 26 
       }
     }
   }

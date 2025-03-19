@@ -21,7 +21,7 @@ export const renderInvoiceHeader = (
   
   // Add light blue background for header
   doc.setFillColor(COLORS.background.highlight[0], COLORS.background.highlight[1], COLORS.background.highlight[2]);
-  doc.rect(margin.left, margin.top, PAGE_CONFIG.width - margin.left - margin.right, 200, "F");
+  doc.rect(margin.left, margin.top, PAGE_CONFIG.width - margin.left - margin.right, INVOICE_BLOCKS.header.height, "F");
   
   // Add "Invoice" title
   doc.setFontSize(FONTS.size.title);

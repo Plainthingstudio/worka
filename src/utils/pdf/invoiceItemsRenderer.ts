@@ -14,11 +14,11 @@ export const renderInvoiceItems = (
   const { margin } = PAGE_CONFIG;
   
   // Table header position
-  let currentY = startY;
+  let currentY = startY + 10;
   
   // Add table headers with proper styling
   doc.setFontSize(FONTS.size.subheading);
-  doc.setFont(FONTS.family.main, FONTS.style.normal);
+  doc.setFont(FONTS.family.main, FONTS.style.bold);
   doc.setTextColor(COLORS.text.body[0], COLORS.text.body[1], COLORS.text.body[2]);
   
   // Table header columns 
@@ -30,13 +30,13 @@ export const renderInvoiceItems = (
   // Light separator line after headers
   doc.setDrawColor(COLORS.line.light[0], COLORS.line.light[1], COLORS.line.light[2]);
   doc.setLineWidth(0.5);
-  doc.line(margin.left, currentY + 10, PAGE_CONFIG.width - margin.right, currentY + 10);
+  doc.line(margin.left, currentY + 6, PAGE_CONFIG.width - margin.right, currentY + 6);
   
   // Reset font for table rows
   doc.setFont(FONTS.family.main, FONTS.style.normal);
-  doc.setFontSize(FONTS.size.subheading);
+  doc.setFontSize(FONTS.size.body);
   
-  currentY += 40; // Start of first row with more spacing
+  currentY += 20; // Start of first row with more spacing
   
   // Draw table rows
   items.forEach((item, index) => {
@@ -51,7 +51,7 @@ export const renderInvoiceItems = (
       doc.setFillColor(COLORS.background.highlight[0], COLORS.background.highlight[1], COLORS.background.highlight[2]);
       doc.rect(
         margin.left, 
-        currentY - 20, 
+        currentY - 15, 
         PAGE_CONFIG.width - margin.left - margin.right,
         TABLE_CONFIG.row.height, 
         "F"
