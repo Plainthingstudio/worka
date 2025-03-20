@@ -98,33 +98,36 @@ export const useLeadOperations = (leads: Lead[], setLeads: React.Dispatch<React.
     }
   };
 
+  // Completely redesigned deletion function with better error handling
   const deleteLead = async (id: string): Promise<boolean> => {
+    // Validate input
     if (!id) {
       console.error('No lead ID provided for deletion');
       toast.error('Failed to delete: Invalid lead');
       return false;
     }
     
-    // First, create a local copy of the leads array excluding the one to be deleted
-    // This helps avoid UI freezing by updating the UI immediately
-    const updatedLeads = leads.filter(lead => lead.id !== id);
+    // UI update happens immediately (optimistic)
+    setLeads(prev => prev.filter(lead => lead.id !== id));
     
+    // Set loading state
     setIsDeletingLead(true);
     
     try {
-      // Update the UI first (optimistic update)
-      setLeads(updatedLeads);
-      
-      // Then make the database request
+      // Make database request in background
       const { error } = await supabase
         .from('leads')
         .delete()
         .eq('id', id);
 
       if (error) {
-        // If the database operation fails, revert the UI update
-        setLeads(leads);
-        throw error;
+        // If the database operation fails, we need to restore the deleted lead
+        const deletedLead = leads.find(lead => lead.id === id);
+        if (deletedLead) {
+          // Add the lead back to the state
+          setLeads(prev => [...prev, deletedLead]);
+          throw error;
+        }
       }
       
       toast.success('Lead deleted successfully');

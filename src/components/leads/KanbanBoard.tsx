@@ -96,7 +96,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     return success;
   };
 
-  // Handle closing dialogs and cleanup selected lead
+  // Handle closing dialogs and cleanup selected lead with defensive programming
   const handleCloseAddDialog = () => {
     setIsAddDialogOpen(false);
   };
@@ -151,6 +151,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
         </div>
       </div>
 
+      {/* Since these components use state from the hook, 
+          they'll automatically update when the state changes */}
       <LeadDialog 
         isOpen={isAddDialogOpen} 
         onClose={handleCloseAddDialog} 
