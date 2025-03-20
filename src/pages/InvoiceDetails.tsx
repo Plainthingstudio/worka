@@ -7,6 +7,7 @@ import { Invoice } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useSidebarState } from "@/hooks/useSidebarState";
 import { useClients } from "@/hooks/useClients";
+import { useInvoicePdf } from "@/hooks/useInvoicePdf";
 
 // Import refactored components
 import InvoiceDetailsHeader from "@/components/invoice-details/InvoiceDetailsHeader";
@@ -22,6 +23,7 @@ const InvoiceDetails = () => {
   const { toast } = useToast();
   const { isSidebarExpanded } = useSidebarState();
   const { clients, isLoading: isClientsLoading } = useClients();
+  const { generatePDF } = useInvoicePdf();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [client, setClient] = useState<any>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -177,11 +179,10 @@ const InvoiceDetails = () => {
     }
   };
 
-  const generatePDF = () => {
-    toast({
-      title: "PDF Generated",
-      description: "In a production app, this would generate and download a PDF.",
-    });
+  const handleGeneratePDF = () => {
+    if (invoice) {
+      generatePDF(invoice);
+    }
   };
 
   const handleEdit = () => {
@@ -229,7 +230,7 @@ const InvoiceDetails = () => {
           <InvoiceDetailsHeader 
             invoice={invoice}
             onDeleteClick={() => setDeleteConfirmOpen(true)}
-            onGeneratePDF={generatePDF}
+            onGeneratePDF={handleGeneratePDF}
             onEditClick={handleEdit}
           />
 
