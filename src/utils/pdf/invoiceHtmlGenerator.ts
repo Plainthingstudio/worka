@@ -1,4 +1,3 @@
-
 import { format } from 'date-fns';
 import { Invoice } from '@/types';
 import { formatDateParts } from './invoiceHelpers';
@@ -30,8 +29,8 @@ export const generateInvoiceHtml = (invoice: Invoice, client: any): string => {
           <img src="/lovable-uploads/c992b2ba-2210-4bfe-a32a-016522dfd451.png" style="max-width: 80%; max-height: 80%; object-fit: contain; width: auto; height: auto;" />
         </div>
         
-        <!-- Invoice number in a pill/capsule style -->
-        <div style="position: absolute; right: 30px; top: 52px; background: white; border-radius: 8px; padding: 8px 12px; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05); border: 0.5px solid #EBEFF6; justify-content: center; align-items: center; display: inline-flex;">
+        <!-- Invoice number in a pill/capsule style - UPDATED padding to 0px top and 16px bottom -->
+        <div style="position: absolute; right: 30px; top: 52px; background: white; border-radius: 8px; padding: 0px 12px 16px 12px; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05); border: 0.5px solid #EBEFF6; justify-content: center; align-items: center; display: inline-flex;">
           <div style="color: #2388FF; font-size: 16px; font-family: Inter; font-weight: 500; line-height: 20px; word-wrap: break-word">${invoice.invoiceNumber}</div>
         </div>
       </div>
