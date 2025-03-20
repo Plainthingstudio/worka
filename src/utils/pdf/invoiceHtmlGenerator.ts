@@ -1,3 +1,4 @@
+
 import { format } from 'date-fns';
 import { Invoice } from '@/types';
 import { formatDateParts } from './invoiceHelpers';
@@ -21,8 +22,8 @@ export const generateInvoiceHtml = (invoice: Invoice, client: any): string => {
     <div id="invoice-container" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; width: 100%; margin: 0 auto; padding: 0; background: white; overflow: hidden;">
       <!-- Header Section with specific design -->
       <div style="position: relative; width: 100%;">
-        <!-- Blue background header -->
-        <div style="width: 100%; height: 135px; background-color: #E3EFFF; position: relative;"></div>
+        <!-- Blue background header - UPDATED to purple -->
+        <div style="width: 100%; height: 135px; background-color: #F8E3FF; position: relative;"></div>
         
         <!-- Logo placeholder - white rounded square with shadow and logo -->
         <div style="width: 112px; height: 112px; position: absolute; left: 40px; top: 52px; background-color: white; border-radius: 24px; box-shadow: 0px 2px 19px rgba(47.78, 94.96, 150.87, 0.07); border: 0.60px #EBEFF6 solid; display: flex; justify-content: center; align-items: center; padding: 6px; overflow: hidden;">
@@ -31,7 +32,7 @@ export const generateInvoiceHtml = (invoice: Invoice, client: any): string => {
         
         <!-- Invoice number in a pill/capsule style - UPDATED padding to 0px top and 16px bottom -->
         <div style="position: absolute; right: 30px; top: 52px; background: white; border-radius: 8px; padding: 0px 12px 16px 12px; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05); border: 0.5px solid #EBEFF6; justify-content: center; align-items: center; display: inline-flex;">
-          <div style="color: #2388FF; font-size: 16px; font-family: Inter; font-weight: 500; line-height: 20px; word-wrap: break-word">${invoice.invoiceNumber}</div>
+          <div style="color: #7B23FF; font-size: 16px; font-family: Inter; font-weight: 500; line-height: 20px; word-wrap: break-word">${invoice.invoiceNumber}</div>
         </div>
       </div>
       
@@ -39,8 +40,8 @@ export const generateInvoiceHtml = (invoice: Invoice, client: any): string => {
       <div style="padding: 30px 30px 15px 30px; margin-top: 35px; width: 100%; justify-content: space-between; align-items: flex-start; display: inline-flex; flex-wrap: wrap; align-content: flex-start">
         <!-- From section -->
         <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
-          <div style="padding-left: 8px; padding-right: 8px; padding-top: 0px; padding-bottom: 12px; background: #E3EFFF; border-radius: 4px; justify-content: center; align-items: center; display: inline-flex">
-            <div style="color: #2388FF; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; word-wrap: break-word">From</div>
+          <div style="padding-left: 8px; padding-right: 8px; padding-top: 0px; padding-bottom: 12px; background: #F8E3FF; border-radius: 4px; justify-content: center; align-items: center; display: inline-flex">
+            <div style="color: #7B23FF; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; word-wrap: break-word">From</div>
           </div>
           <div style="align-self: stretch; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex">
             <div style="width: 178px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
@@ -59,8 +60,8 @@ export const generateInvoiceHtml = (invoice: Invoice, client: any): string => {
         
         <!-- To section -->
         <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
-          <div style="padding-left: 8px; padding-right: 8px; padding-top: 0px; padding-bottom: 12px; background: #E3EFFF; border-radius: 4px; justify-content: center; align-items: center; display: inline-flex">
-            <div style="color: #2388FF; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; word-wrap: break-word">Invoice to:</div>
+          <div style="padding-left: 8px; padding-right: 8px; padding-top: 0px; padding-bottom: 12px; background: #F8E3FF; border-radius: 4px; justify-content: center; align-items: center; display: inline-flex">
+            <div style="color: #7B23FF; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; word-wrap: break-word">Invoice to:</div>
           </div>
           <div style="align-self: stretch; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex">
             <div style="width: 178px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
@@ -83,8 +84,8 @@ export const generateInvoiceHtml = (invoice: Invoice, client: any): string => {
         <!-- Date section -->
         <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
           <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: flex">
-            <div style="padding-left: 8px; padding-right: 8px; padding-top: 0px; padding-bottom: 12px; background: #E3EFFF; border-radius: 4px; justify-content: center; align-items: center; display: inline-flex">
-              <div style="color: #2388FF; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; word-wrap: break-word">Date:</div>
+            <div style="padding-left: 8px; padding-right: 8px; padding-top: 0px; padding-bottom: 12px; background: #F8E3FF; border-radius: 4px; justify-content: center; align-items: center; display: inline-flex">
+              <div style="color: #7B23FF; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; word-wrap: break-word">Date:</div>
             </div>
             <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 4px; display: flex">
               <div style="color: #5D6481; font-size: 10px; font-family: Inter; font-weight: 400; line-height: 14px; word-wrap: break-word">Issued</div>
