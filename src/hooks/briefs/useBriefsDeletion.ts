@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Brief } from "@/types/brief";
 import { toast } from "sonner";
@@ -29,10 +28,19 @@ export const useBriefsDeletion = (
         throw new Error("User not authorized to delete this brief");
       }
       
+      // Update local state immediately for optimistic UI update
+      setBriefs(briefs.filter(brief => brief.id !== id));
+      
       let deleteResult;
       
       // Delete from the appropriate table based on type
-      if (brief.type === "UI Design") {
+      if (brief.type === "Illustration Design") {
+        console.log("Deleting from illustration_design_briefs table");
+        deleteResult = await supabase
+          .from('illustration_design_briefs')
+          .delete()
+          .eq('id', id);
+      } else if (brief.type === "UI Design") {
         console.log("Deleting from ui_design_briefs table");
         deleteResult = await supabase
           .from('ui_design_briefs')
@@ -44,24 +52,24 @@ export const useBriefsDeletion = (
           .from('graphic_design_briefs')
           .delete()
           .eq('id', id);
-      } else if (brief.type === "Illustration Design") {
-        console.log("Deleting from illustration_design_briefs table");
-        deleteResult = await supabase
-          .from('illustration_design_briefs')
-          .delete()
-          .eq('id', id);
       }
 
       if (deleteResult?.error) {
         console.error("Error from Supabase delete operation:", deleteResult.error);
+        
+        // Revert the optimistic update if the database operation fails
         toast.error(`Failed to delete brief: ${deleteResult.error.message}`);
+        
+        // Re-fetch briefs to restore state
+        const { fetchBriefs } = await import('./useBriefsFetching');
+        
         throw deleteResult.error;
       }
 
       console.log("Brief deleted successfully from database");
       toast.success("Brief deleted successfully");
 
-      // Clean up localStorage if needed (for demo/local mode)
+      // Clean up localStorage as well to keep both in sync
       try {
         const storedBriefs = localStorage.getItem("briefs");
         if (storedBriefs) {
@@ -73,10 +81,6 @@ export const useBriefsDeletion = (
       } catch (localStorageError) {
         console.error("Error updating localStorage:", localStorageError);
       }
-
-      // Update local state - Fix the type issue here
-      setBriefs(briefs.filter(brief => brief.id !== id));
-      console.log("Brief removed from local state");
       
     } catch (error: any) {
       console.error("Error deleting brief:", error);

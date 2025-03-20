@@ -82,10 +82,10 @@ const Briefs = () => {
   const confirmDelete = async () => {
     if (selectedBrief) {
       try {
+        setIsDeleteDialogOpen(false); // Close dialog first to prevent freezing
         await deleteBrief(selectedBrief.id);
-        // Close the dialog after successful deletion
-        setIsDeleteDialogOpen(false);
-        // Toast message is handled in the deleteBrief function
+        // No need to close the dialog again or update state since deleteBrief
+        // will update briefs via the hook and has its own toast messages
       } catch (error) {
         console.error("Error during brief deletion:", error);
         toast.error("Failed to delete brief. Please try again.");

@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
 
 interface DeleteBriefDialogProps {
   open: boolean;
@@ -23,19 +22,27 @@ const DeleteBriefDialog: React.FC<DeleteBriefDialogProps> = ({
   const handleConfirm = async () => {
     setIsDeleting(true);
     try {
-      await onConfirm();
+      // Close the dialog first to prevent UI freezing
       onOpenChange(false);
-      toast.success(`${briefName} was permanently deleted`);
+      
+      // Then perform the deletion operation
+      await onConfirm();
+      
+      // No need for success toast here as it will be shown in the deleteBrief function
     } catch (error) {
       console.error("Error deleting brief:", error);
-      toast.error("Failed to delete brief. Please try again.");
+      // No need for error toast here as it will be shown in the deleteBrief function
     } finally {
       setIsDeleting(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(newState) => {
+      // Prevent closing the dialog while deleting is in progress
+      if (isDeleting && !newState) return;
+      onOpenChange(newState);
+    }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Delete Brief</DialogTitle>
