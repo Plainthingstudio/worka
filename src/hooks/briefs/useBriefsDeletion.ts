@@ -59,17 +59,18 @@ export const useBriefsDeletion = (
 
       console.log(`Brief successfully deleted from ${tableName} table`);
       
-      // Update local state - DO THIS AFTER SUCCESSFUL DATABASE DELETION
-      console.log("Updating local state after deletion");
-      setBriefs((prevBriefs) => prevBriefs.filter(b => b.id !== id));
+      // Update local state after successful database deletion
+      const updatedBriefs = briefs.filter(b => b.id !== id);
+      setBriefs(updatedBriefs);
+      console.log("Local state updated, briefs count:", updatedBriefs.length);
       
       // Clean up localStorage
       try {
         const storedBriefs = localStorage.getItem("briefs");
         if (storedBriefs) {
           const parsedBriefs = JSON.parse(storedBriefs);
-          const updatedBriefs = parsedBriefs.filter((b: any) => b.id !== id);
-          localStorage.setItem("briefs", JSON.stringify(updatedBriefs));
+          const updatedLocalBriefs = parsedBriefs.filter((b: any) => b.id !== id);
+          localStorage.setItem("briefs", JSON.stringify(updatedLocalBriefs));
           console.log("Brief removed from localStorage");
         }
       } catch (localStorageError) {

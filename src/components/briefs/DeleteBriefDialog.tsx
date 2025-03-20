@@ -23,15 +23,14 @@ const DeleteBriefDialog: React.FC<DeleteBriefDialogProps> = ({
     
     setIsDeleting(true);
     try {
+      console.log("Delete dialog: Initiating confirmation");
       // Call the parent component's confirmation handler
       await onConfirm();
       
-      // Only close on success
-      onOpenChange(false);
+      // Dialog will be closed by the parent component on success
     } catch (error) {
       console.error("Error in DeleteBriefDialog:", error);
       // Keep dialog open on error so user can try again
-    } finally {
       setIsDeleting(false);
     }
   };

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -86,18 +85,25 @@ const Briefs = () => {
     
     try {
       setIsDeleting(true);
+      console.log("Starting brief deletion process for ID:", selectedBrief.id);
       
+      // Delete the brief from database
       await deleteBrief(selectedBrief.id);
       
-      // Force re-render by setting filters again
-      setFilter(filter);
-      setSearch(search);
-      
+      // Clear selected brief
       setSelectedBrief(null);
+      
+      // Force a complete refresh of the data from server
+      await refreshData();
+      
+      // Close the dialog only after successful deletion
       setIsDeleteDialogOpen(false);
+      
+      toast.success("Brief permanently deleted");
     } catch (error) {
       console.error("Error during brief deletion:", error);
       toast.error("Failed to delete brief. Please try again.");
+      // Keep dialog open on error
     } finally {
       setIsDeleting(false);
     }
