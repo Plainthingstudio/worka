@@ -101,22 +101,18 @@ export const useLeadOperations = (leads: Lead[], setLeads: React.Dispatch<React.
   const deleteLead = async (id: string): Promise<boolean> => {
     setIsDeletingLead(true);
     try {
-      // First update local state before making the network request
-      // This prevents UI freezing while waiting for the network response
-      setLeads(prev => prev.filter(lead => lead.id !== id));
-      
-      // Then delete from database
+      // First make the database request, and only after it succeeds, update the UI
       const { error } = await supabase
         .from('leads')
         .delete()
         .eq('id', id);
 
       if (error) {
-        // If there's an error, revert the state change
-        toast.error(error.message || 'Failed to delete lead');
-        return false;
+        throw error;
       }
       
+      // Only update UI state if the database operation was successful
+      setLeads(prev => prev.filter(lead => lead.id !== id));
       toast.success('Lead deleted successfully');
       return true;
     } catch (error: any) {
