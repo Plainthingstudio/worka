@@ -24,13 +24,10 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       
       console.log("Fetching all briefs using RPC function");
       
-      // Ensure we're getting fresh data by not using cache
+      // Call the RPC function without the cache option (which was causing the error)
       const { data: rpcData, error: rpcError } = await supabase.rpc(
         'get_all_briefs', 
-        { user_uuid: userId },
-        { 
-          cache: 'no-store'
-        }
+        { user_uuid: userId }
       );
 
       if (!rpcError && rpcData && Array.isArray(rpcData)) {
@@ -158,7 +155,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
     console.log("Fetching briefs directly from tables");
     
     try {
-      // Fetch from UI Design briefs with cache control options
+      // Fetch from UI Design briefs - removed cache options
       const { data: uiData, error: uiError } = await supabase
         .from('ui_design_briefs')
         .select('*')
@@ -170,7 +167,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("UI design briefs fetched:", uiData?.length || 0);
       }
       
-      // Fetch from Graphic Design briefs with cache control options
+      // Fetch from Graphic Design briefs - removed cache options
       const { data: graphicData, error: graphicError } = await supabase
         .from('graphic_design_briefs')
         .select('*')
@@ -182,7 +179,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("Graphic design briefs fetched:", graphicData?.length || 0);
       }
       
-      // Fetch from Illustration Design briefs with cache control options
+      // Fetch from Illustration Design briefs - removed cache options
       const { data: illustrationData, error: illustrationError } = await supabase
         .from('illustration_design_briefs')
         .select('*')

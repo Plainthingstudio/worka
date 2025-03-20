@@ -26,26 +26,22 @@ export const useBriefsDeletion = (
       setBriefs(briefs.filter(brief => brief.id !== id));
       
       let deleteResult;
-      let tableName = '';
       
       // Delete from the appropriate table based on type
       if (brief.type === "Illustration Design") {
         console.log("Deleting from illustration_design_briefs table");
-        tableName = 'illustration_design_briefs';
         deleteResult = await supabase
           .from('illustration_design_briefs')
           .delete()
           .eq('id', id);
       } else if (brief.type === "UI Design") {
         console.log("Deleting from ui_design_briefs table");
-        tableName = 'ui_design_briefs';
         deleteResult = await supabase
           .from('ui_design_briefs')
           .delete()
           .eq('id', id);
       } else if (brief.type === "Graphic Design") {
         console.log("Deleting from graphic_design_briefs table");
-        tableName = 'graphic_design_briefs';
         deleteResult = await supabase
           .from('graphic_design_briefs')
           .delete()
@@ -63,14 +59,45 @@ export const useBriefsDeletion = (
         throw deleteResult.error;
       }
 
-      // Verify the deletion was successful
-      const { count } = await supabase
-        .from(tableName)
-        .select('*', { count: 'exact', head: true })
-        .eq('id', id);
+      // Verify the deletion was successful by checking the appropriate table
+      let count = 0;
+      if (brief.type === "Illustration Design") {
+        const { count: illustrationCount, error } = await supabase
+          .from('illustration_design_briefs')
+          .select('*', { count: 'exact', head: true })
+          .eq('id', id);
+        
+        if (error) {
+          console.error("Error verifying deletion:", error);
+        } else if (illustrationCount) {
+          count = illustrationCount;
+        }
+      } else if (brief.type === "UI Design") {
+        const { count: uiCount, error } = await supabase
+          .from('ui_design_briefs')
+          .select('*', { count: 'exact', head: true })
+          .eq('id', id);
+        
+        if (error) {
+          console.error("Error verifying deletion:", error);
+        } else if (uiCount) {
+          count = uiCount;
+        }
+      } else if (brief.type === "Graphic Design") {
+        const { count: graphicCount, error } = await supabase
+          .from('graphic_design_briefs')
+          .select('*', { count: 'exact', head: true })
+          .eq('id', id);
+        
+        if (error) {
+          console.error("Error verifying deletion:", error);
+        } else if (graphicCount) {
+          count = graphicCount;
+        }
+      }
       
       if (count && count > 0) {
-        console.error(`Brief still exists in ${tableName} after deletion`);
+        console.error(`Brief still exists after deletion`);
         toast.error("Brief deletion failed. Please try again.");
         throw new Error("Brief deletion verification failed");
       }
