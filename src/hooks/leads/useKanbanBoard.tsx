@@ -43,24 +43,38 @@ export const useKanbanBoard = ({
 
   const handleAddLead = async (data: any) => {
     setActionLoading(true);
-    const newData = { ...data, stage: currentStage };
-    await onAddLead(newData);
-    setActionLoading(false);
-    setIsAddDialogOpen(false);
+    try {
+      const newData = { ...data, stage: currentStage };
+      await onAddLead(newData);
+      setIsAddDialogOpen(false);
+    } catch (error) {
+      console.error('Error adding lead:', error);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleEditLead = async (data: any) => {
-    if (selectedLead) {
-      setActionLoading(true);
+    if (!selectedLead) {
+      return;
+    }
+    
+    setActionLoading(true);
+    try {
       await onUpdateLead(selectedLead.id, data);
-      setActionLoading(false);
       setIsEditDialogOpen(false);
       setSelectedLead(undefined);
+    } catch (error) {
+      console.error('Error updating lead:', error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const handleDeleteLead = async () => {
     if (!selectedLead) {
+      console.error('No lead selected for deletion');
+      setIsDeleteDialogOpen(false);
       return;
     }
     
@@ -71,7 +85,7 @@ export const useKanbanBoard = ({
       const success = await onDeleteLead(selectedLead.id);
       
       if (success) {
-        // Only close the dialog and clear selected lead if deletion was successful
+        // Only close the dialog if deletion was successful
         setIsDeleteDialogOpen(false);
         setSelectedLead(undefined);
       }
@@ -93,8 +107,12 @@ export const useKanbanBoard = ({
 
   const handleDeleteClick = (id: string) => {
     const lead = leads.find(l => l.id === id);
-    setSelectedLead(lead);
-    setIsDeleteDialogOpen(true);
+    if (lead) {
+      setSelectedLead(lead);
+      setIsDeleteDialogOpen(true);
+    } else {
+      console.error(`Could not find lead with id ${id} for deletion`);
+    }
   };
 
   const handleAddLeadInStage = (stage: LeadStage) => {
