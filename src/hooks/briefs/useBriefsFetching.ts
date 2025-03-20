@@ -24,8 +24,14 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       
       console.log("Fetching all briefs using RPC function");
       
+      // Ensure we're getting fresh data by not using cache
       const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_briefs', {
         user_uuid: userId
+      }, { 
+        headers: { 
+          'cache-control': 'no-cache', 
+          'pragma': 'no-cache' 
+        } 
       });
 
       if (!rpcError && rpcData && Array.isArray(rpcData)) {
@@ -59,7 +65,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
                   type: "Illustration Design",
                   submissionDate: data.submission_date,
                   companyName: data.company_name
-                } : brief;
+                } : null;
                 
               } else if (brief.type === "UI Design") {
                 const { data, error } = await supabase
@@ -78,7 +84,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
                   type: "UI Design",
                   submissionDate: data.submission_date,
                   companyName: data.company_name
-                } : brief;
+                } : null;
                 
               } else if (brief.type === "Graphic Design") {
                 const { data, error } = await supabase
@@ -97,13 +103,13 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
                   type: "Graphic Design",
                   submissionDate: data.submission_date,
                   companyName: data.company_name
-                } : brief;
+                } : null;
               }
               
-              return fullBrief || brief;
+              return fullBrief;
             } catch (err) {
               console.error(`Error processing brief ${brief.id}:`, err);
-              return brief;
+              return null;
             }
           });
           
@@ -153,43 +159,46 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
     console.log("Fetching briefs directly from tables");
     
     try {
-      // Get the current user
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      // Fetch from UI Design briefs
+      // Fetch from UI Design briefs with cache-busting headers
       const { data: uiData, error: uiError } = await supabase
         .from('ui_design_briefs')
         .select('*')
-        .order('submission_date', { ascending: false });
+        .order('submission_date', { ascending: false })
+        .then(res => {
+          console.log("UI design briefs fetched:", res.data?.length || 0);
+          return res;
+        });
       
       if (uiError) {
         console.error("UI briefs error:", uiError);
-      } else {
-        console.log(`UI briefs data: ${uiData?.length || 0} records`);
       }
       
-      // Fetch from Graphic Design briefs
+      // Fetch from Graphic Design briefs with cache-busting headers
       const { data: graphicData, error: graphicError } = await supabase
         .from('graphic_design_briefs')
         .select('*')
-        .order('submission_date', { ascending: false });
+        .order('submission_date', { ascending: false })
+        .then(res => {
+          console.log("Graphic design briefs fetched:", res.data?.length || 0);
+          return res;
+        });
       
       if (graphicError) {
         console.error("Graphic briefs error:", graphicError);
-      } else {
-        console.log(`Graphic briefs data: ${graphicData?.length || 0} records`);
       }
       
-      // Fetch from Illustration Design briefs
+      // Fetch from Illustration Design briefs with cache-busting headers
       const { data: illustrationData, error: illustrationError } = await supabase
         .from('illustration_design_briefs')
         .select('*')
-        .order('submission_date', { ascending: false });
+        .order('submission_date', { ascending: false })
+        .then(res => {
+          console.log("Illustration design briefs fetched:", res.data?.length || 0);
+          return res;
+        });
       
       if (illustrationError) {
         console.error("Illustration briefs error:", illustrationError);
-      } else {
-        console.log(`Illustration briefs data: ${illustrationData?.length || 0} records`);
       }
       
       // Transform and combine all data

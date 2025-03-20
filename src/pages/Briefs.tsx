@@ -18,6 +18,7 @@ import {
 } from "@/utils/briefPdfGenerator";
 import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
 
 const Briefs = () => {
   const { briefs, filter, setFilter, search, setSearch, filteredBriefs, isLoading, deleteBrief, fetchBriefs } = useBriefs();
@@ -50,12 +51,14 @@ const Briefs = () => {
     return () => observer.disconnect();
   }, []);
 
-  // Fetch briefs only once when component mounts
+  // Initial fetch briefs when component mounts
   useEffect(() => {
     console.log("Initial briefs fetch on component mount");
     
     const loadBriefs = async () => {
       try {
+        // Force a refresh of the user session to ensure fresh data
+        await supabase.auth.refreshSession();
         await fetchBriefs();
       } catch (error) {
         console.error("Error during initial briefs fetch:", error);
@@ -88,9 +91,11 @@ const Briefs = () => {
         
         await deleteBrief(selectedBrief.id);
         
-        // Explicitly refresh the briefs list to ensure we have the latest data
+        // Force a full refresh to ensure we have accurate data
+        await supabase.auth.refreshSession();
         await fetchBriefs();
         
+        // Clean up state
         setSelectedBrief(null);
       } catch (error) {
         console.error("Error during brief deletion:", error);

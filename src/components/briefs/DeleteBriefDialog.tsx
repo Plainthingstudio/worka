@@ -20,18 +20,18 @@ const DeleteBriefDialog: React.FC<DeleteBriefDialogProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleConfirm = async () => {
+    if (isDeleting) return; // Prevent multiple clicks
+    
     setIsDeleting(true);
     try {
-      // Perform the deletion via the parent component's callback
+      // Call the parent component's confirmation handler
       await onConfirm();
-      
-      // No need for success toast here as it will be shown in the deleteBrief function
+      // The dialog should be closed by the parent component
     } catch (error) {
-      console.error("Error deleting brief:", error);
-      // No need for error toast here as it will be shown in the deleteBrief function
+      console.error("Error in DeleteBriefDialog:", error);
+      // Error handling is done in the parent component
     } finally {
       setIsDeleting(false);
-      // The dialog should already be closed by the parent component
     }
   };
 

@@ -22,29 +22,30 @@ export const useBriefsDeletion = (
         throw new Error("Brief not found");
       }
       
-      // For now, allow any authenticated user to delete briefs
-      // This removes the authorization check that was causing the error
-      
       // Update local state immediately for optimistic UI update
       setBriefs(briefs.filter(brief => brief.id !== id));
       
       let deleteResult;
+      let tableName = '';
       
       // Delete from the appropriate table based on type
       if (brief.type === "Illustration Design") {
         console.log("Deleting from illustration_design_briefs table");
+        tableName = 'illustration_design_briefs';
         deleteResult = await supabase
           .from('illustration_design_briefs')
           .delete()
           .eq('id', id);
       } else if (brief.type === "UI Design") {
         console.log("Deleting from ui_design_briefs table");
+        tableName = 'ui_design_briefs';
         deleteResult = await supabase
           .from('ui_design_briefs')
           .delete()
           .eq('id', id);
       } else if (brief.type === "Graphic Design") {
         console.log("Deleting from graphic_design_briefs table");
+        tableName = 'graphic_design_briefs';
         deleteResult = await supabase
           .from('graphic_design_briefs')
           .delete()
@@ -57,11 +58,21 @@ export const useBriefsDeletion = (
         
         // Revert the optimistic update if the database operation fails
         toast.error(`Failed to delete brief: ${deleteResult.error.message}`);
-        
-        // Let the user know to refresh the page
         toast.error("Please try again after refreshing the page");
         
         throw deleteResult.error;
+      }
+
+      // Verify the deletion was successful
+      const { count } = await supabase
+        .from(tableName)
+        .select('*', { count: 'exact', head: true })
+        .eq('id', id);
+      
+      if (count && count > 0) {
+        console.error(`Brief still exists in ${tableName} after deletion`);
+        toast.error("Brief deletion failed. Please try again.");
+        throw new Error("Brief deletion verification failed");
       }
 
       console.log("Brief deleted successfully from database");
