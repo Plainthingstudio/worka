@@ -41,6 +41,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
     selectedLead,
+    setSelectedLead,  // Make sure this is properly extracted from the hook
     actionLoading,
     currentStage,
     handleAddLead,
