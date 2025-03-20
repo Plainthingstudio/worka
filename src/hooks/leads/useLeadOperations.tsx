@@ -101,7 +101,7 @@ export const useLeadOperations = (leads: Lead[], setLeads: React.Dispatch<React.
   const deleteLead = async (id: string): Promise<boolean> => {
     setIsDeletingLead(true);
     try {
-      // First make the database request, and only after it succeeds, update the UI
+      // First make the database request
       const { error } = await supabase
         .from('leads')
         .delete()
