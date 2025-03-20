@@ -22,10 +22,7 @@ const DeleteBriefDialog: React.FC<DeleteBriefDialogProps> = ({
   const handleConfirm = async () => {
     setIsDeleting(true);
     try {
-      // Close the dialog first to prevent UI freezing
-      onOpenChange(false);
-      
-      // Then perform the deletion operation
+      // Perform the deletion via the parent component's callback
       await onConfirm();
       
       // No need for success toast here as it will be shown in the deleteBrief function
@@ -34,6 +31,7 @@ const DeleteBriefDialog: React.FC<DeleteBriefDialogProps> = ({
       // No need for error toast here as it will be shown in the deleteBrief function
     } finally {
       setIsDeleting(false);
+      // The dialog should already be closed by the parent component
     }
   };
 

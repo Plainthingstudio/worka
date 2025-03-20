@@ -27,6 +27,7 @@ const Briefs = () => {
   const [briefDetails, setBriefDetails] = React.useState<any>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Listen for sidebar state changes
   useEffect(() => {
@@ -80,15 +81,22 @@ const Briefs = () => {
   };
 
   const confirmDelete = async () => {
-    if (selectedBrief) {
+    if (selectedBrief && !isDeleting) {
       try {
+        setIsDeleting(true);
         setIsDeleteDialogOpen(false); // Close dialog first to prevent freezing
+        
         await deleteBrief(selectedBrief.id);
-        // No need to close the dialog again or update state since deleteBrief
-        // will update briefs via the hook and has its own toast messages
+        
+        // Explicitly refresh the briefs list to ensure we have the latest data
+        await fetchBriefs();
+        
+        setSelectedBrief(null);
       } catch (error) {
         console.error("Error during brief deletion:", error);
         toast.error("Failed to delete brief. Please try again.");
+      } finally {
+        setIsDeleting(false);
       }
     }
   };

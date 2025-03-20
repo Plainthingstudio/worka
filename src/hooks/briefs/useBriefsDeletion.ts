@@ -51,15 +51,14 @@ export const useBriefsDeletion = (
           .eq('id', id);
       }
 
+      // Check for errors in the delete operation
       if (deleteResult?.error) {
         console.error("Error from Supabase delete operation:", deleteResult.error);
         
         // Revert the optimistic update if the database operation fails
         toast.error(`Failed to delete brief: ${deleteResult.error.message}`);
         
-        // Re-fetch briefs using the proper import and call
-        // Instead of importing fetchBriefs, we'll restore state from a new fetch
-        await supabase.auth.refreshSession();
+        // Let the user know to refresh the page
         toast.error("Please try again after refreshing the page");
         
         throw deleteResult.error;
