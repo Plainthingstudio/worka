@@ -1,7 +1,9 @@
+
 import { useState, useRef } from 'react';
 import { Lead, LeadStage } from '@/types';
 
-export const LEAD_STAGES = [
+// Define as array of LeadStage, not as readonly const
+export const LEAD_STAGES: LeadStage[] = [
   'Leads',
   'First Meeting',
   'Follow up 1',
@@ -11,7 +13,7 @@ export const LEAD_STAGES = [
   'Down Payment',
   'Kickoff',
   'Finish'
-] as const;
+];
 
 interface UseKanbanBoardProps {
   leads: Lead[];

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Lead } from '@/types';
 import { useKanbanBoard, LEAD_STAGES } from '@/hooks/leads/useKanbanBoard';
@@ -59,9 +60,9 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   });
 
   // Create a wrapper for handleMoveLead to add the lead to clients when moved to Kickoff stage
-  const handleMoveLead = async (leadId: string, stage: typeof LEAD_STAGES[number]) => {
+  const handleMoveLead = async (leadId: string, stage: string) => {
     // First, update the lead stage
-    const success = await onUpdateLead(leadId, { stage });
+    const success = await onUpdateLead(leadId, { stage: stage as any });
     
     // If update was successful and the lead is being moved to "Kickoff" stage
     if (success && stage === 'Kickoff') {
