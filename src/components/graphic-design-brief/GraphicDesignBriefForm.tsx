@@ -10,7 +10,7 @@ import { useGraphicDesignBrief, GraphicDesignBriefFormValues } from "@/hooks/use
 
 const GraphicDesignBriefForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const { form, handleSubmit, isSubmitting } = useGraphicDesignBrief();
+  const { handleSubmit, isSubmitting } = useGraphicDesignBrief();
   
   const methods = useForm<GraphicDesignBriefFormValues>({
     defaultValues: {
@@ -82,8 +82,7 @@ const GraphicDesignBriefForm = () => {
         return (
           <StepFour
             onPrevious={() => setCurrentStep(3)}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
+            onSubmit={methods.handleSubmit(handleSubmit)}
           />
         );
       default:
@@ -107,7 +106,7 @@ const GraphicDesignBriefForm = () => {
         </div>
       </div>
 
-      <FormProvider {...form}>
+      <FormProvider {...methods}>
         {renderStep()}
       </FormProvider>
     </Card>
