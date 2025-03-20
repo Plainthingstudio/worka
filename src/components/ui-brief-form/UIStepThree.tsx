@@ -13,219 +13,164 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2 } from "lucide-react";
+  RadioGroup,
+  RadioGroupItem,
+} from "@/components/ui/radio-group";
 
-export interface UIStepThreeProps {
+interface UIStepThreeProps {
   onPrevious: () => void;
-  onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
-  isSubmitting: boolean;
+  onSubmit: () => void;
 }
 
-const UIStepThree = ({ onPrevious, onSubmit, isSubmitting }: UIStepThreeProps) => {
-  const { control } = useFormContext();
+const UIStepThree = ({ onPrevious, onSubmit }: UIStepThreeProps) => {
+  const { control, register, watch, setValue } = useFormContext();
+  const pageCount = watch("pageCount") || 1;
+
+  const handleIncreasePages = () => {
+    setValue("pageCount", parseInt(pageCount) + 1);
+  };
+
+  const handleDecreasePages = () => {
+    if (parseInt(pageCount) > 1) {
+      setValue("pageCount", parseInt(pageCount) - 1);
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-medium">Design Details & Deliverables</h2>
+      <h2 className="text-xl font-medium">Project Details</h2>
+      
+      <div className="space-y-2">
+        <FormLabel>Number of Pages/Screens</FormLabel>
+        <div className="flex items-center space-x-3">
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm"
+            onClick={handleDecreasePages}
+            disabled={parseInt(pageCount) <= 1}
+          >
+            -
+          </Button>
+          <span className="w-8 text-center">{pageCount}</span>
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm"
+            onClick={handleIncreasePages}
+          >
+            +
+          </Button>
+        </div>
+      </div>
+      
+      {Array.from({ length: parseInt(pageCount) }).map((_, index) => (
+        <div key={index} className="space-y-2 p-4 border rounded-md">
+          <h3 className="font-medium">Page/Screen {index + 1}</h3>
+          <FormField
+            control={control}
+            name={`pageDetails[${index}].name`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Page Name</FormLabel>
+                <FormControl>
+                  <Input placeholder={`e.g., Home, About, Contact`} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name={`pageDetails[${index}].description`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Page Description</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="What should this page/screen include?" 
+                    className="min-h-[80px]"
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      ))}
       
       <div className="space-y-2">
         <FormField
           control={control}
-          name="generalStyle"
+          name="websiteContent"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>General Style Description</FormLabel>
+              <FormLabel>Website Content</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Describe the overall style you're looking for"
-                  className="min-h-[100px]"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <FormField
-          control={control}
-          name="colorPreferences"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Color Preferences</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Describe your color preferences"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <FormField
-          control={control}
-          name="fontPreferences"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Font Preferences</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Describe your font preferences"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <FormField
-          control={control}
-          name="existingBrandAssets"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Existing Brand Assets</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Describe any existing brand assets you have"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      
-      <div className="space-y-4">
-        <FormField
-          control={control}
-          name="hasBrandGuidelines"
-          render={({ field }) => (
-            <FormItem className="space-y-3">
-              <FormLabel>Do you have brand guidelines?</FormLabel>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={field.onChange}
+                <RadioGroup 
+                  onValueChange={field.onChange} 
                   defaultValue={field.value}
                   className="flex flex-col space-y-1"
                 >
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="Yes" />
-                    </FormControl>
-                    <FormLabel className="font-normal">Yes</FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="No" />
-                    </FormControl>
-                    <FormLabel className="font-normal">No</FormLabel>
-                  </FormItem>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="I have content ready" id="content-ready" />
+                    <FormLabel htmlFor="content-ready" className="font-normal cursor-pointer">
+                      I have content ready
+                    </FormLabel>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="I need help with content" id="content-help" />
+                    <FormLabel htmlFor="content-help" className="font-normal cursor-pointer">
+                      I need help with content
+                    </FormLabel>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="I'll provide content later" id="content-later" />
+                    <FormLabel htmlFor="content-later" className="font-normal cursor-pointer">
+                      I'll provide content later
+                    </FormLabel>
+                  </div>
                 </RadioGroup>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        
-        <FormField
-          control={control}
-          name="brandGuidelinesDetails"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>If yes, please provide details</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Provide details about your brand guidelines"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      
-      <div className="space-y-4">
-        <FormField
-          control={control}
-          name="hasWireframe"
-          render={({ field }) => (
-            <FormItem className="space-y-3">
-              <FormLabel>Do you have wireframes or mockups?</FormLabel>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  className="flex flex-col space-y-1"
-                >
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="Yes" />
-                    </FormControl>
-                    <FormLabel className="font-normal">Yes</FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="No" />
-                    </FormControl>
-                    <FormLabel className="font-normal">No</FormLabel>
-                  </FormItem>
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={control}
-          name="wireframeDetails"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>If yes, please provide details</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Provide details about your wireframes"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
       </div>
       
       <div className="space-y-2">
         <FormField
           control={control}
-          name="pageCount"
+          name="developmentService"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Number of Pages/Screens</FormLabel>
+              <FormLabel>Development Service</FormLabel>
               <FormControl>
-                <Input 
-                  type="number" 
-                  placeholder="e.g., 5" 
-                  {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                />
+                <RadioGroup 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                  className="flex flex-col space-y-1"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Design only" id="design-only" />
+                    <FormLabel htmlFor="design-only" className="font-normal cursor-pointer">
+                      I need design only
+                    </FormLabel>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Design and development" id="design-dev" />
+                    <FormLabel htmlFor="design-dev" className="font-normal cursor-pointer">
+                      I need design and development
+                    </FormLabel>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Not sure" id="not-sure" />
+                    <FormLabel htmlFor="not-sure" className="font-normal cursor-pointer">
+                      I'm not sure yet
+                    </FormLabel>
+                  </div>
+                </RadioGroup>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -241,10 +186,7 @@ const UIStepThree = ({ onPrevious, onSubmit, isSubmitting }: UIStepThreeProps) =
             <FormItem>
               <FormLabel>Completion Deadline</FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="When do you need this delivered?" 
-                  {...field} 
-                />
+                <Input type="date" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -252,97 +194,12 @@ const UIStepThree = ({ onPrevious, onSubmit, isSubmitting }: UIStepThreeProps) =
         />
       </div>
       
-      <div className="space-y-2">
-        <FormField
-          control={control}
-          name="developmentService"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Do you need development services?</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select option" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="Yes">Yes</SelectItem>
-                  <SelectItem value="No">No</SelectItem>
-                  <SelectItem value="Not sure">Not sure yet</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <FormField
-          control={control}
-          name="websiteContent"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Do you have your website content ready?</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select option" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="Yes">Yes</SelectItem>
-                  <SelectItem value="No">No</SelectItem>
-                  <SelectItem value="Partially">Partially</SelectItem>
-                  <SelectItem value="Need help">Need help with content</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <FormField
-          control={control}
-          name="stylePreferences"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Additional Style Preferences</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Any additional style preferences we should know about?"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      
-      <div className="flex justify-between pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onPrevious}
-        >
-          Previous
+      <div className="flex justify-between">
+        <Button type="button" variant="outline" onClick={onPrevious}>
+          Back
         </Button>
-        <Button 
-          type="button" 
-          onClick={onSubmit}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Submitting...
-            </>
-          ) : (
-            "Submit Brief"
-          )}
+        <Button type="button" onClick={onSubmit}>
+          Submit Brief
         </Button>
       </div>
     </div>

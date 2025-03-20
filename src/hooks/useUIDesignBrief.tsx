@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,53 +28,19 @@ export const useUIDesignBrief = () => {
       
       console.log("Submitting UI design brief with user_id:", effectiveUserId);
 
-      // Map form field names to database column names
+      // Make sure important fields are properly formatted before submission
       const formattedData = {
-        user_id: effectiveUserId,
-        name: data.name,
-        email: data.email,
-        company_name: data.companyName,
-        about_company: data.aboutCompany,
-        project_description: data.projectDescription,
-        project_type: data.projectType,
-        project_size: data.projectSize,
-        website_type_interest: data.websiteTypeInterest,
-        current_website: data.currentWebsite,
-        competitor1: data.competitor1,
-        competitor2: data.competitor2,
-        competitor3: data.competitor3,
-        competitor4: data.competitor4,
-        target_audience: data.targetAudience,
-        website_purpose: data.websitePurpose,
-        reference1: data.reference1,
-        reference2: data.reference2,
-        reference3: data.reference3,
-        reference4: data.reference4,
-        general_style: data.generalStyle,
-        color_preferences: data.colorPreferences,
-        font_preferences: data.fontPreferences, 
-        existing_brand_assets: data.existingBrandAssets,
-        has_brand_guidelines: data.hasBrandGuidelines,
-        brand_guidelines_details: data.brandGuidelinesDetails,
-        has_wireframe: data.hasWireframe,
-        wireframe_details: data.wireframeDetails,
+        ...data,
         page_count: Number(data.pageCount || 0),
-        page_details: data.pageDetails,
-        completion_deadline: data.completionDeadline,
-        development_service: data.developmentService,
-        website_content: data.websiteContent,
-        style_preferences: data.stylePreferences,
-        submission_date: new Date().toISOString(),
-        status: "New"
+        user_id: effectiveUserId,
+        submission_date: new Date().toISOString()
       };
-
-      console.log("Formatted data for submission:", formattedData);
 
       const { error } = await supabase.from("ui_design_briefs").insert(formattedData);
 
       if (error) {
         console.error("Error submitting UI design brief:", error);
-        toast.error(`Failed to submit brief: ${error.message}`);
+        toast.error("Failed to submit brief. Please try again.");
         setIsSubmitting(false);
         return;
       }
