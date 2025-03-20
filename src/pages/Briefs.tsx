@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -55,9 +54,15 @@ const Briefs = () => {
     setIsRefreshing(true);
     try {
       console.log("Refreshing briefs data...");
-      // Clear the Supabase cache before fetching
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.log("Non-authenticated user viewing briefs");
+        toast.info("You're viewing briefs in read-only mode. Login to manage briefs.");
+      }
+      
       await supabase.auth.refreshSession();
-      // Force a complete refresh
       await fetchBriefs();
       setIsInitialLoad(false);
     } catch (error) {
@@ -90,25 +95,28 @@ const Briefs = () => {
       setIsDeleting(true);
       console.log("Starting brief deletion process for ID:", selectedBrief.id);
       
-      // Delete the brief from database
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to delete briefs");
+        setIsDeleteDialogOpen(false);
+        setIsDeleting(false);
+        return;
+      }
+      
       await deleteBrief(selectedBrief.id);
       
-      // Clear selected brief
       setSelectedBrief(null);
       
-      // Close the dialog 
       setIsDeleteDialogOpen(false);
       
-      // Force a complete refresh of the data from server with cache clearing
       setTimeout(() => {
         refreshData();
-      }, 500); // Small delay to ensure the delete operation completes on the server
+      }, 500);
       
       toast.success("Brief permanently deleted");
     } catch (error) {
       console.error("Error during brief deletion:", error);
       toast.error("Failed to delete brief. Please try again.");
-      // Keep dialog open on error
     } finally {
       setIsDeleting(false);
     }

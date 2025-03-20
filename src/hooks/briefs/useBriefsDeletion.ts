@@ -49,7 +49,13 @@ export const useBriefsDeletion = (
       // Check for errors in the delete operation
       if (deleteResult?.error) {
         console.error("Error from Supabase delete operation:", deleteResult.error);
-        toast.error(`Failed to delete brief: ${deleteResult.error.message}`);
+        
+        // Handle permission errors specifically
+        if (deleteResult.error.code === "42501" || deleteResult.error.message.includes("permission denied")) {
+          toast.error("You don't have permission to delete this brief. Only admin users can delete briefs.");
+        } else {
+          toast.error(`Failed to delete brief: ${deleteResult.error.message}`);
+        }
         throw deleteResult.error;
       }
 
