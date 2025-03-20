@@ -67,10 +67,13 @@ export const useKanbanBoard = ({
     setActionLoading(true);
     
     try {
+      // Wait for the deletion to complete before updating UI
       const success = await onDeleteLead(selectedLead.id);
       
       if (success) {
+        // Only close the dialog and clear selected lead if deletion was successful
         setIsDeleteDialogOpen(false);
+        setSelectedLead(undefined);
       }
     } catch (error) {
       console.error('Error deleting lead:', error);

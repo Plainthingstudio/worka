@@ -45,7 +45,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     currentStage,
     handleAddLead,
     handleEditLead,
-    handleDeleteLead: originalHandleDeleteLead,
+    handleDeleteLead,
     handleEditClick,
     handleDeleteClick,
     handleAddLeadInStage,
@@ -145,7 +145,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
       <LeadDialog 
         isOpen={isEditDialogOpen} 
-        onClose={() => { setIsEditDialogOpen(false); }} 
+        onClose={() => { setIsEditDialogOpen(false); setSelectedLead(undefined); }} 
         onSubmit={handleEditLead} 
         lead={selectedLead} 
         title="Edit Lead" 
@@ -154,8 +154,8 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
       <DeleteLeadDialog 
         isOpen={isDeleteDialogOpen} 
-        onClose={() => { setIsDeleteDialogOpen(false); }} 
-        onConfirm={originalHandleDeleteLead} 
+        onClose={() => { setIsDeleteDialogOpen(false); setSelectedLead(undefined); }} 
+        onConfirm={handleDeleteLead} 
         isLoading={actionLoading} 
       />
     </div>

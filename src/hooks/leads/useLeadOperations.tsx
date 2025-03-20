@@ -101,7 +101,7 @@ export const useLeadOperations = (leads: Lead[], setLeads: React.Dispatch<React.
   const deleteLead = async (id: string): Promise<boolean> => {
     setIsDeletingLead(true);
     try {
-      // Make the database request
+      // Make the database request first
       const { error } = await supabase
         .from('leads')
         .delete()
@@ -112,7 +112,9 @@ export const useLeadOperations = (leads: Lead[], setLeads: React.Dispatch<React.
       }
       
       // Only update UI state if the database operation succeeded
-      setLeads(prev => prev.filter(lead => lead.id !== id));
+      // Use functional update to ensure we're working with latest state
+      setLeads(prevLeads => prevLeads.filter(lead => lead.id !== id));
+      
       toast.success('Lead deleted successfully');
       return true;
     } catch (error: any) {
