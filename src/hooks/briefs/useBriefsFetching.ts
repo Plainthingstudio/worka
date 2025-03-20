@@ -41,7 +41,9 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       }
       
       const userId = user.id;
+      const userEmail = user.email;
       console.log("Authenticated user ID:", userId);
+      console.log("Authenticated user email:", userEmail);
       
       // Try direct table fetching approach first
       console.log("Fetching briefs directly from tables");
@@ -69,7 +71,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         const { data: uiData, error: uiError } = await supabase
           .from('ui_design_briefs')
           .select('*')
-          .or(`user_id.eq.${userId},email.eq.${user.email}`)
+          .or(`user_id.eq.${userId},email.eq.${userEmail}`)
           .order('submission_date', { ascending: false });
         
         if (uiError) {
@@ -82,7 +84,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         const { data: graphicData, error: graphicError } = await supabase
           .from('graphic_design_briefs')
           .select('*')
-          .or(`user_id.eq.${userId},email.eq.${user.email}`)
+          .or(`user_id.eq.${userId},email.eq.${userEmail}`)
           .order('submission_date', { ascending: false });
         
         if (graphicError) {
@@ -95,7 +97,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         const { data: illustrationData, error: illustrationError } = await supabase
           .from('illustration_design_briefs')
           .select('*')
-          .or(`user_id.eq.${userId},email.eq.${user.email}`)
+          .or(`user_id.eq.${userId},email.eq.${userEmail}`)
           .order('submission_date', { ascending: false });
         
         if (illustrationError) {

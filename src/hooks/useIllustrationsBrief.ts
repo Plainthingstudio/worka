@@ -1,8 +1,8 @@
-
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { v4 as uuidv4 } from "uuid";
+import { toast } from "sonner";
 
 export interface IllustrationBriefFormValues {
   type: string;
@@ -33,60 +33,26 @@ export interface IllustrationBriefFormValues {
   deliverables: Record<string, boolean>;
 }
 
-// Define an interface for the data we'll send to Supabase
-interface SupabaseBriefData {
-  name: string;
-  email: string;
-  company_name: string;
-  about_company: string | null;
-  illustrations_purpose: string | null;
-  illustrations_for: string | null;
-  illustrations_style: string | null;
-  target_audience: string | null;
-  competitor1: string | null;
-  competitor2: string | null;
-  competitor3: string | null;
-  competitor4: string | null;
-  brand_guidelines: string | null;
-  reference1: string | null;
-  reference2: string | null;
-  reference3: string | null;
-  reference4: string | null;
-  general_style: string | null;
-  color_preferences: string | null;
-  like_dislike_design: string | null;
-  completion_deadline: string | null;
-  illustrations_count: number;
-  illustration_details: string[];
-  deliverables: string[];
-  status: string;
-  submission_date: string;
-  user_id?: string; // Make this optional since it might not always be present
-}
-
 export const useIllustrationsBrief = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Extract the 'for' query parameter
+
   const params = new URLSearchParams(location.search);
   const forUserId = params.get('for');
 
   const handleSubmit = async (data: IllustrationBriefFormValues) => {
     setIsSubmitting(true);
-    
+    console.log("Form data:", data);
+
     try {
-      console.log("Submitting form data:", data);
-      console.log("For user ID from query param:", forUserId);
+      const { data: { user } } = await supabase.auth.getUser();
       
-      // Process the deliverables checkbox group
-      const deliverables = Object.entries(data.deliverables || {})
-        .filter(([_, checked]) => checked === true)
-        .map(([key]) => key);
+      const effectiveUserId = forUserId || (user ? user.id : null);
       
-      // Prepare data for Supabase with correct column names
-      const briefData: SupabaseBriefData = {
+      console.log("Submitting brief with user_id:", effectiveUserId);
+
+      const { error } = await supabase.from("illustration_design_briefs").insert({
         name: data.name,
         email: data.email,
         company_name: data.companyName,
@@ -99,7 +65,8 @@ export const useIllustrationsBrief = () => {
         competitor2: data.competitor2,
         competitor3: data.competitor3,
         competitor4: data.competitor4,
-        brand_guidelines: data.hasBrandGuidelines === "Yes" ? data.brandGuidelines : null,
+        has_brand_guidelines: data.hasBrandGuidelines,
+        brand_guidelines: data.brandGuidelines,
         reference1: data.reference1,
         reference2: data.reference2,
         reference3: data.reference3,
@@ -110,64 +77,46 @@ export const useIllustrationsBrief = () => {
         completion_deadline: data.completionDeadline,
         illustrations_count: data.illustrationsCount,
         illustration_details: data.illustrationDetails,
-        deliverables: deliverables,
-        status: "New",
+        deliverables: data.deliverables,
+        user_id: effectiveUserId,
         submission_date: new Date().toISOString()
-      };
-      
-      // If query parameter 'for' is present, assign the brief to that user
-      if (forUserId) {
-        briefData.user_id = forUserId;
-        console.log("Assigning brief to user ID:", forUserId);
-      } else {
-        // If no query parameter, check if the current user is logged in
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          briefData.user_id = user.id;
-          console.log("Assigning brief to current user ID:", user.id);
-        } else {
-          console.log("No user ID available, brief will be unassigned");
-        }
-      }
-      
-      // Insert into Supabase
-      const { data: insertedData, error } = await supabase
-        .from('illustration_design_briefs')
-        .insert(briefData)
-        .select('id, user_id')
-        .single();
-      
+      });
+
       if (error) {
-        console.error("Supabase insert error:", error);
-        throw error;
+        console.error("Error submitting illustration brief:", error);
+        toast.error("Failed to submit brief. Please try again.");
+        setIsSubmitting(false);
+        return;
       }
-      
-      console.log("Brief inserted successfully:", insertedData);
-      
-      // Also save to localStorage for backward compatibility
-      const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
-      const localStorageBrief = {
-        ...data,
-        id: insertedData?.id || Date.now().toString(),
-        submissionDate: new Date().toISOString(),
-        status: "New",
-        type: "Illustration Design",
-        user_id: briefData.user_id // Store the user_id in localStorage as well
-      };
-      
-      localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
-      localStorage.setItem("lastSubmittedBriefType", "Illustration Design");
-      
-      toast.success("Brief submitted successfully!");
+
+      try {
+        const storedBriefs = localStorage.getItem("briefs");
+        const briefs = storedBriefs ? JSON.parse(storedBriefs) : [];
+        
+        briefs.push({
+          ...data,
+          id: uuidv4(),
+          type: "Illustration Design",
+          user_id: effectiveUserId,
+          submission_date: new Date().toISOString(),
+          status: "New"
+        });
+        
+        localStorage.setItem("briefs", JSON.stringify(briefs));
+      } catch (e) {
+        console.error("Error saving to localStorage:", e);
+      }
+
+      toast.success("Illustration brief submitted successfully!");
       navigate("/thank-you");
-    } catch (error: any) {
-      console.error("Error submitting brief:", error);
-      toast.error(error.message || "Failed to submit brief");
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   return {
     handleSubmit,
     isSubmitting

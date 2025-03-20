@@ -1,215 +1,121 @@
-
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { v4 as uuidv4 } from "uuid";
+import { toast } from "sonner";
 
-export interface GraphicDesignBriefFormValues {
-  name: string;
-  email: string;
-  companyName: string;
-  aboutCompany: string;
-  visionMission: string;
-  slogan: string;
-  logoFeelings: {
-    style?: string;
-    pricing: string;  // Will be "Economical" or "Luxury"
-    era: string;      // Will be "Modern" or "Classic"
-    tone: string;     // Will be "Serious" or "Playful"
-    gender: string;   // Will be "Feminine" or "Masculine"
-    complexity: string; // Will be "Simple" or "Complex"
-  };
-  tone: Record<string, boolean>;
-  logoType: string;
-  reference1: string;
-  reference2: string;
-  reference3: string;
-  reference4: string;
-  targetAge: string;
-  targetGender: string;
-  targetDemography: string;
-  targetProfession: string;
-  targetPersonality: string;
-  productsServices: string;
-  featuresAndBenefits: string;
-  marketCategory: string;
-  competitor1: string;
-  competitor2: string;
-  competitor3: string;
-  competitor4: string;
-  brandPositioning: string;
-  barrierToEntry: string;
-  specificImagery: string;
-  services: Record<string, boolean>;
-  printMedia: Record<string, boolean>;
-  digitalMedia: Record<string, boolean>;
-}
-
-interface GraphicDesignBriefData {
-  name: string;
-  email: string;
-  company_name: string;
-  status: string;
-  about_company: string;
-  vision_mission: string;
-  slogan: string;
-  logo_feelings: any;
-  logo_type: string;
-  reference1: string;
-  reference2: string;
-  reference3: string;
-  reference4: string;
-  target_age: string;
-  target_gender: string;
-  target_demography: string;
-  target_profession: string;
-  target_personality: string;
-  products_services: string;
-  features_and_benefits: string;
-  market_category: string;
-  competitor1: string;
-  competitor2: string;
-  competitor3: string;
-  competitor4: string;
-  brand_positioning: string;
-  barrier_to_entry: string;
-  specific_imagery: string;
-  services: string[];
-  print_media: string[];
-  digital_media: string[];
-  submission_date: string;
-  user_id?: string;
-}
+const GraphicDesignBriefSchema = z.object({
+  name: z.string(),
+  email: z.string(),
+  companyName: z.string(),
+  aboutCompany: z.string(),
+  visionMission: z.string(),
+  slogan: z.string(),
+  logoFeelings: z.object({
+    style: z.string().optional(),
+    pricing: z.string().optional(),
+    era: z.string().optional(),
+    tone: z.string().optional(),
+    gender: z.string().optional(),
+    complexity: z.string().optional()
+  }),
+  tone: z.record(z.string(), z.boolean()),
+  logoType: z.string(),
+  reference1: z.string(),
+  reference2: z.string(),
+  reference3: z.string(),
+  reference4: z.string(),
+  targetAge: z.string(),
+  targetGender: z.string(),
+  targetDemography: z.string(),
+  targetProfession: z.string(),
+  targetPersonality: z.string(),
+  productsServices: z.string(),
+  featuresAndBenefits: z.string(),
+  marketCategory: z.string(),
+  competitor1: z.string(),
+  competitor2: z.string(),
+  competitor3: z.string(),
+  competitor4: z.string(),
+  brandPositioning: z.string(),
+  barrierToEntry: z.string(),
+  specificImagery: z.string(),
+  services: z.record(z.string(), z.boolean()),
+  printMedia: z.record(z.string(), z.boolean()),
+  digitalMedia: z.record(z.string(), z.boolean())
+});
 
 export const useGraphicDesignBrief = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const form = useForm<z.infer<typeof GraphicDesignBriefSchema>>({
+    resolver: zodResolver(GraphicDesignBriefSchema)
+  });
 
-  // Extract the 'for' query parameter
   const params = new URLSearchParams(location.search);
   const forUserId = params.get('for');
 
-  const processCheckboxGroup = (group: Record<string, boolean>) => {
-    if (!group) return [];
-    
-    return Object.entries(group)
-      .filter(([_, checked]) => checked === true)
-      .map(([key]) => {
-        return key
-          .split('_')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-      });
-  };
-
-  const onSubmit = async (data: GraphicDesignBriefFormValues) => {
+  const handleSubmit = async (data: z.infer<typeof GraphicDesignBriefSchema>) => {
     setIsSubmitting(true);
-    
+
     try {
-      const services = processCheckboxGroup(data.services || {});
-      const printMedia = processCheckboxGroup(data.printMedia || {});
-      const digitalMedia = processCheckboxGroup(data.digitalMedia || {});
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const effectiveUserId = forUserId || (user ? user.id : null);
+      
+      console.log("Submitting brief with user_id:", effectiveUserId);
+      console.log("Form data:", data);
 
-      // Log the full form data before submission
-      console.log("Submitting form data:", data);
-      console.log("Logo feelings data:", data.logoFeelings);
-      console.log("For user ID from query param:", forUserId);
-
-      // Prepare data for Supabase with correct column names
-      const briefData: GraphicDesignBriefData = {
-        name: data.name || "",
-        email: data.email || "",
-        company_name: data.companyName || "",
-        status: "New",
-        about_company: data.aboutCompany || "",
-        vision_mission: data.visionMission || "",
-        slogan: data.slogan || "",
-        logo_feelings: data.logoFeelings || {},
-        logo_type: data.logoType || "",
-        reference1: data.reference1 || "",
-        reference2: data.reference2 || "",
-        reference3: data.reference3 || "",
-        reference4: data.reference4 || "",
-        target_age: data.targetAge || "",
-        target_gender: data.targetGender || "",
-        target_demography: data.targetDemography || "",
-        target_profession: data.targetProfession || "",
-        target_personality: data.targetPersonality || "",
-        products_services: data.productsServices || "",
-        features_and_benefits: data.featuresAndBenefits || "",
-        market_category: data.marketCategory || "",
-        competitor1: data.competitor1 || "",
-        competitor2: data.competitor2 || "",
-        competitor3: data.competitor3 || "",
-        competitor4: data.competitor4 || "",
-        brand_positioning: data.brandPositioning || "",
-        barrier_to_entry: data.barrierToEntry || "",
-        specific_imagery: data.specificImagery || "",
-        services: services,
-        print_media: printMedia,
-        digital_media: digitalMedia,
-        submission_date: new Date().toISOString()
-      };
-
-      // If query parameter 'for' is present, assign the brief to that user
-      if (forUserId) {
-        briefData.user_id = forUserId;
-        console.log("Assigning brief to user ID:", forUserId);
-      } else {
-        // If no query parameter, check if the current user is logged in
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          briefData.user_id = user.id;
-          console.log("Assigning brief to current user ID:", user.id);
-        } else {
-          console.log("No user ID available, brief will be unassigned");
-        }
-      }
-
-      // Insert into Supabase - now using the specific table for graphic design briefs
-      const { data: insertedData, error } = await supabase
-        .from('graphic_design_briefs')
-        .insert(briefData)
-        .select('id, user_id')
-        .single();
+      const { error } = await supabase.from("graphic_design_briefs").insert({
+        ...data,
+        user_id: effectiveUserId,
+        submission_date: new Date().toISOString(),
+        id: uuidv4()
+      });
 
       if (error) {
-        console.error("Supabase insert error:", error);
-        throw error;
+        console.error("Error submitting graphic design brief:", error);
+        toast.error("Failed to submit brief. Please try again.");
+        return;
       }
-      
-      console.log("Brief inserted successfully:", insertedData);
 
-      // Also save to localStorage for backward compatibility
-      const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
-      const localStorageBrief = {
-        ...data,
-        id: insertedData?.id || Date.now().toString(),
-        submissionDate: new Date().toISOString(),
-        status: "New",
-        type: "Graphic Design",
-        services: services,
-        printMedia: printMedia,
-        digitalMedia: digitalMedia,
-        user_id: briefData.user_id // Store the user_id in localStorage as well
-      };
-      localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
+      try {
+        const storedBriefs = localStorage.getItem("briefs");
+        const briefs = storedBriefs ? JSON.parse(storedBriefs) : [];
+        
+        briefs.push({
+          ...data,
+          id: uuidv4(),
+          type: "Graphic Design",
+          user_id: effectiveUserId,
+          submission_date: new Date().toISOString(),
+          status: "New"
+        });
+        
+        localStorage.setItem("briefs", JSON.stringify(briefs));
+      } catch (e) {
+        console.error("Error saving to localStorage:", e);
+      }
 
-      localStorage.setItem("lastSubmittedBriefType", "Graphic Design");
-
-      toast.success("Brief submitted successfully!");
+      toast.success("Graphic design brief submitted successfully!");
       navigate("/thank-you");
-    } catch (error: any) {
-      console.error("Error submitting brief:", error);
-      toast.error(error.message || "Failed to submit brief");
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return {
-    onSubmit,
-    isSubmitting
+    form,
+    isSubmitting,
+    handleSubmit: form.handleSubmit(handleSubmit)
   };
 };
+
+export default useGraphicDesignBrief;
