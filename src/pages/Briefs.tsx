@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -20,7 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 
 const Briefs = () => {
-  const { briefs, filter, setFilter, search, setSearch, filteredBriefs, isLoading, deleteBrief, fetchBriefs } = useBriefs();
+  const { briefs, setBriefs, filter, setFilter, search, setSearch, filteredBriefs, isLoading, deleteBrief, fetchBriefs } = useBriefs();
   const [selectedBrief, setSelectedBrief] = React.useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
@@ -56,6 +57,7 @@ const Briefs = () => {
       console.log("Refreshing briefs data...");
       await supabase.auth.refreshSession();
       await fetchBriefs();
+      setIsInitialLoad(false);
     } catch (error) {
       console.error("Error refreshing briefs data:", error);
       toast.error("Failed to refresh briefs data");
@@ -87,15 +89,15 @@ const Briefs = () => {
       
       await deleteBrief(selectedBrief.id);
       
-      await refreshData();
+      // Force re-render by setting filters again
+      setFilter(filter);
+      setSearch(search);
       
       setSelectedBrief(null);
-      toast.success("Brief permanently deleted");
+      setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error during brief deletion:", error);
       toast.error("Failed to delete brief. Please try again.");
-      
-      await refreshData();
     } finally {
       setIsDeleting(false);
     }
