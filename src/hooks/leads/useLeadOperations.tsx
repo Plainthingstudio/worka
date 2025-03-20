@@ -98,7 +98,7 @@ export const useLeadOperations = (leads: Lead[], setLeads: React.Dispatch<React.
     }
   };
 
-  // Completely redesigned deletion function with better error handling
+  // Completely rewritten deletion function with true optimistic updates
   const deleteLead = async (id: string): Promise<boolean> => {
     // Validate input
     if (!id) {
@@ -107,29 +107,33 @@ export const useLeadOperations = (leads: Lead[], setLeads: React.Dispatch<React.
       return false;
     }
     
-    // UI update happens immediately (optimistic)
+    // Store the lead before removing it from state (for potential recovery)
+    const leadToDelete = leads.find(lead => lead.id === id);
+    if (!leadToDelete) {
+      console.error(`Could not find lead with id ${id} for deletion`);
+      return false;
+    }
+    
+    // UI update happens immediately (optimistic) - no setState in deletion flow
     setLeads(prev => prev.filter(lead => lead.id !== id));
     
     // Set loading state
     setIsDeletingLead(true);
     
     try {
-      // Make database request in background
+      // Make database request after UI is updated
       const { error } = await supabase
         .from('leads')
         .delete()
         .eq('id', id);
 
       if (error) {
-        // If the database operation fails, we need to restore the deleted lead
-        const deletedLead = leads.find(lead => lead.id === id);
-        if (deletedLead) {
-          // Add the lead back to the state
-          setLeads(prev => [...prev, deletedLead]);
-          throw error;
-        }
+        // If the database operation fails, restore the deleted lead
+        setLeads(prev => [...prev, leadToDelete]);
+        throw error;
       }
       
+      // Only show success toast if DB operation succeeds
       toast.success('Lead deleted successfully');
       return true;
     } catch (error: any) {

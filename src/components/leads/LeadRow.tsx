@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Lead, LeadStage } from '@/types';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -29,8 +29,22 @@ const LeadRow: React.FC<LeadRowProps> = ({
   onDelete,
   onStageChange
 }) => {
+  // Use callbacks to prevent recreation of these functions on each render
+  const handleEdit = useCallback(() => {
+    onEdit(lead);
+  }, [lead, onEdit]);
+
+  const handleDelete = useCallback(() => {
+    // Call delete directly with the ID
+    onDelete(lead.id);
+  }, [lead.id, onDelete]);
+
+  const handleStageChange = useCallback((stage: LeadStage) => {
+    onStageChange(lead.id, stage);
+  }, [lead.id, onStageChange]);
+
   return (
-    <TableRow key={lead.id}>
+    <TableRow>
       <TableCell className="font-medium">{lead.name}</TableCell>
       <TableCell className="hidden md:table-cell">{lead.email}</TableCell>
       <TableCell className="hidden lg:table-cell">{lead.phone || "-"}</TableCell>
@@ -50,11 +64,11 @@ const LeadRow: React.FC<LeadRowProps> = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit(lead)}>
+            <DropdownMenuItem onClick={handleEdit}>
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onDelete(lead.id)}>
+            <DropdownMenuItem onClick={handleDelete}>
               <Trash className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>
@@ -69,7 +83,7 @@ const LeadRow: React.FC<LeadRowProps> = ({
               <DropdownMenuItem 
                 key={stage}
                 disabled={lead.stage === stage}
-                onClick={() => onStageChange(lead.id, stage)}
+                onClick={() => handleStageChange(stage)}
                 className="pl-4 text-sm"
               >
                 {stage}

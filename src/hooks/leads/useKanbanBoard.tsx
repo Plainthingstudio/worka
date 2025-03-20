@@ -71,7 +71,7 @@ export const useKanbanBoard = ({
     }
   };
 
-  // Completely redesigned deletion handler for reliability
+  // Simplified deletion handler that doesn't use dialogs
   const handleDeleteLead = async () => {
     if (!selectedLead) {
       console.error('No lead selected for deletion');
@@ -79,23 +79,22 @@ export const useKanbanBoard = ({
       return;
     }
     
-    // Store ID before clearing the selected lead
+    // Store ID before clearing selection
     const leadId = selectedLead.id;
     
-    // Close dialog and clear selected lead immediately to prevent UI issues
+    // Clear UI state immediately
     setIsDeleteDialogOpen(false);
     setSelectedLead(undefined);
+    setActionLoading(true);
     
-    // Only after UI is updated, actually perform the deletion
-    setTimeout(() => {
-      onDeleteLead(leadId).catch(error => {
-        console.error('Error deleting lead:', error);
-      });
-    }, 10);
-  };
-
-  const handleMoveLead = async (leadId: string, stage: LeadStage) => {
-    await onUpdateLead(leadId, { stage });
+    try {
+      // Then perform the deletion
+      await onDeleteLead(leadId);
+    } catch (error) {
+      console.error('Error deleting lead:', error);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleEditClick = (lead: Lead) => {
@@ -159,7 +158,6 @@ export const useKanbanBoard = ({
     handleAddLead,
     handleEditLead,
     handleDeleteLead,
-    handleMoveLead,
     handleEditClick,
     handleDeleteClick,
     handleAddLeadInStage,

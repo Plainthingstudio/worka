@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Lead } from '@/types';
 import { useKanbanBoard, LEAD_STAGES } from '@/hooks/leads/useKanbanBoard';
 import KanbanHeader from './KanbanHeader';
@@ -60,8 +60,17 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     onDeleteLead
   });
 
+  // Create an optimized direct delete handler
+  const handleDirectDelete = useCallback((id: string) => {
+    // Immediately try to delete without going through dialog
+    onDeleteLead(id).catch(error => {
+      console.error('Error deleting lead:', error);
+      toast.error('Failed to delete lead');
+    });
+  }, [onDeleteLead]);
+
   // Create a wrapper for handleMoveLead to add the lead to clients when moved to Kickoff stage
-  const handleMoveLead = async (leadId: string, stage: string) => {
+  const handleMoveLead = useCallback(async (leadId: string, stage: string) => {
     // First, update the lead stage
     const success = await onUpdateLead(leadId, { stage: stage as any });
     
@@ -94,22 +103,22 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     }
     
     return success;
-  };
+  }, [leads, onUpdateLead, addClient]);
 
-  // Handle closing dialogs and cleanup selected lead with defensive programming
-  const handleCloseAddDialog = () => {
+  // Handle closing dialogs with no delay
+  const handleCloseAddDialog = useCallback(() => {
     setIsAddDialogOpen(false);
-  };
+  }, [setIsAddDialogOpen]);
 
-  const handleCloseEditDialog = () => {
+  const handleCloseEditDialog = useCallback(() => {
     setIsEditDialogOpen(false);
     setSelectedLead(undefined);
-  };
+  }, [setIsEditDialogOpen, setSelectedLead]);
 
-  const handleCloseDeleteDialog = () => {
+  const handleCloseDeleteDialog = useCallback(() => {
     setIsDeleteDialogOpen(false);
     setSelectedLead(undefined);
-  };
+  }, [setIsDeleteDialogOpen, setSelectedLead]);
 
   return (
     <div className="flex flex-col w-full max-w-[1400px] mx-auto">
@@ -127,7 +136,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 leads={leads} 
                 isLoading={isLoading} 
                 onEdit={handleEditClick} 
-                onDelete={handleDeleteClick} 
+                onDelete={handleDirectDelete} 
                 onStageChange={handleMoveLead} 
                 stages={LEAD_STAGES} 
               />
@@ -143,7 +152,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 onScrollRight={scrollRight}
                 onMove={handleMoveLead}
                 onEdit={handleEditClick}
-                onDelete={handleDeleteClick}
+                onDelete={handleDirectDelete}
                 onAddLead={handleAddLeadInStage}
               />
             </div>
@@ -151,8 +160,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
         </div>
       </div>
 
-      {/* Since these components use state from the hook, 
-          they'll automatically update when the state changes */}
+      {/* Dialog components */}
       <LeadDialog 
         isOpen={isAddDialogOpen} 
         onClose={handleCloseAddDialog} 

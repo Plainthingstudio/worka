@@ -22,7 +22,12 @@ const LeadsList: React.FC<LeadsListProps> = ({
   onStageChange,
   stages
 }) => {
-  // Process leads in Kickoff stage (side effect only)
+  // Handle delete with direct callback to prevent event propagation issues
+  const handleDelete = (id: string) => {
+    // Call the delete handler directly without any additional processing
+    onDelete(id);
+  };
+
   return (
     <div className="w-full h-full overflow-auto rounded-md px-2">
       {/* Processor component for Kickoff leads */}
@@ -36,7 +41,7 @@ const LeadsList: React.FC<LeadsListProps> = ({
           leads={leads}
           stages={stages}
           onEdit={onEdit}
-          onDelete={onDelete}
+          onDelete={handleDelete}
           onStageChange={onStageChange}
         />
       )}
