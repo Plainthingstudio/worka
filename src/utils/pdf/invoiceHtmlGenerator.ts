@@ -1,4 +1,3 @@
-
 import { format } from 'date-fns';
 import { Invoice } from '@/types';
 import { formatDateParts } from './invoiceHelpers';
@@ -30,8 +29,8 @@ export const generateInvoiceHtml = (invoice: Invoice, client: any): string => {
           <img src="public/lovable-uploads/c7daa4df-d332-453c-967f-e36fdefd8dbf.png" style="width: 80px; height: 80px; object-fit: contain;" alt="Plainthing Logo">
         </div>
         
-        <!-- Invoice number in a pill/capsule style - updated padding to 0px top and 16px bottom -->
-        <div style="position: absolute; right: 30px; top: 52px; background: white; border-radius: 8px; padding-left: 12px; padding-right: 12px; padding-top: 0px; padding-bottom: 16px; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05); border: 0.5px solid #EBEFF6; justify-content: center; align-items: center; display: inline-flex;">
+        <!-- Invoice number in a pill/capsule style - fixed styling to match design -->
+        <div style="position: absolute; right: 30px; top: 52px; background: white; border-radius: 8px; padding: 8px 12px; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05); border: 0.5px solid #EBEFF6; display: flex; align-items: center; justify-content: center;">
           <div style="color: #2388FF; font-size: 16px; font-family: Inter; font-weight: 500; line-height: 20px; word-wrap: break-word">${invoice.invoiceNumber}</div>
         </div>
       </div>
@@ -202,3 +201,4 @@ function renderTermsAndNotes(invoice: Invoice): string {
     </div>
   `;
 }
+
