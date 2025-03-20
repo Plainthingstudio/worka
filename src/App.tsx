@@ -13,7 +13,6 @@ import Clients from '@/pages/Clients';
 import Invoices from '@/pages/Invoices';
 import InvoiceForm from '@/pages/InvoiceForm';
 import InvoiceDetails from '@/pages/InvoiceDetails';
-import InvoiceEditor from '@/pages/InvoiceEditor';
 import Statistics from '@/pages/Statistics';
 import Briefs from '@/pages/Briefs';
 import Team from '@/pages/Team';
@@ -48,7 +47,6 @@ function App() {
             <Route path="/invoices/new" element={<InvoiceForm />} />
             <Route path="/invoices/edit/:invoiceId" element={<InvoiceForm />} />
             <Route path="/invoices/:invoiceId" element={<InvoiceDetails />} />
-            <Route path="/invoice-editor" element={<InvoiceEditor />} />
             <Route path="/statistics" element={<Statistics />} />
             <Route path="/briefs" element={<Briefs />} />
             <Route path="/team" element={<Team />} />
