@@ -118,30 +118,41 @@ export const useIllustrationsBrief = () => {
       // If query parameter 'for' is present, assign the brief to that user
       if (forUserId) {
         briefData.user_id = forUserId;
+        console.log("Assigning brief to user ID:", forUserId);
       } else {
         // If no query parameter, check if the current user is logged in
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           briefData.user_id = user.id;
+          console.log("Assigning brief to current user ID:", user.id);
+        } else {
+          console.log("No user ID available, brief will be unassigned");
         }
       }
       
       // Insert into Supabase
-      const { error } = await supabase
+      const { data: insertedData, error } = await supabase
         .from('illustration_design_briefs')
-        .insert(briefData);
+        .insert(briefData)
+        .select('id, user_id')
+        .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase insert error:", error);
+        throw error;
+      }
+      
+      console.log("Brief inserted successfully:", insertedData);
       
       // Also save to localStorage for backward compatibility
       const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
       const localStorageBrief = {
         ...data,
-        id: Date.now(),
+        id: insertedData?.id || Date.now().toString(),
         submissionDate: new Date().toISOString(),
         status: "New",
         type: "Illustration Design",
-        user_id: forUserId // Store the user_id in localStorage as well
+        user_id: briefData.user_id // Store the user_id in localStorage as well
       };
       
       localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));

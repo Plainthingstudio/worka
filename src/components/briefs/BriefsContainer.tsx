@@ -47,11 +47,14 @@ const BriefsContainer: React.FC<BriefsContainerProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const refreshData = async () => {
     if (isRefreshing) return;
     
     setIsRefreshing(true);
+    setFetchError(null);
+    
     try {
       console.log("Refreshing briefs data...");
       
@@ -62,13 +65,14 @@ const BriefsContainer: React.FC<BriefsContainerProps> = ({
         toast.info("You're viewing briefs in read-only mode. Login to manage briefs.");
       } else {
         setCurrentUserId(user.id);
+        console.log("Current user ID:", user.id);
       }
       
-      await supabase.auth.refreshSession();
       await fetchBriefs();
       setIsInitialLoad(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error refreshing briefs data:", error);
+      setFetchError(error.message || "Failed to refresh briefs data");
       toast.error("Failed to refresh briefs data");
     } finally {
       setIsRefreshing(false);
@@ -148,6 +152,18 @@ const BriefsContainer: React.FC<BriefsContainerProps> = ({
     <>
       <BriefsHeader />
       <BriefStats briefs={briefs} />
+      
+      {fetchError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          <p className="text-sm">Error loading briefs: {fetchError}</p>
+          <button 
+            onClick={refreshData}
+            className="text-xs text-red-800 underline mt-1"
+          >
+            Try again
+          </button>
+        </div>
+      )}
       
       <BriefsContent
         briefs={briefs}
