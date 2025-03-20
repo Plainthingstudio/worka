@@ -105,21 +105,27 @@ export const useLeadOperations = (leads: Lead[], setLeads: React.Dispatch<React.
       return false;
     }
     
+    // First, create a local copy of the leads array excluding the one to be deleted
+    // This helps avoid UI freezing by updating the UI immediately
+    const updatedLeads = leads.filter(lead => lead.id !== id);
+    
     setIsDeletingLead(true);
     
     try {
-      // Make the database request
+      // Update the UI first (optimistic update)
+      setLeads(updatedLeads);
+      
+      // Then make the database request
       const { error } = await supabase
         .from('leads')
         .delete()
         .eq('id', id);
 
       if (error) {
+        // If the database operation fails, revert the UI update
+        setLeads(leads);
         throw error;
       }
-      
-      // Only update UI state if the database operation succeeded
-      setLeads(prevLeads => prevLeads.filter(lead => lead.id !== id));
       
       toast.success('Lead deleted successfully');
       return true;
