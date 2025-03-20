@@ -31,19 +31,22 @@ export const useBriefsDeletion = (
         deleteResult = await supabase
           .from('illustration_design_briefs')
           .delete()
-          .eq('id', id);
+          .eq('id', id)
+          .eq('user_id', user.id); // Ensure we're only deleting user's briefs
       } else if (brief.type === "UI Design") {
         console.log("Deleting from ui_design_briefs table");
         deleteResult = await supabase
           .from('ui_design_briefs')
           .delete()
-          .eq('id', id);
+          .eq('id', id)
+          .eq('user_id', user.id); // Ensure we're only deleting user's briefs
       } else if (brief.type === "Graphic Design") {
         console.log("Deleting from graphic_design_briefs table");
         deleteResult = await supabase
           .from('graphic_design_briefs')
           .delete()
-          .eq('id', id);
+          .eq('id', id)
+          .eq('user_id', user.id); // Ensure we're only deleting user's briefs
       }
 
       // Check for errors in the delete operation

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -15,9 +16,10 @@ import {
   generateUIDesignBriefPDF, 
   generateGraphicDesignBriefPDF 
 } from "@/utils/briefPdfGenerator";
-import { Loader2 } from "lucide-react";
+import { Loader2, Copy } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 const Briefs = () => {
   const { briefs, setBriefs, filter, setFilter, search, setSearch, filteredBriefs, isLoading, deleteBrief, fetchBriefs } = useBriefs();
@@ -29,6 +31,11 @@ const Briefs = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+
+  // Get the base URL for creating personalized brief links
+  const baseUrl = window.location.origin;
 
   useEffect(() => {
     const handleSidebarChange = () => {
@@ -60,6 +67,8 @@ const Briefs = () => {
       if (!user) {
         console.log("Non-authenticated user viewing briefs");
         toast.info("You're viewing briefs in read-only mode. Login to manage briefs.");
+      } else {
+        setCurrentUserId(user.id);
       }
       
       await supabase.auth.refreshSession();
@@ -142,6 +151,38 @@ const Briefs = () => {
     }
   };
 
+  const copyBriefLink = (briefType: string) => {
+    if (!currentUserId) {
+      toast.error("You must be logged in to get personalized brief links");
+      return;
+    }
+
+    let url = "";
+    switch (briefType) {
+      case "ui":
+        url = `${baseUrl}/ui-design-brief?for=${currentUserId}`;
+        break;
+      case "illustration":
+        url = `${baseUrl}/illustrations-brief?for=${currentUserId}`;
+        break;
+      case "graphic":
+        url = `${baseUrl}/graphic-design-brief?for=${currentUserId}`;
+        break;
+      default:
+        toast.error("Invalid brief type");
+        return;
+    }
+
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        toast.success(`${briefType.charAt(0).toUpperCase() + briefType.slice(1)} Design Brief link copied to clipboard`);
+      })
+      .catch(err => {
+        console.error("Error copying link:", err);
+        toast.error("Failed to copy link to clipboard");
+      });
+  };
+
   const renderLoadingState = () => (
     <div className="space-y-4">
       <div className="flex justify-center items-center h-12 mb-4">
@@ -176,6 +217,70 @@ const Briefs = () => {
     </div>
   );
 
+  // Add a section to display and copy personalized brief links
+  const renderPersonalizedLinks = () => {
+    if (!currentUserId) return null;
+
+    return (
+      <div className="bg-white p-4 rounded-md border shadow-sm mt-4 mb-6">
+        <h3 className="text-lg font-medium mb-3">Your Personalized Brief Links</h3>
+        <p className="text-sm text-gray-600 mb-3">
+          Share these links with your clients to directly receive briefs assigned to you.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="flex">
+            <input 
+              type="text" 
+              value={`${baseUrl}/ui-design-brief?for=${currentUserId}`} 
+              readOnly
+              className="flex-1 px-3 py-2 border rounded-l-md text-sm bg-gray-50" 
+            />
+            <Button 
+              variant="outline" 
+              className="rounded-l-none border-l-0" 
+              onClick={() => copyBriefLink("ui")}
+            >
+              <Copy className="h-4 w-4" />
+              <span className="sr-only">Copy UI Brief Link</span>
+            </Button>
+          </div>
+          <div className="flex">
+            <input 
+              type="text" 
+              value={`${baseUrl}/illustrations-brief?for=${currentUserId}`} 
+              readOnly
+              className="flex-1 px-3 py-2 border rounded-l-md text-sm bg-gray-50" 
+            />
+            <Button 
+              variant="outline" 
+              className="rounded-l-none border-l-0" 
+              onClick={() => copyBriefLink("illustration")}
+            >
+              <Copy className="h-4 w-4" />
+              <span className="sr-only">Copy Illustration Brief Link</span>
+            </Button>
+          </div>
+          <div className="flex">
+            <input 
+              type="text" 
+              value={`${baseUrl}/graphic-design-brief?for=${currentUserId}`} 
+              readOnly
+              className="flex-1 px-3 py-2 border rounded-l-md text-sm bg-gray-50" 
+            />
+            <Button 
+              variant="outline" 
+              className="rounded-l-none border-l-0" 
+              onClick={() => copyBriefLink("graphic")}
+            >
+              <Copy className="h-4 w-4" />
+              <span className="sr-only">Copy Graphic Brief Link</span>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
@@ -188,6 +293,10 @@ const Briefs = () => {
         <main className="container py-6">
           <BriefsHeader />
           <BriefStats briefs={briefs} />
+          
+          {/* Display personalized brief links for logged-in users */}
+          {currentUserId && renderPersonalizedLinks()}
+          
           <BriefsFilter 
             filter={filter}
             setFilter={setFilter}

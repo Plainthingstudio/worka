@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -47,7 +47,12 @@ export interface GraphicDesignBriefFormValues {
 
 export const useGraphicDesignBrief = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Extract the 'for' query parameter
+  const params = new URLSearchParams(location.search);
+  const forUserId = params.get('for');
 
   const processCheckboxGroup = (group: Record<string, boolean>) => {
     if (!group) return [];
@@ -70,12 +75,10 @@ export const useGraphicDesignBrief = () => {
       const printMedia = processCheckboxGroup(data.printMedia || {});
       const digitalMedia = processCheckboxGroup(data.digitalMedia || {});
 
-      // Try to get the current user - if logged in, attach user_id
-      const { data: { user } } = await supabase.auth.getUser();
-
       // Log the full form data before submission
       console.log("Submitting form data:", data);
       console.log("Logo feelings data:", data.logoFeelings);
+      console.log("For user ID from query param:", forUserId);
 
       // Prepare data for Supabase with correct column names
       const briefData: any = {
@@ -113,9 +116,15 @@ export const useGraphicDesignBrief = () => {
         submission_date: new Date().toISOString()
       };
 
-      // If user is logged in, add user_id
-      if (user) {
-        briefData.user_id = user.id;
+      // If query parameter 'for' is present, assign the brief to that user
+      if (forUserId) {
+        briefData.user_id = forUserId;
+      } else {
+        // If no query parameter, check if the current user is logged in
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          briefData.user_id = user.id;
+        }
       }
 
       // Insert into Supabase - now using the specific table for graphic design briefs
@@ -135,7 +144,8 @@ export const useGraphicDesignBrief = () => {
         type: "Graphic Design",
         services: services,
         printMedia: printMedia,
-        digitalMedia: digitalMedia
+        digitalMedia: digitalMedia,
+        user_id: forUserId // Store the user_id in localStorage as well
       };
       localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
 
