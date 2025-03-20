@@ -33,6 +33,37 @@ export interface IllustrationBriefFormValues {
   deliverables: Record<string, boolean>;
 }
 
+// Define an interface for the data we'll send to Supabase
+interface SupabaseBriefData {
+  name: string;
+  email: string;
+  company_name: string;
+  about_company: string | null;
+  illustrations_purpose: string | null;
+  illustrations_for: string | null;
+  illustrations_style: string | null;
+  target_audience: string | null;
+  competitor1: string | null;
+  competitor2: string | null;
+  competitor3: string | null;
+  competitor4: string | null;
+  brand_guidelines: string | null;
+  reference1: string | null;
+  reference2: string | null;
+  reference3: string | null;
+  reference4: string | null;
+  general_style: string | null;
+  color_preferences: string | null;
+  like_dislike_design: string | null;
+  completion_deadline: string | null;
+  illustrations_count: number;
+  illustration_details: string[];
+  deliverables: string[];
+  status: string;
+  submission_date: string;
+  user_id?: string; // Make this optional since it might not always be present
+}
+
 export const useIllustrationsBrief = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -55,7 +86,7 @@ export const useIllustrationsBrief = () => {
         .map(([key]) => key);
       
       // Prepare data for Supabase with correct column names
-      const briefData = {
+      const briefData: SupabaseBriefData = {
         name: data.name,
         email: data.email,
         company_name: data.companyName,
