@@ -1,3 +1,4 @@
+
 import { format } from 'date-fns';
 import { Invoice } from '@/types';
 import { formatDateParts } from './invoiceHelpers';
@@ -27,8 +28,8 @@ export const generateInvoiceHtml = (invoice: Invoice, client: any): string => {
         <!-- Logo placeholder - white rounded square with shadow -->
         <div style="width: 112px; height: 112px; position: absolute; left: 40px; top: 52px; background-color: white; border-radius: 24px; box-shadow: 0px 2px 19px rgba(47.78, 94.96, 150.87, 0.07); border: 0.60px #EBEFF6 solid;"></div>
         
-        <!-- Invoice number in a pill/capsule style - updated to white background with rounded corners and larger font -->
-        <div style="position: absolute; right: 30px; top: 52px; background: white; border-radius: 8px; padding-left: 12px; padding-right: 12px; padding-top: 6px; padding-bottom: 6px; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05); border: 0.5px solid #EBEFF6; justify-content: center; align-items: center; display: inline-flex;">
+        <!-- Invoice number in a pill/capsule style - updated padding to 0px top and 16px bottom -->
+        <div style="position: absolute; right: 30px; top: 52px; background: white; border-radius: 8px; padding-left: 12px; padding-right: 12px; padding-top: 0px; padding-bottom: 16px; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05); border: 0.5px solid #EBEFF6; justify-content: center; align-items: center; display: inline-flex;">
           <div style="color: #2388FF; font-size: 16px; font-family: Inter; font-weight: 500; line-height: 20px; word-wrap: break-word">${invoice.invoiceNumber}</div>
         </div>
       </div>
