@@ -1,4 +1,3 @@
-
 import { format } from 'date-fns';
 import { Invoice } from '@/types';
 import { formatDateParts } from './invoiceHelpers';
@@ -47,13 +46,10 @@ export const generateInvoiceHtml = (invoice: Invoice, client: any): string => {
             </div>
             <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 4px; display: flex">
               <div style="justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                <div style="color: #5D6481; font-size: 10px; font-family: Inter; font-weight: 400; line-height: 14px; word-wrap: break-word">(612) 856 - 0989</div>
-              </div>
-              <div style="justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                <div style="color: #5D6481; font-size: 10px; font-family: Inter; font-weight: 400; line-height: 14px; word-wrap: break-word">contact@maurosicard.com</div>
+                <div style="color: #5D6481; font-size: 10px; font-family: Inter; font-weight: 400; line-height: 14px; word-wrap: break-word">plainthingstudio@gmail.com</div>
               </div>
               <div style="width: 140px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                <div style="flex: 1 1 0; color: #5D6481; font-size: 10px; font-family: Inter; font-weight: 400; line-height: 14px; word-wrap: break-word">Pablo Alto, San Francisco, CA 92102, United States of America</div>
+                <div style="flex: 1 1 0; color: #5D6481; font-size: 10px; font-family: Inter; font-weight: 400; line-height: 14px; word-wrap: break-word">Yogyakarta, Indonesia</div>
               </div>
             </div>
           </div>
