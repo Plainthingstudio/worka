@@ -12,7 +12,6 @@ import {
   BarChart,
   UserRound,
   Settings,
-  Palette,
   FolderKanban
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -84,11 +83,6 @@ const Sidebar = () => {
       href: "/invoices",
     },
     {
-      icon: Palette,
-      label: "Invoice Editor",
-      href: "/invoice-editor",
-    },
-    {
       icon: FileEdit,
       label: "Briefs",
       href: "/briefs",
@@ -110,7 +104,7 @@ const Sidebar = () => {
       className={cn(
         "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-border transition-all duration-300 ease-in-out",
         expanded ? "w-56" : "w-14",
-        "bg-sidebar text-sidebar-foreground"  // Using sidebar-specific variables
+        "bg-sidebar text-sidebar-foreground"
       )}
     >
       <div className="flex h-14 items-center justify-between px-3">
