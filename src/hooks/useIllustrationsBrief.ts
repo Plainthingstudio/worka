@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,7 +53,8 @@ export const useIllustrationsBrief = () => {
       
       console.log("Submitting brief with user_id:", effectiveUserId);
 
-      const { error } = await supabase.from("illustration_design_briefs").insert({
+      // Map form field names to database column names
+      const formattedData = {
         name: data.name,
         email: data.email,
         company_name: data.companyName,
@@ -79,12 +81,17 @@ export const useIllustrationsBrief = () => {
         illustration_details: data.illustrationDetails,
         deliverables: data.deliverables,
         user_id: effectiveUserId,
-        submission_date: new Date().toISOString()
-      });
+        submission_date: new Date().toISOString(),
+        status: "New"
+      };
+
+      console.log("Formatted data for submission:", formattedData);
+
+      const { error } = await supabase.from("illustration_design_briefs").insert(formattedData);
 
       if (error) {
         console.error("Error submitting illustration brief:", error);
-        toast.error("Failed to submit brief. Please try again.");
+        toast.error(`Failed to submit brief: ${error.message}`);
         setIsSubmitting(false);
         return;
       }
@@ -94,11 +101,9 @@ export const useIllustrationsBrief = () => {
         const briefs = storedBriefs ? JSON.parse(storedBriefs) : [];
         
         briefs.push({
-          ...data,
+          ...formattedData,
           id: uuidv4(),
           type: "Illustration Design",
-          user_id: effectiveUserId,
-          submission_date: new Date().toISOString(),
           status: "New"
         });
         
