@@ -24,28 +24,24 @@ export const useBriefsDeletion = (
       }
       
       let deleteResult;
-      let tableName = "";
       
-      // Delete from the appropriate table based on type
+      // Delete from the appropriate table based on type - using hardcoded table names for type safety
       if (brief.type === "Illustration Design") {
-        tableName = 'illustration_design_briefs';
-        console.log(`Deleting from ${tableName} table`);
+        console.log("Deleting from illustration_design_briefs table");
         deleteResult = await supabase
-          .from(tableName)
+          .from('illustration_design_briefs')
           .delete()
           .eq('id', id);
       } else if (brief.type === "UI Design") {
-        tableName = 'ui_design_briefs';
-        console.log(`Deleting from ${tableName} table`);
+        console.log("Deleting from ui_design_briefs table");
         deleteResult = await supabase
-          .from(tableName)
+          .from('ui_design_briefs')
           .delete()
           .eq('id', id);
       } else if (brief.type === "Graphic Design") {
-        tableName = 'graphic_design_briefs';
-        console.log(`Deleting from ${tableName} table`);
+        console.log("Deleting from graphic_design_briefs table");
         deleteResult = await supabase
-          .from(tableName)
+          .from('graphic_design_briefs')
           .delete()
           .eq('id', id);
       }
@@ -57,7 +53,7 @@ export const useBriefsDeletion = (
         throw deleteResult.error;
       }
 
-      console.log(`Brief successfully deleted from ${tableName} table`);
+      console.log("Brief successfully deleted from database");
       
       // Update local state after successful database deletion
       const updatedBriefs = briefs.filter(b => b.id !== id);
