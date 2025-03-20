@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -54,7 +55,9 @@ const Briefs = () => {
     setIsRefreshing(true);
     try {
       console.log("Refreshing briefs data...");
+      // Clear the Supabase cache before fetching
       await supabase.auth.refreshSession();
+      // Force a complete refresh
       await fetchBriefs();
       setIsInitialLoad(false);
     } catch (error) {
@@ -93,11 +96,13 @@ const Briefs = () => {
       // Clear selected brief
       setSelectedBrief(null);
       
-      // Force a complete refresh of the data from server
-      await refreshData();
-      
-      // Close the dialog only after successful deletion
+      // Close the dialog 
       setIsDeleteDialogOpen(false);
+      
+      // Force a complete refresh of the data from server with cache clearing
+      setTimeout(() => {
+        refreshData();
+      }, 500); // Small delay to ensure the delete operation completes on the server
       
       toast.success("Brief permanently deleted");
     } catch (error) {

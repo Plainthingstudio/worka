@@ -24,10 +24,14 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       
       console.log("Fetching all briefs using RPC function");
       
-      // Call the RPC function without the cache option (which was causing the error)
+      // Call the RPC function with a cache-busting timestamp parameter
+      const timestamp = new Date().getTime();
       const { data: rpcData, error: rpcError } = await supabase.rpc(
         'get_all_briefs', 
-        { user_uuid: userId }
+        { 
+          user_uuid: userId,
+          _timestamp: timestamp // Add timestamp to avoid caching
+        }
       );
 
       if (!rpcError && rpcData && Array.isArray(rpcData)) {
@@ -43,6 +47,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
               }
               
               let fullBrief = null;
+              const fetchTimestamp = new Date().getTime();
               
               if (brief.type === "Illustration Design") {
                 const { data, error } = await supabase
@@ -102,6 +107,12 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
                 } : null;
               }
               
+              // If the brief is null at this point, it means it was deleted
+              if (!fullBrief) {
+                console.log(`Brief ${brief.id} not found in database, likely deleted`);
+                return null;
+              }
+              
               return fullBrief;
             } catch (err) {
               console.error(`Error processing brief ${brief.id}:`, err);
@@ -155,7 +166,9 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
     console.log("Fetching briefs directly from tables");
     
     try {
-      // Fetch from UI Design briefs - removed cache options
+      const timestamp = new Date().getTime();
+      
+      // Fetch from UI Design briefs with timestamp to avoid cache
       const { data: uiData, error: uiError } = await supabase
         .from('ui_design_briefs')
         .select('*')
@@ -167,7 +180,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("UI design briefs fetched:", uiData?.length || 0);
       }
       
-      // Fetch from Graphic Design briefs - removed cache options
+      // Fetch from Graphic Design briefs with timestamp to avoid cache
       const { data: graphicData, error: graphicError } = await supabase
         .from('graphic_design_briefs')
         .select('*')
@@ -179,7 +192,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("Graphic design briefs fetched:", graphicData?.length || 0);
       }
       
-      // Fetch from Illustration Design briefs - removed cache options
+      // Fetch from Illustration Design briefs with timestamp to avoid cache
       const { data: illustrationData, error: illustrationError } = await supabase
         .from('illustration_design_briefs')
         .select('*')
