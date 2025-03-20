@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Lead } from '@/types';
 import { useKanbanBoard, LEAD_STAGES } from '@/hooks/leads/useKanbanBoard';
@@ -45,7 +44,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
     currentStage,
     handleAddLead,
     handleEditLead,
-    handleDeleteLead,
+    handleDeleteLead: originalHandleDeleteLead,
     handleEditClick,
     handleDeleteClick,
     handleAddLeadInStage,
@@ -155,7 +154,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
       <DeleteLeadDialog 
         isOpen={isDeleteDialogOpen} 
         onClose={() => { setIsDeleteDialogOpen(false); }} 
-        onConfirm={handleDeleteLead} 
+        onConfirm={originalHandleDeleteLead} 
         isLoading={actionLoading} 
       />
     </div>

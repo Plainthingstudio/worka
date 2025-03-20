@@ -1,8 +1,7 @@
-
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Lead, LeadStage } from '@/types';
 
-export const LEAD_STAGES: LeadStage[] = [
+export const LEAD_STAGES = [
   'Leads',
   'First Meeting',
   'Follow up 1',
@@ -12,7 +11,7 @@ export const LEAD_STAGES: LeadStage[] = [
   'Down Payment',
   'Kickoff',
   'Finish'
-];
+] as const;
 
 interface UseKanbanBoardProps {
   leads: Lead[];
@@ -21,11 +20,11 @@ interface UseKanbanBoardProps {
   onDeleteLead: (id: string) => Promise<boolean>;
 }
 
-export const useKanbanBoard = ({
-  leads,
-  onAddLead,
-  onUpdateLead,
-  onDeleteLead
+export const useKanbanBoard = ({ 
+  leads, 
+  onAddLead, 
+  onUpdateLead, 
+  onDeleteLead 
 }: UseKanbanBoardProps) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -59,12 +58,22 @@ export const useKanbanBoard = ({
   };
 
   const handleDeleteLead = async () => {
-    if (selectedLead) {
-      setActionLoading(true);
-      await onDeleteLead(selectedLead.id);
+    if (!selectedLead) {
+      return;
+    }
+    
+    setActionLoading(true);
+    
+    try {
+      const success = await onDeleteLead(selectedLead.id);
+      
+      if (success) {
+        setIsDeleteDialogOpen(false);
+      }
+    } catch (error) {
+      console.error('Error deleting lead:', error);
+    } finally {
       setActionLoading(false);
-      setIsDeleteDialogOpen(false);
-      setSelectedLead(undefined);
     }
   };
 
