@@ -16,7 +16,8 @@ const Briefs = () => {
     filteredBriefs, 
     isLoading, 
     fetchBriefs, 
-    deleteBrief 
+    deleteBrief,
+    clearLocalBriefs
   } = useBriefs();
   
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -60,6 +61,7 @@ const Briefs = () => {
             isLoading={isLoading}
             fetchBriefs={fetchBriefs}
             deleteBrief={deleteBrief}
+            clearLocalBriefs={clearLocalBriefs}
           />
         </main>
       </div>

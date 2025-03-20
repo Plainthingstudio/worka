@@ -13,6 +13,8 @@ import {
   generateGraphicDesignBriefPDF 
 } from "@/utils/briefPdfGenerator";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { TrashIcon } from "lucide-react";
 
 interface BriefsContainerProps {
   briefs: Brief[];
@@ -25,6 +27,7 @@ interface BriefsContainerProps {
   isLoading: boolean;
   fetchBriefs: () => Promise<void>;
   deleteBrief: (id: string) => Promise<void>;
+  clearLocalBriefs?: () => boolean; // Added optional prop for clearing localStorage
 }
 
 const BriefsContainer: React.FC<BriefsContainerProps> = ({
@@ -38,6 +41,7 @@ const BriefsContainer: React.FC<BriefsContainerProps> = ({
   isLoading,
   fetchBriefs,
   deleteBrief,
+  clearLocalBriefs,
 }) => {
   const [selectedBrief, setSelectedBrief] = useState<Brief | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -148,6 +152,15 @@ const BriefsContainer: React.FC<BriefsContainerProps> = ({
     }
   };
 
+  const handleClearLocalStorage = () => {
+    if (clearLocalBriefs && clearLocalBriefs()) {
+      toast.success("Local brief data cleared successfully");
+      refreshData();
+    } else {
+      toast.error("Failed to clear local brief data");
+    }
+  };
+
   return (
     <>
       <BriefsHeader />
@@ -162,6 +175,20 @@ const BriefsContainer: React.FC<BriefsContainerProps> = ({
           >
             Try again
           </button>
+        </div>
+      )}
+      
+      {briefs.length > 0 && (
+        <div className="mb-4 flex justify-end">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-destructive"
+            onClick={handleClearLocalStorage}
+          >
+            <TrashIcon className="h-4 w-4 mr-2" />
+            Clear Local Cache
+          </Button>
         </div>
       )}
       

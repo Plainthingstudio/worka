@@ -47,6 +47,24 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       console.log("Fetching briefs directly from tables");
       
       try {
+        // Try to fetch briefs using the get_all_briefs function if available
+        const { data: functionData, error: functionError } = await supabase
+          .rpc('get_all_briefs', { user_uuid: userId });
+          
+        if (functionError) {
+          console.log("Function get_all_briefs not available or error:", functionError);
+        } else if (functionData && functionData.length > 0) {
+          console.log(`Retrieved ${functionData.length} briefs from function`);
+          setBriefs(functionData);
+          
+          // Update localStorage with the latest data from the database
+          localStorage.setItem("briefs", JSON.stringify(functionData));
+          
+          setIsLoading(false);
+          setIsFetching(false);
+          return;
+        }
+        
         // Fetch from UI Design briefs 
         const { data: uiData, error: uiError } = await supabase
           .from('ui_design_briefs')
@@ -110,30 +128,32 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         
         console.log(`Combined briefs from direct fetching: ${allBriefs.length}`);
         
+        // Set briefs in state and update localStorage
+        setBriefs(allBriefs);
+        
+        // Since we've successfully fetched from the database, update localStorage
+        // or clear it if there are no briefs
         if (allBriefs.length > 0) {
-          setBriefs(allBriefs);
-          
-          // Also update localStorage for backup
-          try {
-            localStorage.setItem("briefs", JSON.stringify(allBriefs));
-          } catch (localStorageError) {
-            console.error("Error writing to localStorage:", localStorageError);
-          }
-          
-          setIsLoading(false);
-          setIsFetching(false);
-          return;
+          localStorage.setItem("briefs", JSON.stringify(allBriefs));
+        } else {
+          console.log("No briefs found in database, clearing localStorage");
+          localStorage.removeItem("briefs");
         }
+        
+        setIsLoading(false);
+        setIsFetching(false);
+        return;
       } catch (directFetchError) {
         console.error("Error in direct table fetching:", directFetchError);
       }
       
-      // If we get here, we couldn't fetch briefs directly
-      // Fall back to localStorage
+      // If database fetch failed, fallback to localStorage only if we haven't
+      // successfully established a connection to the database
+      console.log("Database fetch failed, checking localStorage as last resort");
       try {
-        console.log("Falling back to localStorage for briefs");
         const storedBriefs = localStorage.getItem("briefs");
         if (storedBriefs) {
+          console.log("Using briefs from localStorage as fallback");
           const parsedBriefs = JSON.parse(storedBriefs);
           setBriefs(parsedBriefs);
         } else {
@@ -154,6 +174,8 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         if (storedBriefs) {
           const parsedBriefs = JSON.parse(storedBriefs);
           setBriefs(parsedBriefs);
+        } else {
+          setBriefs([]);
         }
       } catch (localStorageError) {
         console.error("Error reading from localStorage:", localStorageError);
@@ -165,12 +187,18 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
     }
   };
 
-  // Method to fetch directly from individual brief tables
-  const fetchBriefsDirectly = async (): Promise<boolean> => {
-    // This method is kept for backward compatibility but now
-    // moved directly into fetchBriefs
-    return false;
+  // Method to clear all local brief data
+  const clearLocalBriefs = () => {
+    try {
+      localStorage.removeItem("briefs");
+      console.log("Cleared briefs from localStorage");
+      setBriefs([]);
+      return true;
+    } catch (error) {
+      console.error("Failed to clear localStorage briefs:", error);
+      return false;
+    }
   };
 
-  return { fetchBriefs };
+  return { fetchBriefs, clearLocalBriefs };
 };
