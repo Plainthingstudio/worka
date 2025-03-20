@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -24,14 +23,14 @@ const DeleteBriefDialog: React.FC<DeleteBriefDialogProps> = ({
     
     setIsDeleting(true);
     try {
-      // Close dialog to indicate to user that action is being processed
-      onOpenChange(false);
-      
       // Call the parent component's confirmation handler
       await onConfirm();
+      
+      // Only close on success
+      onOpenChange(false);
     } catch (error) {
       console.error("Error in DeleteBriefDialog:", error);
-      // Error handling is done in the parent component
+      // Keep dialog open on error so user can try again
     } finally {
       setIsDeleting(false);
     }
