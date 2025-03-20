@@ -25,14 +25,13 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       console.log("Fetching all briefs using RPC function");
       
       // Ensure we're getting fresh data by not using cache
-      const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_briefs', {
-        user_uuid: userId
-      }, { 
-        headers: { 
-          'cache-control': 'no-cache', 
-          'pragma': 'no-cache' 
-        } 
-      });
+      const { data: rpcData, error: rpcError } = await supabase.rpc(
+        'get_all_briefs', 
+        { user_uuid: userId },
+        { 
+          cache: 'no-store'
+        }
+      );
 
       if (!rpcError && rpcData && Array.isArray(rpcData)) {
         console.log(`Found ${rpcData.length} briefs from RPC`);
@@ -159,46 +158,40 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
     console.log("Fetching briefs directly from tables");
     
     try {
-      // Fetch from UI Design briefs with cache-busting headers
+      // Fetch from UI Design briefs with cache control options
       const { data: uiData, error: uiError } = await supabase
         .from('ui_design_briefs')
         .select('*')
-        .order('submission_date', { ascending: false })
-        .then(res => {
-          console.log("UI design briefs fetched:", res.data?.length || 0);
-          return res;
-        });
+        .order('submission_date', { ascending: false });
       
       if (uiError) {
         console.error("UI briefs error:", uiError);
+      } else {
+        console.log("UI design briefs fetched:", uiData?.length || 0);
       }
       
-      // Fetch from Graphic Design briefs with cache-busting headers
+      // Fetch from Graphic Design briefs with cache control options
       const { data: graphicData, error: graphicError } = await supabase
         .from('graphic_design_briefs')
         .select('*')
-        .order('submission_date', { ascending: false })
-        .then(res => {
-          console.log("Graphic design briefs fetched:", res.data?.length || 0);
-          return res;
-        });
+        .order('submission_date', { ascending: false });
       
       if (graphicError) {
         console.error("Graphic briefs error:", graphicError);
+      } else {
+        console.log("Graphic design briefs fetched:", graphicData?.length || 0);
       }
       
-      // Fetch from Illustration Design briefs with cache-busting headers
+      // Fetch from Illustration Design briefs with cache control options
       const { data: illustrationData, error: illustrationError } = await supabase
         .from('illustration_design_briefs')
         .select('*')
-        .order('submission_date', { ascending: false })
-        .then(res => {
-          console.log("Illustration design briefs fetched:", res.data?.length || 0);
-          return res;
-        });
+        .order('submission_date', { ascending: false });
       
       if (illustrationError) {
         console.error("Illustration briefs error:", illustrationError);
+      } else {
+        console.log("Illustration design briefs fetched:", illustrationData?.length || 0);
       }
       
       // Transform and combine all data

@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import BriefsHeader from "@/components/briefs/BriefsHeader";
@@ -29,18 +28,16 @@ const Briefs = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Listen for sidebar state changes
   useEffect(() => {
     const handleSidebarChange = () => {
       const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
       setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
     };
 
-    // Initial check
     handleSidebarChange();
 
-    // Set up mutation observer to watch for class changes on the sidebar
     const observer = new MutationObserver(handleSidebarChange);
     const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
     
@@ -51,26 +48,25 @@ const Briefs = () => {
     return () => observer.disconnect();
   }, []);
 
-  // Initial fetch briefs when component mounts
+  const refreshData = async () => {
+    if (isRefreshing) return;
+    
+    setIsRefreshing(true);
+    try {
+      console.log("Refreshing briefs data...");
+      await supabase.auth.refreshSession();
+      await fetchBriefs();
+    } catch (error) {
+      console.error("Error refreshing briefs data:", error);
+      toast.error("Failed to refresh briefs data");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     console.log("Initial briefs fetch on component mount");
-    
-    const loadBriefs = async () => {
-      try {
-        // Force a refresh of the user session to ensure fresh data
-        await supabase.auth.refreshSession();
-        await fetchBriefs();
-      } catch (error) {
-        console.error("Error during initial briefs fetch:", error);
-      } finally {
-        setIsInitialLoad(false);
-      }
-    };
-    
-    loadBriefs();
-    
-    // Don't include fetchBriefs in dependency array to prevent re-fetching
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    refreshData();
   }, []);
 
   const viewBriefDetails = (brief: any) => {
@@ -84,25 +80,24 @@ const Briefs = () => {
   };
 
   const confirmDelete = async () => {
-    if (selectedBrief && !isDeleting) {
-      try {
-        setIsDeleting(true);
-        setIsDeleteDialogOpen(false); // Close dialog first to prevent freezing
-        
-        await deleteBrief(selectedBrief.id);
-        
-        // Force a full refresh to ensure we have accurate data
-        await supabase.auth.refreshSession();
-        await fetchBriefs();
-        
-        // Clean up state
-        setSelectedBrief(null);
-      } catch (error) {
-        console.error("Error during brief deletion:", error);
-        toast.error("Failed to delete brief. Please try again.");
-      } finally {
-        setIsDeleting(false);
-      }
+    if (!selectedBrief || isDeleting) return;
+    
+    try {
+      setIsDeleting(true);
+      
+      await deleteBrief(selectedBrief.id);
+      
+      await refreshData();
+      
+      setSelectedBrief(null);
+      toast.success("Brief permanently deleted");
+    } catch (error) {
+      console.error("Error during brief deletion:", error);
+      toast.error("Failed to delete brief. Please try again.");
+      
+      await refreshData();
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -182,12 +177,20 @@ const Briefs = () => {
           {isLoading && isInitialLoad ? (
             renderLoadingState()
           ) : (
-            <BriefsTable 
-              briefs={filteredBriefs} 
-              onView={viewBriefDetails}
-              onDownload={downloadBrief}
-              onDelete={handleDeleteBrief}
-            />
+            <>
+              <BriefsTable 
+                briefs={filteredBriefs} 
+                onView={viewBriefDetails}
+                onDownload={downloadBrief}
+                onDelete={handleDeleteBrief}
+              />
+              {isRefreshing && !isInitialLoad && (
+                <div className="flex justify-center items-center mt-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary mr-2" />
+                  <span>Refreshing briefs...</span>
+                </div>
+              )}
+            </>
           )}
           
           <BriefTypeCards />
