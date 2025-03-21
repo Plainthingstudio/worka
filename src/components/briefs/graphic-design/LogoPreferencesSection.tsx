@@ -23,33 +23,13 @@ const LogoPreferencesSection: React.FC<LogoPreferencesSectionProps> = ({
       logoType,
       logoFeelingsType: typeof logoFeelings
     });
-    
-    // If logoFeelings is a string, try to parse it
-    if (typeof logoFeelings === 'string') {
-      try {
-        const parsed = JSON.parse(logoFeelings);
-        console.log("Parsed logoFeelings:", parsed);
-      } catch (e) {
-        console.error("Failed to parse logoFeelings string:", e);
-      }
-    }
   }, [logoFeelings, logoType]);
   
   // Helper to safely get logo feeling values
   const getLogoFeeling = (key: string, defaultValue = "Not provided") => {
     if (!logoFeelings) return defaultValue;
     
-    // Handle if logoFeelings is a string (JSON string)
-    if (typeof logoFeelings === 'string') {
-      try {
-        const parsed = JSON.parse(logoFeelings);
-        return parsed[key] || defaultValue;
-      } catch (e) {
-        return defaultValue;
-      }
-    }
-    
-    // Handle if logoFeelings is an object
+    // Access the property directly since we've already handled JSON parsing in the parent component
     return logoFeelings[key as keyof typeof logoFeelings] || defaultValue;
   };
   
@@ -57,7 +37,6 @@ const LogoPreferencesSection: React.FC<LogoPreferencesSectionProps> = ({
     <>
       {/* Logo Preferences section */}
       <div>
-        <h4 className="font-medium">Logo Preferences</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
           <div>
             <h5 className="text-sm font-medium">Feminine vs Masculine</h5>

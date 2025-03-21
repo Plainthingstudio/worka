@@ -35,7 +35,22 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
   };
 
   // Get logo feelings with safe access
-  const logoFeelings = briefDetails.logoFeelings || briefDetails.logo_feelings || {};
+  let logoFeelings = briefDetails.logoFeelings || briefDetails.logo_feelings || null;
+  
+  // If it's a string, try to parse it
+  if (typeof logoFeelings === 'string') {
+    try {
+      logoFeelings = JSON.parse(logoFeelings);
+    } catch (e) {
+      console.error("Failed to parse logoFeelings string:", e);
+      logoFeelings = null;
+    }
+  }
+
+  // Ensure it's an object or null
+  if (logoFeelings && typeof logoFeelings !== 'object') {
+    logoFeelings = null;
+  }
 
   console.log("Logo feelings in GraphicDesignBriefDetails:", logoFeelings);
 

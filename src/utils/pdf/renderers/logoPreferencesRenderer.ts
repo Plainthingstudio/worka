@@ -3,47 +3,43 @@ import jsPDF from "jspdf";
 import { addSectionTitle, addField, checkPageOverflow } from "../../pdfUtils";
 
 /**
- * Renders the logo preferences section of the PDF
+ * Renders the logo preferences section in the PDF
  */
-export const renderLogoPreferences = (doc: jsPDF, brief: any, y: number): number => {
-  // Accessing logoFeelings from both possible structures and ensuring it exists
-  const logoFeelings = brief.logoFeelings || brief.logo_feelings || {};
+export const renderLogoPreferences = (doc: jsPDF, brief: any, startY: number): number => {
+  let yPosition = startY;
   
-  y = addSectionTitle(doc, "Logo Preferences", y);
+  // Add logo preferences section title
+  yPosition = addSectionTitle(doc, "Logo Preferences", yPosition);
   
-  // Process each logo feeling attribute individually with page break checking after each
-  // Explicitly check each property of logoFeelings
-  if (logoFeelings.gender) {
-    y = addField(doc, "Feminine vs Masculine", logoFeelings.gender, y);
-    y = checkPageOverflow(doc, y);
+  // Get logo feelings with safe access
+  let logoFeelings = brief.logoFeelings || brief.logo_feelings || null;
+  
+  // If it's a string, try to parse it
+  if (typeof logoFeelings === 'string') {
+    try {
+      logoFeelings = JSON.parse(logoFeelings);
+    } catch (e) {
+      console.error("Failed to parse logoFeelings string:", e);
+      logoFeelings = null;
+    }
   }
   
-  if (logoFeelings.pricing) {
-    y = addField(doc, "Economical vs Luxury", logoFeelings.pricing, y);
-    y = checkPageOverflow(doc, y);
-  }
+  // Helper to safely get logo feeling values
+  const getLogoFeeling = (key: string, defaultValue = "Not provided") => {
+    if (!logoFeelings || typeof logoFeelings !== 'object') return defaultValue;
+    return logoFeelings[key] || defaultValue;
+  };
   
-  if (logoFeelings.era) {
-    y = addField(doc, "Modern vs Classic", logoFeelings.era, y);
-    y = checkPageOverflow(doc, y);
-  }
+  // Add each logo preference field
+  yPosition = addField(doc, "Feminine vs Masculine", getLogoFeeling("gender"), yPosition);
+  yPosition = addField(doc, "Economical vs Luxury", getLogoFeeling("pricing"), yPosition);
+  yPosition = addField(doc, "Modern vs Classic", getLogoFeeling("era"), yPosition);
+  yPosition = addField(doc, "Serious vs Playful", getLogoFeeling("tone"), yPosition);
+  yPosition = addField(doc, "Simple vs Complex", getLogoFeeling("complexity"), yPosition);
   
-  if (logoFeelings.tone) {
-    y = addField(doc, "Serious vs Playful", logoFeelings.tone, y);
-    y = checkPageOverflow(doc, y);
-  }
+  // Add logo type
+  const logoType = brief.logoType || brief.logo_type || "Not provided";
+  yPosition = addField(doc, "Logo Type", logoType, yPosition);
   
-  if (logoFeelings.complexity) {
-    y = addField(doc, "Simple vs Complex", logoFeelings.complexity, y);
-    y = checkPageOverflow(doc, y);
-  }
-  
-  // Logo Type
-  const logoType = brief.logoType || brief.logo_type;
-  if (logoType) {
-    y = addField(doc, "Logo Type", logoType, y);
-    y = checkPageOverflow(doc, y);
-  }
-
-  return y;
+  return yPosition;
 };

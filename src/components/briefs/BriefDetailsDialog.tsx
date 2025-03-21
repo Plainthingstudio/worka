@@ -102,8 +102,20 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
             setFullBriefDetails(briefDetails);
           } else if (data) {
             console.log("Full graphic brief fetched:", data);
+            
+            // Parse the logo_feelings JSON if it's a string
+            let logoFeelings = data.logo_feelings;
+            if (typeof logoFeelings === 'string') {
+              try {
+                logoFeelings = JSON.parse(logoFeelings);
+              } catch (e) {
+                console.error("Failed to parse logo_feelings string:", e);
+              }
+            }
+            
             setFullBriefDetails({
               ...data,
+              logoFeelings: logoFeelings,
               type: "Graphic Design",
               submissionDate: data.submission_date,
               companyName: data.company_name

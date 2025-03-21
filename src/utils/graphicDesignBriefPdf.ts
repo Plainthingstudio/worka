@@ -20,7 +20,21 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
   try {
     // Log the incoming brief data for debugging
     console.log("Generating PDF with brief data:", brief);
-    console.log("Logo feelings data for PDF:", brief.logoFeelings || brief.logo_feelings);
+    
+    // Process logo feelings if it exists
+    let logoFeelings = brief.logoFeelings || brief.logo_feelings || null;
+    
+    // If logoFeelings is a string, try to parse it
+    if (typeof logoFeelings === 'string') {
+      try {
+        logoFeelings = JSON.parse(logoFeelings);
+        brief.logoFeelings = logoFeelings;  // Update the logoFeelings property
+      } catch (e) {
+        console.error("Failed to parse logoFeelings string:", e);
+      }
+    }
+    
+    console.log("Logo feelings data for PDF:", logoFeelings);
     
     const doc = new jsPDF();
     let y = 20;
