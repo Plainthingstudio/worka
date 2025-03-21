@@ -56,6 +56,11 @@ const GraphicDesignBriefForm = () => {
     }
   });
 
+  // Create a submit handler that takes the form data
+  const handleFormSubmit = () => {
+    handleSubmit(methods.getValues());
+  };
+
   const renderStep = () => {
     switch (currentStep) {
       case 1:
@@ -82,8 +87,7 @@ const GraphicDesignBriefForm = () => {
         return (
           <StepFour
             onPrevious={() => setCurrentStep(3)}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
+            onSubmit={handleFormSubmit}
           />
         );
       default:
