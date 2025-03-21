@@ -17,46 +17,28 @@ export const useBriefsDeletion = (
         throw new Error("User not authenticated");
       }
       
-      // We need to determine which table to delete from
-      const brief = briefs.find(b => b.id === id);
-      if (!brief) {
-        throw new Error("Brief not found");
-      }
+      // Call the secure database function to delete the brief
+      const { data: deleteResult, error } = await supabase
+        .rpc('delete_brief', { 
+          brief_id: id,
+          user_uuid: user.id
+        });
       
-      let deleteResult;
-      
-      // Delete from the appropriate table based on type - using hardcoded table names for type safety
-      if (brief.type === "Illustration Design") {
-        console.log("Deleting from illustration_design_briefs table");
-        deleteResult = await supabase
-          .from('illustration_design_briefs')
-          .delete()
-          .eq('id', id);
-      } else if (brief.type === "UI Design") {
-        console.log("Deleting from ui_design_briefs table");
-        deleteResult = await supabase
-          .from('ui_design_briefs')
-          .delete()
-          .eq('id', id);
-      } else if (brief.type === "Graphic Design") {
-        console.log("Deleting from graphic_design_briefs table");
-        deleteResult = await supabase
-          .from('graphic_design_briefs')
-          .delete()
-          .eq('id', id);
-      }
-
-      // Check for errors in the delete operation
-      if (deleteResult?.error) {
-        console.error("Error from Supabase delete operation:", deleteResult.error);
+      if (error) {
+        console.error("Error from Supabase delete operation:", error);
         
         // Handle permission errors specifically
-        if (deleteResult.error.code === "42501" || deleteResult.error.message.includes("permission denied")) {
-          toast.error("You don't have permission to delete this brief. Only admin users can delete briefs.");
+        if (error.code === "42501" || error.message.includes("permission denied")) {
+          toast.error("You don't have permission to delete this brief.");
         } else {
-          toast.error(`Failed to delete brief: ${deleteResult.error.message}`);
+          toast.error(`Failed to delete brief: ${error.message}`);
         }
-        throw deleteResult.error;
+        throw error;
+      }
+      
+      if (!deleteResult) {
+        toast.error("Failed to delete brief: Brief not found or you don't have permission");
+        throw new Error("Brief deletion failed");
       }
 
       console.log("Brief successfully deleted from database");

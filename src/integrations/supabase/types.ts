@@ -724,6 +724,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_brief: {
+        Args: {
+          brief_id: string
+          user_uuid: string
+        }
+        Returns: boolean
+      }
       get_all_briefs: {
         Args: {
           user_uuid: string
