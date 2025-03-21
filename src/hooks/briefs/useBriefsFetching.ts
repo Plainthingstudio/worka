@@ -24,8 +24,8 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       
       console.log("Starting to fetch briefs, user ID:", userId);
       
-      // First, try to fetch briefs directly from tables without filtering by user_id
-      const success = await fetchBriefsDirectly();
+      // First, try to fetch briefs directly from tables
+      const success = await fetchBriefsDirectly(userId);
       
       if (!success) {
         console.error("Failed to fetch briefs directly from tables");
@@ -68,14 +68,21 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
   };
 
   // Method to fetch directly from individual brief tables
-  const fetchBriefsDirectly = async (): Promise<boolean> => {
-    console.log("Fetching briefs directly from tables");
+  const fetchBriefsDirectly = async (userId: string | null): Promise<boolean> => {
+    console.log("Fetching briefs directly from tables for user ID:", userId);
     
     try {
-      // Fetch all briefs from UI Design briefs (without user_id filter)
+      if (!userId) {
+        console.log("No user ID available, returning empty briefs list");
+        setBriefs([]);
+        return true;
+      }
+      
+      // Fetch UI Design briefs that belong to the user or were submitted for the user
       const { data: uiData, error: uiError } = await supabase
         .from('ui_design_briefs')
         .select('*')
+        .or(`user_id.eq.${userId},submitted_for_id.eq.${userId}`)
         .order('submission_date', { ascending: false });
       
       if (uiError) {
@@ -84,10 +91,11 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("UI design briefs fetched:", uiData?.length || 0);
       }
       
-      // Fetch all briefs from Graphic Design briefs (without user_id filter)
+      // Fetch Graphic Design briefs that belong to the user or were submitted for the user
       const { data: graphicData, error: graphicError } = await supabase
         .from('graphic_design_briefs')
         .select('*')
+        .or(`user_id.eq.${userId},submitted_for_id.eq.${userId}`)
         .order('submission_date', { ascending: false });
       
       if (graphicError) {
@@ -96,10 +104,11 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("Graphic design briefs fetched:", graphicData?.length || 0);
       }
       
-      // Fetch all briefs from Illustration Design briefs (without user_id filter)
+      // Fetch Illustration Design briefs that belong to the user or were submitted for the user
       const { data: illustrationData, error: illustrationError } = await supabase
         .from('illustration_design_briefs')
         .select('*')
+        .or(`user_id.eq.${userId},submitted_for_id.eq.${userId}`)
         .order('submission_date', { ascending: false });
       
       if (illustrationError) {
@@ -132,13 +141,8 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       
       console.log(`Combined briefs from direct fetching: ${allBriefs.length}`);
       
-      if (allBriefs.length > 0) {
-        setBriefs(allBriefs);
-        return true;
-      }
-      
-      setBriefs([]);
-      return false;
+      setBriefs(allBriefs);
+      return allBriefs.length > 0;
     } catch (error) {
       console.error("Error in fetchBriefsDirectly:", error);
       return false;
