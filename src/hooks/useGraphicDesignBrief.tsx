@@ -70,10 +70,6 @@ export const useGraphicDesignBrief = (submittedForId?: string | null) => {
       const printMedia = processCheckboxGroup(data.printMedia || {});
       const digitalMedia = processCheckboxGroup(data.digitalMedia || {});
 
-      // Try to get the current user - if logged in, attach user_id
-      // This is now optional - public users can submit forms too
-      const { data: { user } } = await supabase.auth.getUser();
-
       // Log the full form data before submission
       console.log("Submitting form data:", data);
       console.log("Logo feelings data:", data.logoFeelings);
@@ -115,15 +111,23 @@ export const useGraphicDesignBrief = (submittedForId?: string | null) => {
         submission_date: new Date().toISOString()
       };
 
-      // If user is logged in, add user_id (now optional)
-      if (user) {
-        briefData.user_id = user.id;
-      }
-      
       // If form is being submitted for a specific user, add submitted_for_id
       if (submittedForId) {
+        console.log("Setting submitted_for_id:", submittedForId);
         briefData.submitted_for_id = submittedForId;
+        
+        // For briefs submitted through a personalized link, use the submitted_for_id as the user_id
+        briefData.user_id = submittedForId;
+      } else {
+        // Try to get the current user - if logged in, attach user_id (optional)
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          console.log("Setting user_id from current user:", user.id);
+          briefData.user_id = user.id;
+        }
       }
+
+      console.log("Final brief data being sent to Supabase:", briefData);
 
       // Insert into Supabase - now using the specific table for graphic design briefs
       const { error } = await supabase
@@ -143,7 +147,8 @@ export const useGraphicDesignBrief = (submittedForId?: string | null) => {
         services: services,
         printMedia: printMedia,
         digitalMedia: digitalMedia,
-        submittedForId: submittedForId || null
+        submittedForId: submittedForId || null,
+        userId: briefData.user_id // Ensure we save the user_id in localStorage too
       };
       localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
 

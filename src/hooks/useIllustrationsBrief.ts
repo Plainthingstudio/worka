@@ -92,9 +92,6 @@ export const useIllustrationsBrief = (submittedForId?: string | null) => {
             .replace(/webm/i, '.WebM');
         });
 
-      // Check if user is logged in - optional for public form
-      const { data: { user } } = await supabase.auth.getUser();
-
       // Handle the brand guidelines based on the radio selection
       const brandGuidelinesValue = formData.hasBrandGuidelines === "Yes" 
         ? formData.brandGuidelines 
@@ -137,15 +134,22 @@ export const useIllustrationsBrief = (submittedForId?: string | null) => {
         briefData.phone = formData.phone;
       }
 
-      // If user is logged in, add user_id (optional)
-      if (user) {
-        briefData.user_id = user.id;
-      }
-      
-      // If form is being submitted for a specific user, add submitted_for_id
+      // If form is being submitted for a specific user through a personalized link
       if (submittedForId) {
+        console.log("Setting submitted_for_id and user_id to:", submittedForId);
         briefData.submitted_for_id = submittedForId;
+        // For briefs submitted through a personalized link, use the submitted_for_id as the user_id
+        briefData.user_id = submittedForId;
+      } else {
+        // Check if user is logged in - optional for public form
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          console.log("Setting user_id from current user:", user.id);
+          briefData.user_id = user.id;
+        }
       }
+
+      console.log("Final brief data being sent to Supabase:", briefData);
 
       // Insert into Supabase - now using the specific table for illustration design briefs
       const { error } = await supabase
@@ -162,7 +166,8 @@ export const useIllustrationsBrief = (submittedForId?: string | null) => {
         submissionDate: new Date().toISOString(),
         status: "New",
         deliverables: selectedDeliverables,
-        submittedForId: submittedForId || null
+        submittedForId: submittedForId || null,
+        userId: briefData.user_id // Ensure we save the user_id in localStorage too
       };
       localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
     

@@ -17,10 +17,11 @@ const GraphicDesignBrief = () => {
       }
 
       try {
-        // Just check if the user ID format is valid (UUID format)
+        // Check if the user ID format is valid (UUID format)
         const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(forUserId);
         
         if (isValidUUID) {
+          console.log("Valid UUID format for user:", forUserId);
           setIsValidUser(true);
         } else {
           console.error("Invalid UUID format for user ID");

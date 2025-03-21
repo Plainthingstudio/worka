@@ -174,16 +174,22 @@ const UIDesignBrief = () => {
         submission_date: new Date().toISOString()
       };
 
-      // Try to get the current user - if logged in, attach user_id (optional)
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        briefData.user_id = user.id;
-      }
-      
-      // If form is being submitted for a specific user, add submitted_for_id
+      // If form is being submitted for a specific user through a personalized link
       if (forUserId) {
+        console.log("Setting submitted_for_id and user_id to:", forUserId);
         briefData.submitted_for_id = forUserId;
+        // For briefs submitted through a personalized link, use the submitted_for_id as the user_id
+        briefData.user_id = forUserId;
+      } else {
+        // Try to get the current user - if logged in, attach user_id (optional)
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          console.log("Setting user_id from current user:", user.id);
+          briefData.user_id = user.id;
+        }
       }
+
+      console.log("Final brief data being sent to Supabase:", briefData);
 
       // Insert into Supabase - now using the specific table for UI design briefs
       const { error } = await supabase
@@ -200,7 +206,8 @@ const UIDesignBrief = () => {
         submissionDate: new Date().toISOString(),
         status: "New",
         type: "UI Design",
-        submittedForId: forUserId || null
+        submittedForId: forUserId || null,
+        userId: briefData.user_id // Ensure we save the user_id in localStorage too
       };
       localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
       
