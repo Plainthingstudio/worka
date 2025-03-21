@@ -37,6 +37,8 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
   // Get logo feelings with safe access
   const logoFeelings = briefDetails.logoFeelings || briefDetails.logo_feelings || {};
 
+  console.log("Logo feelings in GraphicDesignBriefDetails:", logoFeelings);
+
   return (
     <div className="space-y-6">
       {/* Company Information Section */}

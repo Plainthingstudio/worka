@@ -35,18 +35,26 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
       console.log("Dialog opened with brief details:", briefDetails);
       
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          toast.error("You must be logged in to view brief details");
+          setIsLoading(false);
+          return;
+        }
+        
         if (briefDetails.type === "Illustration Design" || briefDetails.type === "Illustrations") {
           const { data, error } = await supabase
             .from('illustration_design_briefs')
             .select('*')
             .eq('id', briefDetails.id)
-            .single();
+            .maybeSingle();
           
           if (error) {
             console.error("Error fetching full illustration brief:", error);
             toast.error("Error loading illustration brief details");
             setFullBriefDetails(briefDetails);
-          } else {
+          } else if (data) {
             console.log("Full illustration brief fetched:", data);
             setFullBriefDetails({
               ...data,
@@ -54,19 +62,22 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
               submissionDate: data.submission_date,
               companyName: data.company_name
             });
+          } else {
+            console.warn("No illustration brief data found");
+            setFullBriefDetails(briefDetails);
           }
         } else if (briefDetails.type === "UI Design") {
           const { data, error } = await supabase
             .from('ui_design_briefs')
             .select('*')
             .eq('id', briefDetails.id)
-            .single();
+            .maybeSingle();
           
           if (error) {
             console.error("Error fetching full UI brief:", error);
             toast.error("Error loading UI design brief details");
             setFullBriefDetails(briefDetails);
-          } else {
+          } else if (data) {
             console.log("Full UI brief fetched:", data);
             setFullBriefDetails({
               ...data,
@@ -74,19 +85,22 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
               submissionDate: data.submission_date,
               companyName: data.company_name
             });
+          } else {
+            console.warn("No UI brief data found");
+            setFullBriefDetails(briefDetails);
           }
         } else if (briefDetails.type === "Graphic Design") {
           const { data, error } = await supabase
             .from('graphic_design_briefs')
             .select('*')
             .eq('id', briefDetails.id)
-            .single();
+            .maybeSingle();
           
           if (error) {
             console.error("Error fetching full graphic brief:", error);
             toast.error("Error loading graphic design brief details");
             setFullBriefDetails(briefDetails);
-          } else {
+          } else if (data) {
             console.log("Full graphic brief fetched:", data);
             setFullBriefDetails({
               ...data,
@@ -94,6 +108,9 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
               submissionDate: data.submission_date,
               companyName: data.company_name
             });
+          } else {
+            console.warn("No graphic brief data found");
+            setFullBriefDetails(briefDetails);
           }
         } else {
           console.warn("Unknown brief type:", briefDetails.type);

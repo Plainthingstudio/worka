@@ -10,19 +10,48 @@ interface LogoPreferencesSectionProps {
     complexity?: string;
   } | null;
   logoType: string | null;
-  tone?: string[] | null; // Made optional since we're not using it anymore
 }
 
 const LogoPreferencesSection: React.FC<LogoPreferencesSectionProps> = ({
   logoFeelings,
   logoType
 }) => {
-  console.log("Logo preferences received in section:", logoFeelings);
-  
-  // Add effect to log whenever logoFeelings changes
+  // Add enhanced logging to help debug the component
   useEffect(() => {
-    console.log("LogoPreferencesSection updated with logoFeelings:", logoFeelings);
-  }, [logoFeelings]);
+    console.log("LogoPreferencesSection rendered with:", {
+      logoFeelings,
+      logoType,
+      logoFeelingsType: typeof logoFeelings
+    });
+    
+    // If logoFeelings is a string, try to parse it
+    if (typeof logoFeelings === 'string') {
+      try {
+        const parsed = JSON.parse(logoFeelings);
+        console.log("Parsed logoFeelings:", parsed);
+      } catch (e) {
+        console.error("Failed to parse logoFeelings string:", e);
+      }
+    }
+  }, [logoFeelings, logoType]);
+  
+  // Helper to safely get logo feeling values
+  const getLogoFeeling = (key: string, defaultValue = "Not provided") => {
+    if (!logoFeelings) return defaultValue;
+    
+    // Handle if logoFeelings is a string (JSON string)
+    if (typeof logoFeelings === 'string') {
+      try {
+        const parsed = JSON.parse(logoFeelings);
+        return parsed[key] || defaultValue;
+      } catch (e) {
+        return defaultValue;
+      }
+    }
+    
+    // Handle if logoFeelings is an object
+    return logoFeelings[key as keyof typeof logoFeelings] || defaultValue;
+  };
   
   return (
     <>
@@ -30,34 +59,30 @@ const LogoPreferencesSection: React.FC<LogoPreferencesSectionProps> = ({
       <div>
         <h4 className="font-medium">Logo Preferences</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
-          {logoFeelings && (
-            <>
-              <div>
-                <h5 className="text-sm font-medium">Feminine vs Masculine</h5>
-                <p>{logoFeelings.gender || "Not provided"}</p>
-              </div>
-              
-              <div>
-                <h5 className="text-sm font-medium">Economical vs Luxury</h5>
-                <p>{logoFeelings.pricing || "Not provided"}</p>
-              </div>
-              
-              <div>
-                <h5 className="text-sm font-medium">Modern vs Classic</h5>
-                <p>{logoFeelings.era || "Not provided"}</p>
-              </div>
-              
-              <div>
-                <h5 className="text-sm font-medium">Serious vs Playful</h5>
-                <p>{logoFeelings.tone || "Not provided"}</p>
-              </div>
-              
-              <div>
-                <h5 className="text-sm font-medium">Simple vs Complex</h5>
-                <p>{logoFeelings.complexity || "Not provided"}</p>
-              </div>
-            </>
-          )}
+          <div>
+            <h5 className="text-sm font-medium">Feminine vs Masculine</h5>
+            <p>{getLogoFeeling("gender")}</p>
+          </div>
+          
+          <div>
+            <h5 className="text-sm font-medium">Economical vs Luxury</h5>
+            <p>{getLogoFeeling("pricing")}</p>
+          </div>
+          
+          <div>
+            <h5 className="text-sm font-medium">Modern vs Classic</h5>
+            <p>{getLogoFeeling("era")}</p>
+          </div>
+          
+          <div>
+            <h5 className="text-sm font-medium">Serious vs Playful</h5>
+            <p>{getLogoFeeling("tone")}</p>
+          </div>
+          
+          <div>
+            <h5 className="text-sm font-medium">Simple vs Complex</h5>
+            <p>{getLogoFeeling("complexity")}</p>
+          </div>
           
           <div>
             <h5 className="text-sm font-medium">Logo Type</h5>
