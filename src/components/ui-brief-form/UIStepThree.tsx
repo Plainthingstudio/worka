@@ -1,208 +1,76 @@
 
 import React from "react";
 import { useFormContext } from "react-hook-form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@/components/ui/radio-group";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-interface UIStepThreeProps {
+export interface UIStepThreeProps {
   onPrevious: () => void;
-  onSubmit: () => void;
+  onSubmit: (data: any) => void;
 }
 
-const UIStepThree = ({ onPrevious, onSubmit }: UIStepThreeProps) => {
-  const { control, register, watch, setValue } = useFormContext();
-  const pageCount = watch("pageCount") || 1;
-
-  const handleIncreasePages = () => {
-    setValue("pageCount", parseInt(pageCount) + 1);
-  };
-
-  const handleDecreasePages = () => {
-    if (parseInt(pageCount) > 1) {
-      setValue("pageCount", parseInt(pageCount) - 1);
-    }
-  };
+const UIStepThree: React.FC<UIStepThreeProps> = ({ onPrevious, onSubmit }) => {
+  const { register, handleSubmit, formState: { errors } } = useFormContext();
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-medium">Project Details</h2>
-      
-      <div className="space-y-2">
-        <FormLabel>Number of Pages/Screens</FormLabel>
-        <div className="flex items-center space-x-3">
-          <Button 
-            type="button" 
-            variant="outline" 
-            size="sm"
-            onClick={handleDecreasePages}
-            disabled={parseInt(pageCount) <= 1}
-          >
-            -
-          </Button>
-          <span className="w-8 text-center">{pageCount}</span>
-          <Button 
-            type="button" 
-            variant="outline" 
-            size="sm"
-            onClick={handleIncreasePages}
-          >
-            +
-          </Button>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="space-y-4">
+        <h2 className="text-xl font-medium">Project Delivery</h2>
+        
+        <div className="grid grid-cols-1 gap-4">
+          <div>
+            <Label htmlFor="completionDeadline">When do you need this project completed?</Label>
+            <Input 
+              id="completionDeadline" 
+              placeholder="e.g., 2 weeks, by June 1st, etc." 
+              {...register("completionDeadline")} 
+            />
+          </div>
+          
+          <div>
+            <Label>Do you need development services after design completion?</Label>
+            <RadioGroup defaultValue="no">
+              <div className="flex items-center space-x-2 mt-2">
+                <RadioGroupItem value="yes" id="development-yes" {...register("developmentService")} />
+                <Label htmlFor="development-yes">Yes</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="no" id="development-no" {...register("developmentService")} />
+                <Label htmlFor="development-no">No</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="not-sure" id="development-not-sure" {...register("developmentService")} />
+                <Label htmlFor="development-not-sure">Not sure yet</Label>
+              </div>
+            </RadioGroup>
+          </div>
         </div>
-      </div>
-      
-      {Array.from({ length: parseInt(pageCount) }).map((_, index) => (
-        <div key={index} className="space-y-2 p-4 border rounded-md">
-          <h3 className="font-medium">Page/Screen {index + 1}</h3>
-          <FormField
-            control={control}
-            name={`pageDetails[${index}].name`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Page Name</FormLabel>
-                <FormControl>
-                  <Input placeholder={`e.g., Home, About, Contact`} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name={`pageDetails[${index}].description`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Page Description</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="What should this page/screen include?" 
-                    className="min-h-[80px]"
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+        
+        {/* Additional requirements */}
+        <div>
+          <Label htmlFor="additionalRequirements">Additional requirements or notes</Label>
+          <Textarea
+            id="additionalRequirements"
+            placeholder="Any other information that might be helpful..."
+            className="h-32"
+            {...register("additionalRequirements")}
           />
         </div>
-      ))}
-      
-      <div className="space-y-2">
-        <FormField
-          control={control}
-          name="websiteContent"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Website Content</FormLabel>
-              <FormControl>
-                <RadioGroup 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                  className="flex flex-col space-y-1"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="I have content ready" id="content-ready" />
-                    <FormLabel htmlFor="content-ready" className="font-normal cursor-pointer">
-                      I have content ready
-                    </FormLabel>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="I need help with content" id="content-help" />
-                    <FormLabel htmlFor="content-help" className="font-normal cursor-pointer">
-                      I need help with content
-                    </FormLabel>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="I'll provide content later" id="content-later" />
-                    <FormLabel htmlFor="content-later" className="font-normal cursor-pointer">
-                      I'll provide content later
-                    </FormLabel>
-                  </div>
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
       </div>
-      
-      <div className="space-y-2">
-        <FormField
-          control={control}
-          name="developmentService"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Development Service</FormLabel>
-              <FormControl>
-                <RadioGroup 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                  className="flex flex-col space-y-1"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Design only" id="design-only" />
-                    <FormLabel htmlFor="design-only" className="font-normal cursor-pointer">
-                      I need design only
-                    </FormLabel>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Design and development" id="design-dev" />
-                    <FormLabel htmlFor="design-dev" className="font-normal cursor-pointer">
-                      I need design and development
-                    </FormLabel>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Not sure" id="not-sure" />
-                    <FormLabel htmlFor="not-sure" className="font-normal cursor-pointer">
-                      I'm not sure yet
-                    </FormLabel>
-                  </div>
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <FormField
-          control={control}
-          name="completionDeadline"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Completion Deadline</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      
-      <div className="flex justify-between">
+
+      <div className="flex justify-between pt-4">
         <Button type="button" variant="outline" onClick={onPrevious}>
-          Back
+          Previous
         </Button>
-        <Button type="button" onClick={onSubmit}>
+        <Button type="submit">
           Submit Brief
         </Button>
       </div>
-    </div>
+    </form>
   );
 };
 

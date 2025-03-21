@@ -67,12 +67,13 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
           return;
         }
         
+        // If function fails or returns no results, manually fetch from each table
+        
         // Fetch from UI Design briefs 
         const { data: uiData, error: uiError } = await supabase
           .from('ui_design_briefs')
           .select('*')
-          .or(`user_id.eq.${userId},email.eq.${userEmail}`)
-          .order('submission_date', { ascending: false });
+          .or(`user_id.eq.${userId}`);
         
         if (uiError) {
           console.error("UI briefs error:", uiError);
@@ -84,8 +85,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         const { data: graphicData, error: graphicError } = await supabase
           .from('graphic_design_briefs')
           .select('*')
-          .or(`user_id.eq.${userId},email.eq.${userEmail}`)
-          .order('submission_date', { ascending: false });
+          .or(`user_id.eq.${userId}`);
         
         if (graphicError) {
           console.error("Graphic briefs error:", graphicError);
@@ -97,8 +97,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         const { data: illustrationData, error: illustrationError } = await supabase
           .from('illustration_design_briefs')
           .select('*')
-          .or(`user_id.eq.${userId},email.eq.${userEmail}`)
-          .order('submission_date', { ascending: false });
+          .or(`user_id.eq.${userId}`);
         
         if (illustrationError) {
           console.error("Illustration briefs error:", illustrationError);

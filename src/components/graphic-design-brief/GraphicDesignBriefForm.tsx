@@ -82,8 +82,7 @@ const GraphicDesignBriefForm = () => {
         return (
           <StepFour
             onPrevious={() => setCurrentStep(3)}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
+            onSubmit={methods.handleSubmit(handleSubmit)}
           />
         );
       default:
