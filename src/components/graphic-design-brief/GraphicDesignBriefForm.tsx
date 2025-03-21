@@ -56,9 +56,11 @@ const GraphicDesignBriefForm = () => {
     }
   });
 
-  // Create a submit handler that takes the form data
+  // Create a proper submit handler that works with the form
   const handleFormSubmit = () => {
+    // First get the form values
     const formData = methods.getValues();
+    // Then manually call handleSubmit with the form data
     handleSubmit(formData);
   };
 
@@ -89,6 +91,7 @@ const GraphicDesignBriefForm = () => {
           <StepFour
             onPrevious={() => setCurrentStep(3)}
             onSubmit={handleFormSubmit}
+            isSubmitting={isSubmitting}
           />
         );
       default:
