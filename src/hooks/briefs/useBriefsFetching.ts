@@ -42,37 +42,10 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       
       console.log("Current user ID:", user.id);
       
-      // Try using the get_all_briefs function if it exists
-      try {
-        const { data: allBriefsData, error: funcError } = await supabase
-          .rpc('get_all_briefs', { user_uuid: user.id });
-          
-        if (!funcError && allBriefsData && allBriefsData.length > 0) {
-          console.log("Successfully retrieved briefs using get_all_briefs function:", allBriefsData.length);
-          
-          // Transform the data to match the Brief interface
-          const transformedBriefs: Brief[] = allBriefsData.map((brief: any) => ({
-            ...brief,
-            type: brief.type,
-            submissionDate: brief.submission_date,
-            companyName: brief.company_name
-          }));
-          
-          setBriefs(transformedBriefs);
-          localStorage.setItem("briefs", JSON.stringify(transformedBriefs));
-          setIsLoading(false);
-          setIsFetching(false);
-          return;
-        } else if (funcError) {
-          console.log("Function get_all_briefs failed or doesn't exist:", funcError);
-          // Continue with the individual table queries below
-        }
-      } catch (funcAttemptError) {
-        console.log("Error attempting to use get_all_briefs function:", funcAttemptError);
-        // Continue with the individual table queries
-      }
+      // Skip trying to use get_all_briefs function since we now know it's failing
+      console.log("Fetching briefs from individual tables with explicit user_id filter");
       
-      // Fetch from individual tables with RLS policies
+      // Fetch from individual tables with explicit user_id filter
       // Fetch UI Design briefs
       const { data: uiData, error: uiError } = await supabase
         .from('ui_design_briefs')
