@@ -71,7 +71,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         const { data: uiData, error: uiError } = await supabase
           .from('ui_design_briefs')
           .select('*')
-          .or(`user_id.eq.${userId},email.eq.${userEmail}`)
+          .or(`user_id.eq.${userId}`)
           .order('submission_date', { ascending: false });
         
         if (uiError) {
@@ -84,7 +84,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         const { data: graphicData, error: graphicError } = await supabase
           .from('graphic_design_briefs')
           .select('*')
-          .or(`user_id.eq.${userId},email.eq.${userEmail}`)
+          .or(`user_id.eq.${userId}`)
           .order('submission_date', { ascending: false });
         
         if (graphicError) {
@@ -97,7 +97,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         const { data: illustrationData, error: illustrationError } = await supabase
           .from('illustration_design_briefs')
           .select('*')
-          .or(`user_id.eq.${userId},email.eq.${userEmail}`)
+          .or(`user_id.eq.${userId}`)
           .order('submission_date', { ascending: false });
         
         if (illustrationError) {
