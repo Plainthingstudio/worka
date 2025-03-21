@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -8,6 +9,7 @@ import BriefsTable from "@/components/briefs/BriefsTable";
 import BriefTypeCards from "@/components/briefs/BriefTypeCards";
 import BriefDetailsDialog from "@/components/briefs/BriefDetailsDialog";
 import DeleteBriefDialog from "@/components/briefs/DeleteBriefDialog";
+import BriefPersonalizedLinks from "@/components/briefs/BriefPersonalizedLinks";
 import { useBriefs } from "@/hooks/useBriefs";
 import { toast } from "sonner";
 import { 
@@ -188,6 +190,10 @@ const Briefs = () => {
         <main className="container py-6">
           <BriefsHeader />
           <BriefStats briefs={briefs} />
+          
+          {/* Add the Personalized Links component just before the filter */}
+          <BriefPersonalizedLinks />
+          
           <BriefsFilter 
             filter={filter}
             setFilter={setFilter}
