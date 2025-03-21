@@ -11,29 +11,40 @@ export const renderLogoPreferences = (doc: jsPDF, brief: any, startY: number): n
   // Add logo preferences section title
   yPosition = addSectionTitle(doc, "Logo Preferences", yPosition);
   
-  // Get logo feelings with safe access
-  let logoFeelings = brief.logoFeelings || brief.logo_feelings || null;
-  
-  // If it's a string, try to parse it
-  if (typeof logoFeelings === 'string') {
-    try {
-      logoFeelings = JSON.parse(logoFeelings);
-      console.log("Successfully parsed logoFeelings string in PDF renderer:", logoFeelings);
-    } catch (e) {
-      console.error("Failed to parse logoFeelings string in PDF renderer:", e);
-      logoFeelings = null;
+  // Handle logo feelings with safe access and better error handling
+  let logoFeelings = null;
+  try {
+    // Allow for different property names (camelCase and snake_case)
+    logoFeelings = brief.logoFeelings || brief.logo_feelings || null;
+    
+    // If it's a string, try to parse it as JSON
+    if (typeof logoFeelings === 'string') {
+      try {
+        logoFeelings = JSON.parse(logoFeelings);
+        console.log("Successfully parsed logoFeelings string in PDF renderer:", logoFeelings);
+      } catch (e) {
+        console.error("Failed to parse logoFeelings string in PDF renderer:", e);
+        // Don't set to null, create an empty object instead
+        logoFeelings = {};
+      }
     }
-  }
-  
-  // Ensure it's an object - if not, make it an empty object (not null)
-  if (!logoFeelings || typeof logoFeelings !== 'object') {
+    
+    // Ensure we have an object, not null
+    if (!logoFeelings || typeof logoFeelings !== 'object') {
+      logoFeelings = {};
+    }
+  } catch (error) {
+    console.error("Error processing logoFeelings in PDF renderer:", error);
     logoFeelings = {};
   }
+  
+  console.log("Final logoFeelings for PDF rendering:", logoFeelings);
   
   // Helper to safely get logo feeling values with better defaults
   const getLogoFeeling = (key: string, defaultValue = "Not provided") => {
     if (!logoFeelings || typeof logoFeelings !== 'object') return defaultValue;
     
+    // @ts-ignore - We know the key is a string, but TS is strict about indexing
     const value = logoFeelings[key];
     return value || defaultValue;
   };

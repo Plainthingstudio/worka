@@ -38,104 +38,33 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
-          toast.error("You must be logged in to view brief details");
+          console.warn("No authenticated user found");
+          // Still use the basic brief details we have
+          setFullBriefDetails(prepareDetailsForDisplay(briefDetails));
           setIsLoading(false);
           return;
         }
         
-        if (briefDetails.type === "Illustration Design" || briefDetails.type === "Illustrations") {
-          const { data, error } = await supabase
-            .from('illustration_design_briefs')
-            .select('*')
-            .eq('id', briefDetails.id)
-            .maybeSingle();
-          
-          if (error) {
-            console.error("Error fetching full illustration brief:", error);
-            toast.error("Error loading illustration brief details");
-            setFullBriefDetails(briefDetails);
-          } else if (data) {
-            console.log("Full illustration brief fetched:", data);
-            setFullBriefDetails({
-              ...data,
-              type: "Illustration Design",
-              submissionDate: data.submission_date,
-              companyName: data.company_name
-            });
+        // Attempt to fetch additional details based on brief type
+        try {
+          if (briefDetails.type === "Illustration Design" || briefDetails.type === "Illustrations") {
+            await fetchIllustrationDetails(briefDetails);
+          } else if (briefDetails.type === "UI Design") {
+            await fetchUIDesignDetails(briefDetails);
+          } else if (briefDetails.type === "Graphic Design") {
+            await fetchGraphicDesignDetails(briefDetails);
           } else {
-            console.warn("No illustration brief data found");
-            setFullBriefDetails(briefDetails);
+            console.warn("Unknown brief type:", briefDetails.type);
+            setFullBriefDetails(prepareDetailsForDisplay(briefDetails));
           }
-        } else if (briefDetails.type === "UI Design") {
-          const { data, error } = await supabase
-            .from('ui_design_briefs')
-            .select('*')
-            .eq('id', briefDetails.id)
-            .maybeSingle();
-          
-          if (error) {
-            console.error("Error fetching full UI brief:", error);
-            toast.error("Error loading UI design brief details");
-            setFullBriefDetails(briefDetails);
-          } else if (data) {
-            console.log("Full UI brief fetched:", data);
-            setFullBriefDetails({
-              ...data,
-              type: "UI Design",
-              submissionDate: data.submission_date,
-              companyName: data.company_name
-            });
-          } else {
-            console.warn("No UI brief data found");
-            setFullBriefDetails(briefDetails);
-          }
-        } else if (briefDetails.type === "Graphic Design") {
-          const { data, error } = await supabase
-            .from('graphic_design_briefs')
-            .select('*')
-            .eq('id', briefDetails.id)
-            .maybeSingle();
-          
-          if (error) {
-            console.error("Error fetching full graphic brief:", error);
-            toast.error("Error loading graphic design brief details");
-            setFullBriefDetails(briefDetails);
-          } else if (data) {
-            console.log("Full graphic brief fetched:", data);
-            
-            // Parse the logo_feelings JSON if it's a string
-            let logoFeelings = data.logo_feelings;
-            if (typeof logoFeelings === 'string') {
-              try {
-                logoFeelings = JSON.parse(logoFeelings);
-                console.log("Successfully parsed logo_feelings in dialog:", logoFeelings);
-              } catch (e) {
-                console.error("Failed to parse logo_feelings string in dialog:", e);
-                logoFeelings = {};
-              }
-            } else if (!logoFeelings || typeof logoFeelings !== 'object') {
-              logoFeelings = {};
-            }
-            
-            setFullBriefDetails({
-              ...data,
-              logoFeelings: logoFeelings,
-              type: "Graphic Design",
-              submissionDate: data.submission_date,
-              companyName: data.company_name
-            });
-          } else {
-            console.warn("No graphic brief data found");
-            setFullBriefDetails(briefDetails);
-          }
-        } else {
-          console.warn("Unknown brief type:", briefDetails.type);
-          setFullBriefDetails(briefDetails);
+        } catch (fetchError: any) {
+          console.error(`Error fetching ${briefDetails.type} brief details:`, fetchError);
+          // Even if fetch fails, we'll use what we have
+          setFullBriefDetails(prepareDetailsForDisplay(briefDetails));
         }
       } catch (error) {
-        console.error("Error fetching full brief details:", error);
-        toast.error("Error loading brief details");
-        setFullBriefDetails(briefDetails);
+        console.error("Error in fetchFullBriefDetails:", error);
+        setFullBriefDetails(prepareDetailsForDisplay(briefDetails));
       } finally {
         setIsLoading(false);
       }
@@ -143,6 +72,132 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
     
     fetchFullBriefDetails();
   }, [open, briefDetails]);
+
+  // Prepare basic brief details with proper parsing of any JSON fields
+  const prepareDetailsForDisplay = (details: any) => {
+    if (!details) return null;
+    
+    let processedDetails = { ...details };
+    
+    // Special handling for logoFeelings in Graphic Design briefs
+    if (details.type === "Graphic Design") {
+      try {
+        let logoFeelings = details.logoFeelings || details.logo_feelings;
+        
+        // If it's a string, try to parse it
+        if (typeof logoFeelings === 'string') {
+          try {
+            logoFeelings = JSON.parse(logoFeelings);
+            console.log("Successfully parsed logoFeelings string in dialog preparation:", logoFeelings);
+          } catch (e) {
+            console.error("Failed to parse logoFeelings string in dialog preparation:", e);
+            logoFeelings = {};
+          }
+        } 
+        
+        // Ensure logoFeelings is an object, not null or undefined
+        if (!logoFeelings || typeof logoFeelings !== 'object') {
+          logoFeelings = {};
+        }
+        
+        processedDetails.logoFeelings = logoFeelings;
+        console.log("Prepared logoFeelings for display:", processedDetails.logoFeelings);
+      } catch (error) {
+        console.error("Error processing logoFeelings:", error);
+        processedDetails.logoFeelings = {};
+      }
+    }
+    
+    return processedDetails;
+  };
+
+  // Fetch Illustration brief details
+  const fetchIllustrationDetails = async (briefDetails: any) => {
+    const { data, error } = await supabase
+      .from('illustration_design_briefs')
+      .select('*')
+      .eq('id', briefDetails.id)
+      .maybeSingle();
+    
+    if (error) {
+      throw error;
+    } else if (data) {
+      console.log("Full illustration brief fetched:", data);
+      setFullBriefDetails({
+        ...data,
+        type: "Illustration Design",
+        submissionDate: data.submission_date,
+        companyName: data.company_name
+      });
+    } else {
+      console.warn("No illustration brief data found");
+      setFullBriefDetails(prepareDetailsForDisplay(briefDetails));
+    }
+  };
+
+  // Fetch UI Design brief details
+  const fetchUIDesignDetails = async (briefDetails: any) => {
+    const { data, error } = await supabase
+      .from('ui_design_briefs')
+      .select('*')
+      .eq('id', briefDetails.id)
+      .maybeSingle();
+    
+    if (error) {
+      throw error;
+    } else if (data) {
+      console.log("Full UI brief fetched:", data);
+      setFullBriefDetails({
+        ...data,
+        type: "UI Design",
+        submissionDate: data.submission_date,
+        companyName: data.company_name
+      });
+    } else {
+      console.warn("No UI brief data found");
+      setFullBriefDetails(prepareDetailsForDisplay(briefDetails));
+    }
+  };
+
+  // Fetch Graphic Design brief details
+  const fetchGraphicDesignDetails = async (briefDetails: any) => {
+    const { data, error } = await supabase
+      .from('graphic_design_briefs')
+      .select('*')
+      .eq('id', briefDetails.id)
+      .maybeSingle();
+    
+    if (error) {
+      throw error;
+    } else if (data) {
+      console.log("Full graphic brief fetched:", data);
+      
+      // Parse the logo_feelings JSON if it's a string
+      let logoFeelings = data.logo_feelings;
+      if (typeof logoFeelings === 'string') {
+        try {
+          logoFeelings = JSON.parse(logoFeelings);
+          console.log("Successfully parsed logo_feelings in dialog:", logoFeelings);
+        } catch (e) {
+          console.error("Failed to parse logo_feelings string in dialog:", e);
+          logoFeelings = {};
+        }
+      } else if (!logoFeelings || typeof logoFeelings !== 'object') {
+        logoFeelings = {};
+      }
+      
+      setFullBriefDetails({
+        ...data,
+        logoFeelings: logoFeelings,
+        type: "Graphic Design",
+        submissionDate: data.submission_date,
+        companyName: data.company_name
+      });
+    } else {
+      console.warn("No graphic brief data found");
+      setFullBriefDetails(prepareDetailsForDisplay(briefDetails));
+    }
+  };
 
   // If no brief details are available, don't render anything
   if (!briefDetails) return null;
