@@ -17,18 +17,14 @@ const GraphicDesignBrief = () => {
       }
 
       try {
-        // Check if the user ID exists in the profiles table
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("id", forUserId)
-          .single();
-
-        if (error) {
-          console.error("Error checking user:", error);
-          setIsValidUser(false);
+        // Just check if the user ID format is valid (UUID format)
+        const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(forUserId);
+        
+        if (isValidUUID) {
+          setIsValidUser(true);
         } else {
-          setIsValidUser(!!data);
+          console.error("Invalid UUID format for user ID");
+          setIsValidUser(false);
         }
       } catch (err) {
         console.error("Error verifying user:", err);
