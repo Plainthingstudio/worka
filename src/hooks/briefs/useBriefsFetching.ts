@@ -42,8 +42,8 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       
       console.log("Current user ID:", user.id);
       
-      // Fetch directly from brief tables with user_id filter
-      console.log("Fetching briefs directly from tables with user_id filter");
+      // Fetch briefs directly without referencing the users table
+      console.log("Fetching briefs directly from tables with user_id filter only");
       
       // Fetch UI Design briefs
       const { data: uiData, error: uiError } = await supabase
