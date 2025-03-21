@@ -78,7 +78,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         return true;
       }
       
-      // Fetch UI Design briefs - using properly parameterized query
+      // Fetch UI Design briefs using proper parameterization
       const { data: uiData, error: uiError } = await supabase
         .from('ui_design_briefs')
         .select('*')
@@ -91,7 +91,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("UI design briefs fetched:", uiData?.length || 0);
       }
       
-      // Fetch Graphic Design briefs - using properly parameterized query
+      // Fetch Graphic Design briefs using proper parameterization
       const { data: graphicData, error: graphicError } = await supabase
         .from('graphic_design_briefs')
         .select('*')
@@ -104,7 +104,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("Graphic design briefs fetched:", graphicData?.length || 0);
       }
       
-      // Fetch Illustration Design briefs - using properly parameterized query
+      // Fetch Illustration Design briefs using proper parameterization
       const { data: illustrationData, error: illustrationError } = await supabase
         .from('illustration_design_briefs')
         .select('*')
