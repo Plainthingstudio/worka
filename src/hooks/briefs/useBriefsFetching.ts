@@ -76,7 +76,8 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       // Fetch UI Design briefs
       const { data: uiData, error: uiError } = await supabase
         .from('ui_design_briefs')
-        .select('*');
+        .select('*')
+        .eq('user_id', user.id);
       
       if (uiError) {
         console.error("UI briefs error:", uiError);
@@ -87,7 +88,8 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       // Fetch Graphic Design briefs
       const { data: graphicData, error: graphicError } = await supabase
         .from('graphic_design_briefs')
-        .select('*');
+        .select('*')
+        .eq('user_id', user.id);
       
       if (graphicError) {
         console.error("Graphic briefs error:", graphicError);
@@ -98,7 +100,8 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       // Fetch Illustration Design briefs
       const { data: illustrationData, error: illustrationError } = await supabase
         .from('illustration_design_briefs')
-        .select('*');
+        .select('*')
+        .eq('user_id', user.id);
       
       if (illustrationError) {
         console.error("Illustration briefs error:", illustrationError);
