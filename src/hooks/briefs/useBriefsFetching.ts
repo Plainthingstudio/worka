@@ -43,9 +43,17 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       const userId = user.id;
       console.log("Authenticated user ID:", userId);
       
-      console.log("Fetching briefs directly from tables");
-      
-      try {
+      // Use the get_all_briefs database function
+      console.log("Fetching briefs using get_all_briefs function");
+      const { data: allBriefsData, error: funcError } = await supabase
+        .rpc('get_all_briefs', { user_uuid: userId });
+
+      if (funcError) {
+        console.error("Error using get_all_briefs function:", funcError);
+        
+        // Fallback to direct table querying if the function fails
+        console.log("Falling back to direct table queries");
+        
         // Fetch from UI Design briefs using user_id directly
         const { data: uiData, error: uiError } = await supabase
           .from('ui_design_briefs')
@@ -83,7 +91,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         }
         
         // Transform and combine all data
-        const allBriefs: Brief[] = [
+        const combinedBriefs: Brief[] = [
           ...(uiData || []).map((brief: any) => ({
             ...brief,
             type: "UI Design",
@@ -104,44 +112,43 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
           }))
         ];
         
-        console.log(`Combined briefs from direct fetching: ${allBriefs.length}`);
+        console.log(`Combined briefs from direct fetching: ${combinedBriefs.length}`);
         
         // Set briefs in state and update localStorage
-        setBriefs(allBriefs);
+        setBriefs(combinedBriefs);
         
         // Since we've successfully fetched from the database, update localStorage
-        // or clear it if there are no briefs
-        if (allBriefs.length > 0) {
-          localStorage.setItem("briefs", JSON.stringify(allBriefs));
+        if (combinedBriefs.length > 0) {
+          localStorage.setItem("briefs", JSON.stringify(combinedBriefs));
         } else {
           console.log("No briefs found in database, clearing localStorage");
           localStorage.removeItem("briefs");
         }
+      } else {
+        // Transform the data from the function
+        console.log("Successfully fetched briefs using function:", allBriefsData?.length || 0);
         
-        setIsLoading(false);
-        setIsFetching(false);
-        return;
-      } catch (directFetchError) {
-        console.error("Error in direct table fetching:", directFetchError);
+        const transformedBriefs: Brief[] = (allBriefsData || []).map((brief: any) => ({
+          ...brief,
+          submissionDate: brief.submission_date,
+          companyName: brief.company_name
+        }));
+        
+        setBriefs(transformedBriefs);
+        
+        // Update localStorage
+        if (transformedBriefs.length > 0) {
+          localStorage.setItem("briefs", JSON.stringify(transformedBriefs));
+        } else {
+          console.log("No briefs found using function, clearing localStorage");
+          localStorage.removeItem("briefs");
+        }
       }
       
-      // If database fetch failed, fallback to localStorage only if we haven't
-      // successfully established a connection to the database
-      console.log("Database fetch failed, checking localStorage as last resort");
-      try {
-        const storedBriefs = localStorage.getItem("briefs");
-        if (storedBriefs) {
-          console.log("Using briefs from localStorage as fallback");
-          const parsedBriefs = JSON.parse(storedBriefs);
-          setBriefs(parsedBriefs);
-        } else {
-          console.log("No briefs found in localStorage");
-          setBriefs([]);
-        }
-      } catch (localStorageError) {
-        console.error("Error reading from localStorage:", localStorageError);
-        setBriefs([]);
-      }
+      setIsLoading(false);
+      setIsFetching(false);
+      return;
+      
     } catch (error) {
       console.error("Error fetching briefs:", error);
       toast.error("Failed to load briefs");
