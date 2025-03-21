@@ -8,10 +8,16 @@ import {
   generateGraphicDesignBriefPDF 
 } from '@/utils/briefPdfGenerator';
 
+type BriefData = {
+  id: string;
+  type: string;
+  [key: string]: any;
+};
+
 export function useBriefPdf() {
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const fetchFullBriefData = async (brief: any) => {
+  const fetchFullBriefData = async (brief: BriefData): Promise<BriefData> => {
     // Try to get the full brief data from the database
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -61,7 +67,7 @@ export function useBriefPdf() {
     return brief;
   };
 
-  const generateBriefPDF = useCallback(async (brief: any) => {
+  const generateBriefPDF = useCallback(async (brief: BriefData) => {
     if (isDownloading) return false;
     
     try {

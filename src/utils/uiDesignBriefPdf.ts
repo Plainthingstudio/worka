@@ -49,23 +49,8 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
       return String(value);
     };
     
-    // Helper function to format the website type interests with checkmarks
+    // Helper function to format the website type interests showing only selected types
     const getWebsiteTypeInterest = () => {
-      // Start with all possible website types
-      const allWebsiteTypes = [
-        "Agency Website", 
-        "Portfolio Website", 
-        "Finance Website", 
-        "SaaS Website", 
-        "E-commerce Website", 
-        "Web3 Website", 
-        "Crypto Website", 
-        "Web Application", 
-        "Desktop Application", 
-        "Mobile Application", 
-        "Other"
-      ];
-      
       // Get the website type interest data from briefData
       const interestData = briefData.websiteTypeInterest || briefData.website_type_interest || {};
       let selectedTypes: string[] = [];
@@ -116,26 +101,8 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
           .map(([key, _]) => websiteTypeMap[key] || key);
       }
       
-      // Format the output with checkmarks for selected types
-      // Use a different format to ensure it renders properly
-      let result = '';
-      allWebsiteTypes.forEach((type, index) => {
-        // Add a checkmark if this type is selected
-        const isSelected = selectedTypes.includes(type);
-        const checkmark = isSelected ? '✓ ' : '□ ';
-        
-        // Add the type with a checkmark indicator
-        result += checkmark + type;
-        
-        // Add a line break every 2 items or at the end
-        if (index % 2 === 1 && index < allWebsiteTypes.length - 1) {
-          result += '\n';
-        } else if (index < allWebsiteTypes.length - 1) {
-          result += '   ';  // Add some spacing between items
-        }
-      });
-      
-      return result;
+      // Return just the selected types as a comma-separated string
+      return selectedTypes.length > 0 ? selectedTypes.join(", ") : "Not provided";
     };
     
     // Helper to safely get page details
@@ -168,24 +135,7 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     yPosition = addSectionTitle(doc, "Project Information", yPosition);
     yPosition = addField(doc, "Project Type", getValue("projectType", "project_type"), yPosition);
     yPosition = addField(doc, "Project Size", getValue("projectSize", "project_size"), yPosition);
-    
-    // Format and add the website type field
-    yPosition = checkPageOverflow(doc, yPosition + 10); // Extra space for the website types
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text("Website Type:", 20, yPosition);
-    doc.setFont("helvetica", "normal");
-    
-    // Get and format all website types with checkmarks
-    const websiteTypeText = getWebsiteTypeInterest();
-    // Position the website types with proper indentation
-    doc.text(websiteTypeText, 70, yPosition);
-    
-    // Calculate new yPosition based on the number of lines in websiteTypeText
-    const websiteTypeLines = websiteTypeText.split('\n').length;
-    yPosition += (websiteTypeLines * 6) + 10; // Account for the lines and add spacing
-    
-    // Continue with other fields
+    yPosition = addField(doc, "Website Type", getWebsiteTypeInterest(), yPosition);
     yPosition = addField(doc, "Current Website", getValue("currentWebsite", "current_website"), yPosition);
     yPosition = addMultiParagraphField(doc, "Website Purpose", getValue("websitePurpose", "website_purpose"), yPosition);
     
