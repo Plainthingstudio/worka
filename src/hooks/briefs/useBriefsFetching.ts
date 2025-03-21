@@ -78,12 +78,11 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         return true;
       }
       
-      // Fetch UI Design briefs that belong to the user or were submitted for the user
+      // Fetch UI Design briefs - using parameters instead of string interpolation
       const { data: uiData, error: uiError } = await supabase
         .from('ui_design_briefs')
         .select('*')
-        .or(`user_id.eq.${userId},submitted_for_id.eq.${userId}`)
-        .order('submission_date', { ascending: false });
+        .or(`user_id.eq.${userId},submitted_for_id.eq.${userId}`);
       
       if (uiError) {
         console.error("UI briefs error:", uiError);
@@ -91,12 +90,11 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("UI design briefs fetched:", uiData?.length || 0);
       }
       
-      // Fetch Graphic Design briefs that belong to the user or were submitted for the user
+      // Fetch Graphic Design briefs - using parameters instead of string interpolation
       const { data: graphicData, error: graphicError } = await supabase
         .from('graphic_design_briefs')
         .select('*')
-        .or(`user_id.eq.${userId},submitted_for_id.eq.${userId}`)
-        .order('submission_date', { ascending: false });
+        .or(`user_id.eq.${userId},submitted_for_id.eq.${userId}`);
       
       if (graphicError) {
         console.error("Graphic briefs error:", graphicError);
@@ -104,12 +102,11 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("Graphic design briefs fetched:", graphicData?.length || 0);
       }
       
-      // Fetch Illustration Design briefs that belong to the user or were submitted for the user
+      // Fetch Illustration Design briefs - using parameters instead of string interpolation
       const { data: illustrationData, error: illustrationError } = await supabase
         .from('illustration_design_briefs')
         .select('*')
-        .or(`user_id.eq.${userId},submitted_for_id.eq.${userId}`)
-        .order('submission_date', { ascending: false });
+        .or(`user_id.eq.${userId},submitted_for_id.eq.${userId}`);
       
       if (illustrationError) {
         console.error("Illustration briefs error:", illustrationError);
