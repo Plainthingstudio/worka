@@ -41,38 +41,17 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       }
       
       const userId = user.id;
-      const userEmail = user.email;
       console.log("Authenticated user ID:", userId);
-      console.log("Authenticated user email:", userEmail);
       
       // Try direct table fetching approach first
       console.log("Fetching briefs directly from tables");
       
       try {
-        // Try to fetch briefs using the get_all_briefs function if available
-        const { data: functionData, error: functionError } = await supabase
-          .rpc('get_all_briefs', { user_uuid: userId });
-          
-        if (functionError) {
-          console.log("Function get_all_briefs not available or error:", functionError);
-        } else if (functionData && functionData.length > 0) {
-          console.log(`Retrieved ${functionData.length} briefs from function`);
-          setBriefs(functionData);
-          
-          // Update localStorage with the latest data from the database
-          localStorage.setItem("briefs", JSON.stringify(functionData));
-          
-          setIsLoading(false);
-          setIsFetching(false);
-          return;
-        }
-        
         // Fetch from UI Design briefs 
         const { data: uiData, error: uiError } = await supabase
           .from('ui_design_briefs')
           .select('*')
-          .eq('user_id', userId)
-          .order('submission_date', { ascending: false });
+          .eq('user_id', userId);
         
         if (uiError) {
           console.error("UI briefs error:", uiError);
@@ -84,8 +63,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         const { data: graphicData, error: graphicError } = await supabase
           .from('graphic_design_briefs')
           .select('*')
-          .eq('user_id', userId)
-          .order('submission_date', { ascending: false });
+          .eq('user_id', userId);
         
         if (graphicError) {
           console.error("Graphic briefs error:", graphicError);
@@ -97,8 +75,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         const { data: illustrationData, error: illustrationError } = await supabase
           .from('illustration_design_briefs')
           .select('*')
-          .eq('user_id', userId)
-          .order('submission_date', { ascending: false });
+          .eq('user_id', userId);
         
         if (illustrationError) {
           console.error("Illustration briefs error:", illustrationError);
