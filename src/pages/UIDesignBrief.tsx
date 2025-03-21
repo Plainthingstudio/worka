@@ -1,55 +1,58 @@
 
-import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import UIStepOne from "@/components/ui-brief-form/UIStepOne";
 import UIStepTwo from "@/components/ui-brief-form/UIStepTwo";
 import UIStepThree from "@/components/ui-brief-form/UIStepThree";
-import { useUIDesignBrief } from "@/hooks/useUIDesignBrief";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 const UIDesignBrief = () => {
   const [step, setStep] = useState(1);
-  const location = useLocation();
-  const [designerName, setDesignerName] = useState<string | null>(null);
-  const { handleSubmit, isSubmitting } = useUIDesignBrief();
-  
-  // Extract the 'for' query parameter
-  const params = new URLSearchParams(location.search);
-  const forUserId = params.get('for');
-  
-  useEffect(() => {
-    // If there's a forUserId, try to fetch the user's name
-    if (forUserId) {
-      const fetchUserInfo = async () => {
-        try {
-          const { data: profileData, error } = await supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('id', forUserId)
-            .single();
-            
-          if (error) {
-            console.error("Error fetching designer info:", error);
-            return;
-          }
-          
-          if (profileData) {
-            setDesignerName(profileData.full_name);
-          }
-        } catch (err) {
-          console.error("Error in fetchUserInfo:", err);
-        }
-      };
-      
-      fetchUserInfo();
-    }
-  }, [forUserId]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
-  // Set up form
-  const methods = useForm();
+  const methods = useForm({
+    defaultValues: {
+      type: "UI Design",
+      name: "",
+      email: "",
+      companyName: "",
+      aboutCompany: "",
+      targetAudience: "",
+      websitePurpose: "",
+      projectDescription: "",
+      currentWebsite: "",
+      projectType: "",
+      projectSize: "",
+      websiteTypeInterest: {},
+      competitor1: "",
+      competitor2: "",
+      competitor3: "",
+      competitor4: "",
+      reference1: "",
+      reference2: "",
+      reference3: "",
+      reference4: "",
+      generalStyle: "",
+      colorPreferences: "",
+      fontPreferences: "",
+      existingBrandAssets: "",
+      hasBrandGuidelines: "",
+      brandGuidelinesDetails: "",
+      hasWireframe: "",
+      wireframeDetails: "",
+      stylePreferences: "",
+      pageCount: 1,
+      pageDetails: [{ name: "", description: "" }],
+      websiteContent: "",
+      developmentService: "",
+      completionDeadline: "",
+    },
+    mode: "onChange",
+  });
 
   const handleNext = async () => {
     if (step === 1) {
@@ -57,7 +60,9 @@ const UIDesignBrief = () => {
         "name", 
         "email", 
         "companyName", 
-        "aboutCompany"
+        "aboutCompany",
+        "projectType",
+        "projectSize"
       ]);
       
       if (isValid) {
@@ -67,8 +72,10 @@ const UIDesignBrief = () => {
       }
     } else if (step === 2) {
       const isValid = await methods.trigger([
+        "targetAudience", 
+        "websitePurpose", 
         "projectDescription",
-        "targetAudience"
+        "generalStyle"
       ]);
       
       if (isValid) {
@@ -83,16 +90,103 @@ const UIDesignBrief = () => {
     setStep(step - 1);
   };
 
-  const onSubmit = methods.handleSubmit(handleSubmit);
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const formData = methods.getValues();
+      
+      // Process the website type interests
+      const websiteTypeInterests = Object.entries(formData.websiteTypeInterest || {})
+        .filter(([_, isSelected]) => isSelected)
+        .map(([key]) => {
+          return key
+            .split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        });
+      
+      // Prepare data for Supabase with correct column names
+      const briefData: any = {
+        name: formData.name,
+        email: formData.email,
+        company_name: formData.companyName,
+        status: "New",
+        about_company: formData.aboutCompany,
+        target_audience: formData.targetAudience,
+        website_purpose: formData.websitePurpose,
+        project_description: formData.projectDescription,
+        current_website: formData.currentWebsite,
+        project_type: formData.projectType,
+        project_size: formData.projectSize,
+        website_type_interest: websiteTypeInterests.length > 0 ? websiteTypeInterests : null,
+        competitor1: formData.competitor1,
+        competitor2: formData.competitor2,
+        competitor3: formData.competitor3,
+        competitor4: formData.competitor4,
+        reference1: formData.reference1,
+        reference2: formData.reference2,
+        reference3: formData.reference3,
+        reference4: formData.reference4,
+        general_style: formData.generalStyle,
+        color_preferences: formData.colorPreferences,
+        font_preferences: formData.fontPreferences,
+        existing_brand_assets: formData.existingBrandAssets,
+        has_brand_guidelines: formData.hasBrandGuidelines,
+        brand_guidelines_details: formData.brandGuidelinesDetails,
+        has_wireframe: formData.hasWireframe,
+        wireframe_details: formData.wireframeDetails,
+        style_preferences: formData.stylePreferences,
+        page_count: formData.pageCount,
+        page_details: formData.pageDetails,
+        website_content: formData.websiteContent,
+        development_service: formData.developmentService,
+        completion_deadline: formData.completionDeadline,
+        submission_date: new Date().toISOString()
+      };
+
+      // Try to get the current user - if logged in, attach user_id
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        briefData.user_id = user.id;
+      }
+
+      // Insert into Supabase - now using the specific table for UI design briefs
+      const { error } = await supabase
+        .from('ui_design_briefs')
+        .insert(briefData);
+
+      if (error) throw error;
+
+      // Also save to localStorage for backward compatibility
+      const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
+      const localStorageBrief = {
+        ...formData,
+        id: Date.now(),
+        submissionDate: new Date().toISOString(),
+        status: "New",
+        type: "UI Design"
+      };
+      localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
+      
+      // Save the brief type for the thank you page
+      localStorage.setItem("lastSubmittedBriefType", "UI Design");
+      
+      // Show success message
+      toast.success("UI design brief submitted successfully!");
+      
+      // Navigate to the thank you page
+      navigate("/thank-you");
+    } catch (error: any) {
+      console.error("Error submitting brief:", error);
+      toast.error(error.message || "Failed to submit brief");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12">
       <div className="container max-w-2xl mx-auto px-4">
-        {designerName && (
-          <div className="bg-blue-50 text-blue-700 p-4 rounded-md mb-4 text-center">
-            You're submitting a brief for <strong>{designerName}</strong>
-          </div>
-        )}
         <Card className="p-6">
           <div className="mb-8">
             <h1 className="text-2xl font-semibold mb-2">UI Design Brief</h1>
@@ -111,7 +205,7 @@ const UIDesignBrief = () => {
           <FormProvider {...methods}>
             {step === 1 && <UIStepOne onNext={handleNext} />}
             {step === 2 && <UIStepTwo onNext={handleNext} onPrevious={handlePrevious} />}
-            {step === 3 && <UIStepThree onPrevious={handlePrevious} onSubmit={onSubmit} isSubmitting={isSubmitting} />}
+            {step === 3 && <UIStepThree onPrevious={handlePrevious} onSubmit={handleSubmit} />}
           </FormProvider>
         </Card>
       </div>

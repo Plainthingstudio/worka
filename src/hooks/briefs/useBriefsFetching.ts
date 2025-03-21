@@ -20,62 +20,121 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
     try {
       // Get the current user
       const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id || "00000000-0000-0000-0000-000000000000"; // Use a placeholder UUID if not logged in
       
-      if (!user) {
-        console.log("No authenticated user found, fetching briefs from localStorage only");
-        try {
-          const storedBriefs = localStorage.getItem("briefs");
-          if (storedBriefs) {
-            const parsedBriefs = JSON.parse(storedBriefs);
-            setBriefs(parsedBriefs);
-          } else {
-            setBriefs([]);
-          }
-        } catch (localStorageError) {
-          console.error("Error reading from localStorage:", localStorageError);
+      console.log("Fetching all briefs using RPC function");
+      
+      // Call the RPC function without the timestamp parameter since it's not in the type definition
+      const { data: rpcData, error: rpcError } = await supabase.rpc(
+        'get_all_briefs', 
+        { user_uuid: userId }
+      );
+
+      if (!rpcError && rpcData && Array.isArray(rpcData)) {
+        console.log(`Found ${rpcData.length} briefs from RPC`);
+        
+        if (rpcData.length > 0) {
+          // For each brief, fetch the full details based on the type
+          const briefsPromises = rpcData.map(async (brief: any) => {
+            try {
+              if (!brief || !brief.type || !brief.id) {
+                console.error("Invalid brief object:", brief);
+                return null;
+              }
+              
+              let fullBrief = null;
+              
+              if (brief.type === "Illustration Design") {
+                const { data, error } = await supabase
+                  .from('illustration_design_briefs')
+                  .select('*')
+                  .eq('id', brief.id)
+                  .maybeSingle();
+                  
+                if (error) {
+                  console.error("Error fetching illustration brief:", error);
+                  return brief;
+                }
+                
+                fullBrief = data ? {
+                  ...data,
+                  type: "Illustration Design",
+                  submissionDate: data.submission_date,
+                  companyName: data.company_name
+                } : null;
+                
+              } else if (brief.type === "UI Design") {
+                const { data, error } = await supabase
+                  .from('ui_design_briefs')
+                  .select('*')
+                  .eq('id', brief.id)
+                  .maybeSingle();
+                  
+                if (error) {
+                  console.error("Error fetching UI brief:", error);
+                  return brief;
+                }
+                
+                fullBrief = data ? {
+                  ...data,
+                  type: "UI Design",
+                  submissionDate: data.submission_date,
+                  companyName: data.company_name
+                } : null;
+                
+              } else if (brief.type === "Graphic Design") {
+                const { data, error } = await supabase
+                  .from('graphic_design_briefs')
+                  .select('*')
+                  .eq('id', brief.id)
+                  .maybeSingle();
+                  
+                if (error) {
+                  console.error("Error fetching graphic brief:", error);
+                  return brief;
+                }
+                
+                fullBrief = data ? {
+                  ...data,
+                  type: "Graphic Design",
+                  submissionDate: data.submission_date,
+                  companyName: data.company_name
+                } : null;
+              }
+              
+              // If the brief is null at this point, it means it was deleted
+              if (!fullBrief) {
+                console.log(`Brief ${brief.id} not found in database, likely deleted`);
+                return null;
+              }
+              
+              return fullBrief;
+            } catch (err) {
+              console.error(`Error processing brief ${brief.id}:`, err);
+              return null;
+            }
+          });
+          
+          const briefs = await Promise.all(briefsPromises);
+          const validBriefs = briefs.filter(Boolean) as Brief[];
+          
+          console.log("Full briefs data processed:", validBriefs.length);
+          setBriefs(validBriefs);
+        } else {
+          console.log("No briefs found in RPC response");
           setBriefs([]);
         }
-        setIsLoading(false);
-        setIsFetching(false);
-        return;
-      }
-      
-      console.log("Current user ID:", user.id);
-      
-      // Use the database function to fetch all briefs instead of querying tables directly
-      console.log("Using get_all_briefs function to fetch briefs");
-      
-      const { data: allBriefs, error: functionError } = await supabase
-        .rpc('get_all_briefs', { user_uuid: user.id });
-      
-      if (functionError) {
-        console.error("Error fetching briefs:", functionError);
-        toast.error(`Failed to load briefs: ${functionError.message}`);
-        throw functionError;
-      }
-      
-      console.log(`Briefs fetched from function: ${allBriefs?.length || 0}`);
-      
-      // Transform the data to match the Brief interface
-      const transformedBriefs: Brief[] = allBriefs?.map((brief: any) => ({
-        ...brief,
-        submissionDate: brief.submission_date,
-        companyName: brief.company_name
-      })) || [];
-      
-      console.log(`Transformed briefs: ${transformedBriefs.length}`);
-      
-      // Set briefs in state and update localStorage
-      setBriefs(transformedBriefs);
-      
-      // Update localStorage
-      if (transformedBriefs.length > 0) {
-        localStorage.setItem("briefs", JSON.stringify(transformedBriefs));
       } else {
-        console.log("No briefs found, clearing localStorage");
-        localStorage.removeItem("briefs");
+        console.log("RPC fetch failed or returned no data, trying direct table fetches");
+        if (rpcError) console.error("RPC Error:", rpcError);
+        
+        // Fallback to direct table fetching
+        const success = await fetchBriefsDirectly();
+        if (!success) {
+          console.error("No briefs found in database tables");
+          setBriefs([]);
+        }
       }
-      
     } catch (error) {
       console.error("Error fetching briefs:", error);
       toast.error("Failed to load briefs");
@@ -86,8 +145,6 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         if (storedBriefs) {
           const parsedBriefs = JSON.parse(storedBriefs);
           setBriefs(parsedBriefs);
-        } else {
-          setBriefs([]);
         }
       } catch (localStorageError) {
         console.error("Error reading from localStorage:", localStorageError);
@@ -99,18 +156,83 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
     }
   };
 
-  // Method to clear all local brief data
-  const clearLocalBriefs = () => {
+  // Method to fetch directly from individual brief tables
+  const fetchBriefsDirectly = async (): Promise<boolean> => {
+    console.log("Fetching briefs directly from tables");
+    
     try {
-      localStorage.removeItem("briefs");
-      console.log("Cleared briefs from localStorage");
+      // Fetch from UI Design briefs 
+      const { data: uiData, error: uiError } = await supabase
+        .from('ui_design_briefs')
+        .select('*')
+        .order('submission_date', { ascending: false });
+      
+      if (uiError) {
+        console.error("UI briefs error:", uiError);
+      } else {
+        console.log("UI design briefs fetched:", uiData?.length || 0);
+      }
+      
+      // Fetch from Graphic Design briefs
+      const { data: graphicData, error: graphicError } = await supabase
+        .from('graphic_design_briefs')
+        .select('*')
+        .order('submission_date', { ascending: false });
+      
+      if (graphicError) {
+        console.error("Graphic briefs error:", graphicError);
+      } else {
+        console.log("Graphic design briefs fetched:", graphicData?.length || 0);
+      }
+      
+      // Fetch from Illustration Design briefs
+      const { data: illustrationData, error: illustrationError } = await supabase
+        .from('illustration_design_briefs')
+        .select('*')
+        .order('submission_date', { ascending: false });
+      
+      if (illustrationError) {
+        console.error("Illustration briefs error:", illustrationError);
+      } else {
+        console.log("Illustration design briefs fetched:", illustrationData?.length || 0);
+      }
+      
+      // Transform and combine all data
+      const allBriefs: Brief[] = [
+        ...(uiData || []).map((brief: any) => ({
+          ...brief,
+          type: "UI Design",
+          submissionDate: brief.submission_date,
+          companyName: brief.company_name
+        })),
+        ...(graphicData || []).map((brief: any) => ({
+          ...brief,
+          type: "Graphic Design",
+          submissionDate: brief.submission_date,
+          companyName: brief.company_name
+        })),
+        ...(illustrationData || []).map((brief: any) => ({
+          ...brief,
+          type: "Illustration Design",
+          submissionDate: brief.submission_date,
+          companyName: brief.company_name
+        }))
+      ];
+      
+      console.log(`Combined briefs from direct fetching: ${allBriefs.length}`);
+      
+      if (allBriefs.length > 0) {
+        setBriefs(allBriefs);
+        return true;
+      }
+      
       setBriefs([]);
-      return true;
+      return false;
     } catch (error) {
-      console.error("Failed to clear localStorage briefs:", error);
+      console.error("Error in fetchBriefsDirectly:", error);
       return false;
     }
   };
 
-  return { fetchBriefs, clearLocalBriefs };
+  return { fetchBriefs };
 };

@@ -1,16 +1,21 @@
 
 import { Brief } from "@/types/brief";
 
-export interface UseBriefsResult {
+export interface UseBriefsState {
   briefs: Brief[];
-  setBriefs: (briefs: Brief[]) => void;
   filter: string;
-  setFilter: (filter: string) => void;
   search: string;
-  setSearch: (search: string) => void;
-  filteredBriefs: Brief[];
   isLoading: boolean;
+}
+
+export interface UseBriefsActions {
+  setBriefs: (briefs: Brief[]) => void;
+  setFilter: (filter: string) => void;
+  setSearch: (search: string) => void;
   fetchBriefs: () => Promise<void>;
   deleteBrief: (id: string) => Promise<void>;
-  clearLocalBriefs: () => boolean;
+}
+
+export interface UseBriefsResult extends UseBriefsState, UseBriefsActions {
+  filteredBriefs: Brief[];
 }

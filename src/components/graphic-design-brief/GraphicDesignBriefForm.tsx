@@ -6,13 +6,13 @@ import StepOne from "@/components/brief-form/StepOne";
 import StepTwo from "@/components/brief-form/StepTwo";
 import StepThree from "@/components/brief-form/StepThree";
 import StepFour from "@/components/brief-form/StepFour";
-import { useGraphicDesignBrief } from "@/hooks/useGraphicDesignBrief";
+import { useGraphicDesignBrief, GraphicDesignBriefFormValues } from "@/hooks/useGraphicDesignBrief";
 
 const GraphicDesignBriefForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const { handleSubmit, isSubmitting } = useGraphicDesignBrief();
+  const { onSubmit } = useGraphicDesignBrief();
   
-  const methods = useForm({
+  const methods = useForm<GraphicDesignBriefFormValues>({
     defaultValues: {
       name: "",
       email: "",
@@ -56,14 +56,6 @@ const GraphicDesignBriefForm = () => {
     }
   });
 
-  // Create a proper submit handler that works with the form
-  const handleFormSubmit = () => {
-    // Get the form values
-    const formData = methods.getValues();
-    // Call the handleSubmit function with the form data
-    handleSubmit(formData);
-  };
-
   const renderStep = () => {
     switch (currentStep) {
       case 1:
@@ -90,7 +82,7 @@ const GraphicDesignBriefForm = () => {
         return (
           <StepFour
             onPrevious={() => setCurrentStep(3)}
-            onSubmit={handleFormSubmit}
+            onSubmit={methods.handleSubmit(onSubmit)}
           />
         );
       default:

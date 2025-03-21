@@ -12,7 +12,7 @@ export const useBriefs = (): UseBriefsResult => {
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  const { fetchBriefs, clearLocalBriefs } = useBriefsFetching(setBriefs, setIsLoading);
+  const { fetchBriefs } = useBriefsFetching(setBriefs, setIsLoading);
   const { deleteBrief } = useBriefsDeletion(briefs, setBriefs);
   const { filteredBriefs } = useBriefsFiltering(briefs, filter, search);
 
@@ -30,7 +30,6 @@ export const useBriefs = (): UseBriefsResult => {
     filteredBriefs,
     isLoading,
     fetchBriefs,
-    deleteBrief,
-    clearLocalBriefs
+    deleteBrief
   };
 };

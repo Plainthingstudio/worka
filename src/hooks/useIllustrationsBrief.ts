@@ -1,13 +1,14 @@
+
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { v4 as uuidv4 } from "uuid";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface IllustrationBriefFormValues {
   type: string;
   name: string;
   email: string;
+  phone?: string;
   companyName: string;
   aboutCompany: string;
   illustrationsPurpose: string;
@@ -33,94 +34,147 @@ export interface IllustrationBriefFormValues {
   deliverables: Record<string, boolean>;
 }
 
+// Define interface for the data sent to Supabase
+interface BriefDataForSupabase {
+  name: string;
+  email: string;
+  company_name: string;
+  type?: string;
+  status: string;
+  about_company: string;
+  target_audience: string;
+  competitor1: string;
+  competitor2: string;
+  competitor3: string;
+  competitor4: string;
+  reference1: string;
+  reference2: string;
+  reference3: string;
+  reference4: string;
+  general_style: string;
+  color_preferences: string;
+  brand_guidelines: string;
+  completion_deadline: string;
+  illustrations_purpose: string;
+  illustrations_for: string;
+  illustrations_style: string;
+  illustrations_count: number;
+  illustration_details: string[];
+  like_dislike_design: string;
+  deliverables: string[];
+  submission_date: string;
+  user_id?: string;
+  phone?: string;
+}
+
 export const useIllustrationsBrief = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
-  const params = new URLSearchParams(location.search);
-  const forUserId = params.get('for');
-
-  const handleSubmit = async (data: IllustrationBriefFormValues) => {
+  const handleSubmit = async (formData: IllustrationBriefFormValues) => {
     setIsSubmitting(true);
-    console.log("Form data:", data);
-    console.log("Designer userId from URL:", forUserId);
-
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      const effectiveUserId = forUserId || (user ? user.id : null);
-      
-      console.log("Submitting illustration brief with user_id:", effectiveUserId);
+      // Convert the deliverables object to an array of selected items
+      const selectedDeliverables = Object.entries(formData.deliverables || {})
+        .filter(([_, isSelected]) => isSelected)
+        .map(([key, _]) => {
+          return key
+            .replace(/_/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')
+            .replace(/png/i, '.PNG')
+            .replace(/pdf/i, '.PDF')
+            .replace(/ai/i, '.AI')
+            .replace(/svg/i, '.SVG')
+            .replace(/mp4/i, '.MP4')
+            .replace(/webm/i, '.WebM');
+        });
 
-      const formattedData = {
-        name: data.name,
-        email: data.email,
-        company_name: data.companyName,
-        about_company: data.aboutCompany,
-        illustrations_purpose: data.illustrationsPurpose,
-        illustrations_for: data.illustrationsFor,
-        illustrations_style: data.illustrationsStyle,
-        target_audience: data.targetAudience,
-        competitor1: data.competitor1,
-        competitor2: data.competitor2,
-        competitor3: data.competitor3,
-        competitor4: data.competitor4,
-        has_brand_guidelines: data.hasBrandGuidelines,
-        brand_guidelines: data.brandGuidelines,
-        reference1: data.reference1,
-        reference2: data.reference2,
-        reference3: data.reference3,
-        reference4: data.reference4,
-        general_style: data.generalStyle,
-        color_preferences: data.colorPreferences,
-        like_dislike_design: data.likeDislikeDesign,
-        completion_deadline: data.completionDeadline,
-        illustrations_count: data.illustrationsCount,
-        illustration_details: data.illustrationDetails,
-        deliverables: data.deliverables,
-        user_id: effectiveUserId,
-        submission_date: new Date().toISOString(),
-        status: "New"
+      // Check if user is logged in - optional for public form
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Handle the brand guidelines based on the radio selection
+      const brandGuidelinesValue = formData.hasBrandGuidelines === "Yes" 
+        ? formData.brandGuidelines 
+        : "No brand guidelines available";
+
+      // Prepare data for Supabase with correct column names
+      const briefData: BriefDataForSupabase = {
+        name: formData.name,
+        email: formData.email,
+        company_name: formData.companyName,
+        status: "New",
+        about_company: formData.aboutCompany,
+        target_audience: formData.targetAudience,
+        competitor1: formData.competitor1,
+        competitor2: formData.competitor2,
+        competitor3: formData.competitor3,
+        competitor4: formData.competitor4,
+        reference1: formData.reference1,
+        reference2: formData.reference2,
+        reference3: formData.reference3,
+        reference4: formData.reference4,
+        general_style: formData.generalStyle,
+        color_preferences: formData.colorPreferences,
+        brand_guidelines: brandGuidelinesValue,
+        completion_deadline: formData.completionDeadline,
+        illustrations_purpose: formData.illustrationsPurpose,
+        illustrations_for: formData.illustrationsFor,
+        illustrations_style: formData.illustrationsStyle,
+        illustrations_count: formData.illustrationsCount,
+        illustration_details: formData.illustrationDetails,
+        like_dislike_design: formData.likeDislikeDesign,
+        deliverables: selectedDeliverables,
+        submission_date: new Date().toISOString()
       };
 
-      const { error } = await supabase.from("illustration_design_briefs").insert(formattedData);
-
-      if (error) {
-        console.error("Error submitting illustration brief:", error);
-        toast.error("Failed to submit brief. Please try again.");
-        setIsSubmitting(false);
-        return;
+      // Add phone if provided
+      if (formData.phone) {
+        briefData.phone = formData.phone;
       }
 
-      try {
-        const storedBriefs = localStorage.getItem("briefs");
-        const briefs = storedBriefs ? JSON.parse(storedBriefs) : [];
-        
-        briefs.push({
-          ...formattedData,
-          id: uuidv4(),
-          type: "Illustration Design",
-          status: "New"
-        });
-        
-        localStorage.setItem("briefs", JSON.stringify(briefs));
-      } catch (e) {
-        console.error("Error saving to localStorage:", e);
+      // If user is logged in, add user_id
+      if (user) {
+        briefData.user_id = user.id;
       }
 
-      toast.success("Illustration brief submitted successfully!");
+      // Insert into Supabase - now using the specific table for illustration design briefs
+      const { error } = await supabase
+        .from('illustration_design_briefs')
+        .insert(briefData);
+
+      if (error) throw error;
+
+      // Save to localStorage for backward compatibility
+      const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
+      const localStorageBrief = {
+        ...formData,
+        id: Date.now(),
+        submissionDate: new Date().toISOString(),
+        status: "New",
+        deliverables: selectedDeliverables
+      };
+      localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
+    
+      // Save the brief type for the thank you page
+      localStorage.setItem("lastSubmittedBriefType", "Illustration Design");
+    
+      // Show success message
+      toast.success("Illustration design brief submitted successfully!");
+    
+      // Navigate to the thank you page
       navigate("/thank-you");
-    } catch (error) {
-      console.error("Error in handleSubmit:", error);
-      toast.error("An unexpected error occurred. Please try again.");
+    } catch (error: any) {
+      console.error("Error submitting brief:", error);
+      toast.error(error.message || "Failed to submit brief");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return {
-    handleSubmit,
-    isSubmitting
+    isSubmitting,
+    handleSubmit
   };
 };
