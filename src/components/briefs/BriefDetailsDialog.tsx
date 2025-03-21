@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { format, isValid, parseISO } from "date-fns";
 import { Download } from "lucide-react";
@@ -69,12 +70,12 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
             console.log("Retrieved full brief details using database function:", data);
             
             // Transform any snake_case to camelCase if needed
-            const briefData = {
+            const briefData = typeof data === 'object' ? {
               ...data,
               type: briefDetails.type,
               companyName: data.company_name,
               submissionDate: data.submission_date
-            };
+            } : preparedDetails;
             
             setFullBriefDetails(prepareDetailsForDisplay(briefData));
           } else {
@@ -91,6 +92,8 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
           if (fetchError.message && typeof fetchError.message === 'string') {
             if (fetchError.message.includes("permission denied") || (fetchError.code && fetchError.code === '42501')) {
               setFetchError("Unable to retrieve full details due to permission issues. Showing available information from the dashboard.");
+            } else if (fetchError.message.includes("does not exist")) {
+              setFetchError("There was an issue with the database structure. Our team has been notified. Showing available information from the dashboard.");
             } else {
               setFetchError(`Unable to retrieve full details: ${fetchError.message}. Showing available information from the dashboard.`);
             }
