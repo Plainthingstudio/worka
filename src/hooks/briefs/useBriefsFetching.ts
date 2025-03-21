@@ -40,17 +40,13 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         return;
       }
       
-      const userId = user.id;
-      console.log("Authenticated user ID:", userId);
+      // RLS policies are in place, so we can simply fetch from each table
+      // and the policies will automatically filter for the current user's data
       
-      // Directly fetch from each brief table separately
-      console.log("Fetching briefs directly from each table");
-      
-      // Fetch from UI Design briefs using user_id directly
+      // Fetch UI Design briefs
       const { data: uiData, error: uiError } = await supabase
         .from('ui_design_briefs')
-        .select('*')
-        .eq('user_id', userId);
+        .select('*');
       
       if (uiError) {
         console.error("UI briefs error:", uiError);
@@ -58,11 +54,10 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("UI design briefs fetched:", uiData?.length || 0);
       }
       
-      // Fetch from Graphic Design briefs using user_id directly
+      // Fetch Graphic Design briefs
       const { data: graphicData, error: graphicError } = await supabase
         .from('graphic_design_briefs')
-        .select('*')
-        .eq('user_id', userId);
+        .select('*');
       
       if (graphicError) {
         console.error("Graphic briefs error:", graphicError);
@@ -70,11 +65,10 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("Graphic design briefs fetched:", graphicData?.length || 0);
       }
       
-      // Fetch from Illustration Design briefs using user_id directly
+      // Fetch Illustration Design briefs
       const { data: illustrationData, error: illustrationError } = await supabase
         .from('illustration_design_briefs')
-        .select('*')
-        .eq('user_id', userId);
+        .select('*');
       
       if (illustrationError) {
         console.error("Illustration briefs error:", illustrationError);
