@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +17,7 @@ export const useUIDesignBrief = () => {
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
     console.log("Form data:", data);
+    console.log("Designer userId from URL:", forUserId);
 
     try {
       // Get the authenticated user (if any)
@@ -30,10 +32,22 @@ export const useUIDesignBrief = () => {
 
       // Make sure important fields are properly formatted before submission
       const formattedData = {
-        ...data,
+        name: data.name,
+        email: data.email,
+        company_name: data.companyName,
+        about_company: data.aboutCompany,
+        project_description: data.projectDescription,
+        target_audience: data.targetAudience,
         page_count: Number(data.pageCount || 0),
+        design_preferences: data.designPreferences,
+        color_preferences: data.colorPreferences,
+        competitors: data.competitors,
+        deliverables: data.deliverables,
+        deadline: data.deadline,
+        requirements: data.requirements,
         user_id: effectiveUserId,
-        submission_date: new Date().toISOString()
+        submission_date: new Date().toISOString(),
+        status: "New"
       };
 
       const { error } = await supabase.from("ui_design_briefs").insert(formattedData);

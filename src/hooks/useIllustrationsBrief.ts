@@ -44,15 +44,16 @@ export const useIllustrationsBrief = () => {
   const handleSubmit = async (data: IllustrationBriefFormValues) => {
     setIsSubmitting(true);
     console.log("Form data:", data);
+    console.log("Designer userId from URL:", forUserId);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
       const effectiveUserId = forUserId || (user ? user.id : null);
       
-      console.log("Submitting brief with user_id:", effectiveUserId);
+      console.log("Submitting illustration brief with user_id:", effectiveUserId);
 
-      const { error } = await supabase.from("illustration_design_briefs").insert({
+      const formattedData = {
         name: data.name,
         email: data.email,
         company_name: data.companyName,
@@ -79,8 +80,11 @@ export const useIllustrationsBrief = () => {
         illustration_details: data.illustrationDetails,
         deliverables: data.deliverables,
         user_id: effectiveUserId,
-        submission_date: new Date().toISOString()
-      });
+        submission_date: new Date().toISOString(),
+        status: "New"
+      };
+
+      const { error } = await supabase.from("illustration_design_briefs").insert(formattedData);
 
       if (error) {
         console.error("Error submitting illustration brief:", error);
@@ -94,11 +98,9 @@ export const useIllustrationsBrief = () => {
         const briefs = storedBriefs ? JSON.parse(storedBriefs) : [];
         
         briefs.push({
-          ...data,
+          ...formattedData,
           id: uuidv4(),
           type: "Illustration Design",
-          user_id: effectiveUserId,
-          submission_date: new Date().toISOString(),
           status: "New"
         });
         
