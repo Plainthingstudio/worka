@@ -49,11 +49,9 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
       return String(value);
     };
     
-    // Helper function to get website type interest as a string
-    const getWebsiteTypeInterest = (): string => {
-      const interestObj = briefData.websiteTypeInterest || briefData.website_type_interest || {};
-      
-      // Define all possible website types
+    // Helper function to format the website type interests with checkmarks
+    const getWebsiteTypeInterest = () => {
+      // Start with all possible website types
       const allWebsiteTypes = [
         "Agency Website", 
         "Portfolio Website", 
@@ -68,13 +66,17 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
         "Other"
       ];
       
-      // Handle different formats of website type interest data
+      // Get the website type interest data from briefData
+      const interestData = briefData.websiteTypeInterest || briefData.website_type_interest || {};
       let selectedTypes: string[] = [];
       
-      if (typeof interestObj === 'string') {
-        return interestObj;
-      } else if (Array.isArray(interestObj)) {
-        // Convert array items to proper formats (e.g., "agency" -> "Agency Website")
+      // Handle different data formats
+      if (typeof interestData === 'string') {
+        // If it's a comma-separated string, split it
+        selectedTypes = interestData.split(',').map(t => t.trim());
+      } 
+      else if (Array.isArray(interestData)) {
+        // If it's already an array, map the values to proper formats
         const websiteTypeMap: Record<string, string> = {
           "agency": "Agency Website",
           "portfolio": "Portfolio Website",
@@ -89,11 +91,12 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
           "other": "Other"
         };
         
-        selectedTypes = interestObj.map((type: string) => 
+        selectedTypes = interestData.map((type: string) => 
           websiteTypeMap[type.toLowerCase()] || type
         );
-      } else if (typeof interestObj === 'object' && interestObj !== null) {
-        // Handle object with boolean values
+      } 
+      else if (typeof interestData === 'object' && interestData !== null) {
+        // If it's an object with boolean values
         const websiteTypeMap: Record<string, string> = {
           "agency": "Agency Website",
           "portfolio": "Portfolio Website",
@@ -108,30 +111,46 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
           "other": "Other"
         };
         
-        selectedTypes = Object.entries(interestObj)
+        selectedTypes = Object.entries(interestData)
           .filter(([_, isSelected]) => isSelected === true)
           .map(([key, _]) => websiteTypeMap[key] || key);
       }
       
-      // Show all types with selected ones marked with a checkmark
-      return allWebsiteTypes.map(type => {
-        if (selectedTypes.includes(type)) {
-          return `${type} ✓`;
+      // Format the output with checkmarks for selected types
+      // Use a different format to ensure it renders properly
+      let result = '';
+      allWebsiteTypes.forEach((type, index) => {
+        // Add a checkmark if this type is selected
+        const isSelected = selectedTypes.includes(type);
+        const checkmark = isSelected ? '✓ ' : '□ ';
+        
+        // Add the type with a checkmark indicator
+        result += checkmark + type;
+        
+        // Add a line break every 2 items or at the end
+        if (index % 2 === 1 && index < allWebsiteTypes.length - 1) {
+          result += '\n';
+        } else if (index < allWebsiteTypes.length - 1) {
+          result += '   ';  // Add some spacing between items
         }
-        return type;
-      }).join(", ");
+      });
+      
+      return result;
     };
     
     // Helper to safely get page details
     const getPageDetails = () => {
-      const details = getValue("pageDetails", "page_details", []);
+      let details = briefData.pageDetails || briefData.page_details || [];
+      
       if (typeof details === 'string') {
         try {
-          return JSON.parse(details);
+          details = JSON.parse(details);
         } catch {
           return [];
         }
       }
+      
+      // Ensure details is an array
       return Array.isArray(details) ? details : 
              details && typeof details === 'object' ? [details] : [];
     };
@@ -149,7 +168,24 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     yPosition = addSectionTitle(doc, "Project Information", yPosition);
     yPosition = addField(doc, "Project Type", getValue("projectType", "project_type"), yPosition);
     yPosition = addField(doc, "Project Size", getValue("projectSize", "project_size"), yPosition);
-    yPosition = addField(doc, "Website Type", getWebsiteTypeInterest(), yPosition);
+    
+    // Format and add the website type field
+    yPosition = checkPageOverflow(doc, yPosition + 10); // Extra space for the website types
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("Website Type:", 20, yPosition);
+    doc.setFont("helvetica", "normal");
+    
+    // Get and format all website types with checkmarks
+    const websiteTypeText = getWebsiteTypeInterest();
+    // Position the website types with proper indentation
+    doc.text(websiteTypeText, 70, yPosition);
+    
+    // Calculate new yPosition based on the number of lines in websiteTypeText
+    const websiteTypeLines = websiteTypeText.split('\n').length;
+    yPosition += (websiteTypeLines * 6) + 10; // Account for the lines and add spacing
+    
+    // Continue with other fields
     yPosition = addField(doc, "Current Website", getValue("currentWebsite", "current_website"), yPosition);
     yPosition = addMultiParagraphField(doc, "Website Purpose", getValue("websitePurpose", "website_purpose"), yPosition);
     
@@ -205,22 +241,21 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     yPosition = addSectionTitle(doc, "Page Information", yPosition);
     yPosition = addField(doc, "Number of Pages", getValue("pageCount", "page_count"), yPosition);
     
-    // Enhanced Page Details section with proper formatting for each page
+    // Add page details table
     const pageDetails = getPageDetails();
     if (pageDetails && pageDetails.length > 0) {
       yPosition = checkPageOverflow(doc, yPosition + 10);
       
-      // Create a table header for page details
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
       doc.text("Page Details:", 20, yPosition);
       yPosition += 8;
       
-      // Create table data for page details
+      // Create table for page details
       const tableHeaders = ["Page Name", "Description"];
-      const tableData = pageDetails.map((detail: any, index: number) => {
-        const name = detail?.name || `Page ${index + 1}`;
-        const description = detail?.description || "No description provided";
+      const tableData = pageDetails.map((detail: any) => {
+        const name = detail?.name || detail?.page_name || "Unnamed Page";
+        const description = detail?.description || detail?.page_description || "No description provided";
         return [name, description];
       });
       
@@ -236,7 +271,7 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     // Format the date properly for the deadline
     const deadlineValue = getValue("completionDeadline", "completion_deadline");
     let formattedDeadline = "Not provided";
-    if (deadlineValue) {
+    if (deadlineValue && deadlineValue !== "Not provided") {
       try {
         const deadlineDate = new Date(deadlineValue);
         if (!isNaN(deadlineDate.getTime())) {

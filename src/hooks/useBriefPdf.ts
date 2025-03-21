@@ -40,10 +40,17 @@ export function useBriefPdf() {
         // Transform any snake_case to camelCase if needed
         const fullBriefData = {
           ...brief,
-          ...data,
-          companyName: data.company_name || brief.companyName || brief.company_name,
-          submissionDate: data.submission_date || brief.submissionDate || brief.submission_date
+          ...data
         };
+        
+        // Make sure companyName and submissionDate are properly set
+        if (data.company_name) {
+          fullBriefData.companyName = data.company_name;
+        }
+        
+        if (data.submission_date) {
+          fullBriefData.submissionDate = data.submission_date;
+        }
         
         return fullBriefData;
       }
