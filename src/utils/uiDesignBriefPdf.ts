@@ -53,12 +53,6 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     const getWebsiteTypeInterest = (): string => {
       const interestObj = briefData.websiteTypeInterest || briefData.website_type_interest || {};
       
-      if (typeof interestObj === 'string') return interestObj;
-      
-      if (Array.isArray(interestObj)) {
-        return interestObj.join(", ");
-      }
-      
       // Define all possible website types
       const allWebsiteTypes = [
         "Agency Website", 
@@ -74,38 +68,58 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
         "Other"
       ];
       
-      // Handle case when the interest is an object with boolean values
-      if (typeof interestObj === 'object' && interestObj !== null && !Array.isArray(interestObj)) {
-        const websiteTypes: Record<string, string> = {
-          agency: "Agency Website",
-          portfolio: "Portfolio Website",
-          finance: "Finance Website",
-          saas: "SaaS Website",
-          ecommerce: "E-commerce Website",
-          web3: "Web3 Website",
-          crypto: "Crypto Website",
-          webapp: "Web Application",
-          desktopapp: "Desktop Application",
-          mobileapp: "Mobile Application",
-          other: "Other"
+      // Handle different formats of website type interest data
+      let selectedTypes: string[] = [];
+      
+      if (typeof interestObj === 'string') {
+        return interestObj;
+      } else if (Array.isArray(interestObj)) {
+        // Convert array items to proper formats (e.g., "agency" -> "Agency Website")
+        const websiteTypeMap: Record<string, string> = {
+          "agency": "Agency Website",
+          "portfolio": "Portfolio Website",
+          "finance": "Finance Website",
+          "saas": "SaaS Website",
+          "ecommerce": "E-commerce Website",
+          "web3": "Web3 Website",
+          "crypto": "Crypto Website",
+          "webapp": "Web Application",
+          "desktopapp": "Desktop Application",
+          "mobileapp": "Mobile Application",
+          "other": "Other"
         };
         
-        const selectedTypes = Object.entries(interestObj)
-          .filter(([_, isSelected]) => isSelected === true)
-          .map(([key, _]) => websiteTypes[key] || key);
+        selectedTypes = interestObj.map((type: string) => 
+          websiteTypeMap[type.toLowerCase()] || type
+        );
+      } else if (typeof interestObj === 'object' && interestObj !== null) {
+        // Handle object with boolean values
+        const websiteTypeMap: Record<string, string> = {
+          "agency": "Agency Website",
+          "portfolio": "Portfolio Website",
+          "finance": "Finance Website",
+          "saas": "SaaS Website",
+          "ecommerce": "E-commerce Website",
+          "web3": "Web3 Website",
+          "crypto": "Crypto Website",
+          "webapp": "Web Application",
+          "desktopapp": "Desktop Application",
+          "mobileapp": "Mobile Application",
+          "other": "Other"
+        };
         
-        if (selectedTypes.length > 0) {
-          // Return all types, marking selected ones
-          return allWebsiteTypes.map(type => {
-            if (selectedTypes.includes(type)) {
-              return `${type} ✓`;
-            }
-            return type;
-          }).join(", ");
-        }
+        selectedTypes = Object.entries(interestObj)
+          .filter(([_, isSelected]) => isSelected === true)
+          .map(([key, _]) => websiteTypeMap[key] || key);
       }
       
-      return allWebsiteTypes.join(", ");
+      // Show all types with selected ones marked with a checkmark
+      return allWebsiteTypes.map(type => {
+        if (selectedTypes.includes(type)) {
+          return `${type} ✓`;
+        }
+        return type;
+      }).join(", ");
     };
     
     // Helper to safely get page details

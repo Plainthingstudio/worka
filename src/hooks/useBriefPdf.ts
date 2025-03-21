@@ -39,10 +39,10 @@ export function useBriefPdf() {
         
         // Transform any snake_case to camelCase if needed
         const fullBriefData = {
+          ...brief,
           ...data,
-          type: brief.type,
-          companyName: data.company_name,
-          submissionDate: data.submission_date
+          companyName: data.company_name || brief.companyName || brief.company_name,
+          submissionDate: data.submission_date || brief.submissionDate || brief.submission_date
         };
         
         return fullBriefData;
