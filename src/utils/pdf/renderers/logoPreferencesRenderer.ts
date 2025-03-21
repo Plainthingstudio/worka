@@ -11,11 +11,15 @@ export const renderLogoPreferences = (doc: jsPDF, brief: any, startY: number): n
   // Add logo preferences section title
   yPosition = addSectionTitle(doc, "Logo Preferences", yPosition);
   
+  // Log the brief data to help debug
+  console.log("Logo preferences renderer received brief data:", brief);
+  
   // Handle logo feelings with safe access and better error handling
   let logoFeelings = null;
   try {
     // Allow for different property names (camelCase and snake_case)
     logoFeelings = brief.logoFeelings || brief.logo_feelings || null;
+    console.log("Logo feelings initial data:", logoFeelings);
     
     // If it's a string, try to parse it as JSON
     if (typeof logoFeelings === 'string') {
@@ -44,7 +48,7 @@ export const renderLogoPreferences = (doc: jsPDF, brief: any, startY: number): n
   const getLogoFeeling = (key: string, defaultValue = "Not provided") => {
     if (!logoFeelings || typeof logoFeelings !== 'object') return defaultValue;
     
-    // @ts-ignore - We know the key is a string, but TS is strict about indexing
+    // Access the property safely
     const value = logoFeelings[key];
     return value || defaultValue;
   };

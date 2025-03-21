@@ -25,6 +25,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
 }) => {
   const [fullBriefDetails, setFullBriefDetails] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   // Fetch full brief details when the dialog opens
   useEffect(() => {
@@ -32,6 +33,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
       if (!open || !briefDetails) return;
       
       setIsLoading(true);
+      setFetchError(null);
       console.log("Dialog opened with brief details:", briefDetails);
       
       try {
@@ -40,7 +42,8 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
         if (!user) {
           console.warn("No authenticated user found");
           // Still use the basic brief details we have
-          setFullBriefDetails(prepareDetailsForDisplay(briefDetails));
+          const preparedDetails = prepareDetailsForDisplay(briefDetails);
+          setFullBriefDetails(preparedDetails);
           setIsLoading(false);
           return;
         }
@@ -55,16 +58,26 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
             await fetchGraphicDesignDetails(briefDetails);
           } else {
             console.warn("Unknown brief type:", briefDetails.type);
-            setFullBriefDetails(prepareDetailsForDisplay(briefDetails));
+            const preparedDetails = prepareDetailsForDisplay(briefDetails);
+            setFullBriefDetails(preparedDetails);
           }
         } catch (fetchError: any) {
           console.error(`Error fetching ${briefDetails.type} brief details:`, fetchError);
           // Even if fetch fails, we'll use what we have
-          setFullBriefDetails(prepareDetailsForDisplay(briefDetails));
+          const preparedDetails = prepareDetailsForDisplay(briefDetails);
+          setFullBriefDetails(preparedDetails);
+          
+          // Set a user-friendly error message
+          if (fetchError.message && fetchError.message.includes("permission denied")) {
+            setFetchError("Unable to retrieve full details due to permission issues. Showing limited information.");
+          } else {
+            setFetchError("Unable to retrieve full details. Showing limited information.");
+          }
         }
       } catch (error) {
         console.error("Error in fetchFullBriefDetails:", error);
-        setFullBriefDetails(prepareDetailsForDisplay(briefDetails));
+        const preparedDetails = prepareDetailsForDisplay(briefDetails);
+        setFullBriefDetails(preparedDetails);
       } finally {
         setIsLoading(false);
       }
@@ -77,7 +90,15 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
   const prepareDetailsForDisplay = (details: any) => {
     if (!details) return null;
     
-    let processedDetails = { ...details };
+    // Create a deep copy to avoid modifying the original
+    let processedDetails = JSON.parse(JSON.stringify(details));
+    
+    // Normalize property names
+    processedDetails = {
+      ...processedDetails,
+      companyName: processedDetails.companyName || processedDetails.company_name || "",
+      submissionDate: processedDetails.submissionDate || processedDetails.submission_date || "",
+    };
     
     // Special handling for logoFeelings in Graphic Design briefs
     if (details.type === "Graphic Design") {
@@ -101,10 +122,12 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
         }
         
         processedDetails.logoFeelings = logoFeelings;
+        processedDetails.logo_feelings = logoFeelings; // Set both versions
         console.log("Prepared logoFeelings for display:", processedDetails.logoFeelings);
       } catch (error) {
         console.error("Error processing logoFeelings:", error);
         processedDetails.logoFeelings = {};
+        processedDetails.logo_feelings = {};
       }
     }
     
@@ -123,15 +146,17 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
       throw error;
     } else if (data) {
       console.log("Full illustration brief fetched:", data);
-      setFullBriefDetails({
+      const preparedData = prepareDetailsForDisplay({
         ...data,
         type: "Illustration Design",
         submissionDate: data.submission_date,
         companyName: data.company_name
       });
+      setFullBriefDetails(preparedData);
     } else {
       console.warn("No illustration brief data found");
-      setFullBriefDetails(prepareDetailsForDisplay(briefDetails));
+      const preparedDetails = prepareDetailsForDisplay(briefDetails);
+      setFullBriefDetails(preparedDetails);
     }
   };
 
@@ -147,15 +172,17 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
       throw error;
     } else if (data) {
       console.log("Full UI brief fetched:", data);
-      setFullBriefDetails({
+      const preparedData = prepareDetailsForDisplay({
         ...data,
         type: "UI Design",
         submissionDate: data.submission_date,
         companyName: data.company_name
       });
+      setFullBriefDetails(preparedData);
     } else {
       console.warn("No UI brief data found");
-      setFullBriefDetails(prepareDetailsForDisplay(briefDetails));
+      const preparedDetails = prepareDetailsForDisplay(briefDetails);
+      setFullBriefDetails(preparedDetails);
     }
   };
 
@@ -186,16 +213,18 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
         logoFeelings = {};
       }
       
-      setFullBriefDetails({
+      const preparedData = prepareDetailsForDisplay({
         ...data,
         logoFeelings: logoFeelings,
         type: "Graphic Design",
         submissionDate: data.submission_date,
         companyName: data.company_name
       });
+      setFullBriefDetails(preparedData);
     } else {
       console.warn("No graphic brief data found");
-      setFullBriefDetails(prepareDetailsForDisplay(briefDetails));
+      const preparedDetails = prepareDetailsForDisplay(briefDetails);
+      setFullBriefDetails(preparedDetails);
     }
   };
 
@@ -254,6 +283,16 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
           </div>
         ) : (
           <div className="space-y-6">
+            {fetchError && (
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                <div className="flex">
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-700">{fetchError}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-2">Client Information</h3>
@@ -262,7 +301,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
                   <p><span className="font-medium">Email:</span> {getValue("email", "email", "Not available")}</p>
                   <p>
                     <span className="font-medium">Company:</span> {
-                      getValue("companyName", "company_name")
+                      getValue("companyName", "company_name", "Not available")
                     }
                   </p>
                   {(fullBriefDetails?.phone || briefDetails?.phone) && (
@@ -277,7 +316,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
                   <p><span className="font-medium">Status:</span> {getValue("status", "status", "Not available")}</p>
                   <p>
                     <span className="font-medium">Submitted:</span>{" "}
-                    {formatDate(getValue("submissionDate", "submission_date"))}
+                    {formatDate(getValue("submissionDate", "submission_date", "Not available"))}
                   </p>
                 </div>
               </div>

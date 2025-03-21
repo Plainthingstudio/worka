@@ -51,15 +51,52 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
 
   return (
     <div className="space-y-6">
-      <CompanyInfoSection briefDetails={briefDetails} />
-      <MarketInformationSection briefDetails={briefDetails} />
-      <TargetAudienceSection briefDetails={briefDetails} />
+      {/* Extract specific props needed by each section from briefDetails */}
+      <CompanyInfoSection 
+        companyName={briefDetails?.companyName || briefDetails?.company_name || ""}
+        aboutCompany={briefDetails?.aboutCompany || briefDetails?.about_company || ""}
+        visionMission={briefDetails?.visionMission || briefDetails?.vision_mission || ""}
+        slogan={briefDetails?.slogan || ""}
+      />
+      
+      <MarketInformationSection 
+        marketCategory={briefDetails?.marketCategory || briefDetails?.market_category || ""}
+        productsServices={briefDetails?.productsServices || briefDetails?.products_services || ""}
+        featuresAndBenefits={briefDetails?.featuresAndBenefits || briefDetails?.features_and_benefits || ""}
+        brandPositioning={briefDetails?.brandPositioning || briefDetails?.brand_positioning || ""}
+        barrierToEntry={briefDetails?.barrierToEntry || briefDetails?.barrier_to_entry || ""}
+      />
+      
+      <TargetAudienceSection 
+        targetAge={briefDetails?.targetAge || briefDetails?.target_age || ""}
+        targetGender={briefDetails?.targetGender || briefDetails?.target_gender || ""}
+        targetDemography={briefDetails?.targetDemography || briefDetails?.target_demography || ""}
+        targetProfession={briefDetails?.targetProfession || briefDetails?.target_profession || ""}
+        targetPersonality={briefDetails?.targetPersonality || briefDetails?.target_personality || ""}
+      />
+      
       <LogoPreferencesSection 
         logoFeelings={logoFeelings} 
         logoType={logoType} 
       />
-      <CompetitorsReferencesSection briefDetails={briefDetails} />
-      <ServicesMediaSection briefDetails={briefDetails} />
+      
+      <CompetitorsReferencesSection 
+        competitor1={briefDetails?.competitor1 || ""}
+        competitor2={briefDetails?.competitor2 || ""}
+        competitor3={briefDetails?.competitor3 || ""}
+        competitor4={briefDetails?.competitor4 || ""}
+        reference1={briefDetails?.reference1 || ""}
+        reference2={briefDetails?.reference2 || ""}
+        reference3={briefDetails?.reference3 || ""}
+        reference4={briefDetails?.reference4 || ""}
+        specificImagery={briefDetails?.specificImagery || briefDetails?.specific_imagery || ""}
+      />
+      
+      <ServicesMediaSection 
+        services={briefDetails?.services || []}
+        printMedia={briefDetails?.printMedia || briefDetails?.print_media || []}
+        digitalMedia={briefDetails?.digitalMedia || briefDetails?.digital_media || []}
+      />
     </div>
   );
 };
