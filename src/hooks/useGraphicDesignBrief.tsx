@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -22,7 +23,7 @@ const GraphicDesignBriefSchema = z.object({
     gender: z.string().optional(),
     complexity: z.string().optional()
   }),
-  tone: z.record(z.string(), z.boolean()),
+  tone: z.record(z.string(), z.boolean()).optional(),
   logoType: z.string(),
   reference1: z.string(),
   reference2: z.string(),
@@ -81,7 +82,7 @@ export const useGraphicDesignBrief = () => {
         vision_mission: data.visionMission,
         slogan: data.slogan,
         logo_feelings: data.logoFeelings,
-        tone: data.tone,
+        tone: data.tone || {},
         logo_type: data.logoType,
         reference1: data.reference1,
         reference2: data.reference2,
@@ -148,7 +149,7 @@ export const useGraphicDesignBrief = () => {
   return {
     form,
     isSubmitting,
-    handleSubmit: form.handleSubmit(handleSubmit)
+    handleSubmit
   };
 };
 
