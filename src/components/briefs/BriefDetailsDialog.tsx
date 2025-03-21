@@ -71,20 +71,20 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
           
           // Set a user-friendly error message
           if (fetchError.message && typeof fetchError.message === 'string') {
-            if (fetchError.message.includes("permission denied")) {
-              setFetchError("Unable to retrieve full details due to permission issues. Showing limited information.");
+            if (fetchError.message.includes("permission denied") || (fetchError.code && fetchError.code === '42501')) {
+              setFetchError("Unable to retrieve full details due to permission issues. Showing available information from the dashboard.");
             } else {
-              setFetchError(`Unable to retrieve full details: ${fetchError.message}. Showing limited information.`);
+              setFetchError(`Unable to retrieve full details: ${fetchError.message}. Showing available information from the dashboard.`);
             }
           } else {
-            setFetchError("Unable to retrieve full details. Showing limited information.");
+            setFetchError("Unable to retrieve full details. Showing available information from the dashboard.");
           }
         }
       } catch (error) {
         console.error("Error in fetchFullBriefDetails:", error);
         const preparedDetails = prepareDetailsForDisplay(briefDetails);
         setFullBriefDetails(preparedDetails);
-        setFetchError("An error occurred while retrieving brief details. Showing limited information.");
+        setFetchError("An error occurred while retrieving brief details. Showing available information from the dashboard.");
       } finally {
         setIsLoading(false);
       }
@@ -143,34 +143,41 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
 
   // Fetch Illustration brief details
   const fetchIllustrationDetails = async (briefDetails: any) => {
-    const { data, error } = await supabase
-      .from('illustration_design_briefs')
-      .select('*')
-      .eq('id', briefDetails.id)
-      .maybeSingle();
-    
-    if (error) {
-      throw error;
-    } else if (data) {
-      console.log("Full illustration brief fetched:", data);
-      const preparedData = prepareDetailsForDisplay({
-        ...data,
-        type: "Illustration Design",
-        submissionDate: data.submission_date,
-        companyName: data.company_name
-      });
-      setFullBriefDetails(preparedData);
-    } else {
-      console.warn("No illustration brief data found");
-      const preparedDetails = prepareDetailsForDisplay(briefDetails);
-      setFullBriefDetails(preparedDetails);
+    try {
+      console.log("Fetching illustration brief data for ID:", briefDetails.id);
+      
+      const { data, error } = await supabase
+        .from('illustration_design_briefs')
+        .select('*')
+        .eq('id', briefDetails.id)
+        .maybeSingle();
+      
+      if (error) {
+        throw error;
+      } else if (data) {
+        console.log("Full illustration brief fetched:", data);
+        const preparedData = prepareDetailsForDisplay({
+          ...data,
+          type: "Illustration Design",
+          submissionDate: data.submission_date,
+          companyName: data.company_name
+        });
+        setFullBriefDetails(preparedData);
+      } else {
+        console.warn("No illustration brief data found");
+        const preparedDetails = prepareDetailsForDisplay(briefDetails);
+        setFullBriefDetails(preparedDetails);
+      }
+    } catch (error) {
+      console.error("Error fetching Illustration brief details:", error);
+      throw error; // Re-throw to be caught by the parent try/catch
     }
   };
 
   // Fetch UI Design brief details
   const fetchUIDesignDetails = async (briefDetails: any) => {
     try {
-      console.log("UI design brief details:", briefDetails);
+      console.log("Fetching UI design brief data for ID:", briefDetails.id);
       
       const { data, error } = await supabase
         .from('ui_design_briefs')
@@ -203,6 +210,8 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
   // Fetch Graphic Design brief details
   const fetchGraphicDesignDetails = async (briefDetails: any) => {
     try {
+      console.log("Fetching graphic design brief data for ID:", briefDetails.id);
+      
       const { data, error } = await supabase
         .from('graphic_design_briefs')
         .select('*')

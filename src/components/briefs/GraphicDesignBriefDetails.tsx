@@ -59,9 +59,9 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
     <div className="space-y-6">
       {/* Extract specific props needed by each section from briefDetails */}
       <CompanyInfoSection 
-        company_name={companyName}
-        about_company={aboutCompany}
-        vision_mission={visionMission}
+        companyName={companyName}
+        aboutCompany={aboutCompany}
+        visionMission={visionMission}
         slogan={slogan}
       />
       
