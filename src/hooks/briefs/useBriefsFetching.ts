@@ -20,118 +20,27 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
     try {
       // Get the current user
       const { data: { user } } = await supabase.auth.getUser();
-      const userId = user?.id || "00000000-0000-0000-0000-000000000000"; // Use a placeholder UUID if not logged in
+      const userId = user?.id || null; // Can be null for unauthenticated users
       
-      console.log("Fetching all briefs using RPC function");
+      console.log("Starting to fetch briefs, user ID:", userId);
       
-      // Call the RPC function without the timestamp parameter since it's not in the type definition
-      const { data: rpcData, error: rpcError } = await supabase.rpc(
-        'get_all_briefs', 
-        { user_uuid: userId }
-      );
-
-      if (!rpcError && rpcData && Array.isArray(rpcData)) {
-        console.log(`Found ${rpcData.length} briefs from RPC`);
+      // First, try to fetch briefs directly from tables without filtering by user_id
+      const success = await fetchBriefsDirectly();
+      
+      if (!success) {
+        console.error("Failed to fetch briefs directly from tables");
         
-        if (rpcData.length > 0) {
-          // For each brief, fetch the full details based on the type
-          const briefsPromises = rpcData.map(async (brief: any) => {
-            try {
-              if (!brief || !brief.type || !brief.id) {
-                console.error("Invalid brief object:", brief);
-                return null;
-              }
-              
-              let fullBrief = null;
-              
-              if (brief.type === "Illustration Design") {
-                const { data, error } = await supabase
-                  .from('illustration_design_briefs')
-                  .select('*')
-                  .eq('id', brief.id)
-                  .maybeSingle();
-                  
-                if (error) {
-                  console.error("Error fetching illustration brief:", error);
-                  return brief;
-                }
-                
-                fullBrief = data ? {
-                  ...data,
-                  type: "Illustration Design",
-                  submissionDate: data.submission_date,
-                  companyName: data.company_name
-                } : null;
-                
-              } else if (brief.type === "UI Design") {
-                const { data, error } = await supabase
-                  .from('ui_design_briefs')
-                  .select('*')
-                  .eq('id', brief.id)
-                  .maybeSingle();
-                  
-                if (error) {
-                  console.error("Error fetching UI brief:", error);
-                  return brief;
-                }
-                
-                fullBrief = data ? {
-                  ...data,
-                  type: "UI Design",
-                  submissionDate: data.submission_date,
-                  companyName: data.company_name
-                } : null;
-                
-              } else if (brief.type === "Graphic Design") {
-                const { data, error } = await supabase
-                  .from('graphic_design_briefs')
-                  .select('*')
-                  .eq('id', brief.id)
-                  .maybeSingle();
-                  
-                if (error) {
-                  console.error("Error fetching graphic brief:", error);
-                  return brief;
-                }
-                
-                fullBrief = data ? {
-                  ...data,
-                  type: "Graphic Design",
-                  submissionDate: data.submission_date,
-                  companyName: data.company_name
-                } : null;
-              }
-              
-              // If the brief is null at this point, it means it was deleted
-              if (!fullBrief) {
-                console.log(`Brief ${brief.id} not found in database, likely deleted`);
-                return null;
-              }
-              
-              return fullBrief;
-            } catch (err) {
-              console.error(`Error processing brief ${brief.id}:`, err);
-              return null;
-            }
-          });
-          
-          const briefs = await Promise.all(briefsPromises);
-          const validBriefs = briefs.filter(Boolean) as Brief[];
-          
-          console.log("Full briefs data processed:", validBriefs.length);
-          setBriefs(validBriefs);
-        } else {
-          console.log("No briefs found in RPC response");
-          setBriefs([]);
-        }
-      } else {
-        console.log("RPC fetch failed or returned no data, trying direct table fetches");
-        if (rpcError) console.error("RPC Error:", rpcError);
-        
-        // Fallback to direct table fetching
-        const success = await fetchBriefsDirectly();
-        if (!success) {
-          console.error("No briefs found in database tables");
+        // Final fallback to localStorage
+        try {
+          const storedBriefs = localStorage.getItem("briefs");
+          if (storedBriefs) {
+            const parsedBriefs = JSON.parse(storedBriefs);
+            setBriefs(parsedBriefs);
+          } else {
+            setBriefs([]);
+          }
+        } catch (localStorageError) {
+          console.error("Error reading from localStorage:", localStorageError);
           setBriefs([]);
         }
       }
@@ -145,6 +54,8 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         if (storedBriefs) {
           const parsedBriefs = JSON.parse(storedBriefs);
           setBriefs(parsedBriefs);
+        } else {
+          setBriefs([]);
         }
       } catch (localStorageError) {
         console.error("Error reading from localStorage:", localStorageError);
@@ -161,7 +72,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
     console.log("Fetching briefs directly from tables");
     
     try {
-      // Fetch from UI Design briefs 
+      // Fetch all briefs from UI Design briefs (without user_id filter)
       const { data: uiData, error: uiError } = await supabase
         .from('ui_design_briefs')
         .select('*')
@@ -173,7 +84,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("UI design briefs fetched:", uiData?.length || 0);
       }
       
-      // Fetch from Graphic Design briefs
+      // Fetch all briefs from Graphic Design briefs (without user_id filter)
       const { data: graphicData, error: graphicError } = await supabase
         .from('graphic_design_briefs')
         .select('*')
@@ -185,7 +96,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("Graphic design briefs fetched:", graphicData?.length || 0);
       }
       
-      // Fetch from Illustration Design briefs
+      // Fetch all briefs from Illustration Design briefs (without user_id filter)
       const { data: illustrationData, error: illustrationError } = await supabase
         .from('illustration_design_briefs')
         .select('*')

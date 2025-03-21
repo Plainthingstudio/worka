@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -64,7 +63,6 @@ const Briefs = () => {
         toast.info("You're viewing briefs in read-only mode. Login to manage briefs.");
       }
       
-      await supabase.auth.refreshSession();
       await fetchBriefs();
       setIsInitialLoad(false);
     } catch (error) {
@@ -78,6 +76,13 @@ const Briefs = () => {
   useEffect(() => {
     console.log("Initial briefs fetch on component mount");
     refreshData();
+    
+    const refreshInterval = setInterval(() => {
+      console.log("Performing periodic refresh of briefs data");
+      refreshData();
+    }, 30000); // Refresh every 30 seconds
+    
+    return () => clearInterval(refreshInterval);
   }, []);
 
   const viewBriefDetails = (brief: any) => {
@@ -191,7 +196,6 @@ const Briefs = () => {
           <BriefsHeader />
           <BriefStats briefs={briefs} />
           
-          {/* Add the Personalized Links component just before the filter */}
           <BriefPersonalizedLinks />
           
           <BriefsFilter 
