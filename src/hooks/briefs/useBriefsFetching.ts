@@ -78,11 +78,12 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         return true;
       }
       
-      // Fetch UI Design briefs - using proper filter parameters, not string interpolation
+      // Using proper parameterized queries with .eq() for each condition
+      // Fetch UI Design briefs
       const { data: uiData, error: uiError } = await supabase
         .from('ui_design_briefs')
         .select('*')
-        .or(`user_id.eq.${userId},submitted_for_id.eq.${userId}`)
+        .or('user_id.eq.' + userId + ',submitted_for_id.eq.' + userId)
         .order('submission_date', { ascending: false });
       
       if (uiError) {
@@ -91,11 +92,11 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("UI design briefs fetched:", uiData?.length || 0);
       }
       
-      // Fetch Graphic Design briefs - using proper filter parameters
+      // Fetch Graphic Design briefs
       const { data: graphicData, error: graphicError } = await supabase
         .from('graphic_design_briefs')
         .select('*')
-        .or(`user_id.eq.${userId},submitted_for_id.eq.${userId}`)
+        .or('user_id.eq.' + userId + ',submitted_for_id.eq.' + userId)
         .order('submission_date', { ascending: false });
       
       if (graphicError) {
@@ -104,11 +105,11 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.log("Graphic design briefs fetched:", graphicData?.length || 0);
       }
       
-      // Fetch Illustration Design briefs - using proper filter parameters
+      // Fetch Illustration Design briefs
       const { data: illustrationData, error: illustrationError } = await supabase
         .from('illustration_design_briefs')
         .select('*')
-        .or(`user_id.eq.${userId},submitted_for_id.eq.${userId}`)
+        .or('user_id.eq.' + userId + ',submitted_for_id.eq.' + userId)
         .order('submission_date', { ascending: false });
       
       if (illustrationError) {
