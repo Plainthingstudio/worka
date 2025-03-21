@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { format, isValid, parseISO } from "date-fns";
 import { Download } from "lucide-react";
@@ -51,16 +50,35 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
           return;
         }
         
-        // Attempt to fetch additional details based on brief type
+        // Use the secure database function to fetch full brief details
         try {
-          if (briefDetails.type === "Illustration Design" || briefDetails.type === "Illustrations") {
-            await fetchIllustrationDetails(briefDetails);
-          } else if (briefDetails.type === "UI Design") {
-            await fetchUIDesignDetails(briefDetails);
-          } else if (briefDetails.type === "Graphic Design") {
-            await fetchGraphicDesignDetails(briefDetails);
+          const { data, error } = await supabase.rpc(
+            'get_brief_details',
+            { 
+              brief_id: briefDetails.id,
+              brief_type: briefDetails.type
+            }
+          );
+          
+          if (error) {
+            console.error("Error calling get_brief_details function:", error);
+            throw error;
+          }
+          
+          if (data) {
+            console.log("Retrieved full brief details using database function:", data);
+            
+            // Transform any snake_case to camelCase if needed
+            const briefData = {
+              ...data,
+              type: briefDetails.type,
+              companyName: data.company_name,
+              submissionDate: data.submission_date
+            };
+            
+            setFullBriefDetails(prepareDetailsForDisplay(briefData));
           } else {
-            console.warn("Unknown brief type:", briefDetails.type);
+            console.warn("No brief details returned from database function");
             setFullBriefDetails(preparedDetails);
           }
         } catch (fetchError: any) {
@@ -141,10 +159,11 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
     return processedDetails;
   };
 
-  // Fetch Illustration brief details
+  // The old individual fetch methods are no longer used since we're using the database function,
+  // but we'll keep them for reference/backup if needed
   const fetchIllustrationDetails = async (briefDetails: any) => {
     try {
-      console.log("Fetching illustration brief data for ID:", briefDetails.id);
+      console.log("NOTE: This method is deprecated. Using get_brief_details function instead.");
       
       const { data, error } = await supabase
         .from('illustration_design_briefs')
@@ -170,14 +189,13 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
       }
     } catch (error) {
       console.error("Error fetching Illustration brief details:", error);
-      throw error; // Re-throw to be caught by the parent try/catch
+      throw error;
     }
   };
 
-  // Fetch UI Design brief details
   const fetchUIDesignDetails = async (briefDetails: any) => {
     try {
-      console.log("Fetching UI design brief data for ID:", briefDetails.id);
+      console.log("NOTE: This method is deprecated. Using get_brief_details function instead.");
       
       const { data, error } = await supabase
         .from('ui_design_briefs')
@@ -203,14 +221,13 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
       }
     } catch (error) {
       console.error("Error fetching UI Design brief details:", error);
-      throw error; // Re-throw to be caught by the parent try/catch
+      throw error;
     }
   };
 
-  // Fetch Graphic Design brief details
   const fetchGraphicDesignDetails = async (briefDetails: any) => {
     try {
-      console.log("Fetching graphic design brief data for ID:", briefDetails.id);
+      console.log("NOTE: This method is deprecated. Using get_brief_details function instead.");
       
       const { data, error } = await supabase
         .from('graphic_design_briefs')
@@ -252,7 +269,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
       }
     } catch (error) {
       console.error("Error fetching Graphic Design brief details:", error);
-      throw error; // Re-throw to be caught by the parent try/catch
+      throw error;
     }
   };
 

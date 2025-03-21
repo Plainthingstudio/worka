@@ -747,6 +747,13 @@ export type Database = {
           submitted_for_id: string
         }[]
       }
+      get_brief_details: {
+        Args: {
+          brief_id: string
+          brief_type: string
+        }
+        Returns: Json
+      }
       get_user_briefs: {
         Args: {
           user_uuid: string
