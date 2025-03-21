@@ -49,14 +49,20 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
   const logoFeelings = prepareLogoFeelings();
   const logoType = briefDetails?.logoType || briefDetails?.logo_type || null;
 
+  // Get all data with fallback values
+  const companyName = briefDetails?.companyName || briefDetails?.company_name || "";
+  const aboutCompany = briefDetails?.aboutCompany || briefDetails?.about_company || "";
+  const visionMission = briefDetails?.visionMission || briefDetails?.vision_mission || "";
+  const slogan = briefDetails?.slogan || "";
+  
   return (
     <div className="space-y-6">
       {/* Extract specific props needed by each section from briefDetails */}
       <CompanyInfoSection 
-        companyName={briefDetails?.companyName || briefDetails?.company_name || ""}
-        aboutCompany={briefDetails?.aboutCompany || briefDetails?.about_company || ""}
-        visionMission={briefDetails?.visionMission || briefDetails?.vision_mission || ""}
-        slogan={briefDetails?.slogan || ""}
+        company_name={companyName}
+        about_company={aboutCompany}
+        vision_mission={visionMission}
+        slogan={slogan}
       />
       
       <MarketInformationSection 

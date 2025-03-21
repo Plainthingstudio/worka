@@ -37,14 +37,17 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
       console.log("Dialog opened with brief details:", briefDetails);
       
       try {
+        // Prepare the basic brief details we already have
+        const preparedDetails = prepareDetailsForDisplay(briefDetails);
+        
+        // Check if we have authentication
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
           console.warn("No authenticated user found");
-          // Still use the basic brief details we have
-          const preparedDetails = prepareDetailsForDisplay(briefDetails);
           setFullBriefDetails(preparedDetails);
           setIsLoading(false);
+          setFetchError("Authentication required to load full details. Showing limited information.");
           return;
         }
         
@@ -58,18 +61,21 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
             await fetchGraphicDesignDetails(briefDetails);
           } else {
             console.warn("Unknown brief type:", briefDetails.type);
-            const preparedDetails = prepareDetailsForDisplay(briefDetails);
             setFullBriefDetails(preparedDetails);
           }
         } catch (fetchError: any) {
           console.error(`Error fetching ${briefDetails.type} brief details:`, fetchError);
-          // Even if fetch fails, we'll use what we have
-          const preparedDetails = prepareDetailsForDisplay(briefDetails);
+          
+          // Set fullBriefDetails to use what we already have
           setFullBriefDetails(preparedDetails);
           
           // Set a user-friendly error message
-          if (fetchError.message && fetchError.message.includes("permission denied")) {
-            setFetchError("Unable to retrieve full details due to permission issues. Showing limited information.");
+          if (fetchError.message && typeof fetchError.message === 'string') {
+            if (fetchError.message.includes("permission denied")) {
+              setFetchError("Unable to retrieve full details due to permission issues. Showing limited information.");
+            } else {
+              setFetchError(`Unable to retrieve full details: ${fetchError.message}. Showing limited information.`);
+            }
           } else {
             setFetchError("Unable to retrieve full details. Showing limited information.");
           }
@@ -78,6 +84,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
         console.error("Error in fetchFullBriefDetails:", error);
         const preparedDetails = prepareDetailsForDisplay(briefDetails);
         setFullBriefDetails(preparedDetails);
+        setFetchError("An error occurred while retrieving brief details. Showing limited information.");
       } finally {
         setIsLoading(false);
       }
@@ -162,69 +169,81 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
 
   // Fetch UI Design brief details
   const fetchUIDesignDetails = async (briefDetails: any) => {
-    const { data, error } = await supabase
-      .from('ui_design_briefs')
-      .select('*')
-      .eq('id', briefDetails.id)
-      .maybeSingle();
-    
-    if (error) {
-      throw error;
-    } else if (data) {
-      console.log("Full UI brief fetched:", data);
-      const preparedData = prepareDetailsForDisplay({
-        ...data,
-        type: "UI Design",
-        submissionDate: data.submission_date,
-        companyName: data.company_name
-      });
-      setFullBriefDetails(preparedData);
-    } else {
-      console.warn("No UI brief data found");
-      const preparedDetails = prepareDetailsForDisplay(briefDetails);
-      setFullBriefDetails(preparedDetails);
+    try {
+      console.log("UI design brief details:", briefDetails);
+      
+      const { data, error } = await supabase
+        .from('ui_design_briefs')
+        .select('*')
+        .eq('id', briefDetails.id)
+        .maybeSingle();
+      
+      if (error) {
+        throw error;
+      } else if (data) {
+        console.log("Full UI brief fetched:", data);
+        const preparedData = prepareDetailsForDisplay({
+          ...data,
+          type: "UI Design",
+          submissionDate: data.submission_date,
+          companyName: data.company_name
+        });
+        setFullBriefDetails(preparedData);
+      } else {
+        console.warn("No UI brief data found");
+        const preparedDetails = prepareDetailsForDisplay(briefDetails);
+        setFullBriefDetails(preparedDetails);
+      }
+    } catch (error) {
+      console.error("Error fetching UI Design brief details:", error);
+      throw error; // Re-throw to be caught by the parent try/catch
     }
   };
 
   // Fetch Graphic Design brief details
   const fetchGraphicDesignDetails = async (briefDetails: any) => {
-    const { data, error } = await supabase
-      .from('graphic_design_briefs')
-      .select('*')
-      .eq('id', briefDetails.id)
-      .maybeSingle();
-    
-    if (error) {
-      throw error;
-    } else if (data) {
-      console.log("Full graphic brief fetched:", data);
+    try {
+      const { data, error } = await supabase
+        .from('graphic_design_briefs')
+        .select('*')
+        .eq('id', briefDetails.id)
+        .maybeSingle();
       
-      // Parse the logo_feelings JSON if it's a string
-      let logoFeelings = data.logo_feelings;
-      if (typeof logoFeelings === 'string') {
-        try {
-          logoFeelings = JSON.parse(logoFeelings);
-          console.log("Successfully parsed logo_feelings in dialog:", logoFeelings);
-        } catch (e) {
-          console.error("Failed to parse logo_feelings string in dialog:", e);
+      if (error) {
+        throw error;
+      } else if (data) {
+        console.log("Full graphic brief fetched:", data);
+        
+        // Parse the logo_feelings JSON if it's a string
+        let logoFeelings = data.logo_feelings;
+        if (typeof logoFeelings === 'string') {
+          try {
+            logoFeelings = JSON.parse(logoFeelings);
+            console.log("Successfully parsed logo_feelings in dialog:", logoFeelings);
+          } catch (e) {
+            console.error("Failed to parse logo_feelings string in dialog:", e);
+            logoFeelings = {};
+          }
+        } else if (!logoFeelings || typeof logoFeelings !== 'object') {
           logoFeelings = {};
         }
-      } else if (!logoFeelings || typeof logoFeelings !== 'object') {
-        logoFeelings = {};
+        
+        const preparedData = prepareDetailsForDisplay({
+          ...data,
+          logoFeelings: logoFeelings,
+          type: "Graphic Design",
+          submissionDate: data.submission_date,
+          companyName: data.company_name
+        });
+        setFullBriefDetails(preparedData);
+      } else {
+        console.warn("No graphic brief data found");
+        const preparedDetails = prepareDetailsForDisplay(briefDetails);
+        setFullBriefDetails(preparedDetails);
       }
-      
-      const preparedData = prepareDetailsForDisplay({
-        ...data,
-        logoFeelings: logoFeelings,
-        type: "Graphic Design",
-        submissionDate: data.submission_date,
-        companyName: data.company_name
-      });
-      setFullBriefDetails(preparedData);
-    } else {
-      console.warn("No graphic brief data found");
-      const preparedDetails = prepareDetailsForDisplay(briefDetails);
-      setFullBriefDetails(preparedDetails);
+    } catch (error) {
+      console.error("Error fetching Graphic Design brief details:", error);
+      throw error; // Re-throw to be caught by the parent try/catch
     }
   };
 
