@@ -108,9 +108,13 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
             if (typeof logoFeelings === 'string') {
               try {
                 logoFeelings = JSON.parse(logoFeelings);
+                console.log("Successfully parsed logo_feelings in dialog:", logoFeelings);
               } catch (e) {
-                console.error("Failed to parse logo_feelings string:", e);
+                console.error("Failed to parse logo_feelings string in dialog:", e);
+                logoFeelings = {};
               }
+            } else if (!logoFeelings || typeof logoFeelings !== 'object') {
+              logoFeelings = {};
             }
             
             setFullBriefDetails({

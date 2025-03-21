@@ -27,10 +27,11 @@ const LogoPreferencesSection: React.FC<LogoPreferencesSectionProps> = ({
   
   // Helper to safely get logo feeling values
   const getLogoFeeling = (key: string, defaultValue = "Not provided") => {
-    if (!logoFeelings) return defaultValue;
+    if (!logoFeelings || typeof logoFeelings !== 'object') return defaultValue;
     
-    // Access the property directly since we've already handled JSON parsing in the parent component
-    return logoFeelings[key as keyof typeof logoFeelings] || defaultValue;
+    // Typed access to ensure we only access valid keys
+    const keyAsLogoProp = key as keyof typeof logoFeelings;
+    return logoFeelings[keyAsLogoProp] || defaultValue;
   };
   
   return (

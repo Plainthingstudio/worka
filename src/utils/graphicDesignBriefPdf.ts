@@ -28,13 +28,19 @@ export const generateGraphicDesignBriefPDF = async (brief: any) => {
     if (typeof logoFeelings === 'string') {
       try {
         logoFeelings = JSON.parse(logoFeelings);
+        console.log("Successfully parsed logoFeelings string in main PDF generator:", logoFeelings);
         brief.logoFeelings = logoFeelings;  // Update the logoFeelings property
       } catch (e) {
-        console.error("Failed to parse logoFeelings string:", e);
+        console.error("Failed to parse logoFeelings string in main PDF generator:", e);
+        // Instead of setting to null, set to empty object
+        brief.logoFeelings = {};
       }
+    } else if (!logoFeelings || typeof logoFeelings !== 'object') {
+      // Ensure logoFeelings is at least an empty object
+      brief.logoFeelings = {};
     }
     
-    console.log("Logo feelings data for PDF:", logoFeelings);
+    console.log("Logo feelings data prepared for PDF:", brief.logoFeelings);
     
     const doc = new jsPDF();
     let y = 20;

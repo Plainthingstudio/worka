@@ -18,19 +18,27 @@ export const renderLogoPreferences = (doc: jsPDF, brief: any, startY: number): n
   if (typeof logoFeelings === 'string') {
     try {
       logoFeelings = JSON.parse(logoFeelings);
+      console.log("Successfully parsed logoFeelings string in PDF renderer:", logoFeelings);
     } catch (e) {
-      console.error("Failed to parse logoFeelings string:", e);
+      console.error("Failed to parse logoFeelings string in PDF renderer:", e);
       logoFeelings = null;
     }
   }
   
-  // Helper to safely get logo feeling values
+  // Ensure it's an object - if not, make it an empty object (not null)
+  if (!logoFeelings || typeof logoFeelings !== 'object') {
+    logoFeelings = {};
+  }
+  
+  // Helper to safely get logo feeling values with better defaults
   const getLogoFeeling = (key: string, defaultValue = "Not provided") => {
     if (!logoFeelings || typeof logoFeelings !== 'object') return defaultValue;
-    return logoFeelings[key] || defaultValue;
+    
+    const value = logoFeelings[key];
+    return value || defaultValue;
   };
   
-  // Add each logo preference field
+  // Add each logo preference field with more descriptive labels
   yPosition = addField(doc, "Feminine vs Masculine", getLogoFeeling("gender"), yPosition);
   yPosition = addField(doc, "Economical vs Luxury", getLogoFeeling("pricing"), yPosition);
   yPosition = addField(doc, "Modern vs Classic", getLogoFeeling("era"), yPosition);

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
 import CompanyInfoSection from "./graphic-design/CompanyInfoSection";
 import LogoPreferencesSection from "./graphic-design/LogoPreferencesSection";
@@ -13,6 +13,11 @@ interface GraphicDesignBriefDetailsProps {
 }
 
 const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ briefDetails }) => {
+  // Add logging on component mount and when briefDetails changes
+  useEffect(() => {
+    console.log("GraphicDesignBriefDetails component rendered with:", briefDetails);
+  }, [briefDetails]);
+
   // Helper function to safely display values
   const displayValue = (value: any): string => {
     if (value === null || value === undefined || value === "") {
@@ -41,18 +46,19 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
   if (typeof logoFeelings === 'string') {
     try {
       logoFeelings = JSON.parse(logoFeelings);
+      console.log("Successfully parsed logoFeelings string in GraphicDesignBriefDetails:", logoFeelings);
     } catch (e) {
-      console.error("Failed to parse logoFeelings string:", e);
-      logoFeelings = null;
+      console.error("Failed to parse logoFeelings string in GraphicDesignBriefDetails:", e);
+      logoFeelings = {};
     }
   }
 
-  // Ensure it's an object or null
-  if (logoFeelings && typeof logoFeelings !== 'object') {
-    logoFeelings = null;
+  // Ensure it's an object or create empty object
+  if (!logoFeelings || typeof logoFeelings !== 'object') {
+    logoFeelings = {};
   }
 
-  console.log("Logo feelings in GraphicDesignBriefDetails:", logoFeelings);
+  console.log("Logo feelings prepared in GraphicDesignBriefDetails:", logoFeelings);
 
   return (
     <div className="space-y-6">
