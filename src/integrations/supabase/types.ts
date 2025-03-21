@@ -740,6 +740,22 @@ export type Database = {
           submitted_for_id: string
         }[]
       }
+      get_user_briefs: {
+        Args: {
+          user_uuid: string
+        }
+        Returns: {
+          id: string
+          user_id: string
+          name: string
+          email: string
+          company_name: string
+          type: string
+          status: string
+          submission_date: string
+          submitted_for_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

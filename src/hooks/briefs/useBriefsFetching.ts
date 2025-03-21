@@ -24,11 +24,11 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       
       console.log("Starting to fetch briefs, user ID:", userId);
       
-      // First, try to fetch briefs directly from tables
-      const success = await fetchBriefsDirectly(userId);
+      // First, try to fetch briefs using the secure database function
+      const success = await fetchBriefsUsingFunction(userId);
       
       if (!success) {
-        console.error("Failed to fetch briefs directly from tables");
+        console.error("Failed to fetch briefs using database function");
         
         // Final fallback to localStorage
         try {
@@ -67,9 +67,9 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
     }
   };
 
-  // Method to fetch directly from individual brief tables
-  const fetchBriefsDirectly = async (userId: string | null): Promise<boolean> => {
-    console.log("Fetching briefs directly from tables for user ID:", userId);
+  // Method to fetch briefs using the secure database function
+  const fetchBriefsUsingFunction = async (userId: string | null): Promise<boolean> => {
+    console.log("Fetching briefs using secure database function for user ID:", userId);
     
     try {
       if (!userId) {
@@ -78,74 +78,29 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         return true;
       }
       
-      // Using proper parameterized queries with .eq() for each condition
-      // Fetch UI Design briefs
-      const { data: uiData, error: uiError } = await supabase
-        .from('ui_design_briefs')
-        .select('*')
-        .or('user_id.eq.' + userId + ',submitted_for_id.eq.' + userId)
-        .order('submission_date', { ascending: false });
+      // Call the get_user_briefs function with the user's ID
+      const { data: briefsData, error } = await supabase
+        .rpc('get_user_briefs', { user_uuid: userId });
       
-      if (uiError) {
-        console.error("UI briefs error:", uiError);
-      } else {
-        console.log("UI design briefs fetched:", uiData?.length || 0);
+      if (error) {
+        console.error("Error calling get_user_briefs function:", error);
+        return false;
       }
       
-      // Fetch Graphic Design briefs
-      const { data: graphicData, error: graphicError } = await supabase
-        .from('graphic_design_briefs')
-        .select('*')
-        .or('user_id.eq.' + userId + ',submitted_for_id.eq.' + userId)
-        .order('submission_date', { ascending: false });
+      console.log(`Retrieved ${briefsData?.length || 0} briefs using database function`);
       
-      if (graphicError) {
-        console.error("Graphic briefs error:", graphicError);
-      } else {
-        console.log("Graphic design briefs fetched:", graphicData?.length || 0);
-      }
+      // Transform the data if needed to match our Brief type
+      const transformedBriefs: Brief[] = (briefsData || []).map((brief: any) => ({
+        ...brief,
+        type: brief.type,
+        submissionDate: brief.submission_date,
+        companyName: brief.company_name
+      }));
       
-      // Fetch Illustration Design briefs
-      const { data: illustrationData, error: illustrationError } = await supabase
-        .from('illustration_design_briefs')
-        .select('*')
-        .or('user_id.eq.' + userId + ',submitted_for_id.eq.' + userId)
-        .order('submission_date', { ascending: false });
-      
-      if (illustrationError) {
-        console.error("Illustration briefs error:", illustrationError);
-      } else {
-        console.log("Illustration design briefs fetched:", illustrationData?.length || 0);
-      }
-      
-      // Transform and combine all data
-      const allBriefs: Brief[] = [
-        ...(uiData || []).map((brief: any) => ({
-          ...brief,
-          type: "UI Design",
-          submissionDate: brief.submission_date,
-          companyName: brief.company_name
-        })),
-        ...(graphicData || []).map((brief: any) => ({
-          ...brief,
-          type: "Graphic Design",
-          submissionDate: brief.submission_date,
-          companyName: brief.company_name
-        })),
-        ...(illustrationData || []).map((brief: any) => ({
-          ...brief,
-          type: "Illustration Design",
-          submissionDate: brief.submission_date,
-          companyName: brief.company_name
-        }))
-      ];
-      
-      console.log(`Combined briefs from direct fetching: ${allBriefs.length}`);
-      
-      setBriefs(allBriefs);
-      return allBriefs.length > 0;
+      setBriefs(transformedBriefs);
+      return transformedBriefs.length > 0 || briefsData?.length === 0;
     } catch (error) {
-      console.error("Error in fetchBriefsDirectly:", error);
+      console.error("Error in fetchBriefsUsingFunction:", error);
       return false;
     }
   };
