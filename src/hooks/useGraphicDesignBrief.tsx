@@ -23,7 +23,6 @@ const GraphicDesignBriefSchema = z.object({
     gender: z.string().optional(),
     complexity: z.string().optional()
   }),
-  // Remove tone from the schema since it doesn't exist in the database
   logoType: z.string(),
   reference1: z.string(),
   reference2: z.string(),
@@ -74,6 +73,13 @@ export const useGraphicDesignBrief = () => {
       
       console.log("Submitting graphic design brief with user_id:", effectiveUserId);
 
+      if (!effectiveUserId) {
+        console.error("No user ID available for submission");
+        toast.error("User authentication required to submit the brief");
+        setIsSubmitting(false);
+        return;
+      }
+
       const formattedData = {
         name: data.name,
         email: data.email,
@@ -82,7 +88,6 @@ export const useGraphicDesignBrief = () => {
         vision_mission: data.visionMission,
         slogan: data.slogan,
         logo_feelings: data.logoFeelings,
-        // Remove tone from formattedData
         logo_type: data.logoType,
         reference1: data.reference1,
         reference2: data.reference2,
