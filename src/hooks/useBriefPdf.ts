@@ -11,6 +11,49 @@ import {
 export function useBriefPdf() {
   const [isDownloading, setIsDownloading] = useState(false);
 
+  const fetchFullBriefData = async (brief: any) => {
+    // Try to get the full brief data from the database
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.log("User not authenticated, using basic brief data for PDF");
+        return brief;
+      }
+      
+      const { data, error } = await supabase.rpc(
+        'get_brief_details',
+        { 
+          brief_id: brief.id,
+          brief_type: brief.type
+        }
+      );
+      
+      if (error) {
+        console.warn("Could not fetch full brief details for PDF:", error);
+        return brief;
+      }
+      
+      if (data) {
+        console.log("Retrieved full brief details for PDF generation:", data);
+        
+        // Transform any snake_case to camelCase if needed
+        const fullBriefData = {
+          ...data,
+          type: brief.type,
+          companyName: data.company_name,
+          submissionDate: data.submission_date
+        };
+        
+        return fullBriefData;
+      }
+    } catch (fetchError) {
+      console.warn("Error fetching brief details for PDF:", fetchError);
+    }
+    
+    return brief;
+  };
+
   const generateBriefPDF = useCallback(async (brief: any) => {
     if (isDownloading) return false;
     
@@ -18,42 +61,8 @@ export function useBriefPdf() {
       setIsDownloading(true);
       toast.info("Preparing brief for download...");
       
-      // First, try to get the full brief data
-      let fullBriefData = brief;
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        // Try to get the full brief data using the database function
-        try {
-          const { data, error } = await supabase.rpc(
-            'get_brief_details',
-            { 
-              brief_id: brief.id,
-              brief_type: brief.type
-            }
-          );
-          
-          if (error) {
-            console.warn("Could not fetch full brief details for PDF:", error);
-          } else if (data) {
-            console.log("Retrieved full brief details for PDF generation:", data);
-            
-            const transformedData: any = data;
-            // Transform any snake_case to camelCase if needed
-            fullBriefData = {
-              ...transformedData,
-              type: brief.type,
-              companyName: transformedData.company_name,
-              submissionDate: transformedData.submission_date
-            };
-          }
-        } catch (fetchError) {
-          console.warn("Error fetching brief details for PDF:", fetchError);
-        }
-      } else {
-        console.log("User not authenticated, using basic brief data for PDF");
-      }
+      // Get the full brief data
+      const fullBriefData = await fetchFullBriefData(brief);
       
       // Now generate the PDF with either the full data or original brief data
       if (brief.type === "Illustration Design" || brief.type === "Illustrations") {

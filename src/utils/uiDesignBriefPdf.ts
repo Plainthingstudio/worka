@@ -8,7 +8,8 @@ import {
   addField, 
   checkPageOverflow,
   addPdfTitle,
-  addMultiParagraphField
+  addMultiParagraphField,
+  addTableToDocument
 } from "./pdfUtils";
 
 export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> => {
@@ -50,7 +51,7 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     
     // Helper function to get website type interest as a string
     const getWebsiteTypeInterest = (): string => {
-      const interestObj = getValue("websiteTypeInterest", "website_type_interest", {});
+      const interestObj = briefData.websiteTypeInterest || briefData.website_type_interest || {};
       
       if (typeof interestObj === 'string') return interestObj;
       
@@ -58,7 +59,23 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
         return interestObj.join(", ");
       }
       
-      if (typeof interestObj === 'object' && interestObj !== null) {
+      // Define all possible website types
+      const allWebsiteTypes = [
+        "Agency Website", 
+        "Portfolio Website", 
+        "Finance Website", 
+        "SaaS Website", 
+        "E-commerce Website", 
+        "Web3 Website", 
+        "Crypto Website", 
+        "Web Application", 
+        "Desktop Application", 
+        "Mobile Application", 
+        "Other"
+      ];
+      
+      // Handle case when the interest is an object with boolean values
+      if (typeof interestObj === 'object' && interestObj !== null && !Array.isArray(interestObj)) {
         const websiteTypes: Record<string, string> = {
           agency: "Agency Website",
           portfolio: "Portfolio Website",
@@ -77,15 +94,30 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
           .filter(([_, isSelected]) => isSelected === true)
           .map(([key, _]) => websiteTypes[key] || key);
         
-        return selectedTypes.length > 0 ? selectedTypes.join(", ") : "Not provided";
+        if (selectedTypes.length > 0) {
+          // Return all types, marking selected ones
+          return allWebsiteTypes.map(type => {
+            if (selectedTypes.includes(type)) {
+              return `${type} ✓`;
+            }
+            return type;
+          }).join(", ");
+        }
       }
       
-      return "Not provided";
+      return allWebsiteTypes.join(", ");
     };
     
     // Helper to safely get page details
     const getPageDetails = () => {
       const details = getValue("pageDetails", "page_details", []);
+      if (typeof details === 'string') {
+        try {
+          return JSON.parse(details);
+        } catch {
+          return [];
+        }
+      }
       return Array.isArray(details) ? details : 
              details && typeof details === 'object' ? [details] : [];
     };
@@ -158,27 +190,28 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     // Page Details
     yPosition = addSectionTitle(doc, "Page Information", yPosition);
     yPosition = addField(doc, "Number of Pages", getValue("pageCount", "page_count"), yPosition);
+    
+    // Enhanced Page Details section with proper formatting for each page
     const pageDetails = getPageDetails();
-    if (pageDetails.length > 0) {
-      yPosition = checkPageOverflow(doc, yPosition + 5);
+    if (pageDetails && pageDetails.length > 0) {
+      yPosition = checkPageOverflow(doc, yPosition + 10);
       
-      for (let i = 0; i < pageDetails.length; i++) {
-        const detail = pageDetails[i];
-        yPosition = checkPageOverflow(doc, yPosition + 8);
-        
-        const name = detail?.name || "Unnamed Page";
+      // Create a table header for page details
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text("Page Details:", 20, yPosition);
+      yPosition += 8;
+      
+      // Create table data for page details
+      const tableHeaders = ["Page Name", "Description"];
+      const tableData = pageDetails.map((detail: any, index: number) => {
+        const name = detail?.name || `Page ${index + 1}`;
         const description = detail?.description || "No description provided";
-        
-        doc.setFont("helvetica", "bold");
-        doc.text(`Page ${i + 1}: ${String(name)}`, 20, yPosition);
-        doc.setFont("helvetica", "normal");
-        yPosition += 6;
-        
-        // Handle multiline descriptions
-        const wrappedDesc = doc.splitTextToSize(String(description), 170);
-        doc.text(wrappedDesc, 25, yPosition);
-        yPosition += (wrappedDesc.length * 6) + 4;
-      }
+        return [name, description];
+      });
+      
+      // Add table to document
+      yPosition = addTableToDocument(doc, tableHeaders, tableData, yPosition);
     }
     
     // Project Delivery

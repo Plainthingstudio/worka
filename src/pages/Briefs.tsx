@@ -11,18 +11,15 @@ import BriefDetailsDialog from "@/components/briefs/BriefDetailsDialog";
 import DeleteBriefDialog from "@/components/briefs/DeleteBriefDialog";
 import BriefPersonalizedLinks from "@/components/briefs/BriefPersonalizedLinks";
 import { useBriefs } from "@/hooks/useBriefs";
-import { toast } from "sonner";
-import { 
-  generateIllustrationBriefPDF, 
-  generateUIDesignBriefPDF, 
-  generateGraphicDesignBriefPDF 
-} from "@/utils/briefPdfGenerator";
+import { useBriefPdf } from "@/hooks/useBriefPdf";
 import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Briefs = () => {
   const { briefs, setBriefs, filter, setFilter, search, setSearch, filteredBriefs, isLoading, deleteBrief, fetchBriefs } = useBriefs();
+  const { generateBriefPDF, isDownloading } = useBriefPdf();
   const [selectedBrief, setSelectedBrief] = React.useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
@@ -31,7 +28,6 @@ const Briefs = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     const handleSidebarChange = () => {
@@ -131,72 +127,6 @@ const Briefs = () => {
     }
   };
 
-  const downloadBrief = async (brief: any) => {
-    if (isDownloading) return;
-    
-    try {
-      setIsDownloading(true);
-      
-      // Show toast indicating download started
-      toast.info("Preparing brief for download...");
-      
-      // First, fetch the full brief details from the database using the same method as in BriefDetailsDialog
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast.warning("For best results, please log in to download complete briefs.");
-      }
-
-      let fullBriefData = brief;
-      
-      try {
-        // Try to get the full brief data using the database function
-        const { data, error } = await supabase.rpc(
-          'get_brief_details',
-          { 
-            brief_id: brief.id,
-            brief_type: brief.type
-          }
-        );
-        
-        if (error) {
-          console.warn("Could not fetch full brief details for PDF:", error);
-        } else if (data) {
-          console.log("Retrieved full brief details for PDF generation:", data);
-          
-          // Transform any snake_case to camelCase if needed
-          fullBriefData = typeof data === 'object' ? {
-            ...data,
-            type: brief.type,
-            companyName: data.company_name,
-            submissionDate: data.submission_date
-          } : brief;
-        }
-      } catch (fetchError) {
-        console.warn("Error fetching brief details for PDF:", fetchError);
-      }
-      
-      // Now generate the PDF with either the full data or original brief data
-      if (brief.type === "Illustration Design" || brief.type === "Illustrations") {
-        await generateIllustrationBriefPDF(fullBriefData);
-        toast.success("Illustration brief downloaded successfully");
-      } else if (brief.type === "UI Design") {
-        await generateUIDesignBriefPDF(fullBriefData);
-        toast.success("UI Design brief downloaded successfully");
-      } else if (brief.type === "Graphic Design") {
-        await generateGraphicDesignBriefPDF(fullBriefData);
-        toast.success("Graphic Design brief downloaded successfully");
-      } else {
-        toast.error("Download not supported for this brief type");
-      }
-    } catch (error) {
-      console.error("Error downloading brief:", error);
-      toast.error("Failed to download brief. Please try again.");
-    } finally {
-      setIsDownloading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
@@ -256,7 +186,7 @@ const Briefs = () => {
               <BriefsTable 
                 briefs={filteredBriefs} 
                 onView={viewBriefDetails}
-                onDownload={downloadBrief}
+                onDownload={generateBriefPDF}
                 onDelete={handleDeleteBrief}
               />
               {isRefreshing && !isInitialLoad && (
@@ -276,14 +206,14 @@ const Briefs = () => {
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={confirmDelete}
-        briefName={selectedBrief?.name || selectedBrief?.company_name || "this brief"}
+        briefName={selectedBrief?.name || (selectedBrief && typeof selectedBrief === 'object' ? selectedBrief.company_name : "this brief")}
       />
 
       <BriefDetailsDialog
         open={isViewDialogOpen}
         onOpenChange={setIsViewDialogOpen}
         briefDetails={briefDetails}
-        onDownload={downloadBrief}
+        onDownload={generateBriefPDF}
       />
     </div>
   );
