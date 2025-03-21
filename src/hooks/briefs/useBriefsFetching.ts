@@ -43,111 +43,79 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       const userId = user.id;
       console.log("Authenticated user ID:", userId);
       
-      // Use the get_all_briefs database function
-      console.log("Fetching briefs using get_all_briefs function");
-      const { data: allBriefsData, error: funcError } = await supabase
-        .rpc('get_all_briefs', { user_uuid: userId });
-
-      if (funcError) {
-        console.error("Error using get_all_briefs function:", funcError);
-        
-        // Fallback to direct table querying if the function fails
-        console.log("Falling back to direct table queries");
-        
-        // Fetch from UI Design briefs using user_id directly
-        const { data: uiData, error: uiError } = await supabase
-          .from('ui_design_briefs')
-          .select('*')
-          .eq('user_id', userId);
-        
-        if (uiError) {
-          console.error("UI briefs error:", uiError);
-        } else {
-          console.log("UI design briefs fetched:", uiData?.length || 0);
-        }
-        
-        // Fetch from Graphic Design briefs using user_id directly
-        const { data: graphicData, error: graphicError } = await supabase
-          .from('graphic_design_briefs')
-          .select('*')
-          .eq('user_id', userId);
-        
-        if (graphicError) {
-          console.error("Graphic briefs error:", graphicError);
-        } else {
-          console.log("Graphic design briefs fetched:", graphicData?.length || 0);
-        }
-        
-        // Fetch from Illustration Design briefs using user_id directly
-        const { data: illustrationData, error: illustrationError } = await supabase
-          .from('illustration_design_briefs')
-          .select('*')
-          .eq('user_id', userId);
-        
-        if (illustrationError) {
-          console.error("Illustration briefs error:", illustrationError);
-        } else {
-          console.log("Illustration design briefs fetched:", illustrationData?.length || 0);
-        }
-        
-        // Transform and combine all data
-        const combinedBriefs: Brief[] = [
-          ...(uiData || []).map((brief: any) => ({
-            ...brief,
-            type: "UI Design",
-            submissionDate: brief.submission_date,
-            companyName: brief.company_name
-          })),
-          ...(graphicData || []).map((brief: any) => ({
-            ...brief,
-            type: "Graphic Design",
-            submissionDate: brief.submission_date,
-            companyName: brief.company_name
-          })),
-          ...(illustrationData || []).map((brief: any) => ({
-            ...brief,
-            type: "Illustration Design",
-            submissionDate: brief.submission_date,
-            companyName: brief.company_name
-          }))
-        ];
-        
-        console.log(`Combined briefs from direct fetching: ${combinedBriefs.length}`);
-        
-        // Set briefs in state and update localStorage
-        setBriefs(combinedBriefs);
-        
-        // Since we've successfully fetched from the database, update localStorage
-        if (combinedBriefs.length > 0) {
-          localStorage.setItem("briefs", JSON.stringify(combinedBriefs));
-        } else {
-          console.log("No briefs found in database, clearing localStorage");
-          localStorage.removeItem("briefs");
-        }
+      // Directly fetch from each brief table separately
+      console.log("Fetching briefs directly from each table");
+      
+      // Fetch from UI Design briefs using user_id directly
+      const { data: uiData, error: uiError } = await supabase
+        .from('ui_design_briefs')
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (uiError) {
+        console.error("UI briefs error:", uiError);
       } else {
-        // Transform the data from the function
-        console.log("Successfully fetched briefs using function:", allBriefsData?.length || 0);
-        
-        const transformedBriefs: Brief[] = (allBriefsData || []).map((brief: any) => ({
-          ...brief,
-          submissionDate: brief.submission_date,
-          companyName: brief.company_name
-        }));
-        
-        setBriefs(transformedBriefs);
-        
-        // Update localStorage
-        if (transformedBriefs.length > 0) {
-          localStorage.setItem("briefs", JSON.stringify(transformedBriefs));
-        } else {
-          console.log("No briefs found using function, clearing localStorage");
-          localStorage.removeItem("briefs");
-        }
+        console.log("UI design briefs fetched:", uiData?.length || 0);
       }
       
-      setIsLoading(false);
-      setIsFetching(false);
-      return;
+      // Fetch from Graphic Design briefs using user_id directly
+      const { data: graphicData, error: graphicError } = await supabase
+        .from('graphic_design_briefs')
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (graphicError) {
+        console.error("Graphic briefs error:", graphicError);
+      } else {
+        console.log("Graphic design briefs fetched:", graphicData?.length || 0);
+      }
+      
+      // Fetch from Illustration Design briefs using user_id directly
+      const { data: illustrationData, error: illustrationError } = await supabase
+        .from('illustration_design_briefs')
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (illustrationError) {
+        console.error("Illustration briefs error:", illustrationError);
+      } else {
+        console.log("Illustration design briefs fetched:", illustrationData?.length || 0);
+      }
+      
+      // Transform and combine all data
+      const combinedBriefs: Brief[] = [
+        ...(uiData || []).map((brief: any) => ({
+          ...brief,
+          type: "UI Design",
+          submissionDate: brief.submission_date,
+          companyName: brief.company_name
+        })),
+        ...(graphicData || []).map((brief: any) => ({
+          ...brief,
+          type: "Graphic Design",
+          submissionDate: brief.submission_date,
+          companyName: brief.company_name
+        })),
+        ...(illustrationData || []).map((brief: any) => ({
+          ...brief,
+          type: "Illustration Design",
+          submissionDate: brief.submission_date,
+          companyName: brief.company_name
+        }))
+      ];
+      
+      console.log(`Combined briefs: ${combinedBriefs.length}`);
+      
+      // Set briefs in state and update localStorage
+      setBriefs(combinedBriefs);
+      
+      // Update localStorage
+      if (combinedBriefs.length > 0) {
+        localStorage.setItem("briefs", JSON.stringify(combinedBriefs));
+      } else {
+        console.log("No briefs found, clearing localStorage");
+        localStorage.removeItem("briefs");
+      }
       
     } catch (error) {
       console.error("Error fetching briefs:", error);
