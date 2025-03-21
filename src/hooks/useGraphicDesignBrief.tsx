@@ -23,7 +23,7 @@ const GraphicDesignBriefSchema = z.object({
     gender: z.string().optional(),
     complexity: z.string().optional()
   }),
-  tone: z.record(z.string(), z.boolean()).optional(),
+  // Remove tone from the schema since it doesn't exist in the database
   logoType: z.string(),
   reference1: z.string(),
   reference2: z.string(),
@@ -82,7 +82,7 @@ export const useGraphicDesignBrief = () => {
         vision_mission: data.visionMission,
         slogan: data.slogan,
         logo_feelings: data.logoFeelings,
-        tone: data.tone || {},
+        // Remove tone from formattedData
         logo_type: data.logoType,
         reference1: data.reference1,
         reference2: data.reference2,

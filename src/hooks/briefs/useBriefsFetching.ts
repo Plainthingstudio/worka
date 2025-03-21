@@ -46,7 +46,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       console.log("Fetching briefs directly from tables");
       
       try {
-        // Fetch from UI Design briefs - no reference to auth.users table
+        // Fetch from UI Design briefs using user_id directly
         const { data: uiData, error: uiError } = await supabase
           .from('ui_design_briefs')
           .select('*')
@@ -58,7 +58,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
           console.log("UI design briefs fetched:", uiData?.length || 0);
         }
         
-        // Fetch from Graphic Design briefs - no reference to auth.users table
+        // Fetch from Graphic Design briefs using user_id directly
         const { data: graphicData, error: graphicError } = await supabase
           .from('graphic_design_briefs')
           .select('*')
@@ -70,7 +70,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
           console.log("Graphic design briefs fetched:", graphicData?.length || 0);
         }
         
-        // Fetch from Illustration Design briefs - no reference to auth.users table
+        // Fetch from Illustration Design briefs using user_id directly
         const { data: illustrationData, error: illustrationError } = await supabase
           .from('illustration_design_briefs')
           .select('*')
