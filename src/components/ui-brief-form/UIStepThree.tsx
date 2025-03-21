@@ -20,10 +20,9 @@ import {
 interface UIStepThreeProps {
   onPrevious: () => void;
   onSubmit: () => void;
-  isSubmitting?: boolean;
 }
 
-const UIStepThree = ({ onPrevious, onSubmit, isSubmitting = false }: UIStepThreeProps) => {
+const UIStepThree = ({ onPrevious, onSubmit }: UIStepThreeProps) => {
   const { control, register, watch, setValue } = useFormContext();
   const pageCount = watch("pageCount") || 1;
 
@@ -199,8 +198,8 @@ const UIStepThree = ({ onPrevious, onSubmit, isSubmitting = false }: UIStepThree
         <Button type="button" variant="outline" onClick={onPrevious}>
           Back
         </Button>
-        <Button type="button" onClick={onSubmit} disabled={isSubmitting}>
-          {isSubmitting ? "Submitting..." : "Submit Brief"}
+        <Button type="button" onClick={onSubmit}>
+          Submit Brief
         </Button>
       </div>
     </div>
