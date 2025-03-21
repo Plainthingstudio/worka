@@ -42,10 +42,9 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
       
       console.log("Current user ID:", user.id);
       
-      // Skip trying to use get_all_briefs function since we now know it's failing
-      console.log("Fetching briefs from individual tables with explicit user_id filter");
+      // Fetch directly from brief tables with user_id filter
+      console.log("Fetching briefs directly from tables with user_id filter");
       
-      // Fetch from individual tables with explicit user_id filter
       // Fetch UI Design briefs
       const { data: uiData, error: uiError } = await supabase
         .from('ui_design_briefs')
