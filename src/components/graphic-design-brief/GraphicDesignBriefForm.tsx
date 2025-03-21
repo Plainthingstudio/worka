@@ -8,9 +8,13 @@ import StepThree from "@/components/brief-form/StepThree";
 import StepFour from "@/components/brief-form/StepFour";
 import { useGraphicDesignBrief, GraphicDesignBriefFormValues } from "@/hooks/useGraphicDesignBrief";
 
-const GraphicDesignBriefForm = () => {
+interface GraphicDesignBriefFormProps {
+  submittedForId?: string | null;
+}
+
+const GraphicDesignBriefForm = ({ submittedForId }: GraphicDesignBriefFormProps) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const { onSubmit } = useGraphicDesignBrief();
+  const { onSubmit } = useGraphicDesignBrief(submittedForId);
   
   const methods = useForm<GraphicDesignBriefFormValues>({
     defaultValues: {

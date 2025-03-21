@@ -65,9 +65,10 @@ interface BriefDataForSupabase {
   submission_date: string;
   user_id?: string;
   phone?: string;
+  submitted_for_id?: string;
 }
 
-export const useIllustrationsBrief = () => {
+export const useIllustrationsBrief = (submittedForId?: string | null) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
@@ -98,6 +99,8 @@ export const useIllustrationsBrief = () => {
       const brandGuidelinesValue = formData.hasBrandGuidelines === "Yes" 
         ? formData.brandGuidelines 
         : "No brand guidelines available";
+
+      console.log("Submitting illustration brief for user ID:", submittedForId);
 
       // Prepare data for Supabase with correct column names
       const briefData: BriefDataForSupabase = {
@@ -138,6 +141,11 @@ export const useIllustrationsBrief = () => {
       if (user) {
         briefData.user_id = user.id;
       }
+      
+      // If form is being submitted for a specific user, add submitted_for_id
+      if (submittedForId) {
+        briefData.submitted_for_id = submittedForId;
+      }
 
       // Insert into Supabase - now using the specific table for illustration design briefs
       const { error } = await supabase
@@ -153,7 +161,8 @@ export const useIllustrationsBrief = () => {
         id: Date.now(),
         submissionDate: new Date().toISOString(),
         status: "New",
-        deliverables: selectedDeliverables
+        deliverables: selectedDeliverables,
+        submittedForId: submittedForId || null
       };
       localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
     

@@ -1,7 +1,7 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import UIStepOne from "@/components/ui-brief-form/UIStepOne";
@@ -13,6 +13,39 @@ const UIDesignBrief = () => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const forUserId = searchParams.get("for");
+  const [isValidUser, setIsValidUser] = useState<boolean | null>(null);
+  
+  useEffect(() => {
+    const checkUserExists = async () => {
+      if (!forUserId) {
+        setIsValidUser(true); // No specific user, so form is valid for general submission
+        return;
+      }
+
+      try {
+        // Check if the user ID exists in the profiles table
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", forUserId)
+          .single();
+
+        if (error) {
+          console.error("Error checking user:", error);
+          setIsValidUser(false);
+        } else {
+          setIsValidUser(!!data);
+        }
+      } catch (err) {
+        console.error("Error verifying user:", err);
+        setIsValidUser(false);
+      }
+    };
+
+    checkUserExists();
+  }, [forUserId]);
 
   const methods = useForm({
     defaultValues: {
@@ -105,6 +138,8 @@ const UIDesignBrief = () => {
             .join(' ');
         });
       
+      console.log("Submitting UI design brief for user ID:", forUserId);
+      
       // Prepare data for Supabase with correct column names
       const briefData: any = {
         name: formData.name,
@@ -149,6 +184,11 @@ const UIDesignBrief = () => {
       if (user) {
         briefData.user_id = user.id;
       }
+      
+      // If form is being submitted for a specific user, add submitted_for_id
+      if (forUserId) {
+        briefData.submitted_for_id = forUserId;
+      }
 
       // Insert into Supabase - now using the specific table for UI design briefs
       const { error } = await supabase
@@ -164,7 +204,8 @@ const UIDesignBrief = () => {
         id: Date.now(),
         submissionDate: new Date().toISOString(),
         status: "New",
-        type: "UI Design"
+        type: "UI Design",
+        submittedForId: forUserId || null
       };
       localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
       
@@ -183,6 +224,30 @@ const UIDesignBrief = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (isValidUser === false) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12">
+        <div className="container max-w-2xl mx-auto px-4 text-center">
+          <h2 className="text-2xl font-semibold text-red-500 mb-4">Invalid Form Link</h2>
+          <p className="text-gray-600">
+            This form link appears to be invalid or has expired. Please contact the person who shared this link with you.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isValidUser === null) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12">
+        <div className="container max-w-2xl mx-auto px-4 text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Verifying form...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12">

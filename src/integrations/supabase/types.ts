@@ -71,6 +71,7 @@ export type Database = {
           specific_imagery: string | null
           status: string
           submission_date: string
+          submitted_for_id: string | null
           target_age: string | null
           target_demography: string | null
           target_gender: string | null
@@ -107,6 +108,7 @@ export type Database = {
           specific_imagery?: string | null
           status?: string
           submission_date?: string
+          submitted_for_id?: string | null
           target_age?: string | null
           target_demography?: string | null
           target_gender?: string | null
@@ -143,6 +145,7 @@ export type Database = {
           specific_imagery?: string | null
           status?: string
           submission_date?: string
+          submitted_for_id?: string | null
           target_age?: string | null
           target_demography?: string | null
           target_gender?: string | null
@@ -151,7 +154,15 @@ export type Database = {
           user_id?: string | null
           vision_mission?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "graphic_design_briefs_submitted_for_id_fkey"
+            columns: ["submitted_for_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       illustration_design_briefs: {
         Row: {
@@ -182,6 +193,7 @@ export type Database = {
           reference4: string | null
           status: string
           submission_date: string
+          submitted_for_id: string | null
           target_audience: string | null
           user_id: string | null
         }
@@ -213,6 +225,7 @@ export type Database = {
           reference4?: string | null
           status?: string
           submission_date?: string
+          submitted_for_id?: string | null
           target_audience?: string | null
           user_id?: string | null
         }
@@ -244,10 +257,19 @@ export type Database = {
           reference4?: string | null
           status?: string
           submission_date?: string
+          submitted_for_id?: string | null
           target_audience?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "illustration_design_briefs_submitted_for_id_fkey"
+            columns: ["submitted_for_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoice_items: {
         Row: {
@@ -599,6 +621,7 @@ export type Database = {
           status: string
           style_preferences: string | null
           submission_date: string
+          submitted_for_id: string | null
           target_audience: string | null
           user_id: string | null
           website_content: string | null
@@ -638,6 +661,7 @@ export type Database = {
           status?: string
           style_preferences?: string | null
           submission_date?: string
+          submitted_for_id?: string | null
           target_audience?: string | null
           user_id?: string | null
           website_content?: string | null
@@ -677,6 +701,7 @@ export type Database = {
           status?: string
           style_preferences?: string | null
           submission_date?: string
+          submitted_for_id?: string | null
           target_audience?: string | null
           user_id?: string | null
           website_content?: string | null
@@ -684,7 +709,15 @@ export type Database = {
           website_type_interest?: Json | null
           wireframe_details?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ui_design_briefs_submitted_for_id_fkey"
+            columns: ["submitted_for_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -704,6 +737,7 @@ export type Database = {
           type: string
           status: string
           submission_date: string
+          submitted_for_id: string
         }[]
       }
     }

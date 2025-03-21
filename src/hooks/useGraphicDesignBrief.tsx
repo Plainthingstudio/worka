@@ -45,7 +45,7 @@ export interface GraphicDesignBriefFormValues {
   digitalMedia: Record<string, boolean>;
 }
 
-export const useGraphicDesignBrief = () => {
+export const useGraphicDesignBrief = (submittedForId?: string | null) => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -76,6 +76,7 @@ export const useGraphicDesignBrief = () => {
       // Log the full form data before submission
       console.log("Submitting form data:", data);
       console.log("Logo feelings data:", data.logoFeelings);
+      console.log("Submitted for user ID:", submittedForId);
 
       // Prepare data for Supabase with correct column names
       const briefData: any = {
@@ -117,6 +118,11 @@ export const useGraphicDesignBrief = () => {
       if (user) {
         briefData.user_id = user.id;
       }
+      
+      // If form is being submitted for a specific user, add submitted_for_id
+      if (submittedForId) {
+        briefData.submitted_for_id = submittedForId;
+      }
 
       // Insert into Supabase - now using the specific table for graphic design briefs
       const { error } = await supabase
@@ -135,7 +141,8 @@ export const useGraphicDesignBrief = () => {
         type: "Graphic Design",
         services: services,
         printMedia: printMedia,
-        digitalMedia: digitalMedia
+        digitalMedia: digitalMedia,
+        submittedForId: submittedForId || null
       };
       localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
 
