@@ -179,7 +179,7 @@ const UIDesignBrief = () => {
         submission_date: new Date().toISOString()
       };
 
-      // Try to get the current user - if logged in, attach user_id
+      // Try to get the current user - if logged in, attach user_id (optional)
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         briefData.user_id = user.id;

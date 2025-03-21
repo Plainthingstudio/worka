@@ -137,7 +137,7 @@ export const useIllustrationsBrief = (submittedForId?: string | null) => {
         briefData.phone = formData.phone;
       }
 
-      // If user is logged in, add user_id
+      // If user is logged in, add user_id (optional)
       if (user) {
         briefData.user_id = user.id;
       }

@@ -71,6 +71,7 @@ export const useGraphicDesignBrief = (submittedForId?: string | null) => {
       const digitalMedia = processCheckboxGroup(data.digitalMedia || {});
 
       // Try to get the current user - if logged in, attach user_id
+      // This is now optional - public users can submit forms too
       const { data: { user } } = await supabase.auth.getUser();
 
       // Log the full form data before submission
@@ -114,7 +115,7 @@ export const useGraphicDesignBrief = (submittedForId?: string | null) => {
         submission_date: new Date().toISOString()
       };
 
-      // If user is logged in, add user_id
+      // If user is logged in, add user_id (now optional)
       if (user) {
         briefData.user_id = user.id;
       }
