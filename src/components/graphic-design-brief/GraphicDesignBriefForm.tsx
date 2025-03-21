@@ -56,8 +56,8 @@ const GraphicDesignBriefForm = () => {
     }
   });
 
-  const handleFormSubmit = (data: any) => {
-    submitBrief(data);
+  const handleFormSubmit = () => {
+    methods.handleSubmit(submitBrief)();
   };
 
   const renderStep = () => {
