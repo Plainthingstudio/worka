@@ -70,12 +70,13 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
             console.log("Retrieved full brief details using database function:", data);
             
             // Transform any snake_case to camelCase if needed
-            const briefData = typeof data === 'object' ? {
-              ...data,
+            const transformedData: any = data;
+            const briefData = {
+              ...transformedData,
               type: briefDetails.type,
-              companyName: data.company_name,
-              submissionDate: data.submission_date
-            } : preparedDetails;
+              companyName: transformedData.company_name,
+              submissionDate: transformedData.submission_date
+            };
             
             setFullBriefDetails(prepareDetailsForDisplay(briefData));
           } else {

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -30,6 +31,7 @@ const Briefs = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     const handleSidebarChange = () => {
@@ -130,15 +132,59 @@ const Briefs = () => {
   };
 
   const downloadBrief = async (brief: any) => {
+    if (isDownloading) return;
+    
     try {
+      setIsDownloading(true);
+      
+      // Show toast indicating download started
+      toast.info("Preparing brief for download...");
+      
+      // First, fetch the full brief details from the database using the same method as in BriefDetailsDialog
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.warning("For best results, please log in to download complete briefs.");
+      }
+
+      let fullBriefData = brief;
+      
+      try {
+        // Try to get the full brief data using the database function
+        const { data, error } = await supabase.rpc(
+          'get_brief_details',
+          { 
+            brief_id: brief.id,
+            brief_type: brief.type
+          }
+        );
+        
+        if (error) {
+          console.warn("Could not fetch full brief details for PDF:", error);
+        } else if (data) {
+          console.log("Retrieved full brief details for PDF generation:", data);
+          
+          // Transform any snake_case to camelCase if needed
+          fullBriefData = typeof data === 'object' ? {
+            ...data,
+            type: brief.type,
+            companyName: data.company_name,
+            submissionDate: data.submission_date
+          } : brief;
+        }
+      } catch (fetchError) {
+        console.warn("Error fetching brief details for PDF:", fetchError);
+      }
+      
+      // Now generate the PDF with either the full data or original brief data
       if (brief.type === "Illustration Design" || brief.type === "Illustrations") {
-        await generateIllustrationBriefPDF(brief);
+        await generateIllustrationBriefPDF(fullBriefData);
         toast.success("Illustration brief downloaded successfully");
       } else if (brief.type === "UI Design") {
-        await generateUIDesignBriefPDF(brief);
+        await generateUIDesignBriefPDF(fullBriefData);
         toast.success("UI Design brief downloaded successfully");
       } else if (brief.type === "Graphic Design") {
-        await generateGraphicDesignBriefPDF(brief);
+        await generateGraphicDesignBriefPDF(fullBriefData);
         toast.success("Graphic Design brief downloaded successfully");
       } else {
         toast.error("Download not supported for this brief type");
@@ -146,6 +192,8 @@ const Briefs = () => {
     } catch (error) {
       console.error("Error downloading brief:", error);
       toast.error("Failed to download brief. Please try again.");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
