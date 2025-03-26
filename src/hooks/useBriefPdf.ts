@@ -7,6 +7,7 @@ import {
   generateUIDesignBriefPDF, 
   generateGraphicDesignBriefPDF 
 } from '@/utils/briefPdfGenerator';
+import { Json } from '@/integrations/supabase/types';
 
 interface BriefData {
   id: string;
@@ -50,12 +51,15 @@ export function useBriefPdf() {
         };
         
         // Make sure companyName and submissionDate are properly set
-        if (data.company_name) {
-          fullBriefData.companyName = data.company_name;
+        // Use type assertion to inform TypeScript about the structure
+        const jsonData = data as Record<string, any>;
+        
+        if (jsonData.company_name) {
+          fullBriefData.companyName = jsonData.company_name;
         }
         
-        if (data.submission_date) {
-          fullBriefData.submissionDate = data.submission_date;
+        if (jsonData.submission_date) {
+          fullBriefData.submissionDate = jsonData.submission_date;
         }
         
         return fullBriefData;
