@@ -52,18 +52,37 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     // Helper to safely get page details
     const getPageDetails = () => {
       let details = briefData.pageDetails || briefData.page_details || [];
+      console.log("Raw page details:", details);
       
+      // If it's a string, try to parse it as JSON
       if (typeof details === 'string') {
         try {
           details = JSON.parse(details);
-        } catch {
+          console.log("Parsed page details from string:", details);
+        } catch (e) {
+          console.error("Error parsing page details string:", e);
+          return [];
+        }
+      }
+      
+      // Handle case where details might be an object with numeric keys
+      if (details && typeof details === 'object' && !Array.isArray(details)) {
+        if (Object.keys(details).length > 0) {
+          const detailsArray = [];
+          for (const key in details) {
+            if (details.hasOwnProperty(key)) {
+              detailsArray.push(details[key]);
+            }
+          }
+          details = detailsArray;
+          console.log("Converted page details object to array:", details);
+        } else {
           return [];
         }
       }
       
       // Ensure details is an array
-      return Array.isArray(details) ? details : 
-             details && typeof details === 'object' ? [details] : [];
+      return Array.isArray(details) ? details : [];
     };
     
     // Client Information Section
@@ -135,8 +154,9 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     yPosition = addSectionTitle(doc, "Page Information", yPosition);
     yPosition = addField(doc, "Number of Pages", getValue("pageCount", "page_count"), yPosition);
     
-    // Get the page details
+    // Get the page details and log them for debugging
     const pageDetails = getPageDetails();
+    console.log("Processed page details for PDF:", pageDetails);
     
     // Add page details table if available
     if (pageDetails && pageDetails.length > 0) {
@@ -156,8 +176,12 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
         return [name, description];
       });
       
+      console.log("Table data for page details:", tableData);
+      
       // Add the table to the document
       yPosition = addTableToDocument(doc, tableHeaders, tableData, yPosition);
+    } else {
+      console.warn("No page details found for PDF generation");
     }
     
     // Project Delivery

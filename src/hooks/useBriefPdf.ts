@@ -48,7 +48,7 @@ export function useBriefPdf() {
         const fullBriefData = {
           ...brief,
           ...data
-        };
+        } as BriefData;
         
         // Make sure companyName and submissionDate are properly set
         // Use type assertion to inform TypeScript about the expected structure
