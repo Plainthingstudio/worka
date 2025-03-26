@@ -1,9 +1,12 @@
-
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { generateBriefPDF } from '@/utils/briefPdfGenerator';
-import { Brief } from '@/types/brief';
+import { 
+  generateIllustrationBriefPDF, 
+  generateUIDesignBriefPDF, 
+  generateGraphicDesignBriefPDF 
+} from '@/utils/briefPdfGenerator';
+import { Json } from '@/integrations/supabase/types';
 
 interface BriefData {
   id: string;
@@ -47,26 +50,27 @@ export function useBriefPdf() {
         };
         
         // Make sure companyName and submissionDate are properly set
+        // Use type assertion to inform TypeScript about the expected structure
         const jsonData = data as Record<string, any>;
         
-        if (jsonData.company_name && !fullBriefData.companyName) {
-          fullBriefData.companyName = jsonData.company_name;
+        if (jsonData.company_name) {
+          (fullBriefData as Record<string, any>).companyName = jsonData.company_name;
         }
         
-        if (jsonData.submission_date && !fullBriefData.submissionDate) {
-          fullBriefData.submissionDate = jsonData.submission_date;
+        if (jsonData.submission_date) {
+          (fullBriefData as Record<string, any>).submissionDate = jsonData.submission_date;
         }
         
         // Handle website type interest correctly for UI design briefs
         if (brief.type === "UI Design" && jsonData.website_type_interest) {
           // If it's an array, keep it as is
           if (Array.isArray(jsonData.website_type_interest)) {
-            fullBriefData.websiteTypeInterest = jsonData.website_type_interest;
+            (fullBriefData as Record<string, any>).websiteTypeInterest = jsonData.website_type_interest;
           }
           // If it's a JSON string, parse it
           else if (typeof jsonData.website_type_interest === 'string') {
             try {
-              fullBriefData.websiteTypeInterest = 
+              (fullBriefData as Record<string, any>).websiteTypeInterest = 
                 JSON.parse(jsonData.website_type_interest);
             } catch (e) {
               console.error("Error parsing website_type_interest:", e);
@@ -93,9 +97,20 @@ export function useBriefPdf() {
       // Get the full brief data
       const fullBriefData = await fetchFullBriefData(brief);
       
-      // Use the new unified PDF generator
-      await generateBriefPDF(fullBriefData);
-      toast.success(`${brief.type} brief downloaded successfully`);
+      // Now generate the PDF with either the full data or original brief data
+      if (brief.type === "Illustration Design" || brief.type === "Illustrations") {
+        await generateIllustrationBriefPDF(fullBriefData);
+        toast.success("Illustration brief downloaded successfully");
+      } else if (brief.type === "UI Design") {
+        await generateUIDesignBriefPDF(fullBriefData);
+        toast.success("UI Design brief downloaded successfully");
+      } else if (brief.type === "Graphic Design") {
+        await generateGraphicDesignBriefPDF(fullBriefData);
+        toast.success("Graphic Design brief downloaded successfully");
+      } else {
+        toast.error("Download not supported for this brief type");
+        return false;
+      }
       
       return true;
     } catch (error) {
