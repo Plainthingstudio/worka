@@ -79,6 +79,7 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     yPosition = addSectionTitle(doc, "Project Information", yPosition);
     yPosition = addField(doc, "Project Type", getValue("projectType", "project_type"), yPosition);
     yPosition = addField(doc, "Project Size", getValue("projectSize", "project_size"), yPosition);
+    yPosition = addField(doc, "Website Type", getValue("websiteTypeInterest", "website_type_interest"), yPosition);
     yPosition = addField(doc, "Current Website", getValue("currentWebsite", "current_website"), yPosition);
     yPosition = addMultiParagraphField(doc, "Website Purpose", getValue("websitePurpose", "website_purpose"), yPosition);
     

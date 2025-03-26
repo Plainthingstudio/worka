@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -102,7 +103,8 @@ const UIDesignBrief = () => {
         "targetAudience", 
         "websitePurpose", 
         "projectDescription",
-        "generalStyle"
+        "generalStyle",
+        "websiteTypeInterest"
       ]);
       
       if (isValid) {
