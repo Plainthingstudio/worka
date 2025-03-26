@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { generateBriefPDF } from '@/utils/briefPdfGenerator';
-import { Json } from '@/integrations/supabase/types';
+import { Brief } from '@/types/brief';
 
 interface BriefData {
   id: string;

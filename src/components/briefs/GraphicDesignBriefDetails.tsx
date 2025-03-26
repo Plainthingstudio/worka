@@ -1,107 +1,92 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import CompanyInfoSection from "./graphic-design/CompanyInfoSection";
-import MarketInformationSection from "./graphic-design/MarketInformationSection";
+import ServicesMediaSection from "./graphic-design/ServicesMediaSection";
 import TargetAudienceSection from "./graphic-design/TargetAudienceSection";
+import MarketInformationSection from "./graphic-design/MarketInformationSection";
 import LogoPreferencesSection from "./graphic-design/LogoPreferencesSection";
 import CompetitorsReferencesSection from "./graphic-design/CompetitorsReferencesSection";
-import ServicesMediaSection from "./graphic-design/ServicesMediaSection";
 
 interface GraphicDesignBriefDetailsProps {
   briefDetails: any;
 }
 
 const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ briefDetails }) => {
-  // Add useEffect to log and debug the incoming data
-  useEffect(() => {
-    console.log("GraphicDesignBriefDetails component rendered with:", briefDetails);
-    
-    // Also specifically log the logo feelings data to help debug
-    let logoFeelings = briefDetails?.logoFeelings || briefDetails?.logo_feelings;
-    
-    console.log("Logo feelings prepared in GraphicDesignBriefDetails:", logoFeelings);
-  }, [briefDetails]);
-  
-  // Prepare logo feelings safely
-  const prepareLogoFeelings = () => {
-    let logoFeelings = briefDetails?.logoFeelings || briefDetails?.logo_feelings;
-    
-    // If logo feelings is a string, try to parse it
-    if (typeof logoFeelings === 'string') {
-      try {
-        logoFeelings = JSON.parse(logoFeelings);
-        console.log("Successfully parsed logoFeelings in GraphicDesignBriefDetails:", logoFeelings);
-      } catch (e) {
-        console.error("Failed to parse logoFeelings in GraphicDesignBriefDetails:", e);
-        // Use an empty object to prevent null access errors
-        logoFeelings = {};
-      }
-    }
-    
-    // If it's still not an object (null, undefined, etc), use an empty object
-    if (!logoFeelings || typeof logoFeelings !== 'object') {
-      logoFeelings = {};
-    }
-    
-    return logoFeelings;
-  };
-  
-  const logoFeelings = prepareLogoFeelings();
-  const logoType = briefDetails?.logoType || briefDetails?.logo_type || null;
+  if (!briefDetails) {
+    return <div>No brief details available.</div>;
+  }
 
-  // Get all data with fallback values
-  const companyName = briefDetails?.companyName || briefDetails?.company_name || "";
-  const aboutCompany = briefDetails?.aboutCompany || briefDetails?.about_company || "";
-  const visionMission = briefDetails?.visionMission || briefDetails?.vision_mission || "";
-  const slogan = briefDetails?.slogan || "";
-  
+  // Extract company info
+  const companyInfo = {
+    company_name: briefDetails.companyName || briefDetails.company_name,
+    about_company: briefDetails.aboutCompany || briefDetails.about_company,
+    vision_mission: briefDetails.visionMission || briefDetails.vision_mission,
+    slogan: briefDetails.slogan
+  };
+
+  // Extract services and media info
+  const servicesMedia = {
+    services: briefDetails.services,
+    print_media: briefDetails.printMedia || briefDetails.print_media,
+    digital_media: briefDetails.digitalMedia || briefDetails.digital_media
+  };
+
+  // Extract target audience info
+  const targetAudience = {
+    target_age: briefDetails.targetAge || briefDetails.target_age,
+    target_gender: briefDetails.targetGender || briefDetails.target_gender,
+    target_demography: briefDetails.targetDemography || briefDetails.target_demography,
+    target_profession: briefDetails.targetProfession || briefDetails.target_profession,
+    target_personality: briefDetails.targetPersonality || briefDetails.target_personality
+  };
+
+  // Extract market info
+  const marketInfo = {
+    products_services: briefDetails.productsServices || briefDetails.products_services,
+    features_and_benefits: briefDetails.featuresAndBenefits || briefDetails.features_and_benefits,
+    market_category: briefDetails.marketCategory || briefDetails.market_category,
+    brand_positioning: briefDetails.brandPositioning || briefDetails.brand_positioning,
+    barrier_to_entry: briefDetails.barrierToEntry || briefDetails.barrier_to_entry,
+    specific_imagery: briefDetails.specificImagery || briefDetails.specific_imagery
+  };
+
+  // Extract logo preferences
+  const logoPreferences = {
+    logo_type: briefDetails.logoType || briefDetails.logo_type,
+    logo_feelings: briefDetails.logoFeelings || briefDetails.logo_feelings
+  };
+
+  // Extract competitors and references
+  const competitorsReferences = {
+    competitor1: briefDetails.competitor1,
+    competitor2: briefDetails.competitor2,
+    competitor3: briefDetails.competitor3,
+    competitor4: briefDetails.competitor4,
+    reference1: briefDetails.reference1,
+    reference2: briefDetails.reference2,
+    reference3: briefDetails.reference3,
+    reference4: briefDetails.reference4
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Pass properties individually rather than as a data object */}
+    <div className="space-y-4">
       <CompanyInfoSection 
-        companyName={companyName}
-        aboutCompany={aboutCompany}
-        visionMission={visionMission}
-        slogan={slogan}
+        briefData={companyInfo} 
       />
-      
-      <MarketInformationSection 
-        marketCategory={briefDetails?.marketCategory || briefDetails?.market_category || ""}
-        productsServices={briefDetails?.productsServices || briefDetails?.products_services || ""}
-        featuresAndBenefits={briefDetails?.featuresAndBenefits || briefDetails?.features_and_benefits || ""}
-        brandPositioning={briefDetails?.brandPositioning || briefDetails?.brand_positioning || ""}
-        barrierToEntry={briefDetails?.barrierToEntry || briefDetails?.barrier_to_entry || ""}
-      />
-      
-      <TargetAudienceSection 
-        targetAge={briefDetails?.targetAge || briefDetails?.target_age || ""}
-        targetGender={briefDetails?.targetGender || briefDetails?.target_gender || ""}
-        targetDemography={briefDetails?.targetDemography || briefDetails?.target_demography || ""}
-        targetProfession={briefDetails?.targetProfession || briefDetails?.target_profession || ""}
-        targetPersonality={briefDetails?.targetPersonality || briefDetails?.target_personality || ""}
-      />
-      
-      <LogoPreferencesSection 
-        logoFeelings={logoFeelings} 
-        logoType={logoType} 
-      />
-      
-      <CompetitorsReferencesSection 
-        competitor1={briefDetails?.competitor1 || ""}
-        competitor2={briefDetails?.competitor2 || ""}
-        competitor3={briefDetails?.competitor3 || ""}
-        competitor4={briefDetails?.competitor4 || ""}
-        reference1={briefDetails?.reference1 || ""}
-        reference2={briefDetails?.reference2 || ""}
-        reference3={briefDetails?.reference3 || ""}
-        reference4={briefDetails?.reference4 || ""}
-        specificImagery={briefDetails?.specificImagery || briefDetails?.specific_imagery || ""}
-      />
-      
       <ServicesMediaSection 
-        services={briefDetails?.services || []}
-        printMedia={briefDetails?.printMedia || briefDetails?.print_media || []}
-        digitalMedia={briefDetails?.digitalMedia || briefDetails?.digital_media || []}
+        briefData={servicesMedia} 
+      />
+      <TargetAudienceSection 
+        briefData={targetAudience} 
+      />
+      <MarketInformationSection 
+        briefData={marketInfo} 
+      />
+      <LogoPreferencesSection 
+        briefData={logoPreferences} 
+      />
+      <CompetitorsReferencesSection 
+        briefData={competitorsReferences} 
       />
     </div>
   );
