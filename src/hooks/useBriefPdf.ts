@@ -54,26 +54,26 @@ export function useBriefPdf() {
         const jsonData = data as Record<string, any>;
         
         if (jsonData.company_name) {
-          (fullBriefData as Record<string, any>).companyName = jsonData.company_name;
+          fullBriefData.companyName = jsonData.company_name;
         }
         
         if (jsonData.submission_date) {
-          (fullBriefData as Record<string, any>).submissionDate = jsonData.submission_date;
+          fullBriefData.submissionDate = jsonData.submission_date;
         }
         
-        // Handle website type interest correctly for UI design briefs
-        if (brief.type === "UI Design" && jsonData.website_type_interest) {
+        // Handle logo feelings correctly for graphic design briefs
+        if (brief.type === "Graphic Design" && jsonData.logo_feelings) {
           // If it's an array, keep it as is
-          if (Array.isArray(jsonData.website_type_interest)) {
-            (fullBriefData as Record<string, any>).websiteTypeInterest = jsonData.website_type_interest;
+          if (Array.isArray(jsonData.logo_feelings)) {
+            fullBriefData.logoFeelings = jsonData.logo_feelings;
           }
           // If it's a JSON string, parse it
-          else if (typeof jsonData.website_type_interest === 'string') {
+          else if (typeof jsonData.logo_feelings === 'string') {
             try {
-              (fullBriefData as Record<string, any>).websiteTypeInterest = 
-                JSON.parse(jsonData.website_type_interest);
+              fullBriefData.logoFeelings = 
+                JSON.parse(jsonData.logo_feelings);
             } catch (e) {
-              console.error("Error parsing website_type_interest:", e);
+              console.error("Error parsing logo_feelings:", e);
             }
           }
         }

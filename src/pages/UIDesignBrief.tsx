@@ -55,7 +55,6 @@ const UIDesignBrief = () => {
       currentWebsite: "",
       projectType: "",
       projectSize: "",
-      websiteTypeInterest: {},
       competitor1: "",
       competitor2: "",
       competitor3: "",
@@ -123,16 +122,6 @@ const UIDesignBrief = () => {
     try {
       const formData = methods.getValues();
       
-      // Process the website type interests
-      const websiteTypeInterests = Object.entries(formData.websiteTypeInterest || {})
-        .filter(([_, isSelected]) => isSelected)
-        .map(([key]) => {
-          return key
-            .split('_')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-        });
-      
       console.log("Submitting UI design brief for user ID:", forUserId);
       
       // Prepare data for Supabase with correct column names
@@ -148,7 +137,6 @@ const UIDesignBrief = () => {
         current_website: formData.currentWebsite,
         project_type: formData.projectType,
         project_size: formData.projectSize,
-        website_type_interest: websiteTypeInterests.length > 0 ? websiteTypeInterests : null,
         competitor1: formData.competitor1,
         competitor2: formData.competitor2,
         competitor3: formData.competitor3,

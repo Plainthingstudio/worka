@@ -66,41 +66,6 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
              details && typeof details === 'object' ? [details] : [];
     };
     
-    // Helper to get website type interests (only selected ones)
-    const getWebsiteTypeInterests = () => {
-      let interests = briefData.websiteTypeInterest || briefData.website_type_interest;
-      
-      // If it doesn't exist, return empty array
-      if (!interests) return [];
-      
-      // If it's already an array, return it
-      if (Array.isArray(interests)) return interests;
-      
-      // If it's a string (JSON), try to parse it
-      if (typeof interests === 'string') {
-        try {
-          interests = JSON.parse(interests);
-        } catch (e) {
-          console.error("Failed to parse website type interests:", e);
-          return [];
-        }
-      }
-      
-      // If it's an object with boolean values (form checkboxes)
-      if (typeof interests === 'object' && interests !== null) {
-        return Object.entries(interests)
-          .filter(([_, selected]) => selected === true)
-          .map(([key]) => {
-            // Format the key (e.g., "agency" to "Agency Website")
-            return key.split('_')
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' ');
-          });
-      }
-      
-      return [];
-    };
-    
     // Client Information Section
     yPosition = addSectionTitle(doc, "Client Information", yPosition);
     yPosition = addField(doc, "Name", getValue("name", "name"), yPosition);
@@ -115,13 +80,6 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     yPosition = addField(doc, "Project Type", getValue("projectType", "project_type"), yPosition);
     yPosition = addField(doc, "Project Size", getValue("projectSize", "project_size"), yPosition);
     yPosition = addField(doc, "Current Website", getValue("currentWebsite", "current_website"), yPosition);
-    
-    // Add website type interests if they exist
-    const websiteTypeInterests = getWebsiteTypeInterests();
-    if (websiteTypeInterests.length > 0) {
-      yPosition = addField(doc, "Website/App Type Interest", websiteTypeInterests.join(", "), yPosition);
-    }
-    
     yPosition = addMultiParagraphField(doc, "Website Purpose", getValue("websitePurpose", "website_purpose"), yPosition);
     
     // Company & Target Audience

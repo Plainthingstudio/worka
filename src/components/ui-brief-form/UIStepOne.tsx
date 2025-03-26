@@ -3,7 +3,6 @@ import React from "react";
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
@@ -42,20 +41,6 @@ const UIStepOne = ({ onNext }: UIStepOneProps) => {
       onNext();
     }
   };
-
-  const websiteTypes = [
-    { value: "agency", label: "Agency Website" },
-    { value: "portfolio", label: "Portfolio Website" },
-    { value: "finance", label: "Finance Website" },
-    { value: "saas", label: "SaaS Website" },
-    { value: "ecommerce", label: "E-commerce Website" },
-    { value: "web3", label: "Web3 Website" },
-    { value: "crypto", label: "Crypto Website" },
-    { value: "webapp", label: "Web Application" },
-    { value: "desktopapp", label: "Desktop Application" },
-    { value: "mobileapp", label: "Mobile Application" },
-    { value: "other", label: "Other" },
-  ];
 
   const projectTypes = [
     "Website Redesign",
@@ -203,26 +188,6 @@ const UIStepOne = ({ onNext }: UIStepOneProps) => {
               </FormItem>
             )}
           />
-        </div>
-      </div>
-      
-      <div className="space-y-2">
-        <FormLabel>Website/App Type Interest</FormLabel>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-          {websiteTypes.map((type) => (
-            <div key={type.value} className="flex items-center space-x-2">
-              <Checkbox 
-                id={`websiteType-${type.value}`} 
-                {...register(`websiteTypeInterest.${type.value}`)} 
-              />
-              <label 
-                htmlFor={`websiteType-${type.value}`}
-                className="text-sm cursor-pointer"
-              >
-                {type.label}
-              </label>
-            </div>
-          ))}
         </div>
       </div>
       
