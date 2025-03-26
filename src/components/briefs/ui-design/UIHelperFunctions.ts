@@ -45,40 +45,6 @@ export const formatDate = (dateValue: any): string => {
   }
 };
 
-export const getWebsiteTypeInterest = (briefData: any): string => {
-  const interestObj = getValue(briefData, "websiteTypeInterest", "website_type_interest", {});
-  
-  if (typeof interestObj === 'string') return interestObj;
-  
-  if (Array.isArray(interestObj)) {
-    return interestObj.join(", ");
-  }
-  
-  if (typeof interestObj === 'object' && interestObj !== null) {
-    const websiteTypes: Record<string, string> = {
-      agency: "Agency Website",
-      portfolio: "Portfolio Website",
-      finance: "Finance Website",
-      saas: "SaaS Website",
-      ecommerce: "E-commerce Website",
-      web3: "Web3 Website",
-      crypto: "Crypto Website",
-      webapp: "Web Application",
-      desktopapp: "Desktop Application",
-      mobileapp: "Mobile Application",
-      other: "Other"
-    };
-    
-    const selectedTypes = Object.entries(interestObj)
-      .filter(([_, isSelected]) => isSelected === true)
-      .map(([key, _]) => websiteTypes[key] || key);
-    
-    return selectedTypes.length > 0 ? selectedTypes.join(", ") : "Not provided";
-  }
-  
-  return "Not provided";
-};
-
 export const getPageDetails = (briefData: any) => {
   const details = getValue(briefData, "pageDetails", "page_details", []);
   return Array.isArray(details) ? details : 

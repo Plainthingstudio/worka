@@ -49,62 +49,6 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
       return String(value);
     };
     
-    // Helper function to format the website type interests showing ONLY selected types
-    const getWebsiteTypeInterest = () => {
-      // Get the website type interest data from briefData
-      const interestData = briefData.websiteTypeInterest || briefData.website_type_interest || {};
-      let selectedTypes: string[] = [];
-      
-      // Handle different data formats
-      if (typeof interestData === 'string') {
-        // If it's a comma-separated string, split it
-        selectedTypes = interestData.split(',').map(t => t.trim());
-      } 
-      else if (Array.isArray(interestData)) {
-        // If it's already an array, use it directly (filter out any null/undefined)
-        selectedTypes = interestData.filter(type => type).map(type => {
-          // Map short codes to proper names if needed
-          const websiteTypeMap: Record<string, string> = {
-            "agency": "Agency Website",
-            "portfolio": "Portfolio Website",
-            "finance": "Finance Website",
-            "saas": "SaaS Website",
-            "ecommerce": "E-commerce Website",
-            "web3": "Web3 Website",
-            "crypto": "Crypto Website",
-            "webapp": "Web Application",
-            "desktopapp": "Desktop Application",
-            "mobileapp": "Mobile Application",
-            "other": "Other"
-          };
-          return websiteTypeMap[type.toLowerCase()] || type;
-        });
-      } 
-      else if (typeof interestData === 'object' && interestData !== null) {
-        // If it's an object with boolean values, ONLY include the true ones
-        const websiteTypeMap: Record<string, string> = {
-          "agency": "Agency Website",
-          "portfolio": "Portfolio Website",
-          "finance": "Finance Website",
-          "saas": "SaaS Website",
-          "ecommerce": "E-commerce Website",
-          "web3": "Web3 Website",
-          "crypto": "Crypto Website",
-          "webapp": "Web Application",
-          "desktopapp": "Desktop Application",
-          "mobileapp": "Mobile Application",
-          "other": "Other"
-        };
-        
-        selectedTypes = Object.entries(interestData)
-          .filter(([_, isSelected]) => isSelected === true)
-          .map(([key, _]) => websiteTypeMap[key] || key);
-      }
-      
-      // Return just the selected types as a comma-separated string
-      return selectedTypes.length > 0 ? selectedTypes.join(", ") : "Not provided";
-    };
-    
     // Helper to safely get page details
     const getPageDetails = () => {
       let details = briefData.pageDetails || briefData.page_details || [];
@@ -135,7 +79,6 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     yPosition = addSectionTitle(doc, "Project Information", yPosition);
     yPosition = addField(doc, "Project Type", getValue("projectType", "project_type"), yPosition);
     yPosition = addField(doc, "Project Size", getValue("projectSize", "project_size"), yPosition);
-    yPosition = addField(doc, "Website Type", getWebsiteTypeInterest(), yPosition);
     yPosition = addField(doc, "Current Website", getValue("currentWebsite", "current_website"), yPosition);
     yPosition = addMultiParagraphField(doc, "Website Purpose", getValue("websitePurpose", "website_purpose"), yPosition);
     

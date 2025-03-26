@@ -55,11 +55,13 @@ export function useBriefPdf() {
         const jsonData = data as Record<string, any>;
         
         if (jsonData.company_name) {
-          fullBriefData.companyName = jsonData.company_name;
+          // Type assertion to inform TypeScript that fullBriefData has dynamic properties
+          (fullBriefData as Record<string, any>).companyName = jsonData.company_name;
         }
         
         if (jsonData.submission_date) {
-          fullBriefData.submissionDate = jsonData.submission_date;
+          // Type assertion to inform TypeScript that fullBriefData has dynamic properties
+          (fullBriefData as Record<string, any>).submissionDate = jsonData.submission_date;
         }
         
         return fullBriefData;

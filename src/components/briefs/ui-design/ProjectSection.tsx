@@ -1,6 +1,6 @@
 
 import React from "react";
-import { getValue, getWebsiteTypeInterest } from "./UIHelperFunctions";
+import { getValue } from "./UIHelperFunctions";
 
 interface ProjectSectionProps {
   briefDetails: any;
@@ -19,11 +19,6 @@ const ProjectSection: React.FC<ProjectSectionProps> = ({ briefDetails }) => {
           <h4 className="font-medium">Project Size</h4>
           <p className="mt-1">{getValue(briefDetails, "projectSize", "project_size")}</p>
         </div>
-      </div>
-      
-      <div>
-        <h4 className="font-medium">Website Type Interest</h4>
-        <p className="mt-1">{getWebsiteTypeInterest(briefDetails)}</p>
       </div>
       
       <div>
