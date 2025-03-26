@@ -8,11 +8,11 @@ import {
   generateGraphicDesignBriefPDF 
 } from '@/utils/briefPdfGenerator';
 
-type BriefData = {
+interface BriefData {
   id: string;
   type: string;
   [key: string]: any;
-};
+}
 
 export function useBriefPdf() {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -40,7 +40,7 @@ export function useBriefPdf() {
         return brief;
       }
       
-      if (data) {
+      if (data && typeof data === 'object') {
         console.log("Retrieved full brief details for PDF generation:", data);
         
         // Transform any snake_case to camelCase if needed
