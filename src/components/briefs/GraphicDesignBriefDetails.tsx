@@ -57,8 +57,8 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
   
   return (
     <div className="space-y-6">
+      {/* Pass the props with the correct property names expected by CompanyInfoSection */}
       <CompanyInfoSection 
-        companyName={companyName}
         aboutCompany={aboutCompany}
         visionMission={visionMission}
         slogan={slogan}
