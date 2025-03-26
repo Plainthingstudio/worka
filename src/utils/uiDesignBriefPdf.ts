@@ -49,10 +49,14 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
       return String(value);
     };
     
-    // Helper to safely get page details
-    const getPageDetails = () => {
-      let details = briefData.pageDetails || briefData.page_details || [];
-      console.log("Raw page details:", details);
+    // Helper to safely process page details into a standardized format
+    const processPageDetails = () => {
+      // First try to get page details from either property
+      let details = briefData.pageDetails || briefData.page_details;
+      console.log("Initial page details:", details);
+      
+      // If details don't exist, return empty array
+      if (!details) return [];
       
       // If it's a string, try to parse it as JSON
       if (typeof details === 'string') {
@@ -81,8 +85,14 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
         }
       }
       
-      // Ensure details is an array
-      return Array.isArray(details) ? details : [];
+      // If details is still not an array at this point, return empty array
+      if (!Array.isArray(details)) {
+        console.warn("Page details is not an array after processing:", details);
+        return [];
+      }
+      
+      // Filter out any null or empty entries
+      return details.filter(item => item && (item.name || item.description || item.page_name || item.page_description));
     };
     
     // Client Information Section
@@ -154,9 +164,9 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     yPosition = addSectionTitle(doc, "Page Information", yPosition);
     yPosition = addField(doc, "Number of Pages", getValue("pageCount", "page_count"), yPosition);
     
-    // Get the page details and log them for debugging
-    const pageDetails = getPageDetails();
-    console.log("Processed page details for PDF:", pageDetails);
+    // Process page details into a clean array
+    const pageDetails = processPageDetails();
+    console.log("Processed page details ready for PDF:", pageDetails);
     
     // Add page details table if available
     if (pageDetails && pageDetails.length > 0) {
@@ -170,8 +180,9 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
       
       // Create table headers and data for the page details
       const tableHeaders = ["Page Name", "Description"];
-      const tableData = pageDetails.map((detail: any, index: number) => {
-        const name = detail?.name || detail?.page_name || `Page ${index + 1}`;
+      const tableData = pageDetails.map((detail: any) => {
+        // Support both possible property naming conventions
+        const name = detail?.name || detail?.page_name || "Unnamed Page";
         const description = detail?.description || detail?.page_description || "No description provided";
         return [name, description];
       });
@@ -181,7 +192,8 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
       // Add the table to the document
       yPosition = addTableToDocument(doc, tableHeaders, tableData, yPosition);
     } else {
-      console.warn("No page details found for PDF generation");
+      console.warn("No page details found or they are in an unexpected format");
+      yPosition = addField(doc, "Page Details", "No specific page details provided", yPosition);
     }
     
     // Project Delivery
