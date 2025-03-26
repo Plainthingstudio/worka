@@ -49,7 +49,7 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
   const logoFeelings = prepareLogoFeelings();
   const logoType = briefDetails?.logoType || briefDetails?.logo_type || null;
 
-  // Get all data with fallback values
+  // Get all data with fallback values - making sure to handle both camelCase and snake_case
   const companyName = briefDetails?.companyName || briefDetails?.company_name || "";
   const aboutCompany = briefDetails?.aboutCompany || briefDetails?.about_company || "";
   const visionMission = briefDetails?.visionMission || briefDetails?.vision_mission || "";

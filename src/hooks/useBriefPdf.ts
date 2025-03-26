@@ -1,4 +1,3 @@
-
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +6,6 @@ import {
   generateUIDesignBriefPDF, 
   generateGraphicDesignBriefPDF 
 } from '@/utils/briefPdfGenerator';
-import { Json } from '@/integrations/supabase/types';
 
 interface BriefData {
   id: string;
