@@ -57,12 +57,14 @@ const GraphicDesignBriefDetails: React.FC<GraphicDesignBriefDetailsProps> = ({ b
   
   return (
     <div className="space-y-6">
-      {/* Directly pass all required props to each component */}
+      {/* Pass data as a single object to avoid TypeScript errors */}
       <CompanyInfoSection 
-        companyName={companyName}
-        aboutCompany={aboutCompany}
-        visionMission={visionMission}
-        slogan={slogan}
+        data={{
+          companyName,
+          aboutCompany,
+          visionMission,
+          slogan
+        }}
       />
       
       <MarketInformationSection 

@@ -1,4 +1,3 @@
-
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -51,17 +50,32 @@ export function useBriefPdf() {
         };
         
         // Make sure companyName and submissionDate are properly set
-        // Use type assertion to inform TypeScript about the structure
+        // Use type assertion to inform TypeScript about the expected structure
         const jsonData = data as Record<string, any>;
         
         if (jsonData.company_name) {
-          // Type assertion to inform TypeScript that fullBriefData has dynamic properties
           (fullBriefData as Record<string, any>).companyName = jsonData.company_name;
         }
         
         if (jsonData.submission_date) {
-          // Type assertion to inform TypeScript that fullBriefData has dynamic properties
           (fullBriefData as Record<string, any>).submissionDate = jsonData.submission_date;
+        }
+        
+        // Handle website type interest correctly for UI design briefs
+        if (brief.type === "UI Design" && jsonData.website_type_interest) {
+          // If it's an array, keep it as is
+          if (Array.isArray(jsonData.website_type_interest)) {
+            (fullBriefData as Record<string, any>).websiteTypeInterest = jsonData.website_type_interest;
+          }
+          // If it's a JSON string, parse it
+          else if (typeof jsonData.website_type_interest === 'string') {
+            try {
+              (fullBriefData as Record<string, any>).websiteTypeInterest = 
+                JSON.parse(jsonData.website_type_interest);
+            } catch (e) {
+              console.error("Error parsing website_type_interest:", e);
+            }
+          }
         }
         
         return fullBriefData;
