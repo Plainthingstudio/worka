@@ -1,3 +1,4 @@
+
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -59,6 +60,10 @@ export function useBriefPdf() {
         
         if (jsonData.submission_date) {
           fullBriefData.submissionDate = jsonData.submission_date;
+        }
+        
+        if (jsonData.website_type_interest) {
+          fullBriefData.websiteTypeInterest = jsonData.website_type_interest;
         }
         
         // Handle logo feelings correctly for graphic design briefs

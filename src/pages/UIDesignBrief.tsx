@@ -24,7 +24,6 @@ const UIDesignBrief = () => {
       }
 
       try {
-        // Just check if the user ID format is valid (UUID format)
         const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(forUserId);
         
         if (isValidUUID) {
@@ -77,6 +76,7 @@ const UIDesignBrief = () => {
       websiteContent: "",
       developmentService: "",
       completionDeadline: "",
+      websiteTypeInterest: "",
     },
     mode: "onChange",
   });
@@ -124,7 +124,6 @@ const UIDesignBrief = () => {
       
       console.log("Submitting UI design brief for user ID:", forUserId);
       
-      // Prepare data for Supabase with correct column names
       const briefData: any = {
         name: formData.name,
         email: formData.email,
@@ -159,17 +158,15 @@ const UIDesignBrief = () => {
         website_content: formData.websiteContent,
         development_service: formData.developmentService,
         completion_deadline: formData.completionDeadline,
+        website_type_interest: formData.websiteTypeInterest,
         submission_date: new Date().toISOString()
       };
 
-      // If form is being submitted for a specific user through a personalized link
       if (forUserId) {
         console.log("Setting submitted_for_id and user_id to:", forUserId);
         briefData.submitted_for_id = forUserId;
-        // For briefs submitted through a personalized link, use the submitted_for_id as the user_id
         briefData.user_id = forUserId;
       } else {
-        // Try to get the current user - if logged in, attach user_id (optional)
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           console.log("Setting user_id from current user:", user.id);
@@ -179,14 +176,12 @@ const UIDesignBrief = () => {
 
       console.log("Final brief data being sent to Supabase:", briefData);
 
-      // Insert into Supabase - now using the specific table for UI design briefs
       const { error } = await supabase
         .from('ui_design_briefs')
         .insert(briefData);
 
       if (error) throw error;
 
-      // Also save to localStorage for backward compatibility
       const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
       const localStorageBrief = {
         ...formData,
@@ -195,17 +190,14 @@ const UIDesignBrief = () => {
         status: "New",
         type: "UI Design",
         submittedForId: forUserId || null,
-        userId: briefData.user_id // Ensure we save the user_id in localStorage too
+        userId: briefData.user_id
       };
       localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
       
-      // Save the brief type for the thank you page
       localStorage.setItem("lastSubmittedBriefType", "UI Design");
       
-      // Show success message
       toast.success("UI design brief submitted successfully!");
       
-      // Navigate to the thank you page
       navigate("/thank-you");
     } catch (error: any) {
       console.error("Error submitting brief:", error);

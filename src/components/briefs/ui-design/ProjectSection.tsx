@@ -22,6 +22,11 @@ const ProjectSection: React.FC<ProjectSectionProps> = ({ briefDetails }) => {
       </div>
       
       <div>
+        <h4 className="font-medium">Website Type</h4>
+        <p className="mt-1">{getValue(briefDetails, "websiteTypeInterest", "website_type_interest")}</p>
+      </div>
+      
+      <div>
         <h4 className="font-medium">Current Website</h4>
         <p className="mt-1">{getValue(briefDetails, "currentWebsite", "current_website")}</p>
       </div>
