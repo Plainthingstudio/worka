@@ -49,7 +49,7 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
       return String(value);
     };
     
-    // Helper function to format the website type interests showing only selected types
+    // Helper function to format the website type interests showing ONLY selected types
     const getWebsiteTypeInterest = () => {
       // Get the website type interest data from briefData
       const interestData = briefData.websiteTypeInterest || briefData.website_type_interest || {};
@@ -61,27 +61,27 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
         selectedTypes = interestData.split(',').map(t => t.trim());
       } 
       else if (Array.isArray(interestData)) {
-        // If it's already an array, map the values to proper formats
-        const websiteTypeMap: Record<string, string> = {
-          "agency": "Agency Website",
-          "portfolio": "Portfolio Website",
-          "finance": "Finance Website",
-          "saas": "SaaS Website",
-          "ecommerce": "E-commerce Website",
-          "web3": "Web3 Website",
-          "crypto": "Crypto Website",
-          "webapp": "Web Application",
-          "desktopapp": "Desktop Application",
-          "mobileapp": "Mobile Application",
-          "other": "Other"
-        };
-        
-        selectedTypes = interestData.map((type: string) => 
-          websiteTypeMap[type.toLowerCase()] || type
-        );
+        // If it's already an array, use it directly (filter out any null/undefined)
+        selectedTypes = interestData.filter(type => type).map(type => {
+          // Map short codes to proper names if needed
+          const websiteTypeMap: Record<string, string> = {
+            "agency": "Agency Website",
+            "portfolio": "Portfolio Website",
+            "finance": "Finance Website",
+            "saas": "SaaS Website",
+            "ecommerce": "E-commerce Website",
+            "web3": "Web3 Website",
+            "crypto": "Crypto Website",
+            "webapp": "Web Application",
+            "desktopapp": "Desktop Application",
+            "mobileapp": "Mobile Application",
+            "other": "Other"
+          };
+          return websiteTypeMap[type.toLowerCase()] || type;
+        });
       } 
       else if (typeof interestData === 'object' && interestData !== null) {
-        // If it's an object with boolean values
+        // If it's an object with boolean values, ONLY include the true ones
         const websiteTypeMap: Record<string, string> = {
           "agency": "Agency Website",
           "portfolio": "Portfolio Website",
