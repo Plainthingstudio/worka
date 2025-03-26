@@ -131,29 +131,32 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
       yPosition = addField(doc, "Competitors", competitors.map((comp, idx) => `${idx + 1}. ${comp}`).join('\n'), yPosition);
     }
     
-    // Page Details
+    // Page Information Section
     yPosition = addSectionTitle(doc, "Page Information", yPosition);
     yPosition = addField(doc, "Number of Pages", getValue("pageCount", "page_count"), yPosition);
     
-    // Add page details table
+    // Get the page details
     const pageDetails = getPageDetails();
+    
+    // Add page details table if available
     if (pageDetails && pageDetails.length > 0) {
       yPosition = checkPageOverflow(doc, yPosition + 10);
       
+      // Create a header for the page details
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
       doc.text("Page Details:", 20, yPosition);
       yPosition += 8;
       
-      // Create table for page details
+      // Create table headers and data for the page details
       const tableHeaders = ["Page Name", "Description"];
-      const tableData = pageDetails.map((detail: any) => {
-        const name = detail?.name || detail?.page_name || "Unnamed Page";
+      const tableData = pageDetails.map((detail: any, index: number) => {
+        const name = detail?.name || detail?.page_name || `Page ${index + 1}`;
         const description = detail?.description || detail?.page_description || "No description provided";
         return [name, description];
       });
       
-      // Add table to document
+      // Add the table to the document
       yPosition = addTableToDocument(doc, tableHeaders, tableData, yPosition);
     }
     
