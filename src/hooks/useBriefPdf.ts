@@ -1,3 +1,4 @@
+
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -48,11 +49,11 @@ export function useBriefPdf() {
         // Make sure companyName and submissionDate are properly set
         const jsonData = data as Record<string, any>;
         
-        if (jsonData.company_name) {
+        if (jsonData.company_name && !fullBriefData.companyName) {
           fullBriefData.companyName = jsonData.company_name;
         }
         
-        if (jsonData.submission_date) {
+        if (jsonData.submission_date && !fullBriefData.submissionDate) {
           fullBriefData.submissionDate = jsonData.submission_date;
         }
         
