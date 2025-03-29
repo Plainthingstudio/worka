@@ -28,73 +28,73 @@
   }
 }
 
-/* Dark mode transitions and styles */
-.dark *, * {
+/* Transition styles */
+* {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
 
-/* Dark mode table improvements */
-.dark table {
-  color: rgba(255, 255, 255, 0.9);
-  border-color: rgba(255, 255, 255, 0.12);
+/* Table improvements */
+table {
+  color: rgba(0, 0, 0, 0.9);
+  border-color: rgba(0, 0, 0, 0.12);
 }
 
-.dark table tbody tr {
-  border-bottom-color: rgba(255, 255, 255, 0.12);
+table tbody tr {
+  border-bottom-color: rgba(0, 0, 0, 0.12);
 }
 
-.dark table tbody tr:hover {
+table tbody tr:hover {
   background-color: rgba(99, 102, 241, 0.07);
 }
 
-/* Dark mode card improvements */
-.dark .bg-white {
-  background-color: rgba(17, 24, 39, 0.8);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+/* Card improvements */
+.bg-white {
+  background-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(8px);
 }
 
-/* In-progress badge in dark mode */
-.dark .bg-yellow-50 {
+/* In-progress badge */
+.bg-yellow-50 {
   background-color: rgba(250, 204, 21, 0.15);
   color: rgba(250, 204, 21, 0.9);
 }
 
-/* Status badges in dark mode with better contrast */
-.dark [class*="bg-"][class*="-50"] {
-  background-color: rgba(var(--primary-rgb, 255, 255, 255), 0.15);
-  color: rgba(var(--primary-rgb, 255, 255, 255), 0.95);
-  border: 1px solid rgba(var(--primary-rgb, 255, 255, 255), 0.2);
+/* Status badges with better contrast */
+[class*="bg-"][class*="-50"] {
+  background-color: rgba(var(--primary-rgb, 0, 0, 0), 0.15);
+  color: rgba(var(--primary-rgb, 0, 0, 0), 0.95);
+  border: 1px solid rgba(var(--primary-rgb, 0, 0, 0), 0.2);
 }
 
-/* Enhanced dark mode UI elements */
-.dark .card, 
-.dark .dropdown-content,
-.dark .dialog-content {
-  background-color: rgba(17, 24, 39, 0.8);
+/* Enhanced UI elements */
+.card, 
+.dropdown-content,
+.dialog-content {
+  background-color: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 }
 
-/* Glowing effect for primary elements in dark mode */
-.dark .bg-primary {
+/* Glowing effect for primary elements */
+.bg-primary {
   box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
 }
 
-/* Enhanced form elements for dark mode */
-.dark input, 
-.dark select, 
-.dark textarea {
-  background-color: rgba(30, 41, 59, 0.8);
-  border-color: rgba(255, 255, 255, 0.1);
+/* Enhanced form elements */
+input, 
+select, 
+textarea {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
-.dark input:focus, 
-.dark select:focus, 
-.dark textarea:focus {
+input:focus, 
+select:focus, 
+textarea:focus {
   border-color: rgba(99, 102, 241, 0.5);
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
 }

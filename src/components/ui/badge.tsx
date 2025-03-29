@@ -16,20 +16,20 @@ const badgeVariants = cva(
         destructive:
           "bg-destructive text-destructive-foreground border-transparent",
         outline: "text-foreground",
-        // Updated project type variants with enhanced dark mode support
+        // Updated project type variants
         "project-based": 
-          "bg-blue-50 text-blue-700 ring-blue-700/10 dark:bg-blue-900/40 dark:text-blue-300 dark:ring-blue-400/30",
+          "bg-blue-50 text-blue-700 ring-blue-700/10",
         "monthly-retainer": 
-          "bg-purple-50 text-purple-700 ring-purple-700/10 dark:bg-purple-900/40 dark:text-purple-300 dark:ring-purple-400/30",
+          "bg-purple-50 text-purple-700 ring-purple-700/10",
         "monthly-pay": 
-          "bg-yellow-50 text-yellow-800 ring-yellow-600/20 dark:bg-yellow-900/40 dark:text-yellow-300 dark:ring-yellow-400/30",
-        // Status variants with enhanced dark mode support
+          "bg-yellow-50 text-yellow-800 ring-yellow-600/20",
+        // Status variants
         "in-progress":
-          "bg-yellow-50 text-yellow-800 ring-yellow-600/20 dark:bg-yellow-900/40 dark:text-yellow-300 dark:ring-yellow-400/30",
+          "bg-yellow-50 text-yellow-800 ring-yellow-600/20",
         "completed":
-          "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/40 dark:text-green-300 dark:ring-green-400/30",
+          "bg-green-50 text-green-700 ring-green-600/20",
         "cancelled":
-          "bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/40 dark:text-red-300 dark:ring-red-400/30",
+          "bg-red-50 text-red-700 ring-red-600/20",
       },
     },
     defaultVariants: {
