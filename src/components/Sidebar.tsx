@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "./ThemeProvider";
-import { ThemeToggle } from "./ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -150,12 +149,7 @@ const Sidebar = () => {
         ))}
       </nav>
 
-      <div className="border-t border-sidebar-border/50 p-2 space-y-2">
-        <div className={cn("flex", expanded ? "justify-between items-center px-2" : "justify-center")}>
-          {expanded && <span className="text-sm text-sidebar-foreground/70">Theme</span>}
-          <ThemeToggle className={expanded ? "" : "mx-auto"} />
-        </div>
-        
+      <div className="border-t border-sidebar-border/50 p-2">
         <button
           onClick={handleLogout}
           className="flex w-full items-center rounded-md px-2 py-2 text-sm font-medium text-sidebar-foreground/70 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
