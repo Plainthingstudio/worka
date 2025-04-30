@@ -1,7 +1,5 @@
-
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 interface StatCardProps {
   title: string;
   value: string | number;
@@ -14,7 +12,6 @@ interface StatCardProps {
   suffix?: string;
   className?: string;
 }
-
 const StatCard = ({
   title,
   value,
@@ -22,15 +19,11 @@ const StatCard = ({
   change,
   prefix,
   suffix,
-  className,
+  className
 }: StatCardProps) => {
-  return (
-    <div className={cn(
-      "flex flex-col overflow-hidden rounded-md p-4 transition-all duration-300 ease-in-out hover:shadow-md",
-      className
-    )}>
+  return <div className={cn("flex flex-col overflow-hidden rounded-md p-4 transition-all duration-300 ease-in-out hover:shadow-md", className)}>
       <div className="mb-2 flex items-center justify-between">
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
+        <p className="font-medium text-muted-foreground text-sm">{title}</p>
         <div className="rounded-full bg-primary/10 p-2 text-primary">
           <Icon className="h-4 w-4" />
         </div>
@@ -42,23 +35,12 @@ const StatCard = ({
             {value}
             {suffix}
           </h3>
-          {change && (
-            <p
-              className={cn(
-                "mt-1 text-xs font-medium",
-                change.type === "increase"
-                  ? "text-green-600"
-                  : "text-red-600"
-              )}
-            >
+          {change && <p className={cn("mt-1 text-xs font-medium", change.type === "increase" ? "text-green-600" : "text-red-600")}>
               {change.type === "increase" ? "↑" : "↓"} {Math.abs(change.value)}%{" "}
               <span className="text-muted-foreground">from last month</span>
-            </p>
-          )}
+            </p>}
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default StatCard;
