@@ -24,51 +24,33 @@ const DemoLogin = memo(({ isLoading, onDemoLogin }: DemoLoginProps) => {
       if (error) throw error;
 
       if (data.user) {
-        console.log("Demo user logged in:", data.user.id);
-        
         // Check if user already has a role
-        const { data: existingRole, error: roleCheckError } = await supabase
+        const { data: existingRole } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', data.user.id)
-          .maybeSingle();
-
-        if (roleCheckError) {
-          console.error("Error checking existing role:", roleCheckError);
-        }
-
-        console.log("Existing role check result:", existingRole);
+          .maybeSingle(); // Use maybeSingle to handle no rows gracefully
 
         // If no role exists, assign owner role
         if (!existingRole) {
-          console.log("No existing role found, assigning owner role...");
-          
-          const { data: roleData, error: roleError } = await supabase
+          const { error: roleError } = await supabase
             .from('user_roles')
             .insert({
               user_id: data.user.id,
               role: 'owner'
-            })
-            .select()
-            .single();
+            });
 
           if (roleError) {
             console.error("Error assigning role:", roleError);
-            toast.error("Failed to assign user role: " + roleError.message);
+            toast.error("Failed to assign user role, but login successful");
           } else {
-            console.log("Successfully assigned owner role:", roleData);
-            toast.success("Demo user assigned owner role");
+            console.log("Successfully assigned owner role to demo user");
           }
-        } else {
-          console.log("User already has role:", existingRole.role);
         }
 
         toast.success("Successfully logged in with demo account");
-        
-        // Small delay to ensure role assignment is complete before redirect
-        setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 1000);
+        // Force page reload to ensure clean state
+        window.location.href = '/dashboard';
       }
     } catch (error: any) {
       console.error("Demo login error:", error);
