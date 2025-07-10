@@ -24,6 +24,9 @@ const formSchema = z.object({
   position: z.string({
     required_error: "Please select a position."
   }),
+  role: z.string({
+    required_error: "Please select a role."
+  }),
   startDate: z.date({
     required_error: "Please select a start date."
   }),
@@ -94,11 +97,18 @@ const TeamForm = ({
     "Co-Founder"
   ];
 
+  const roles = [
+    { value: "owner", label: "Owner" },
+    { value: "administrator", label: "Administrator" },
+    { value: "team", label: "Team Member" }
+  ];
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: teamMember?.name || "",
       position: teamMember?.position || "",
+      role: (teamMember as any)?.role || "team",
       startDate: teamMember?.startDate ? new Date(teamMember.startDate) : new Date(),
       skills: teamMember?.skills || []
     }
@@ -129,6 +139,15 @@ const TeamForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <DialogHeader>
+          <DialogTitle>
+            {teamMember ? "Edit Team Member" : "Add Team Member"}
+          </DialogTitle>
+          <DialogDescription>
+            {teamMember ? "Update team member information and role." : "Add a new team member with their role and permissions."}
+          </DialogDescription>
+        </DialogHeader>
+
         <FormField 
           control={form.control} 
           name="name" 
@@ -159,6 +178,31 @@ const TeamForm = ({
                   {positions.map(position => (
                     <SelectItem key={position} value={position}>
                       {position}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )} 
+        />
+
+        <FormField 
+          control={form.control} 
+          name="role" 
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Role</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {roles.map(role => (
+                    <SelectItem key={role.value} value={role.value}>
+                      {role.label}
                     </SelectItem>
                   ))}
                 </SelectContent>

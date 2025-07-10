@@ -146,6 +146,7 @@ const Team = () => {
         return;
       }
 
+      // Insert the team member
       const { data: newMember, error } = await supabase
         .from('team_members')
         .insert({
@@ -160,6 +161,32 @@ const Team = () => {
 
       if (error) {
         throw error;
+      }
+
+      // If a role is specified and it's not the default 'team' role, add/update the user role
+      if (data.role && data.role !== 'team') {
+        // First, check if this user already has a role
+        const { data: existingRole } = await supabase
+          .from('user_roles')
+          .select('*')
+          .eq('user_id', session.session.user.id);
+
+        if (existingRole && existingRole.length > 0) {
+          // Update existing role
+          await supabase
+            .from('user_roles')
+            .update({ role: data.role })
+            .eq('user_id', session.session.user.id);
+        } else {
+          // Insert new role
+          await supabase
+            .from('user_roles')
+            .insert({
+              user_id: session.session.user.id,
+              role: data.role,
+              assigned_by: session.session.user.id
+            });
+        }
       }
 
       const transformedMember: TeamMember = {
@@ -191,6 +218,7 @@ const Team = () => {
         return;
       }
 
+      // Update the team member
       const { error } = await supabase
         .from('team_members')
         .update({
@@ -204,6 +232,32 @@ const Team = () => {
 
       if (error) {
         throw error;
+      }
+
+      // Handle role update if specified
+      if (data.role) {
+        // Check if this user already has a role
+        const { data: existingRole } = await supabase
+          .from('user_roles')
+          .select('*')
+          .eq('user_id', session.session.user.id);
+
+        if (existingRole && existingRole.length > 0) {
+          // Update existing role
+          await supabase
+            .from('user_roles')
+            .update({ role: data.role })
+            .eq('user_id', session.session.user.id);
+        } else {
+          // Insert new role
+          await supabase
+            .from('user_roles')
+            .insert({
+              user_id: session.session.user.id,
+              role: data.role,
+              assigned_by: session.session.user.id
+            });
+        }
       }
 
       const updatedMembers = teamMembers.map(member =>
@@ -275,7 +329,7 @@ const Team = () => {
                 Team
               </h1>
               <p className="text-muted-foreground">
-                Manage your team members and their skills.
+                Manage your team members, their roles, and their skills.
               </p>
               {userRole && (
                 <p className="text-xs text-muted-foreground mt-1">
