@@ -25,25 +25,25 @@ const Dashboard = () => {
           title="Total Clients"
           value="12"
           icon={Users}
-          trend="+2 from last month"
+          change={{ value: 2, type: "increase" }}
         />
         <StatCard
           title="Active Projects"
           value="8"
           icon={FolderOpen}
-          trend="+1 from last week"
+          change={{ value: 1, type: "increase" }}
         />
         <StatCard
           title="Revenue"
           value="$24,500"
           icon={DollarSign}
-          trend="+12% from last month"
+          change={{ value: 12, type: "increase" }}
         />
         <StatCard
           title="Completion Rate"
           value="94%"
           icon={Activity}
-          trend="+2% from last month"
+          change={{ value: 2, type: "increase" }}
         />
       </div>
 
