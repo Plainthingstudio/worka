@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
@@ -18,11 +19,13 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "./ThemeProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const Sidebar = () => {
   const [expanded, setExpanded] = useState(true);
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const { userRole, canViewTeam, canViewProjects } = useUserRole();
 
   const toggleSidebar = () => {
     setExpanded(!expanded);
@@ -50,53 +53,69 @@ const Sidebar = () => {
     }
   };
 
-  const navItems = [
+  // Define navigation items with role-based filtering
+  const getAllNavItems = () => [
     {
       icon: LayoutDashboard,
       label: "Dashboard",
       href: "/dashboard",
+      roles: ['owner', 'administrator', 'team']
     },
     {
       icon: FolderKanban,
       label: "Leads & Pipeline",
       href: "/leads",
+      roles: ['owner', 'administrator']
     },
     {
       icon: Users,
       label: "Clients",
       href: "/clients",
+      roles: ['owner', 'administrator']
     },
     {
       icon: ListChecks,
       label: "Projects",
       href: "/projects",
+      roles: ['owner', 'administrator', 'team']
     },
     {
       icon: UserRound,
       label: "Team",
       href: "/team",
+      roles: ['owner', 'administrator', 'team']
     },
     {
       icon: FileText,
       label: "Invoices",
       href: "/invoices",
+      roles: ['owner', 'administrator']
     },
     {
       icon: FileEdit,
       label: "Briefs",
       href: "/briefs",
+      roles: ['owner', 'administrator']
     },
     {
       icon: BarChart,
       label: "Statistics",
       href: "/statistics",
+      roles: ['owner', 'administrator']
     },
     {
       icon: Settings,
       label: "Settings",
       href: "/settings",
+      roles: ['owner', 'administrator', 'team']
     },
   ];
+
+  // Filter navigation items based on user role
+  const navItems = getAllNavItems().filter(item => {
+    if (!userRole) return false;
+    return item.roles.includes(userRole);
+  });
 
   return (
     <div

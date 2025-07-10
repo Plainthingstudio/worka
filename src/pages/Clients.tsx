@@ -14,6 +14,7 @@ import { useClients } from "@/hooks/useClients";
 import { useClientDialogs } from "@/hooks/useClientDialogs";
 import { useClientFilters } from "@/hooks/useClientFilters";
 import { useSidebarWidth } from "@/hooks/useSidebarWidth";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const Clients = () => {
   // Custom hooks for data and state management
@@ -31,6 +32,7 @@ const Clients = () => {
   } = useClientDialogs();
   const { search, setSearch, sourceFilter, setSourceFilter, filteredClients } = useClientFilters(clients);
   const { isSidebarExpanded } = useSidebarWidth();
+  const { canManageProjects, userRole } = useUserRole();
 
   // Handle client form submissions
   const handleAddClient = async (data: any) => {
@@ -57,7 +59,10 @@ const Clients = () => {
       <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
         <Navbar title="Clients" />
         <main className="container mx-auto p-6">
-          <ClientsHeader onCreateClient={openAddClientDialog} />
+          <ClientsHeader 
+            onCreateClient={canManageProjects() ? openAddClientDialog : undefined}
+            userRole={userRole}
+          />
 
           <ClientsFilter 
             search={search} 
@@ -74,8 +79,8 @@ const Clients = () => {
               ) : (
                 <ClientsTable 
                   clients={filteredClients} 
-                  onEdit={openEditClientDialog} 
-                  onDelete={openDeleteDialog} 
+                  onEdit={canManageProjects() ? openEditClientDialog : undefined} 
+                  onDelete={canManageProjects() ? openDeleteDialog : undefined} 
                 />
               )}
             </div>
@@ -84,7 +89,7 @@ const Clients = () => {
       </div>
 
       {/* Add Client Dialog */}
-      {isAddingClient && (
+      {canManageProjects() && isAddingClient && (
         <Dialog open={isAddingClient} onOpenChange={closeAddClientDialog}>
           <DialogContent className="sm:max-w-[500px]">
             <ClientForm onSave={handleAddClient} onCancel={closeAddClientDialog} />
@@ -93,7 +98,7 @@ const Clients = () => {
       )}
 
       {/* Edit Client Dialog */}
-      {editingClient && (
+      {canManageProjects() && editingClient && (
         <Dialog open={!!editingClient} onOpenChange={closeEditClientDialog}>
           <DialogContent className="sm:max-w-[500px]">
             <ClientForm client={editingClient} onSave={handleEditClient} onCancel={closeEditClientDialog} />
@@ -102,7 +107,7 @@ const Clients = () => {
       )}
 
       {/* Delete Confirmation Dialog */}
-      {isDeleting && (
+      {canManageProjects() && isDeleting && (
         <DeleteConfirmationDialog 
           isOpen={!!isDeleting} 
           onClose={closeDeleteDialog} 

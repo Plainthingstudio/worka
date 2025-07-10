@@ -15,11 +15,13 @@ import {
 
 interface TeamMemberItemProps {
   member: TeamMember;
-  onEdit: (member: TeamMember) => void;
-  onDelete: (id: string) => void;
+  onEdit?: (member: TeamMember) => void;
+  onDelete?: (id: string) => void;
 }
 
 const TeamMemberItem = ({ member, onEdit, onDelete }: TeamMemberItemProps) => {
+  const showActions = onEdit || onDelete;
+
   return (
     <TableRow key={member.id}>
       <TableCell className="font-medium">
@@ -54,47 +56,53 @@ const TeamMemberItem = ({ member, onEdit, onDelete }: TeamMemberItemProps) => {
         )}
       </TableCell>
       
-      <TableCell className="text-right">
-        <div className="flex justify-end gap-1">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => onEdit(member)}
-                >
-                  <Pencil className="h-4 w-4" />
-                  <span className="sr-only">Edit</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Edit Team Member</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-destructive"
-                  onClick={() => onDelete(member.id)}
-                >
-                  <Trash className="h-4 w-4" />
-                  <span className="sr-only">Delete</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Delete Team Member</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      </TableCell>
+      {showActions && (
+        <TableCell className="text-right">
+          <div className="flex justify-end gap-1">
+            {onEdit && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => onEdit(member)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                      <span className="sr-only">Edit</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Edit Team Member</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            
+            {onDelete && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive"
+                      onClick={() => onDelete(member.id)}
+                    >
+                      <Trash className="h-4 w-4" />
+                      <span className="sr-only">Delete</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete Team Member</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+        </TableCell>
+      )}
     </TableRow>
   );
 };

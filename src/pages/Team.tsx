@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import TeamFilter from "@/components/team/TeamFilter";
 import TeamTable from "@/components/team/TeamTable";
 import DeleteTeamMemberDialog from "@/components/team/DeleteTeamMemberDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export const useTeamMembers = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -67,6 +69,7 @@ const Team = () => {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const { canManageTeam, userRole } = useUserRole();
 
   useEffect(() => {
     fetchTeamMembers();
@@ -274,11 +277,18 @@ const Team = () => {
               <p className="text-muted-foreground">
                 Manage your team members and their skills.
               </p>
+              {userRole && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your role: <span className="capitalize font-medium">{userRole}</span>
+                </p>
+              )}
             </div>
-            <Button onClick={openAddMemberDialog} className="whitespace-nowrap">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Team Member
-            </Button>
+            {canManageTeam() && (
+              <Button onClick={openAddMemberDialog} className="whitespace-nowrap">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Team Member
+              </Button>
+            )}
           </div>
 
           <TeamFilter 
@@ -292,15 +302,15 @@ const Team = () => {
             <div className="overflow-x-auto p-4 py-[8px] px-[8px]">
               <TeamTable 
                 members={filteredMembers} 
-                onEdit={openEditMemberDialog} 
-                onDelete={openDeleteDialog} 
+                onEdit={canManageTeam() ? openEditMemberDialog : undefined} 
+                onDelete={canManageTeam() ? openDeleteDialog : undefined} 
               />
             </div>
           </div>
         </main>
       </div>
 
-      {isAddingMember && (
+      {canManageTeam() && isAddingMember && (
         <Dialog open={isAddingMember} onOpenChange={closeAddMemberDialog}>
           <DialogContent className="sm:max-w-[600px]">
             <TeamForm onSave={handleAddMember} onCancel={closeAddMemberDialog} />
@@ -308,7 +318,7 @@ const Team = () => {
         </Dialog>
       )}
 
-      {editingMember && (
+      {canManageTeam() && editingMember && (
         <Dialog open={!!editingMember} onOpenChange={closeEditMemberDialog}>
           <DialogContent className="sm:max-w-[600px]">
             <TeamForm teamMember={editingMember} onSave={handleEditMember} onCancel={closeEditMemberDialog} />
@@ -316,7 +326,7 @@ const Team = () => {
         </Dialog>
       )}
 
-      {isDeleting && (
+      {canManageTeam() && isDeleting && (
         <DeleteTeamMemberDialog 
           isOpen={!!isDeleting} 
           onClose={closeDeleteDialog} 

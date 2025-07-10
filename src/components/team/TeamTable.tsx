@@ -13,11 +13,13 @@ import TeamMemberItem from "./TeamMember";
 
 interface TeamTableProps {
   members: TeamMember[];
-  onEdit: (member: TeamMember) => void;
-  onDelete: (id: string) => void;
+  onEdit?: (member: TeamMember) => void;
+  onDelete?: (id: string) => void;
 }
 
 const TeamTable = ({ members, onEdit, onDelete }: TeamTableProps) => {
+  const showActions = onEdit || onDelete;
+
   return (
     <Table>
       <TableHeader>
@@ -26,14 +28,14 @@ const TeamTable = ({ members, onEdit, onDelete }: TeamTableProps) => {
           <TableHead>Position</TableHead>
           <TableHead>Start Date</TableHead>
           <TableHead>Skills</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
+          {showActions && <TableHead className="text-right">Actions</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
         {members.length === 0 ? (
           <TableRow>
             <TableCell
-              colSpan={5}
+              colSpan={showActions ? 5 : 4}
               className="h-24 text-center text-muted-foreground"
             >
               No team members found.
