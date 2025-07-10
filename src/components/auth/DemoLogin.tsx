@@ -1,6 +1,8 @@
 
 import React, { memo } from "react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface DemoLoginProps {
   isLoading: boolean;
@@ -9,10 +11,55 @@ interface DemoLoginProps {
 
 // Use memo to prevent unnecessary re-renders
 const DemoLogin = memo(({ isLoading, onDemoLogin }: DemoLoginProps) => {
+  const handleDemoLogin = async () => {
+    try {
+      onDemoLogin(); // Set loading state
+      
+      // Sign in with demo credentials
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: "demo@example.com",
+        password: "password123",
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        // Check if user already has a role
+        const { data: existingRole } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', data.user.id)
+          .single();
+
+        // If no role exists, assign owner role
+        if (!existingRole) {
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: data.user.id,
+              role: 'owner'
+            });
+
+          if (roleError) {
+            console.error("Error assigning role:", roleError);
+            // Continue anyway - role assignment is not critical for demo
+          }
+        }
+
+        toast.success("Successfully logged in with demo account");
+        // Force page reload to ensure clean state
+        window.location.href = '/dashboard';
+      }
+    } catch (error: any) {
+      console.error("Demo login error:", error);
+      toast.error(error.message || "Failed to login with demo account");
+    }
+  };
+
   return (
     <div className="mt-6 flex flex-col space-y-3">
       <Button
-        onClick={onDemoLogin}
+        onClick={handleDemoLogin}
         className="w-full"
         disabled={isLoading}
         variant="default"
