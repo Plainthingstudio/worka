@@ -115,7 +115,7 @@ const TeamForm = ({
         try {
           // First get the user by email
           const { data: userData } = await supabase.auth.admin.listUsers();
-          const user = userData.users.find(u => u.email === teamMember.email);
+          const user = userData?.users.find((u: any) => u.email === teamMember.email);
           
           if (user) {
             // Then get their role

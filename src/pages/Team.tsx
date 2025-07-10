@@ -37,7 +37,7 @@ export const useTeamMembers = () => {
         throw error;
       }
 
-      const transformedMembers: TeamMember[] = data.map(member => ({
+      const transformedMembers: TeamMember[] = (data || []).map((member: any) => ({
         id: member.id,
         name: member.name,
         position: member.position as TeamPosition,
@@ -105,13 +105,13 @@ const Team = () => {
 
       // Create a map of user_id to role
       const rolesMap = new Map<string, string>();
-      rolesData?.forEach(role => {
+      rolesData?.forEach((role: any) => {
         rolesMap.set(role.user_id, role.role);
       });
 
-      const transformedMembers: TeamMember[] = teamData.map(member => {
+      const transformedMembers: TeamMember[] = (teamData || []).map((member: any) => {
         // Find the user by matching some identifier or use a stored email if available
-        const user = allUsers.users.find(u => u.id === member.user_id);
+        const user = allUsers?.users.find((u: any) => u.id === member.user_id);
         const role = rolesMap.get(member.user_id);
         
         return {
@@ -173,7 +173,7 @@ const Team = () => {
       const { data: existingUsers } = await supabase.auth.admin.listUsers();
       let targetUserId = null;
       
-      const existingUser = existingUsers.users.find(user => user.email === data.email);
+      const existingUser = existingUsers?.users.find((user: any) => user.email === data.email);
       if (existingUser) {
         targetUserId = existingUser.id;
       } else {
@@ -270,7 +270,7 @@ const Team = () => {
       if (data.role) {
         // Find the user by email
         const { data: allUsers } = await supabase.auth.admin.listUsers();
-        const targetUser = allUsers.users.find(u => u.email === data.email);
+        const targetUser = allUsers?.users.find((u: any) => u.email === data.email);
         
         if (targetUser) {
           // Check if user already has a role
@@ -337,7 +337,7 @@ const Team = () => {
       // Optionally remove their role if they were linked to a user account
       if (memberToDelete?.email) {
         const { data: allUsers } = await supabase.auth.admin.listUsers();
-        const user = allUsers.users.find(u => u.email === memberToDelete.email);
+        const user = allUsers?.users.find((u: any) => u.email === memberToDelete.email);
         
         if (user) {
           await supabase

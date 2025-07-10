@@ -38,13 +38,13 @@ export const useTeamMembers = () => {
 
       // Create a map of user_id to role
       const rolesMap = new Map<string, string>();
-      rolesData?.forEach(role => {
+      rolesData?.forEach((role: any) => {
         rolesMap.set(role.user_id, role.role);
       });
 
-      const transformedMembers: TeamMember[] = teamData.map(member => {
+      const transformedMembers: TeamMember[] = (teamData || []).map((member: any) => {
         // Find the user by user_id
-        const user = allUsers.users.find(u => u.id === member.user_id);
+        const user = allUsers?.users.find((u: any) => u.id === member.user_id);
         const role = rolesMap.get(member.user_id);
         
         return {
