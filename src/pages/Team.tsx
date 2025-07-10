@@ -61,11 +61,11 @@ export const useTeamMembers = () => {
 };
 
 const Team = () => {
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [teamMembers, setTeamMembers] = useState<(TeamMember & { role?: string; email?: string })[]>([]);
   const [search, setSearch] = useState("");
   const [positionFilter, setPositionFilter] = useState<string>("all");
   const [isAddingMember, setIsAddingMember] = useState(false);
-  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [editingMember, setEditingMember] = useState<(TeamMember & { role?: string; email?: string }) | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -85,23 +85,46 @@ const Team = () => {
         return;
       }
 
-      const { data, error } = await supabase
+      // Fetch team members
+      const { data: teamData, error: teamError } = await supabase
         .from('team_members')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        throw error;
+      if (teamError) {
+        throw teamError;
       }
 
-      const transformedMembers: TeamMember[] = data.map(member => ({
-        id: member.id,
-        name: member.name,
-        position: member.position as TeamPosition,
-        startDate: new Date(member.start_date),
-        skills: member.skills || [],
-        createdAt: new Date(member.created_at)
-      }));
+      // Get all users to match emails
+      const { data: allUsers } = await supabase.auth.admin.listUsers();
+      
+      // Get all user roles
+      const { data: rolesData } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      // Create a map of user_id to role
+      const rolesMap = new Map();
+      rolesData?.forEach(role => {
+        rolesMap.set(role.user_id, role.role);
+      });
+
+      const transformedMembers = teamData.map(member => {
+        // Find the user by matching some identifier or use a stored email if available
+        const user = allUsers.users.find(u => u.id === member.user_id);
+        const role = rolesMap.get(member.user_id);
+        
+        return {
+          id: member.id,
+          name: member.name,
+          position: member.position as TeamPosition,
+          startDate: new Date(member.start_date),
+          skills: member.skills || [],
+          createdAt: new Date(member.created_at),
+          role: role,
+          email: user?.email
+        };
+      });
 
       setTeamMembers(transformedMembers);
     } catch (error) {
@@ -146,6 +169,20 @@ const Team = () => {
         return;
       }
 
+      // First, try to find existing user by email
+      const { data: existingUsers } = await supabase.auth.admin.listUsers();
+      let targetUserId = null;
+      
+      const existingUser = existingUsers.users.find(user => user.email === data.email);
+      if (existingUser) {
+        targetUserId = existingUser.id;
+      } else {
+        // If user doesn't exist, we'll create a team member record anyway
+        // but link it to the current user for now
+        targetUserId = session.session.user.id;
+        toast.info("User not found in system. Team member added but not linked to a user account.");
+      }
+
       // Insert the team member
       const { data: newMember, error } = await supabase
         .from('team_members')
@@ -154,7 +191,7 @@ const Team = () => {
           position: data.position as TeamPosition,
           start_date: data.startDate.toISOString(),
           skills: data.skills || [],
-          user_id: session.session.user.id
+          user_id: targetUserId
         })
         .select()
         .single();
@@ -163,42 +200,38 @@ const Team = () => {
         throw error;
       }
 
-      // If a role is specified and it's not the default 'team' role, add/update the user role
-      if (data.role && data.role !== 'team') {
-        // First, check if this user already has a role
+      // Handle role assignment in user_roles table
+      if (data.role && targetUserId) {
+        // Check if user already has a role
         const { data: existingRole } = await supabase
           .from('user_roles')
           .select('*')
-          .eq('user_id', session.session.user.id);
+          .eq('user_id', targetUserId)
+          .single();
 
-        if (existingRole && existingRole.length > 0) {
+        if (existingRole) {
           // Update existing role
           await supabase
             .from('user_roles')
-            .update({ role: data.role })
-            .eq('user_id', session.session.user.id);
+            .update({ 
+              role: data.role,
+              assigned_by: session.session.user.id
+            })
+            .eq('user_id', targetUserId);
         } else {
           // Insert new role
           await supabase
             .from('user_roles')
             .insert({
-              user_id: session.session.user.id,
+              user_id: targetUserId,
               role: data.role,
               assigned_by: session.session.user.id
             });
         }
       }
 
-      const transformedMember: TeamMember = {
-        id: newMember.id,
-        name: newMember.name,
-        position: newMember.position as TeamPosition,
-        startDate: new Date(newMember.start_date),
-        skills: newMember.skills || [],
-        createdAt: new Date(newMember.created_at)
-      };
-
-      setTeamMembers([transformedMember, ...teamMembers]);
+      // Refresh the team members list
+      await fetchTeamMembers();
       setIsAddingMember(false);
       toast.success("Team member added successfully");
     } catch (error) {
@@ -219,7 +252,7 @@ const Team = () => {
       }
 
       // Update the team member
-      const { error } = await supabase
+      const { error: teamError } = await supabase
         .from('team_members')
         .update({
           name: data.name,
@@ -227,52 +260,50 @@ const Team = () => {
           start_date: data.startDate.toISOString(),
           skills: data.skills || []
         })
-        .eq('id', editingMember.id)
-        .eq('user_id', session.session.user.id);
+        .eq('id', editingMember.id);
 
-      if (error) {
-        throw error;
+      if (teamError) {
+        throw teamError;
       }
 
-      // Handle role update if specified
+      // Handle role update if specified and we have a valid user
       if (data.role) {
-        // Check if this user already has a role
-        const { data: existingRole } = await supabase
-          .from('user_roles')
-          .select('*')
-          .eq('user_id', session.session.user.id);
+        // Find the user by email
+        const { data: allUsers } = await supabase.auth.admin.listUsers();
+        const targetUser = allUsers.users.find(u => u.email === data.email);
+        
+        if (targetUser) {
+          // Check if user already has a role
+          const { data: existingRole } = await supabase
+            .from('user_roles')
+            .select('*')
+            .eq('user_id', targetUser.id)
+            .single();
 
-        if (existingRole && existingRole.length > 0) {
-          // Update existing role
-          await supabase
-            .from('user_roles')
-            .update({ role: data.role })
-            .eq('user_id', session.session.user.id);
-        } else {
-          // Insert new role
-          await supabase
-            .from('user_roles')
-            .insert({
-              user_id: session.session.user.id,
-              role: data.role,
-              assigned_by: session.session.user.id
-            });
+          if (existingRole) {
+            // Update existing role
+            await supabase
+              .from('user_roles')
+              .update({ 
+                role: data.role,
+                assigned_by: session.session.user.id
+              })
+              .eq('user_id', targetUser.id);
+          } else {
+            // Insert new role
+            await supabase
+              .from('user_roles')
+              .insert({
+                user_id: targetUser.id,
+                role: data.role,
+                assigned_by: session.session.user.id
+              });
+          }
         }
       }
 
-      const updatedMembers = teamMembers.map(member =>
-        member.id === editingMember.id
-          ? {
-              ...member,
-              name: data.name,
-              position: data.position as TeamPosition,
-              startDate: data.startDate,
-              skills: data.skills || []
-            }
-          : member
-      );
-
-      setTeamMembers(updatedMembers);
+      // Refresh the team members list
+      await fetchTeamMembers();
       setEditingMember(null);
       toast.success("Team member updated successfully");
     } catch (error) {
@@ -290,18 +321,34 @@ const Team = () => {
         return;
       }
 
-      const { error } = await supabase
+      // Find the member to delete
+      const memberToDelete = teamMembers.find(m => m.id === id);
+      
+      // Delete from team_members table
+      const { error: teamError } = await supabase
         .from('team_members')
         .delete()
-        .eq('id', id)
-        .eq('user_id', session.session.user.id);
+        .eq('id', id);
 
-      if (error) {
-        throw error;
+      if (teamError) {
+        throw teamError;
       }
 
-      const updatedMembers = teamMembers.filter(member => member.id !== id);
-      setTeamMembers(updatedMembers);
+      // Optionally remove their role if they were linked to a user account
+      if (memberToDelete?.email) {
+        const { data: allUsers } = await supabase.auth.admin.listUsers();
+        const user = allUsers.users.find(u => u.email === memberToDelete.email);
+        
+        if (user) {
+          await supabase
+            .from('user_roles')
+            .delete()
+            .eq('user_id', user.id);
+        }
+      }
+
+      // Refresh the team members list
+      await fetchTeamMembers();
       setIsDeleting(null);
       toast.success("Team member deleted successfully");
     } catch (error) {
@@ -312,7 +359,7 @@ const Team = () => {
 
   const openAddMemberDialog = () => setIsAddingMember(true);
   const closeAddMemberDialog = () => setIsAddingMember(false);
-  const openEditMemberDialog = (member: TeamMember) => setEditingMember(member);
+  const openEditMemberDialog = (member: TeamMember & { role?: string; email?: string }) => setEditingMember(member);
   const closeEditMemberDialog = () => setEditingMember(null);
   const openDeleteDialog = (id: string) => setIsDeleting(id);
   const closeDeleteDialog = () => setIsDeleting(null);

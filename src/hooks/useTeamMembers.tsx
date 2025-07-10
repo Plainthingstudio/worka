@@ -5,7 +5,7 @@ import { TeamMember, TeamPosition } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useTeamMembers = () => {
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [teamMembers, setTeamMembers] = useState<(TeamMember & { role?: string; email?: string })[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchTeamMembers = async () => {
@@ -18,23 +18,46 @@ export const useTeamMembers = () => {
         return [];
       }
 
-      const { data, error } = await supabase
+      // Fetch team members
+      const { data: teamData, error: teamError } = await supabase
         .from('team_members')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        throw error;
+      if (teamError) {
+        throw teamError;
       }
 
-      const transformedMembers: TeamMember[] = data.map(member => ({
-        id: member.id,
-        name: member.name,
-        position: member.position as TeamPosition,
-        startDate: new Date(member.start_date),
-        skills: member.skills || [],
-        createdAt: new Date(member.created_at)
-      }));
+      // Get all users to match emails and roles
+      const { data: allUsers } = await supabase.auth.admin.listUsers();
+      
+      // Get all user roles
+      const { data: rolesData } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      // Create a map of user_id to role
+      const rolesMap = new Map();
+      rolesData?.forEach(role => {
+        rolesMap.set(role.user_id, role.role);
+      });
+
+      const transformedMembers = teamData.map(member => {
+        // Find the user by user_id
+        const user = allUsers.users.find(u => u.id === member.user_id);
+        const role = rolesMap.get(member.user_id);
+        
+        return {
+          id: member.id,
+          name: member.name,
+          position: member.position as TeamPosition,
+          startDate: new Date(member.start_date),
+          skills: member.skills || [],
+          createdAt: new Date(member.created_at),
+          role: role,
+          email: user?.email
+        };
+      });
 
       setTeamMembers(transformedMembers);
       return transformedMembers;

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,10 +16,14 @@ import { DialogTitle, DialogDescription, DialogHeader, DialogFooter } from "@/co
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters."
+  }),
+  email: z.string().email({
+    message: "Please enter a valid email address."
   }),
   position: z.string({
     required_error: "Please select a position."
@@ -36,7 +40,7 @@ const formSchema = z.object({
 });
 
 interface TeamFormProps {
-  teamMember?: TeamMember;
+  teamMember?: TeamMember & { role?: string; email?: string };
   onSave: (values: z.infer<typeof formSchema>) => void;
   onCancel: () => void;
 }
@@ -50,6 +54,7 @@ const TeamForm = ({
   const [selectedSkills, setSelectedSkills] = useState<string[]>(
     teamMember?.skills || []
   );
+  const [currentRole, setCurrentRole] = useState<string | null>(null);
 
   // Common skills for suggestion
   const skillSuggestions = [
@@ -103,12 +108,43 @@ const TeamForm = ({
     { value: "team", label: "Team Member" }
   ];
 
+  // Fetch current role if editing existing member
+  useEffect(() => {
+    const fetchCurrentRole = async () => {
+      if (teamMember?.email) {
+        try {
+          // First get the user by email
+          const { data: userData } = await supabase.auth.admin.listUsers();
+          const user = userData.users.find(u => u.email === teamMember.email);
+          
+          if (user) {
+            // Then get their role
+            const { data: roleData } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', user.id)
+              .single();
+            
+            if (roleData) {
+              setCurrentRole(roleData.role);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching current role:', error);
+        }
+      }
+    };
+
+    fetchCurrentRole();
+  }, [teamMember?.email]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: teamMember?.name || "",
+      email: teamMember?.email || "",
       position: teamMember?.position || "",
-      role: (teamMember as any)?.role || "team",
+      role: teamMember?.role || currentRole || "team",
       startDate: teamMember?.startDate ? new Date(teamMember.startDate) : new Date(),
       skills: teamMember?.skills || []
     }
@@ -118,6 +154,13 @@ const TeamForm = ({
   React.useEffect(() => {
     form.setValue('skills', selectedSkills);
   }, [selectedSkills, form]);
+
+  // Update role when currentRole is fetched
+  React.useEffect(() => {
+    if (currentRole && !teamMember?.role) {
+      form.setValue('role', currentRole);
+    }
+  }, [currentRole, form, teamMember?.role]);
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     onSave(values);
@@ -164,6 +207,20 @@ const TeamForm = ({
 
         <FormField 
           control={form.control} 
+          name="email" 
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input placeholder="john@example.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} 
+        />
+
+        <FormField 
+          control={form.control} 
           name="position" 
           render={({ field }) => (
             <FormItem>
@@ -193,7 +250,7 @@ const TeamForm = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Role</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a role" />
@@ -208,6 +265,11 @@ const TeamForm = ({
                 </SelectContent>
               </Select>
               <FormMessage />
+              {currentRole && (
+                <p className="text-xs text-muted-foreground">
+                  Current role in system: <span className="capitalize font-medium">{currentRole}</span>
+                </p>
+              )}
             </FormItem>
           )} 
         />

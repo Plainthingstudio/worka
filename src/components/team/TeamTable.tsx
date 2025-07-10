@@ -12,8 +12,8 @@ import { TeamMember } from "@/types";
 import TeamMemberItem from "./TeamMember";
 
 interface TeamTableProps {
-  members: TeamMember[];
-  onEdit?: (member: TeamMember) => void;
+  members: (TeamMember & { role?: string; email?: string })[];
+  onEdit?: (member: TeamMember & { role?: string; email?: string }) => void;
   onDelete?: (id: string) => void;
 }
 
@@ -25,7 +25,7 @@ const TeamTable = ({ members, onEdit, onDelete }: TeamTableProps) => {
       <TableHeader>
         <TableRow>
           <TableHead>Name</TableHead>
-          <TableHead>Position</TableHead>
+          <TableHead>Position & Role</TableHead>
           <TableHead>Start Date</TableHead>
           <TableHead>Skills</TableHead>
           {showActions && <TableHead className="text-right">Actions</TableHead>}
