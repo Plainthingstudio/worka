@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Session, User } from "@supabase/supabase-js";
 
 export function useAuthState() {
   const navigate = useNavigate();
@@ -11,56 +12,91 @@ export function useAuthState() {
   const [password, setPassword] = useState("");
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
   
   useEffect(() => {
-    // One-time auth check on mount with reduced timeout
-    const checkUser = async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
+    let mounted = true;
+
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.id);
         
-        if (data.session) {
-          setIsAuthenticated(true);
-          localStorage.setItem("isLoggedIn", "true");
-          navigate("/dashboard", { replace: true });
-        } else {
-          setIsAuthenticated(false);
-          localStorage.removeItem("isLoggedIn");
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
-        setIsAuthenticated(false);
-        localStorage.removeItem("isLoggedIn");
-      } finally {
-        // Reduced timeout for faster UI response
-        setTimeout(() => {
-          setIsCheckingAuth(false);
-        }, 100);
-      }
-    };
-    
-    checkUser();
-    
-    // Set up auth state listener with cleanup
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log("Auth state changed:", event);
-        
+        if (!mounted) return;
+
         if (event === 'SIGNED_IN' && session) {
+          setSession(session);
           setIsAuthenticated(true);
           localStorage.setItem("isLoggedIn", "true");
-          navigate("/dashboard", { replace: true });
+          
+          // Only navigate if not already on dashboard
+          const currentPath = window.location.pathname;
+          if (currentPath === '/auth' || currentPath === '/login') {
+            navigate("/dashboard", { replace: true });
+          }
         } else if (event === 'SIGNED_OUT') {
+          setSession(null);
           setIsAuthenticated(false);
           localStorage.removeItem("isLoggedIn");
+          navigate("/auth", { replace: true });
+        }
+        
+        if (mounted) {
+          setIsCheckingAuth(false);
         }
       }
     );
+
+    // Check for existing session
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Session check error:", error);
+          if (mounted) {
+            setIsAuthenticated(false);
+            setSession(null);
+            localStorage.removeItem("isLoggedIn");
+            setIsCheckingAuth(false);
+          }
+          return;
+        }
+
+        if (mounted) {
+          if (session) {
+            setSession(session);
+            setIsAuthenticated(true);
+            localStorage.setItem("isLoggedIn", "true");
+            
+            // Navigate to dashboard if on auth page
+            const currentPath = window.location.pathname;
+            if (currentPath === '/auth' || currentPath === '/login') {
+              navigate("/dashboard", { replace: true });
+            }
+          } else {
+            setSession(null);
+            setIsAuthenticated(false);
+            localStorage.removeItem("isLoggedIn");
+          }
+          setIsCheckingAuth(false);
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        if (mounted) {
+          setIsAuthenticated(false);
+          setSession(null);
+          localStorage.removeItem("isLoggedIn");
+          setIsCheckingAuth(false);
+        }
+      }
+    };
+
+    checkSession();
     
     return () => {
-      // Proper cleanup to avoid memory leaks
-      if (authListener && authListener.subscription) {
-        authListener.subscription.unsubscribe();
-      }
+      mounted = false;
+      subscription.unsubscribe();
     };
   }, [navigate]);
   
@@ -69,24 +105,22 @@ export function useAuthState() {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) throw error;
       
-      // Set localStorage immediately for faster UI feedback
-      localStorage.setItem("isLoggedIn", "true");
-      
-      // Success is handled by the auth listener
-      toast.success("Successfully logged in");
-      
-      // Navigate immediately for faster response
-      navigate("/dashboard", { replace: true });
+      if (data.user) {
+        toast.success("Successfully logged in");
+        // Navigation will be handled by onAuthStateChange
+      }
     } catch (error: any) {
+      console.error("Login error:", error);
       toast.error(error.message || "Failed to login");
-      setIsLoading(false); // Only set loading to false on error
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -94,68 +128,49 @@ export function useAuthState() {
     setIsLoading(true);
     
     try {
-      // For demo purposes, we'll use preset credentials
-      const demoEmail = "demo@example.com";
-      const demoPassword = "password123";
-      
-      const { error } = await supabase.auth.signInWithPassword({
-        email: demoEmail,
-        password: demoPassword,
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: "demo@example.com",
+        password: "password123",
       });
       
-      if (error) {
-        // If the demo account doesn't exist yet, create it
-        if (error.message.includes("Invalid login credentials")) {
-          const { error: signUpError } = await supabase.auth.signUp({
-            email: demoEmail,
-            password: demoPassword,
-            options: {
-              data: {
-                full_name: "Demo User",
-              },
-            },
-          });
-          
-          if (signUpError) {
-            throw signUpError;
-          }
-          
-          // Set localStorage immediately
-          localStorage.setItem("isLoggedIn", "true");
-          
-          toast.success("Created and logged in with demo account");
-          
-          // Navigate immediately
-          navigate("/dashboard", { replace: true });
-          
-          // Try to sign in again after creating the account
-          const { error: retryError } = await supabase.auth.signInWithPassword({
-            email: demoEmail,
-            password: demoPassword,
-          });
-          
-          if (retryError) throw retryError;
-        } else {
-          throw error;
-        }
-      } else {
-        // Set localStorage immediately
-        localStorage.setItem("isLoggedIn", "true");
-        
+      if (error) throw error;
+      
+      if (data.user) {
         toast.success("Successfully logged in with demo account");
-        
-        // Navigate immediately
-        navigate("/dashboard", { replace: true });
+        // Navigation will be handled by onAuthStateChange
       }
     } catch (error: any) {
+      console.error("Demo login error:", error);
       toast.error(error.message || "Failed to login with demo account");
-      setIsLoading(false); // Only set loading to false on error
+    } finally {
+      setIsLoading(false);
     }
   };
   
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Authentication is handled in the SignupForm component
+    setIsLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+      
+      if (error) throw error;
+      
+      if (data.user) {
+        toast.success("Check your email for the confirmation link");
+      }
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      toast.error(error.message || "Failed to sign up");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return {
@@ -167,6 +182,7 @@ export function useAuthState() {
     setPassword,
     isCheckingAuth,
     isAuthenticated,
+    session,
     handleLogin,
     handleDummyLogin,
     handleSignup
