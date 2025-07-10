@@ -29,7 +29,7 @@ const DemoLogin = memo(({ isLoading, onDemoLogin }: DemoLoginProps) => {
           .from('user_roles')
           .select('role')
           .eq('user_id', data.user.id)
-          .single();
+          .maybeSingle(); // Use maybeSingle to handle no rows gracefully
 
         // If no role exists, assign owner role
         if (!existingRole) {
@@ -42,7 +42,9 @@ const DemoLogin = memo(({ isLoading, onDemoLogin }: DemoLoginProps) => {
 
           if (roleError) {
             console.error("Error assigning role:", roleError);
-            // Continue anyway - role assignment is not critical for demo
+            toast.error("Failed to assign user role, but login successful");
+          } else {
+            console.log("Successfully assigned owner role to demo user");
           }
         }
 
@@ -64,18 +66,11 @@ const DemoLogin = memo(({ isLoading, onDemoLogin }: DemoLoginProps) => {
         disabled={isLoading}
         variant="default"
       >
-        {isLoading ? "Logging in..." : "Login with Demo Account"}
+        {isLoading ? "Logging in..." : "Continue with Demo Account"}
       </Button>
-      <div className="relative my-2">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-border"></span>
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Or continue with credentials
-          </span>
-        </div>
-      </div>
+      <p className="text-center text-sm text-muted-foreground">
+        No registration required
+      </p>
     </div>
   );
 });
