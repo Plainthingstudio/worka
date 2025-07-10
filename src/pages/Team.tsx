@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,8 @@ import { TeamMember, TeamPosition } from "@/types";
 import TeamFilter from "@/components/team/TeamFilter";
 import TeamTable from "@/components/team/TeamTable";
 import DeleteTeamMemberDialog from "@/components/team/DeleteTeamMemberDialog";
+import InvitationDialog from "@/components/team/InvitationDialog";
+import PendingInvitations from "@/components/team/PendingInvitations";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
 
@@ -69,6 +70,8 @@ const Team = () => {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInvitationDialogOpen, setIsInvitationDialogOpen] = useState(false);
+  const [invitationRefreshTrigger, setInvitationRefreshTrigger] = useState(0);
   const { canManageTeam, userRole } = useUserRole();
 
   useEffect(() => {
@@ -363,14 +366,20 @@ const Team = () => {
   const closeEditMemberDialog = () => setEditingMember(null);
   const openDeleteDialog = (id: string) => setIsDeleting(id);
   const closeDeleteDialog = () => setIsDeleting(null);
+  const openInvitationDialog = () => setIsInvitationDialogOpen(true);
+  const closeInvitationDialog = () => setIsInvitationDialogOpen(false);
+
+  const handleInvitationSent = () => {
+    setInvitationRefreshTrigger(prev => prev + 1);
+  };
 
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
       <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
         <Navbar title="Team" />
-        <main className="container mx-auto p-6">
-          <div className="mb-8 flex items-center justify-between">
+        <main className="container mx-auto p-6 space-y-6">
+          <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">
                 Team
@@ -385,12 +394,23 @@ const Team = () => {
               )}
             </div>
             {canManageTeam() && (
-              <Button onClick={openAddMemberDialog} className="whitespace-nowrap">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Team Member
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={openInvitationDialog} variant="outline">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Invite Member
+                </Button>
+                <Button onClick={openAddMemberDialog}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Team Member
+                </Button>
+              </div>
             )}
           </div>
+
+          {/* Pending Invitations */}
+          {canManageTeam() && (
+            <PendingInvitations refreshTrigger={invitationRefreshTrigger} />
+          )}
 
           <TeamFilter 
             search={search} 
@@ -411,6 +431,14 @@ const Team = () => {
         </main>
       </div>
 
+      {/* Invitation Dialog */}
+      <InvitationDialog 
+        isOpen={isInvitationDialogOpen}
+        onClose={closeInvitationDialog}
+        onInvitationSent={handleInvitationSent}
+      />
+
+      {/* Existing dialogs */}
       {canManageTeam() && isAddingMember && (
         <Dialog open={isAddingMember} onOpenChange={closeAddMemberDialog}>
           <DialogContent className="sm:max-w-[600px]">
