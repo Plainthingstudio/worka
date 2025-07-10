@@ -12,8 +12,8 @@ import { TeamMember } from "@/types";
 import TeamMemberItem from "./TeamMember";
 
 interface TeamTableProps {
-  members: (TeamMember & { role?: string; email?: string })[];
-  onEdit?: (member: TeamMember & { role?: string; email?: string }) => void;
+  members: TeamMember[];
+  onEdit?: (member: TeamMember) => void;
   onDelete?: (id: string) => void;
 }
 

@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/tooltip";
 
 interface TeamMemberItemProps {
-  member: TeamMember & { role?: string; email?: string };
-  onEdit?: (member: TeamMember & { role?: string; email?: string }) => void;
+  member: TeamMember;
+  onEdit?: (member: TeamMember) => void;
   onDelete?: (id: string) => void;
 }
 

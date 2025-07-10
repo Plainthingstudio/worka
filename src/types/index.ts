@@ -1,4 +1,3 @@
-
 export type LeadSource = 'Dribbble' | 'Website' | 'LinkedIn' | 'Behance' | 'Direct Email' | 'Other';
 
 export type ProjectStatus = 'Planning' | 'In progress' | 'Completed' | 'Paused' | 'Cancelled';
@@ -70,6 +69,8 @@ export interface TeamMember {
   startDate: Date;
   skills: string[];
   createdAt: Date;
+  role?: string;
+  email?: string;
 }
 
 export interface Project {

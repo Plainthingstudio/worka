@@ -40,7 +40,7 @@ const formSchema = z.object({
 });
 
 interface TeamFormProps {
-  teamMember?: TeamMember & { role?: string; email?: string };
+  teamMember?: TeamMember;
   onSave: (values: z.infer<typeof formSchema>) => void;
   onCancel: () => void;
 }

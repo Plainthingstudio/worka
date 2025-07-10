@@ -61,11 +61,11 @@ export const useTeamMembers = () => {
 };
 
 const Team = () => {
-  const [teamMembers, setTeamMembers] = useState<(TeamMember & { role?: string; email?: string })[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [search, setSearch] = useState("");
   const [positionFilter, setPositionFilter] = useState<string>("all");
   const [isAddingMember, setIsAddingMember] = useState(false);
-  const [editingMember, setEditingMember] = useState<(TeamMember & { role?: string; email?: string }) | null>(null);
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -104,12 +104,12 @@ const Team = () => {
         .select('user_id, role');
 
       // Create a map of user_id to role
-      const rolesMap = new Map();
+      const rolesMap = new Map<string, string>();
       rolesData?.forEach(role => {
         rolesMap.set(role.user_id, role.role);
       });
 
-      const transformedMembers = teamData.map(member => {
+      const transformedMembers: TeamMember[] = teamData.map(member => {
         // Find the user by matching some identifier or use a stored email if available
         const user = allUsers.users.find(u => u.id === member.user_id);
         const role = rolesMap.get(member.user_id);
@@ -359,7 +359,7 @@ const Team = () => {
 
   const openAddMemberDialog = () => setIsAddingMember(true);
   const closeAddMemberDialog = () => setIsAddingMember(false);
-  const openEditMemberDialog = (member: TeamMember & { role?: string; email?: string }) => setEditingMember(member);
+  const openEditMemberDialog = (member: TeamMember) => setEditingMember(member);
   const closeEditMemberDialog = () => setEditingMember(null);
   const openDeleteDialog = (id: string) => setIsDeleting(id);
   const closeDeleteDialog = () => setIsDeleting(null);

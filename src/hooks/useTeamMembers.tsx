@@ -5,7 +5,7 @@ import { TeamMember, TeamPosition } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useTeamMembers = () => {
-  const [teamMembers, setTeamMembers] = useState<(TeamMember & { role?: string; email?: string })[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchTeamMembers = async () => {
@@ -37,12 +37,12 @@ export const useTeamMembers = () => {
         .select('user_id, role');
 
       // Create a map of user_id to role
-      const rolesMap = new Map();
+      const rolesMap = new Map<string, string>();
       rolesData?.forEach(role => {
         rolesMap.set(role.user_id, role.role);
       });
 
-      const transformedMembers = teamData.map(member => {
+      const transformedMembers: TeamMember[] = teamData.map(member => {
         // Find the user by user_id
         const user = allUsers.users.find(u => u.id === member.user_id);
         const role = rolesMap.get(member.user_id);
