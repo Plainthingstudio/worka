@@ -17,7 +17,7 @@ const invitationSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address."
   }),
-  role: z.string({
+  role: z.enum(["administrator", "team"], {
     required_error: "Please select a role."
   }),
   message: z.string().optional()
@@ -41,7 +41,7 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
     resolver: zodResolver(invitationSchema),
     defaultValues: {
       email: "",
-      role: "",
+      role: undefined,
       message: ""
     }
   });
@@ -102,7 +102,7 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
         .from('invitations')
         .insert({
           email: values.email,
-          role: values.role,
+          role: values.role as "administrator" | "team",
           invited_by: session.session.user.id,
           expires_at: expiresAt.toISOString(),
           token: generateToken()

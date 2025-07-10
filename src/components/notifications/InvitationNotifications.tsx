@@ -12,7 +12,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 interface Invitation {
   id: string;
   email: string;
-  role: string;
+  role: "owner" | "administrator" | "team";
   invited_by: string;
   created_at: string;
   expires_at: string;
@@ -65,12 +65,12 @@ const InvitationNotifications = () => {
 
       if (invitationError) throw invitationError;
 
-      // Create user role
+      // Create user role with properly typed role
       const { error: roleError } = await supabase
         .from('user_roles')
         .insert({
           user_id: session.session.user.id,
-          role: invitation.role,
+          role: invitation.role as "owner" | "administrator" | "team",
           assigned_by: invitation.invited_by
         });
 
