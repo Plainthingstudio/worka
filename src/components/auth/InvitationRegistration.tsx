@@ -55,6 +55,7 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
 
   const handleSubmit = async (values: z.infer<typeof registrationSchema>) => {
     setIsLoading(true);
+    console.log("Starting registration process for:", invitation.email);
 
     try {
       // Sign up the user
@@ -69,16 +70,22 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
         },
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        console.error('Auth signup error:', authError);
+        throw authError;
+      }
 
       if (!authData.user) {
         throw new Error("User creation failed");
       }
 
+      console.log("User created successfully:", authData.user.id);
+
       // Wait a moment for the user to be fully created
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Create profile record
+      console.log("Creating profile record...");
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -91,9 +98,12 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
       if (profileError) {
         console.error('Profile creation error:', profileError);
         // Don't throw here as the user is already created
+      } else {
+        console.log("Profile created successfully");
       }
 
       // Create user role
+      console.log("Creating user role record...");
       const { error: roleError } = await supabase
         .from('user_roles')
         .insert({
@@ -105,9 +115,39 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
       if (roleError) {
         console.error('Role creation error:', roleError);
         // Don't throw here as the user is already created
+      } else {
+        console.log("User role created successfully");
+      }
+
+      // Create team member record
+      // First, we need to get the position from the invitation dialog context
+      // For now, we'll use a default position based on role
+      const defaultPosition = invitation.role === 'administrator' 
+        ? 'Administrator' 
+        : invitation.role === 'owner' 
+        ? 'Owner' 
+        : 'Team Member';
+
+      console.log("Creating team member record...");
+      const { error: teamMemberError } = await supabase
+        .from('team_members')
+        .insert({
+          user_id: authData.user.id,
+          name: values.fullName,
+          position: defaultPosition,
+          start_date: new Date().toISOString(),
+          skills: [],
+        });
+
+      if (teamMemberError) {
+        console.error('Team member creation error:', teamMemberError);
+        // Don't throw here as the user is already created
+      } else {
+        console.log("Team member created successfully");
       }
 
       // Mark invitation as accepted
+      console.log("Marking invitation as accepted...");
       const { error: invitationError } = await supabase
         .from('invitations')
         .update({ accepted_at: new Date().toISOString() })
@@ -116,6 +156,8 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
       if (invitationError) {
         console.error('Invitation update error:', invitationError);
         // Don't throw here as the user is already created
+      } else {
+        console.log("Invitation marked as accepted");
       }
 
       toast.success("Registration successful! Welcome to the team!");

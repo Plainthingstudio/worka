@@ -80,6 +80,8 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
         return;
       }
 
+      console.log("Creating invitation for:", values.email, "with position:", values.position);
+
       // Check if user already exists
       const { data: existingUsers } = await supabase.auth.admin.listUsers();
       const existingUser = existingUsers?.users.find((user: any) => user.email === values.email);
@@ -112,22 +114,36 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
         return;
       }
 
-      // Create invitation
+      // Create invitation with position information
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
       const token = generateToken();
 
+      // We need to store the position information somehow
+      // Let's use a metadata field or create a custom field
+      const invitationData = {
+        email: values.email,
+        role: values.role as "administrator" | "team",
+        invited_by: session.session.user.id,
+        expires_at: expiresAt.toISOString(),
+        token: token,
+        // We'll store position info in a metadata field
+        metadata: {
+          position: values.position,
+          message: values.message
+        }
+      };
+
       const { error } = await supabase
         .from('invitations')
-        .insert({
-          email: values.email,
-          role: values.role as "administrator" | "team",
-          invited_by: session.session.user.id,
-          expires_at: expiresAt.toISOString(),
-          token: token
-        });
+        .insert(invitationData);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Invitation creation error:', error);
+        throw error;
+      }
+
+      console.log("Invitation created successfully");
 
       // Generate the invitation link
       const inviteLink = `${window.location.origin}/auth?invitation=${token}`;
@@ -281,6 +297,7 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
                     </SelectContent>
                   </Select>
                   <FormMessage />
+                </FormMessage>
                 </FormItem>
               )}
             />
