@@ -115,7 +115,9 @@ const Sidebar = () => {
   const navItems = getAllNavItems().filter(item => {
     if (!userRole) return false;
     // Owner and Administrator can see all menu items
-    if (userRole === 'owner' || userRole === 'administrator') return true;
+    const canSeeItem = userRole === 'owner' || userRole === 'administrator';
+    console.log(`Item: ${item.label}, UserRole: ${userRole}, CanSee: ${canSeeItem}, ItemRoles:`, item.roles);
+    if (canSeeItem) return true;
     // Team members can only see items they have roles for
     return item.roles.includes(userRole);
   });
