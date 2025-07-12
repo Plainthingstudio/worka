@@ -119,15 +119,13 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
       expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
       const token = generateToken();
 
-      // We need to store the position information somehow
-      // Let's use a metadata field or create a custom field
+      // Store the position and message in metadata
       const invitationData = {
         email: values.email,
         role: values.role as "administrator" | "team",
         invited_by: session.session.user.id,
         expires_at: expiresAt.toISOString(),
         token: token,
-        // We'll store position info in a metadata field
         metadata: {
           position: values.position,
           message: values.message
@@ -297,7 +295,6 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
                     </SelectContent>
                   </Select>
                   <FormMessage />
-                </FormMessage>
                 </FormItem>
               )}
             />
