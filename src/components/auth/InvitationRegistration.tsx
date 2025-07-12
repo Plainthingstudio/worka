@@ -31,6 +31,10 @@ interface InvitationData {
   token: string;
   expires_at: string;
   invited_by: string;
+  metadata?: {
+    position?: string;
+    message?: string;
+  };
 }
 
 interface InvitationRegistrationProps {
@@ -97,7 +101,7 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
 
       if (profileError) {
         console.error('Profile creation error:', profileError);
-        // Don't throw here as the user is already created
+        // Continue with the process even if profile creation fails
       } else {
         console.log("Profile created successfully");
       }
@@ -114,39 +118,35 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
 
       if (roleError) {
         console.error('Role creation error:', roleError);
-        // Don't throw here as the user is already created
+        // Continue with the process
       } else {
         console.log("User role created successfully");
       }
 
       // Create team member record
-      // First, we need to get the position from the invitation dialog context
-      // For now, we'll use a default position based on role
-      const defaultPosition = invitation.role === 'administrator' 
-        ? 'Administrator' 
-        : invitation.role === 'owner' 
-        ? 'Owner' 
-        : 'Team Member';
+      const position = invitation.metadata?.position || 
+        (invitation.role === 'administrator' ? 'Administrator' : 
+         invitation.role === 'owner' ? 'Owner' : 'Team Member');
 
-      console.log("Creating team member record...");
+      console.log("Creating team member record with position:", position);
       const { error: teamMemberError } = await supabase
         .from('team_members')
         .insert({
           user_id: authData.user.id,
           name: values.fullName,
-          position: defaultPosition,
+          position: position,
           start_date: new Date().toISOString(),
           skills: [],
         });
 
       if (teamMemberError) {
         console.error('Team member creation error:', teamMemberError);
-        // Don't throw here as the user is already created
+        // Continue with the process
       } else {
         console.log("Team member created successfully");
       }
 
-      // Mark invitation as accepted
+      // Mark invitation as accepted - THIS IS CRUCIAL
       console.log("Marking invitation as accepted...");
       const { error: invitationError } = await supabase
         .from('invitations')
@@ -155,9 +155,9 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
 
       if (invitationError) {
         console.error('Invitation update error:', invitationError);
-        // Don't throw here as the user is already created
+        // Continue with the process even if this fails
       } else {
-        console.log("Invitation marked as accepted");
+        console.log("Invitation marked as accepted successfully");
       }
 
       toast.success("Registration successful! Welcome to the team!");
@@ -206,6 +206,11 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
           <Badge className={`${getRoleColor(invitation.role)} capitalize`}>
             {invitation.role}
           </Badge>
+          {invitation.metadata?.position && (
+            <p className="text-sm text-muted-foreground">
+              Position: <span className="font-medium">{invitation.metadata.position}</span>
+            </p>
+          )}
         </div>
 
         <Form {...form}>

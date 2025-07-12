@@ -30,15 +30,23 @@ const InvitationNotifications = () => {
       const { data: session } = await supabase.auth.getSession();
       if (!session.session?.user?.email) return;
 
+      console.log("Fetching invitations for email:", session.session.user.email);
+
+      // Only fetch invitations that are not accepted and not expired
       const { data, error } = await supabase
         .from('invitations')
         .select('*')
         .eq('email', session.session.user.email)
-        .is('accepted_at', null)
-        .gt('expires_at', new Date().toISOString())
+        .is('accepted_at', null) // Only non-accepted invitations
+        .gt('expires_at', new Date().toISOString()) // Only non-expired invitations
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching invitations:', error);
+        throw error;
+      }
+
+      console.log("Found invitations:", data);
       setInvitations(data || []);
     } catch (error) {
       console.error('Error fetching invitations:', error);
@@ -47,7 +55,12 @@ const InvitationNotifications = () => {
 
   useEffect(() => {
     fetchInvitations();
-  }, []);
+    
+    // Refresh invitations when user role changes (indicates they might have accepted an invitation)
+    if (userRole) {
+      fetchInvitations();
+    }
+  }, [userRole]);
 
   const handleAcceptInvitation = async (invitation: Invitation) => {
     try {
@@ -57,30 +70,85 @@ const InvitationNotifications = () => {
         return;
       }
 
+      console.log("Accepting invitation:", invitation.id);
+
       // Mark invitation as accepted
       const { error: invitationError } = await supabase
         .from('invitations')
         .update({ accepted_at: new Date().toISOString() })
         .eq('id', invitation.id);
 
-      if (invitationError) throw invitationError;
+      if (invitationError) {
+        console.error('Error accepting invitation:', invitationError);
+        throw invitationError;
+      }
 
-      // Create user role with properly typed role
-      const { error: roleError } = await supabase
+      // Check if user already has a role
+      const { data: existingRole } = await supabase
         .from('user_roles')
-        .insert({
-          user_id: session.session.user.id,
-          role: invitation.role as "owner" | "administrator" | "team",
-          assigned_by: invitation.invited_by
-        });
+        .select('*')
+        .eq('user_id', session.session.user.id)
+        .single();
 
-      if (roleError) throw roleError;
+      if (!existingRole) {
+        // Create user role
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: session.session.user.id,
+            role: invitation.role as "owner" | "administrator" | "team",
+            assigned_by: invitation.invited_by
+          });
 
-      // Refresh invitations
+        if (roleError) {
+          console.error('Error creating user role:', roleError);
+          throw roleError;
+        }
+      }
+
+      // Check if user already has a team member record
+      const { data: existingTeamMember } = await supabase
+        .from('team_members')
+        .select('*')
+        .eq('user_id', session.session.user.id)
+        .single();
+
+      if (!existingTeamMember) {
+        // Get user profile for name
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', session.session.user.id)
+          .single();
+
+        // Create team member record
+        const defaultPosition = invitation.role === 'administrator' 
+          ? 'Administrator' 
+          : invitation.role === 'owner' 
+          ? 'Owner' 
+          : 'Team Member';
+
+        const { error: teamMemberError } = await supabase
+          .from('team_members')
+          .insert({
+            user_id: session.session.user.id,
+            name: profile?.full_name || 'Unknown',
+            position: defaultPosition,
+            start_date: new Date().toISOString(),
+            skills: [],
+          });
+
+        if (teamMemberError) {
+          console.error('Error creating team member:', teamMemberError);
+          throw teamMemberError;
+        }
+      }
+
+      // Refresh invitations and user role
       await fetchInvitations();
       toast.success("Invitation accepted successfully!");
       
-      // Refresh the page to update user role
+      // Refresh the page to update user role throughout the app
       window.location.reload();
     } catch (error) {
       console.error('Error accepting invitation:', error);
@@ -105,7 +173,8 @@ const InvitationNotifications = () => {
     }
   };
 
-  if (invitations.length === 0) return null;
+  // Don't show notification bell if user already has a role or no pending invitations
+  if (userRole || invitations.length === 0) return null;
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
