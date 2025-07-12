@@ -65,7 +65,6 @@ const Team = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [search, setSearch] = useState("");
   const [positionFilter, setPositionFilter] = useState<string>("all");
-  const [isAddingMember, setIsAddingMember] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -162,86 +161,6 @@ const Team = () => {
     const matchesPosition = positionFilter === "all" || member.position === positionFilter;
     return matchesSearch && matchesPosition;
   });
-
-  const handleAddMember = async (data: any) => {
-    try {
-      const { data: session } = await supabase.auth.getSession();
-      
-      if (!session.session) {
-        toast.error("You must be logged in to add team members");
-        return;
-      }
-
-      // First, try to find existing user by email
-      const { data: existingUsers } = await supabase.auth.admin.listUsers();
-      let targetUserId = null;
-      
-      const existingUser = existingUsers?.users.find((user: any) => user.email === data.email);
-      if (existingUser) {
-        targetUserId = existingUser.id;
-      } else {
-        // If user doesn't exist, we'll create a team member record anyway
-        // but link it to the current user for now
-        targetUserId = session.session.user.id;
-        toast.info("User not found in system. Team member added but not linked to a user account.");
-      }
-
-      // Insert the team member
-      const { data: newMember, error } = await supabase
-        .from('team_members')
-        .insert({
-          name: data.name,
-          position: data.position as TeamPosition,
-          start_date: data.startDate.toISOString(),
-          skills: data.skills || [],
-          user_id: targetUserId
-        })
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      // Handle role assignment in user_roles table
-      if (data.role && targetUserId) {
-        // Check if user already has a role
-        const { data: existingRole } = await supabase
-          .from('user_roles')
-          .select('*')
-          .eq('user_id', targetUserId)
-          .single();
-
-        if (existingRole) {
-          // Update existing role
-          await supabase
-            .from('user_roles')
-            .update({ 
-              role: data.role,
-              assigned_by: session.session.user.id
-            })
-            .eq('user_id', targetUserId);
-        } else {
-          // Insert new role
-          await supabase
-            .from('user_roles')
-            .insert({
-              user_id: targetUserId,
-              role: data.role,
-              assigned_by: session.session.user.id
-            });
-        }
-      }
-
-      // Refresh the team members list
-      await fetchTeamMembers();
-      setIsAddingMember(false);
-      toast.success("Team member added successfully");
-    } catch (error) {
-      console.error("Error adding team member:", error);
-      toast.error("Failed to add team member");
-    }
-  };
 
   const handleEditMember = async (data: any) => {
     if (!editingMember) return;
@@ -360,8 +279,6 @@ const Team = () => {
     }
   };
 
-  const openAddMemberDialog = () => setIsAddingMember(true);
-  const closeAddMemberDialog = () => setIsAddingMember(false);
   const openEditMemberDialog = (member: TeamMember) => setEditingMember(member);
   const closeEditMemberDialog = () => setEditingMember(null);
   const openDeleteDialog = (id: string) => setIsDeleting(id);
@@ -395,13 +312,9 @@ const Team = () => {
             </div>
             {canManageTeam() && (
               <div className="flex gap-2">
-                <Button onClick={openInvitationDialog} variant="outline">
+                <Button onClick={openInvitationDialog}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Invite Member
-                </Button>
-                <Button onClick={openAddMemberDialog}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Team Member
+                  Invite Team Member
                 </Button>
               </div>
             )}
@@ -438,15 +351,7 @@ const Team = () => {
         onInvitationSent={handleInvitationSent}
       />
 
-      {/* Existing dialogs */}
-      {canManageTeam() && isAddingMember && (
-        <Dialog open={isAddingMember} onOpenChange={closeAddMemberDialog}>
-          <DialogContent className="sm:max-w-[600px]">
-            <TeamForm onSave={handleAddMember} onCancel={closeAddMemberDialog} />
-          </DialogContent>
-        </Dialog>
-      )}
-
+      {/* Edit Member Dialog */}
       {canManageTeam() && editingMember && (
         <Dialog open={!!editingMember} onOpenChange={closeEditMemberDialog}>
           <DialogContent className="sm:max-w-[600px]">

@@ -2,8 +2,8 @@
 import React, { memo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LoginForm from "./LoginForm";
-import SignupForm from "./SignupForm";
 import DemoLogin from "./DemoLogin";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface AuthCardProps {
   email: string;
@@ -42,27 +42,24 @@ const AuthCard = memo(({
         
         <DemoLogin isLoading={isLoading} onDemoLogin={handleDummyLogin} />
         
-        <Tabs defaultValue="login" className="mt-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="login">
-            <LoginForm
-              email={email}
-              setEmail={setEmail}
-              password={password}
-              setPassword={setPassword}
-              isLoading={isLoading}
-              onSubmit={handleLogin}
-            />
-          </TabsContent>
-          
-          <TabsContent value="signup">
-            <SignupForm isLoading={isLoading} onSubmit={handleSignup} />
-          </TabsContent>
-        </Tabs>
+        <div className="mt-4">
+          <LoginForm
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            isLoading={isLoading}
+            onSubmit={handleLogin}
+          />
+        </div>
+        
+        <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+          <h3 className="font-medium text-sm mb-2">Need to join a team?</h3>
+          <p className="text-xs text-muted-foreground">
+            Registration is by invitation only. If you've been invited to join a team, 
+            please use the invitation link provided to you.
+          </p>
+        </div>
         
         <div className="mt-6 text-center text-sm text-muted-foreground">
           <p>Demo credentials:</p>

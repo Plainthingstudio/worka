@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Copy, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -20,6 +20,9 @@ const invitationSchema = z.object({
   role: z.enum(["administrator", "team"], {
     required_error: "Please select a role."
   }),
+  position: z.string({
+    required_error: "Please select a position."
+  }),
   message: z.string().optional()
 });
 
@@ -31,10 +34,24 @@ interface InvitationDialogProps {
 
 const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialogProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [invitationLink, setInvitationLink] = useState<string | null>(null);
 
   const roles = [
     { value: "administrator", label: "Administrator" },
     { value: "team", label: "Team Member" }
+  ];
+
+  const positions = [
+    "Project Manager",
+    "Account Executive", 
+    "UI Designer",
+    "Senior UI Designer",
+    "Design Director",
+    "Lead UI Designer",
+    "Lead Graphic Designer",
+    "Lead Illustrator",
+    "Illustrator",
+    "Graphic Designer"
   ];
 
   const form = useForm<z.infer<typeof invitationSchema>>({
@@ -42,6 +59,7 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
     defaultValues: {
       email: "",
       role: undefined,
+      position: undefined,
       message: ""
     }
   });
@@ -97,6 +115,7 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
       // Create invitation
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
+      const token = generateToken();
 
       const { error } = await supabase
         .from('invitations')
@@ -105,14 +124,16 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
           role: values.role as "administrator" | "team",
           invited_by: session.session.user.id,
           expires_at: expiresAt.toISOString(),
-          token: generateToken()
+          token: token
         });
 
       if (error) throw error;
 
-      toast.success(`Invitation sent to ${values.email}. They will see a notification when they log in.`);
-      form.reset();
-      onClose();
+      // Generate the invitation link
+      const inviteLink = `${window.location.origin}/auth?invitation=${token}`;
+      setInvitationLink(inviteLink);
+
+      toast.success(`Invitation created! Share the link with ${values.email}`);
       onInvitationSent();
     } catch (error) {
       console.error('Error sending invitation:', error);
@@ -122,8 +143,71 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
     }
   };
 
+  const copyInvitationLink = async () => {
+    if (invitationLink) {
+      try {
+        await navigator.clipboard.writeText(invitationLink);
+        toast.success("Invitation link copied to clipboard!");
+      } catch (error) {
+        toast.error("Failed to copy link");
+      }
+    }
+  };
+
+  const handleClose = () => {
+    form.reset();
+    setInvitationLink(null);
+    onClose();
+  };
+
+  if (invitationLink) {
+    return (
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5" />
+              Invitation Created!
+            </DialogTitle>
+            <DialogDescription>
+              Share this link with the invited team member. The invitation will expire in 7 days.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="p-4 bg-muted rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <ExternalLink className="h-4 w-4" />
+                <span className="font-medium">Invitation Link</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Input 
+                  value={invitationLink} 
+                  readOnly 
+                  className="text-sm"
+                />
+                <Button onClick={copyInvitationLink} variant="outline" size="icon">
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              The invited user will need to use this link to register and join your team.
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button onClick={handleClose}>
+              Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -133,7 +217,7 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
                 Invite Team Member
               </DialogTitle>
               <DialogDescription>
-                Send an invitation to add a new team member. They'll receive a notification when they log in.
+                Create an invitation for a new team member. They'll receive a registration link to join your team.
               </DialogDescription>
             </DialogHeader>
 
@@ -146,6 +230,31 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
                   <FormControl>
                     <Input placeholder="john@example.com" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="position"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Position</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a position" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {positions.map(position => (
+                        <SelectItem key={position} value={position}>
+                          {position}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -195,11 +304,11 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Sending..." : "Send Invitation"}
+                {isLoading ? "Creating Invitation..." : "Create Invitation"}
               </Button>
             </DialogFooter>
           </form>
