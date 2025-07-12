@@ -174,14 +174,30 @@ const Team = () => {
         return;
       }
 
-      // Update the team member
+      // Get the original user associated with this team member
+      const { data: allUsers } = await supabase.auth.admin.listUsers();
+      const originalUser = allUsers?.users.find((u: any) => u.email === editingMember.email);
+      
+      // Check if email has changed - if so, we need to find the new user
+      let targetUserId = originalUser?.id;
+      if (data.email !== editingMember.email) {
+        const newUser = allUsers?.users.find((u: any) => u.email === data.email);
+        if (!newUser) {
+          toast.error("User with this email does not exist. Please make sure they have an account first.");
+          return;
+        }
+        targetUserId = newUser.id;
+      }
+
+      // Update the team member record with the new user_id if email changed
       const { error: teamError } = await supabase
         .from('team_members')
         .update({
           name: data.name,
           position: data.position as TeamPosition,
           start_date: data.startDate.toISOString(),
-          skills: data.skills || []
+          skills: data.skills || [],
+          user_id: targetUserId // Update user_id if email changed
         })
         .eq('id', editingMember.id);
 
@@ -190,38 +206,40 @@ const Team = () => {
       }
 
       // Handle role update if specified and we have a valid user
-      if (data.role) {
-        // Find the user by email
-        const { data: allUsers } = await supabase.auth.admin.listUsers();
-        const targetUser = allUsers?.users.find((u: any) => u.email === data.email);
-        
-        if (targetUser) {
-          // Check if user already has a role
-          const { data: existingRole } = await supabase
+      if (data.role && targetUserId) {
+        // Remove old role if user changed
+        if (originalUser && originalUser.id !== targetUserId) {
+          await supabase
             .from('user_roles')
-            .select('*')
-            .eq('user_id', targetUser.id)
-            .single();
+            .delete()
+            .eq('user_id', originalUser.id);
+        }
 
-          if (existingRole) {
-            // Update existing role
-            await supabase
-              .from('user_roles')
-              .update({ 
-                role: data.role,
-                assigned_by: session.session.user.id
-              })
-              .eq('user_id', targetUser.id);
-          } else {
-            // Insert new role
-            await supabase
-              .from('user_roles')
-              .insert({
-                user_id: targetUser.id,
-                role: data.role,
-                assigned_by: session.session.user.id
-              });
-          }
+        // Check if the target user already has a role
+        const { data: existingRole } = await supabase
+          .from('user_roles')
+          .select('*')
+          .eq('user_id', targetUserId)
+          .single();
+
+        if (existingRole) {
+          // Update existing role
+          await supabase
+            .from('user_roles')
+            .update({ 
+              role: data.role,
+              assigned_by: session.session.user.id
+            })
+            .eq('user_id', targetUserId);
+        } else {
+          // Insert new role
+          await supabase
+            .from('user_roles')
+            .insert({
+              user_id: targetUserId,
+              role: data.role,
+              assigned_by: session.session.user.id
+            });
         }
       }
 
