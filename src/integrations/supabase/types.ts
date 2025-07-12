@@ -284,6 +284,7 @@ export type Database = {
           expires_at: string
           id: string
           invited_by: string
+          metadata: Json | null
           role: Database["public"]["Enums"]["app_role"]
           token: string
         }
@@ -294,6 +295,7 @@ export type Database = {
           expires_at: string
           id?: string
           invited_by: string
+          metadata?: Json | null
           role: Database["public"]["Enums"]["app_role"]
           token: string
         }
@@ -304,6 +306,7 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by?: string
+          metadata?: Json | null
           role?: Database["public"]["Enums"]["app_role"]
           token?: string
         }
