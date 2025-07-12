@@ -85,10 +85,10 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
 
       console.log("User created successfully:", authData.user.id);
 
-      // Wait a moment for the user to be fully created
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Wait for user to be fully created
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Create profile record
+      // Create profile record first
       console.log("Creating profile record...");
       const { error: profileError } = await supabase
         .from('profiles')
@@ -101,13 +101,12 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
 
       if (profileError) {
         console.error('Profile creation error:', profileError);
-        // Continue with the process even if profile creation fails
       } else {
         console.log("Profile created successfully");
       }
 
-      // Create user role
-      console.log("Creating user role record...");
+      // Create user role - this is critical
+      console.log("Creating user role record with role:", invitation.role);
       const { error: roleError } = await supabase
         .from('user_roles')
         .insert({
@@ -118,7 +117,8 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
 
       if (roleError) {
         console.error('Role creation error:', roleError);
-        // Continue with the process
+        // This is critical - if role creation fails, we should handle it
+        toast.error("Role assignment failed. Please contact an administrator.");
       } else {
         console.log("User role created successfully");
       }
@@ -141,12 +141,11 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
 
       if (teamMemberError) {
         console.error('Team member creation error:', teamMemberError);
-        // Continue with the process
       } else {
         console.log("Team member created successfully");
       }
 
-      // Mark invitation as accepted - THIS IS CRUCIAL
+      // Mark invitation as accepted - CRITICAL
       console.log("Marking invitation as accepted...");
       const { error: invitationError } = await supabase
         .from('invitations')
@@ -155,15 +154,14 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
 
       if (invitationError) {
         console.error('Invitation update error:', invitationError);
-        // Continue with the process even if this fails
       } else {
         console.log("Invitation marked as accepted successfully");
       }
 
       toast.success("Registration successful! Welcome to the team!");
       
-      // Redirect to dashboard
-      navigate("/dashboard");
+      // Force a full page reload to ensure all auth state is properly updated
+      window.location.href = "/dashboard";
       
     } catch (error: any) {
       console.error('Registration error:', error);

@@ -23,7 +23,7 @@ interface Invitation {
 const InvitationNotifications = () => {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const { userRole } = useUserRole();
+  const { userRole, isLoading: roleLoading } = useUserRole();
 
   const fetchInvitations = async () => {
     try {
@@ -54,13 +54,11 @@ const InvitationNotifications = () => {
   };
 
   useEffect(() => {
-    fetchInvitations();
-    
-    // Refresh invitations when user role changes (indicates they might have accepted an invitation)
-    if (userRole) {
+    // Only fetch invitations if user doesn't have a role yet
+    if (!roleLoading && !userRole) {
       fetchInvitations();
     }
-  }, [userRole]);
+  }, [userRole, roleLoading]);
 
   const handleAcceptInvitation = async (invitation: Invitation) => {
     try {
@@ -173,8 +171,13 @@ const InvitationNotifications = () => {
     }
   };
 
-  // Don't show notification bell if user already has a role or no pending invitations
-  if (userRole || invitations.length === 0) return null;
+  // Don't show notification bell if:
+  // 1. User already has a role (they're already part of the team)
+  // 2. No pending invitations exist
+  // 3. Still loading user role data
+  if (roleLoading || userRole || invitations.length === 0) {
+    return null;
+  }
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
