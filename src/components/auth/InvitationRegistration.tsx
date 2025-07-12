@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -86,9 +85,22 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
       console.log("User created successfully:", authData.user.id);
 
       // Wait for user to be fully created
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 3000));
 
-      // Create profile record first
+      // First: Mark invitation as accepted to prevent conflicts
+      console.log("Marking invitation as accepted...");
+      const { error: invitationError } = await supabase
+        .from('invitations')
+        .update({ accepted_at: new Date().toISOString() })
+        .eq('id', invitation.id);
+
+      if (invitationError) {
+        console.error('Invitation update error:', invitationError);
+      } else {
+        console.log("Invitation marked as accepted successfully");
+      }
+
+      // Create profile record
       console.log("Creating profile record...");
       const { error: profileError } = await supabase
         .from('profiles')
@@ -105,7 +117,7 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
         console.log("Profile created successfully");
       }
 
-      // Create user role - this is critical
+      // Create user role - this is the most critical part
       console.log("Creating user role record with role:", invitation.role);
       const { error: roleError } = await supabase
         .from('user_roles')
@@ -117,8 +129,8 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
 
       if (roleError) {
         console.error('Role creation error:', roleError);
-        // This is critical - if role creation fails, we should handle it
         toast.error("Role assignment failed. Please contact an administrator.");
+        // Don't return here - continue with team member creation
       } else {
         console.log("User role created successfully");
       }
@@ -143,19 +155,6 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
         console.error('Team member creation error:', teamMemberError);
       } else {
         console.log("Team member created successfully");
-      }
-
-      // Mark invitation as accepted - CRITICAL
-      console.log("Marking invitation as accepted...");
-      const { error: invitationError } = await supabase
-        .from('invitations')
-        .update({ accepted_at: new Date().toISOString() })
-        .eq('id', invitation.id);
-
-      if (invitationError) {
-        console.error('Invitation update error:', invitationError);
-      } else {
-        console.log("Invitation marked as accepted successfully");
       }
 
       toast.success("Registration successful! Welcome to the team!");

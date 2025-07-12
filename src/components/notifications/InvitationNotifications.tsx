@@ -57,6 +57,9 @@ const InvitationNotifications = () => {
     // Only fetch invitations if user doesn't have a role yet
     if (!roleLoading && !userRole) {
       fetchInvitations();
+    } else if (!roleLoading && userRole) {
+      // If user has a role, clear any pending invitations
+      setInvitations([]);
     }
   }, [userRole, roleLoading]);
 
