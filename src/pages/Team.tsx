@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -310,7 +311,8 @@ const Team = () => {
                 </p>
               )}
             </div>
-            {canManageTeam() && (
+            {/* Only owners can invite team members, administrators can see all but cannot invite */}
+            {userRole === 'owner' && (
               <div className="flex gap-2">
                 <Button onClick={openInvitationDialog}>
                   <Plus className="mr-2 h-4 w-4" />
@@ -320,8 +322,8 @@ const Team = () => {
             )}
           </div>
 
-          {/* Pending Invitations */}
-          {canManageTeam() && (
+          {/* Pending Invitations - only show to owners */}
+          {userRole === 'owner' && (
             <PendingInvitations refreshTrigger={invitationRefreshTrigger} />
           )}
 
@@ -344,12 +346,14 @@ const Team = () => {
         </main>
       </div>
 
-      {/* Invitation Dialog */}
-      <InvitationDialog 
-        isOpen={isInvitationDialogOpen}
-        onClose={closeInvitationDialog}
-        onInvitationSent={handleInvitationSent}
-      />
+      {/* Invitation Dialog - only for owners */}
+      {userRole === 'owner' && (
+        <InvitationDialog 
+          isOpen={isInvitationDialogOpen}
+          onClose={closeInvitationDialog}
+          onInvitationSent={handleInvitationSent}
+        />
+      )}
 
       {/* Edit Member Dialog */}
       {canManageTeam() && editingMember && (

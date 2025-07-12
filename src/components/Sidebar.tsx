@@ -111,9 +111,12 @@ const Sidebar = () => {
     },
   ];
 
-  // Filter navigation items based on user role
+  // Filter navigation items based on user role - show all items for owner and administrator
   const navItems = getAllNavItems().filter(item => {
     if (!userRole) return false;
+    // Owner and Administrator can see all menu items
+    if (userRole === 'owner' || userRole === 'administrator') return true;
+    // Team members can only see items they have roles for
     return item.roles.includes(userRole);
   });
 
