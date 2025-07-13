@@ -18,12 +18,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters."
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address."
-  }),
   position: z.string({
     required_error: "Please select a position."
   }),
@@ -40,7 +34,7 @@ const formSchema = z.object({
 
 interface TeamFormProps {
   teamMember?: TeamMember;
-  onSave: (values: z.infer<typeof formSchema>) => void;
+  onSave: (values: z.infer<typeof formSchema> & { name: string; email: string }) => void;
   onCancel: () => void;
 }
 
@@ -54,6 +48,7 @@ const TeamForm = ({
     teamMember?.skills || []
   );
   const [currentRole, setCurrentRole] = useState<string | null>(null);
+  const [profileData, setProfileData] = useState<{ name: string; email: string } | null>(null);
 
   // Common skills for suggestion
   const skillSuggestions = [
@@ -107,24 +102,29 @@ const TeamForm = ({
     { value: "team", label: "Team Member" }
   ];
 
-  // Fetch current role if editing existing member
+  // Fetch current role and profile data if editing existing member
   useEffect(() => {
-    const fetchCurrentRole = async () => {
+    const fetchMemberData = async () => {
       if (teamMember?.email) {
         try {
           // Get the user by email from profiles table
-          const { data: profileData } = await supabase
+          const { data: profile } = await supabase
             .from('profiles')
-            .select('id')
+            .select('id, full_name, email')
             .eq('email', teamMember.email)
             .single();
           
-          if (profileData) {
+          if (profile) {
+            setProfileData({
+              name: profile.full_name || '',
+              email: profile.email || ''
+            });
+            
             // Then get their role
             const { data: roleData } = await supabase
               .from('user_roles')
               .select('role')
-              .eq('user_id', profileData.id)
+              .eq('user_id', profile.id)
               .single();
             
             if (roleData) {
@@ -132,19 +132,17 @@ const TeamForm = ({
             }
           }
         } catch (error) {
-          console.error('Error fetching current role:', error);
+          console.error('Error fetching member data:', error);
         }
       }
     };
 
-    fetchCurrentRole();
+    fetchMemberData();
   }, [teamMember?.email]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: teamMember?.name || "",
-      email: teamMember?.email || "",
       position: teamMember?.position || "",
       role: teamMember?.role || currentRole || "team",
       startDate: teamMember?.startDate ? new Date(teamMember.startDate) : new Date(),
@@ -165,7 +163,13 @@ const TeamForm = ({
   }, [currentRole, form, teamMember?.role]);
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    onSave(values);
+    // Add name and email from profile data for submission
+    const submissionData = {
+      ...values,
+      name: profileData?.name || teamMember?.name || "",
+      email: profileData?.email || teamMember?.email || ""
+    };
+    onSave(submissionData);
   };
 
   // Skill management functions
@@ -193,33 +197,37 @@ const TeamForm = ({
           </DialogDescription>
         </DialogHeader>
 
-        <FormField 
-          control={form.control} 
-          name="name" 
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input placeholder="John Doe" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} 
-        />
+        {/* Read-only Name field populated from profiles */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            Name
+          </label>
+          <Input 
+            value={profileData?.name || teamMember?.name || ""} 
+            placeholder="Name will be loaded from user profile"
+            disabled
+            className="bg-muted"
+          />
+          <p className="text-xs text-muted-foreground">
+            Name is managed through user profile settings and cannot be edited here.
+          </p>
+        </div>
 
-        <FormField 
-          control={form.control} 
-          name="email" 
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input placeholder="john@example.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} 
-        />
+        {/* Read-only Email field populated from profiles */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            Email
+          </label>
+          <Input 
+            value={profileData?.email || teamMember?.email || ""} 
+            placeholder="Email will be loaded from user profile"
+            disabled
+            className="bg-muted"
+          />
+          <p className="text-xs text-muted-foreground">
+            Email is managed through user profile settings and cannot be edited here.
+          </p>
+        </div>
 
         <FormField 
           control={form.control} 
