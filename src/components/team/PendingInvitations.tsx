@@ -28,15 +28,31 @@ const PendingInvitations = ({ refreshTrigger }: PendingInvitationsProps) => {
   const fetchInvitations = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      
+      // Get pending invitations (not accepted and not expired)
+      const { data: invitationsData, error: invitationsError } = await supabase
         .from('invitations')
         .select('*')
         .is('accepted_at', null)
         .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setInvitations(data || []);
+      if (invitationsError) throw invitationsError;
+
+      // Get all profiles with emails to check if invited users have already joined
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('email');
+
+      if (profilesError) throw profilesError;
+
+      // Filter out invitations where the user has already created a profile (joined)
+      const existingEmails = new Set(profilesData?.map(p => p.email) || []);
+      const actualPendingInvitations = (invitationsData || []).filter(
+        invitation => !existingEmails.has(invitation.email)
+      );
+
+      setInvitations(actualPendingInvitations);
     } catch (error) {
       console.error('Error fetching invitations:', error);
       toast.error("Failed to load pending invitations");
