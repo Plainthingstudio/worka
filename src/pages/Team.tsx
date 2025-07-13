@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,80 +15,22 @@ import InvitationDialog from "@/components/team/InvitationDialog";
 import PendingInvitations from "@/components/team/PendingInvitations";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useTeamMembers } from "@/hooks/useTeamMembers";
 
 const Team = () => {
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const { teamMembers, fetchTeamMembers, isLoading } = useTeamMembers();
   const [search, setSearch] = useState("");
   const [positionFilter, setPositionFilter] = useState<string>("all");
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
   const [isInvitationDialogOpen, setIsInvitationDialogOpen] = useState(false);
   const [invitationRefreshTrigger, setInvitationRefreshTrigger] = useState(0);
   const { canManageTeam, userRole } = useUserRole();
 
   useEffect(() => {
     fetchTeamMembers();
-  }, []);
-
-  const fetchTeamMembers = async () => {
-    try {
-      setIsLoading(true);
-      const { data: session } = await supabase.auth.getSession();
-      
-      if (!session.session) {
-        toast.error("You must be logged in to view team members");
-        return;
-      }
-
-      // Fetch team members with profile data
-      const { data: teamData, error: teamError } = await supabase
-        .from('team_members')
-        .select(`
-          *,
-          profiles!inner(email, full_name)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (teamError) {
-        throw teamError;
-      }
-      
-      // Get all user roles
-      const { data: rolesData } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
-
-      // Create a map of user_id to role
-      const rolesMap = new Map<string, string>();
-      rolesData?.forEach((role: any) => {
-        rolesMap.set(role.user_id, role.role);
-      });
-
-      const transformedMembers: TeamMember[] = (teamData || []).map((member: any) => {
-        const role = rolesMap.get(member.user_id);
-        
-        return {
-          id: member.id,
-          name: member.name,
-          position: member.position as TeamPosition,
-          startDate: new Date(member.start_date),
-          skills: member.skills || [],
-          createdAt: new Date(member.created_at),
-          role: role,
-          email: member.profiles?.email || null
-        };
-      });
-
-      setTeamMembers(transformedMembers);
-    } catch (error) {
-      console.error("Error fetching team members:", error);
-      toast.error("Failed to load team members");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [fetchTeamMembers]);
 
   useEffect(() => {
     const handleSidebarChange = () => {

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { TeamMember, TeamPosition } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +8,7 @@ export const useTeamMembers = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchTeamMembers = async () => {
+  const fetchTeamMembers = useCallback(async () => {
     try {
       setIsLoading(true);
       const { data: session } = await supabase.auth.getSession();
@@ -18,23 +18,32 @@ export const useTeamMembers = () => {
         return [];
       }
 
-      // Fetch team members with profile data
+      console.log("Fetching team members...");
+
+      // Fetch team members with profile data using a left join
       const { data: teamData, error: teamError } = await supabase
         .from('team_members')
         .select(`
           *,
-          profiles!inner(email, full_name)
+          profiles(email, full_name)
         `)
         .order('created_at', { ascending: false });
 
       if (teamError) {
+        console.error("Error fetching team data:", teamError);
         throw teamError;
       }
 
+      console.log("Team data fetched:", teamData);
+
       // Get all user roles
-      const { data: rolesData } = await supabase
+      const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role');
+
+      if (rolesError) {
+        console.error("Error fetching roles:", rolesError);
+      }
 
       // Create a map of user_id to role
       const rolesMap = new Map<string, string>();
@@ -44,6 +53,14 @@ export const useTeamMembers = () => {
 
       const transformedMembers: TeamMember[] = (teamData || []).map((member: any) => {
         const role = rolesMap.get(member.user_id);
+        
+        console.log("Processing member:", {
+          id: member.id,
+          name: member.name,
+          user_id: member.user_id,
+          profiles: member.profiles,
+          role: role
+        });
         
         return {
           id: member.id,
@@ -57,6 +74,7 @@ export const useTeamMembers = () => {
         };
       });
 
+      console.log("Transformed members:", transformedMembers);
       setTeamMembers(transformedMembers);
       return transformedMembers;
     } catch (error) {
@@ -66,7 +84,7 @@ export const useTeamMembers = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   return { teamMembers, fetchTeamMembers, isLoading };
 };
