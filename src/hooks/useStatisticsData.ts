@@ -86,6 +86,7 @@ export const useStatisticsData = () => {
       // Transform team members data
       const transformedTeamMembers: TeamMember[] = (teamMembersData || []).map(member => ({
         id: member.id,
+        user_id: member.user_id,
         name: member.name,
         position: member.position as TeamPosition,
         skills: member.skills || [],

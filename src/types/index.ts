@@ -64,6 +64,7 @@ export interface Payment {
 
 export interface TeamMember {
   id: string;
+  user_id: string;
   name: string;
   position: TeamPosition;
   startDate: Date;

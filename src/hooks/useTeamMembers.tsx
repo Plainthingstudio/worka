@@ -47,6 +47,7 @@ export const useTeamMembers = () => {
         
         return {
           id: member.id,
+          user_id: member.user_id,
           name: member.name,
           position: member.position as TeamPosition,
           startDate: new Date(member.start_date),

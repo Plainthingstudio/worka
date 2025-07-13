@@ -70,6 +70,7 @@ const Team = () => {
         
         return {
           id: member.id,
+          user_id: member.user_id,
           name: member.name,
           position: member.position as TeamPosition,
           startDate: new Date(member.start_date),
@@ -125,29 +126,13 @@ const Team = () => {
         return;
       }
 
-      // Find the target user by email in profiles table
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', data.email)
-        .single();
-
-      if (profileError || !profileData) {
-        toast.error("User with this email does not exist. Please make sure they have an account first.");
-        return;
-      }
-
-      const targetUserId = profileData.id;
-
-      // Update the team member record
+      // Update the team member record (name and email are handled separately since they come from profiles)
       const { error: teamError } = await supabase
         .from('team_members')
         .update({
-          name: data.name,
           position: data.position as TeamPosition,
           start_date: data.startDate.toISOString(),
-          skills: data.skills || [],
-          user_id: targetUserId
+          skills: data.skills || []
         })
         .eq('id', editingMember.id);
 
@@ -155,13 +140,13 @@ const Team = () => {
         throw teamError;
       }
 
-      // Handle role update if specified
-      if (data.role && targetUserId) {
+      // Handle role update if specified and user has a profile
+      if (data.role && editingMember.user_id) {
         // Check if the target user already has a role
         const { data: existingRole } = await supabase
           .from('user_roles')
           .select('*')
-          .eq('user_id', targetUserId)
+          .eq('user_id', editingMember.user_id)
           .single();
 
         if (existingRole) {
@@ -172,13 +157,13 @@ const Team = () => {
               role: data.role,
               assigned_by: session.session.user.id
             })
-            .eq('user_id', targetUserId);
+            .eq('user_id', editingMember.user_id);
         } else {
           // Insert new role
           await supabase
             .from('user_roles')
             .insert({
-              user_id: targetUserId,
+              user_id: editingMember.user_id,
               role: data.role,
               assigned_by: session.session.user.id
             });

@@ -70,6 +70,7 @@ const EditProjectDialog = ({
       
       return data.map((member): TeamMember => ({
         id: member.id,
+        user_id: member.user_id,
         name: member.name,
         position: member.position as TeamPosition,
         skills: member.skills || [],
