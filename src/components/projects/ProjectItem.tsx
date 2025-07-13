@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Client, Project, TeamMember } from "@/types";
-import { useTeamMembers } from "@/hooks/useTeamMembers";
+import { supabase } from "@/integrations/supabase/client";
 
 // Import all the cell components
 import CategoryCell from "./cells/CategoryCell";
@@ -22,21 +22,48 @@ interface ProjectItemProps {
 
 const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) => {
   const [assignedTeamMembers, setAssignedTeamMembers] = useState<TeamMember[]>([]);
-  const { fetchTeamMembers } = useTeamMembers();
+  const [isLoadingTeamMembers, setIsLoadingTeamMembers] = useState(false);
   
   useEffect(() => {
     const loadTeamMembers = async () => {
       if (project.teamMembers && project.teamMembers.length > 0) {
-        const allMembers = await fetchTeamMembers();
-        const assigned = allMembers.filter(member => 
-          project.teamMembers?.includes(member.id)
-        );
-        setAssignedTeamMembers(assigned);
+        setIsLoadingTeamMembers(true);
+        console.log("Loading team members for project list:", project.id, "Team member IDs:", project.teamMembers);
+        
+        try {
+          const { data: teamMembersData, error } = await supabase
+            .from('team_members')
+            .select('*')
+            .in('id', project.teamMembers);
+          
+          if (error) {
+            console.error("Error fetching team members for project list:", error);
+          } else {
+            console.log("Fetched team members data for project list:", teamMembersData);
+            const transformedMembers: TeamMember[] = (teamMembersData || []).map((member): TeamMember => ({
+              id: member.id,
+              user_id: member.user_id,
+              name: member.name,
+              position: member.position as any,
+              skills: member.skills || [],
+              startDate: new Date(member.start_date),
+              createdAt: new Date(member.created_at)
+            }));
+            setAssignedTeamMembers(transformedMembers);
+          }
+        } catch (error) {
+          console.error("Error loading team members for project list:", error);
+        } finally {
+          setIsLoadingTeamMembers(false);
+        }
+      } else {
+        console.log("No team members assigned to project in list:", project.id);
+        setAssignedTeamMembers([]);
       }
     };
     
     loadTeamMembers();
-  }, [project.teamMembers]);
+  }, [project.teamMembers, project.id]);
 
   return (
     <TableRow key={project.id}>
@@ -69,7 +96,11 @@ const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) =>
       </TableCell>
 
       <TableCell>
-        <TeamMembersCell teamMembers={assignedTeamMembers} />
+        {isLoadingTeamMembers ? (
+          <span className="text-muted-foreground text-xs">Loading...</span>
+        ) : (
+          <TeamMembersCell teamMembers={assignedTeamMembers} />
+        )}
       </TableCell>
       
       <TableCell className="text-right">
