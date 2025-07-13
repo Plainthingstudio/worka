@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import StatCard from "@/components/StatCard";
+import DeadlineCard from "@/components/dashboard/DeadlineCard";
 import { Client, Project, ProjectType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -234,6 +235,11 @@ const Dashboard = () => {
               icon={Activity}
               className="bg-white shadow-sm border border-border"
             />
+          </div>
+
+          {/* Deadline Card */}
+          <div className="mb-8">
+            <DeadlineCard projects={projects} getClientById={getClientById} />
           </div>
 
           {/* Recent Clients */}
