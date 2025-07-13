@@ -5,7 +5,7 @@ import { CalendarIcon, DollarSign, UserCircle, Tag, Clock, Users, Phone, Mail, M
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Client, Project, TeamMember } from "@/types";
-import { useTeamMembers } from "@/hooks/useTeamMembers";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProjectInfoProps {
   project: Project;
@@ -14,21 +14,48 @@ interface ProjectInfoProps {
 
 const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
   const [assignedTeamMembers, setAssignedTeamMembers] = useState<TeamMember[]>([]);
-  const { fetchTeamMembers } = useTeamMembers();
+  const [isLoadingTeamMembers, setIsLoadingTeamMembers] = useState(false);
   
   useEffect(() => {
     const loadTeamMembers = async () => {
       if (project.teamMembers && project.teamMembers.length > 0) {
-        const allMembers = await fetchTeamMembers();
-        const assigned = allMembers.filter(member => 
-          project.teamMembers?.includes(member.id)
-        );
-        setAssignedTeamMembers(assigned);
+        setIsLoadingTeamMembers(true);
+        console.log("Loading team members for project:", project.id, "Team member IDs:", project.teamMembers);
+        
+        try {
+          const { data: teamMembersData, error } = await supabase
+            .from('team_members')
+            .select('*')
+            .in('id', project.teamMembers);
+          
+          if (error) {
+            console.error("Error fetching team members:", error);
+          } else {
+            console.log("Fetched team members data:", teamMembersData);
+            const transformedMembers: TeamMember[] = (teamMembersData || []).map((member): TeamMember => ({
+              id: member.id,
+              user_id: member.user_id,
+              name: member.name,
+              position: member.position as any,
+              skills: member.skills || [],
+              startDate: new Date(member.start_date),
+              createdAt: new Date(member.created_at)
+            }));
+            setAssignedTeamMembers(transformedMembers);
+          }
+        } catch (error) {
+          console.error("Error loading team members:", error);
+        } finally {
+          setIsLoadingTeamMembers(false);
+        }
+      } else {
+        console.log("No team members assigned to project:", project.id);
+        setAssignedTeamMembers([]);
       }
     };
     
     loadTeamMembers();
-  }, [project.teamMembers]);
+  }, [project.teamMembers, project.id]);
 
   // Format status badge class
   const getStatusClass = (status: string) => {
@@ -166,7 +193,9 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
                   <div>
                     <p className="text-sm font-medium">Team Members</p>
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {assignedTeamMembers.length > 0 ? (
+                      {isLoadingTeamMembers ? (
+                        <p className="text-sm text-muted-foreground">Loading team members...</p>
+                      ) : assignedTeamMembers.length > 0 ? (
                         assignedTeamMembers.map((member) => (
                           <Badge key={member.id} variant="outline" className="flex items-center gap-1 py-1 pl-2 bg-background">
                             <Users className="h-3 w-3 text-muted-foreground mr-1" />

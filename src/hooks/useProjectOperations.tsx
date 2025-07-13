@@ -11,6 +11,9 @@ export const useProjectOperations = (project: Project | null, setProject: (proje
     if (!project) return;
 
     try {
+      console.log("Updating project with data:", data);
+      console.log("Team members being saved:", data.teamMembers);
+      
       // Update the project in Supabase
       const { error: updateError } = await supabase
         .from('projects')
@@ -29,7 +32,21 @@ export const useProjectOperations = (project: Project | null, setProject: (proje
 
       if (updateError) throw updateError;
 
-      const updatedProject = { ...project, ...data };
+      // Update the local project state with the new data
+      const updatedProject = { 
+        ...project, 
+        name: data.name,
+        clientId: data.clientId,
+        status: data.status,
+        deadline: data.deadline,
+        fee: data.fee,
+        currency: data.currency,
+        projectType: data.projectType,
+        categories: data.categories,
+        teamMembers: data.teamMembers || []
+      };
+      
+      console.log("Updated project with team members:", updatedProject.teamMembers);
       setProject(updatedProject);
       
       // Refetch client data if the client ID has changed
