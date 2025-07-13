@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -153,22 +152,6 @@ const TeamForm = ({
     }
   });
 
-  // Update form values when teamMember changes
-  useEffect(() => {
-    if (teamMember) {
-      console.log('Setting form values with teamMember:', teamMember);
-      form.reset({
-        name: teamMember.name || "",
-        email: teamMember.email || "",
-        position: teamMember.position || "",
-        role: teamMember.role || currentRole || "team",
-        startDate: teamMember.startDate ? new Date(teamMember.startDate) : new Date(),
-        skills: teamMember.skills || []
-      });
-      setSelectedSkills(teamMember.skills || []);
-    }
-  }, [teamMember, currentRole, form]);
-
   // Update form skills value when selectedSkills changes
   React.useEffect(() => {
     form.setValue('skills', selectedSkills);
@@ -176,13 +159,12 @@ const TeamForm = ({
 
   // Update role when currentRole is fetched
   React.useEffect(() => {
-    if (currentRole && teamMember) {
-      form.setValue('role', teamMember.role || currentRole);
+    if (currentRole && !teamMember?.role) {
+      form.setValue('role', currentRole);
     }
-  }, [currentRole, form, teamMember]);
+  }, [currentRole, form, teamMember?.role]);
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log('Form submitted with values:', values);
     onSave(values);
   };
 
@@ -245,7 +227,7 @@ const TeamForm = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Position</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a position" />
