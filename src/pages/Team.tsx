@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,52 +14,6 @@ import InvitationDialog from "@/components/team/InvitationDialog";
 import PendingInvitations from "@/components/team/PendingInvitations";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
-
-export const useTeamMembers = () => {
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const fetchTeamMembers = async () => {
-    try {
-      setIsLoading(true);
-      const { data: session } = await supabase.auth.getSession();
-      
-      if (!session.session) {
-        toast.error("You must be logged in to view team members");
-        return [];
-      }
-
-      const { data, error } = await supabase
-        .from('team_members')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        throw error;
-      }
-
-      const transformedMembers: TeamMember[] = (data || []).map((member: any) => ({
-        id: member.id,
-        name: member.name,
-        position: member.position as TeamPosition,
-        startDate: new Date(member.start_date),
-        skills: member.skills || [],
-        createdAt: new Date(member.created_at)
-      }));
-
-      setTeamMembers(transformedMembers);
-      return transformedMembers;
-    } catch (error) {
-      console.error("Error fetching team members:", error);
-      toast.error("Failed to load team members");
-      return [];
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return { teamMembers, fetchTeamMembers, isLoading };
-};
 
 const Team = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -88,18 +41,18 @@ const Team = () => {
         return;
       }
 
-      // Fetch team members
+      // Fetch team members with profile data
       const { data: teamData, error: teamError } = await supabase
         .from('team_members')
-        .select('*')
+        .select(`
+          *,
+          profiles!inner(email, full_name)
+        `)
         .order('created_at', { ascending: false });
 
       if (teamError) {
         throw teamError;
       }
-
-      // Get all users to match emails
-      const { data: allUsers } = await supabase.auth.admin.listUsers();
       
       // Get all user roles
       const { data: rolesData } = await supabase
@@ -113,8 +66,6 @@ const Team = () => {
       });
 
       const transformedMembers: TeamMember[] = (teamData || []).map((member: any) => {
-        // Find the user by matching some identifier or use a stored email if available
-        const user = allUsers?.users.find((u: any) => u.id === member.user_id);
         const role = rolesMap.get(member.user_id);
         
         return {
@@ -125,7 +76,7 @@ const Team = () => {
           skills: member.skills || [],
           createdAt: new Date(member.created_at),
           role: role,
-          email: user?.email
+          email: member.profiles?.email || null
         };
       });
 
@@ -174,22 +125,21 @@ const Team = () => {
         return;
       }
 
-      // Get the original user associated with this team member
-      const { data: allUsers } = await supabase.auth.admin.listUsers();
-      const originalUser = allUsers?.users.find((u: any) => u.email === editingMember.email);
-      
-      // Check if email has changed - if so, we need to find the new user
-      let targetUserId = originalUser?.id;
-      if (data.email !== editingMember.email) {
-        const newUser = allUsers?.users.find((u: any) => u.email === data.email);
-        if (!newUser) {
-          toast.error("User with this email does not exist. Please make sure they have an account first.");
-          return;
-        }
-        targetUserId = newUser.id;
+      // Find the target user by email in profiles table
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', data.email)
+        .single();
+
+      if (profileError || !profileData) {
+        toast.error("User with this email does not exist. Please make sure they have an account first.");
+        return;
       }
 
-      // Update the team member record with the new user_id if email changed
+      const targetUserId = profileData.id;
+
+      // Update the team member record
       const { error: teamError } = await supabase
         .from('team_members')
         .update({
@@ -197,7 +147,7 @@ const Team = () => {
           position: data.position as TeamPosition,
           start_date: data.startDate.toISOString(),
           skills: data.skills || [],
-          user_id: targetUserId // Update user_id if email changed
+          user_id: targetUserId
         })
         .eq('id', editingMember.id);
 
@@ -205,16 +155,8 @@ const Team = () => {
         throw teamError;
       }
 
-      // Handle role update if specified and we have a valid user
+      // Handle role update if specified
       if (data.role && targetUserId) {
-        // Remove old role if user changed
-        if (originalUser && originalUser.id !== targetUserId) {
-          await supabase
-            .from('user_roles')
-            .delete()
-            .eq('user_id', originalUser.id);
-        }
-
         // Check if the target user already has a role
         const { data: existingRole } = await supabase
           .from('user_roles')
@@ -277,14 +219,17 @@ const Team = () => {
 
       // Optionally remove their role if they were linked to a user account
       if (memberToDelete?.email) {
-        const { data: allUsers } = await supabase.auth.admin.listUsers();
-        const user = allUsers?.users.find((u: any) => u.email === memberToDelete.email);
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', memberToDelete.email)
+          .single();
         
-        if (user) {
+        if (profileData) {
           await supabase
             .from('user_roles')
             .delete()
-            .eq('user_id', user.id);
+            .eq('user_id', profileData.id);
         }
       }
 

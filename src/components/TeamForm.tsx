@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -113,16 +112,19 @@ const TeamForm = ({
     const fetchCurrentRole = async () => {
       if (teamMember?.email) {
         try {
-          // First get the user by email
-          const { data: userData } = await supabase.auth.admin.listUsers();
-          const user = userData?.users.find((u: any) => u.email === teamMember.email);
+          // Get the user by email from profiles table
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', teamMember.email)
+            .single();
           
-          if (user) {
+          if (profileData) {
             // Then get their role
             const { data: roleData } = await supabase
               .from('user_roles')
               .select('role')
-              .eq('user_id', user.id)
+              .eq('user_id', profileData.id)
               .single();
             
             if (roleData) {

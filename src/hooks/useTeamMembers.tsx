@@ -18,19 +18,19 @@ export const useTeamMembers = () => {
         return [];
       }
 
-      // Fetch team members
+      // Fetch team members with profile data
       const { data: teamData, error: teamError } = await supabase
         .from('team_members')
-        .select('*')
+        .select(`
+          *,
+          profiles!inner(email, full_name)
+        `)
         .order('created_at', { ascending: false });
 
       if (teamError) {
         throw teamError;
       }
 
-      // Get all users to match emails and roles
-      const { data: allUsers } = await supabase.auth.admin.listUsers();
-      
       // Get all user roles
       const { data: rolesData } = await supabase
         .from('user_roles')
@@ -43,8 +43,6 @@ export const useTeamMembers = () => {
       });
 
       const transformedMembers: TeamMember[] = (teamData || []).map((member: any) => {
-        // Find the user by user_id
-        const user = allUsers?.users.find((u: any) => u.id === member.user_id);
         const role = rolesMap.get(member.user_id);
         
         return {
@@ -55,7 +53,7 @@ export const useTeamMembers = () => {
           skills: member.skills || [],
           createdAt: new Date(member.created_at),
           role: role,
-          email: user?.email
+          email: member.profiles?.email || null
         };
       });
 
