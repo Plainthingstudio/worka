@@ -46,10 +46,16 @@ const PendingInvitations = ({ refreshTrigger }: PendingInvitationsProps) => {
 
       if (profilesError) throw profilesError;
 
+      // Create a set of existing emails (normalized to lowercase for case-insensitive comparison)
+      const existingEmails = new Set(
+        (profilesData || [])
+          .map(p => p.email?.toLowerCase())
+          .filter(Boolean) // Remove null/undefined emails
+      );
+
       // Filter out invitations where the user has already created a profile (joined)
-      const existingEmails = new Set(profilesData?.map(p => p.email) || []);
       const actualPendingInvitations = (invitationsData || []).filter(
-        invitation => !existingEmails.has(invitation.email)
+        invitation => !existingEmails.has(invitation.email.toLowerCase())
       );
 
       setInvitations(actualPendingInvitations);
