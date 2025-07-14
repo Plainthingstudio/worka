@@ -23,11 +23,11 @@ export const TaskManager = ({ project }: TaskManagerProps) => {
     const success = await createTask({
       title: taskData.title,
       description: taskData.description,
-      status: project.status,
-      due_date: project.deadline,
+      status: taskData.status || 'Planning',
+      due_date: taskData.due_date,
       priority: taskData.priority,
       task_type: taskData.task_type,
-      assignees: project.teamMembers || [],
+      assignees: taskData.assignees || [],
     });
 
     if (success) {

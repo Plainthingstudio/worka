@@ -123,11 +123,12 @@ export const Tasks = () => {
       const insertData = {
         title: taskData.title || '',
         description: taskData.description,
-        status: newTaskStatus,
+        status: taskData.status || 'Planning',
         priority: taskData.priority,
         task_type: taskData.task_type,
-        assignees: [],
-        project_id: selectedProject === 'all' ? projects[0]?.id : selectedProject,
+        assignees: taskData.assignees || [],
+        due_date: taskData.due_date,
+        project_id: selectedProject === 'all' ? null : selectedProject,
         user_id: (await supabase.auth.getUser()).data.user?.id,
       };
 
