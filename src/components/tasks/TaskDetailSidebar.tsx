@@ -172,10 +172,7 @@ export const TaskDetailSidebar = ({
   };
 
   return (
-    <div className={cn(
-      "fixed top-0 right-0 w-96 h-full bg-background border-l shadow-lg z-50 flex flex-col transition-transform duration-300 ease-in-out",
-      isOpen ? "translate-x-0" : "translate-x-full"
-    )}>
+    <>
       {/* Backdrop */}
       {isOpen && (
         <div 
@@ -183,339 +180,347 @@ export const TaskDetailSidebar = ({
           onClick={onClose}
         />
       )}
-      {/* Header */}
-      <div className="px-4 py-3 border-b">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full bg-gray-300 flex items-center justify-center">
-              <CheckCircle className="h-3 w-3 text-gray-600" />
+      
+      {/* Sidebar */}
+      <div className={cn(
+        "fixed top-0 right-0 w-[500px] h-full bg-background border-l shadow-xl z-50 flex flex-col transition-transform duration-300 ease-in-out",
+        isOpen ? "translate-x-0" : "translate-x-full"
+      )}>
+        {/* Header */}
+        <div className="px-6 py-4 border-b">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center">
+                <CheckCircle className="h-4 w-4 text-gray-600" />
+              </div>
+              {isEditing ? (
+                <Form {...form}>
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="text-lg font-semibold border-none p-0 h-auto focus-visible:ring-0"
+                            onBlur={() => form.handleSubmit(handleSubmit)()}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </Form>
+              ) : (
+                <h2 
+                  className="text-lg font-semibold cursor-text hover:bg-gray-50 px-2 py-1 rounded"
+                  onClick={() => setIsEditing(true)}
+                >
+                  {task.title}
+                </h2>
+              )}
             </div>
-            {isEditing ? (
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <ScrollArea className="flex-1 p-6">
+          {/* Status and Priority Row */}
+          <div className="grid grid-cols-2 gap-6 mb-8">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Target className="h-4 w-4" />
+                Status
+              </div>
               <Form {...form}>
                 <FormField
                   control={form.control}
-                  name="title"
+                  name="status"
                   render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          className="text-sm font-semibold border-none p-0 h-auto focus-visible:ring-0"
-                          onBlur={() => form.handleSubmit(handleSubmit)()}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                    <Select onValueChange={(value) => {
+                      field.onChange(value);
+                      form.handleSubmit(handleSubmit)();
+                    }} defaultValue={field.value}>
+                      <SelectTrigger className={`${getStatusColor(field.value)} text-white border-none text-sm h-9`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Planning">Planning</SelectItem>
+                        <SelectItem value="In progress">In Progress</SelectItem>
+                        <SelectItem value="Paused">Paused</SelectItem>
+                        <SelectItem value="Completed">Completed</SelectItem>
+                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
                   )}
                 />
               </Form>
-            ) : (
-              <h2 
-                className="text-sm font-semibold cursor-text hover:bg-gray-50 px-1 py-1 rounded"
-                onClick={() => setIsEditing(true)}
-              >
-                {task.title}
-              </h2>
-            )}
-          </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      <ScrollArea className="flex-1 p-4">
-        {/* Status and Priority */}
-        <div className="space-y-4 mb-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Target className="h-3 w-3" />
-              Status
             </div>
-            <Form {...form}>
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <Select onValueChange={(value) => {
-                    field.onChange(value);
-                    form.handleSubmit(handleSubmit)();
-                  }} defaultValue={field.value}>
-                    <SelectTrigger className={`${getStatusColor(field.value)} text-white border-none text-xs h-7`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Planning">Planning</SelectItem>
-                      <SelectItem value="In progress">In Progress</SelectItem>
-                      <SelectItem value="Paused">Paused</SelectItem>
-                      <SelectItem value="Completed">Completed</SelectItem>
-                      <SelectItem value="Cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </Form>
-          </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Flag className="h-3 w-3" />
-              Priority
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Flag className="h-4 w-4" />
+                Priority
+              </div>
+              <Form {...form}>
+                <FormField
+                  control={form.control}
+                  name="priority"
+                  render={({ field }) => (
+                    <Select onValueChange={(value) => {
+                      field.onChange(value);
+                      form.handleSubmit(handleSubmit)();
+                    }} defaultValue={field.value}>
+                      <SelectTrigger className="text-sm h-9">
+                        <div className="flex items-center gap-2">
+                          {getPriorityIcon(field.value)}
+                          <SelectValue />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Low">Low</SelectItem>
+                        <SelectItem value="Normal">Normal</SelectItem>
+                        <SelectItem value="High">High</SelectItem>
+                        <SelectItem value="Urgent">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </Form>
             </div>
-            <Form {...form}>
-              <FormField
-                control={form.control}
-                name="priority"
-                render={({ field }) => (
-                  <Select onValueChange={(value) => {
-                    field.onChange(value);
-                    form.handleSubmit(handleSubmit)();
-                  }} defaultValue={field.value}>
-                    <SelectTrigger className="text-xs h-7">
-                      <div className="flex items-center gap-1">
-                        {getPriorityIcon(field.value)}
-                        <SelectValue />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Low">Low</SelectItem>
-                      <SelectItem value="Normal">Normal</SelectItem>
-                      <SelectItem value="High">High</SelectItem>
-                      <SelectItem value="Urgent">Urgent</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </Form>
           </div>
-        </div>
 
-        {/* Assignees */}
-        <div className="space-y-2 mb-6">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Users className="h-3 w-3" />
-            Assignees
-          </div>
-          <Form {...form}>
-            <FormField
-              control={form.control}
-              name="assignees"
-              render={({ field }) => (
-                <div className="space-y-2">
-                  <Select
-                    onValueChange={(value) => {
-                      const currentAssignees = field.value || [];
-                      if (!currentAssignees.includes(value)) {
-                        const newAssignees = [...currentAssignees, value];
-                        field.onChange(newAssignees);
-                        form.setValue('assignees', newAssignees);
-                        form.handleSubmit(handleSubmit)();
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="text-xs h-7">
-                      <SelectValue placeholder="Add assignee" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {teamMembers.map((member) => (
-                        <SelectItem key={member.id} value={member.user_id}>
-                          {member.name} ({member.position})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {field.value && field.value.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {field.value.map((assigneeId) => {
-                        const member = teamMembers.find(m => m.user_id === assigneeId);
-                        return member ? (
-                          <Badge key={assigneeId} variant="secondary" className="text-xs">
-                            {member.name}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newAssignees = field.value?.filter(id => id !== assigneeId) || [];
-                                field.onChange(newAssignees);
-                                form.setValue('assignees', newAssignees);
-                                form.handleSubmit(handleSubmit)();
-                              }}
-                              className="ml-1 hover:text-destructive"
-                            >
-                              ×
-                            </button>
-                          </Badge>
-                        ) : null;
-                      })}
+          {/* Assignees and Due Date Row */}
+          <div className="grid grid-cols-2 gap-6 mb-8">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Users className="h-4 w-4" />
+                Assignees
+              </div>
+              <Form {...form}>
+                <FormField
+                  control={form.control}
+                  name="assignees"
+                  render={({ field }) => (
+                    <div className="space-y-3">
+                      <Select
+                        onValueChange={(value) => {
+                          const currentAssignees = field.value || [];
+                          if (!currentAssignees.includes(value)) {
+                            const newAssignees = [...currentAssignees, value];
+                            field.onChange(newAssignees);
+                            form.setValue('assignees', newAssignees);
+                            form.handleSubmit(handleSubmit)();
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="text-sm h-9">
+                          <SelectValue placeholder="Add assignee" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {teamMembers.map((member) => (
+                            <SelectItem key={member.id} value={member.user_id}>
+                              {member.name} ({member.position})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {field.value && field.value.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {field.value.map((assigneeId) => {
+                            const member = teamMembers.find(m => m.user_id === assigneeId);
+                            return member ? (
+                              <Badge key={assigneeId} variant="secondary" className="text-sm">
+                                {member.name}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newAssignees = field.value?.filter(id => id !== assigneeId) || [];
+                                    field.onChange(newAssignees);
+                                    form.setValue('assignees', newAssignees);
+                                    form.handleSubmit(handleSubmit)();
+                                  }}
+                                  className="ml-2 hover:text-destructive"
+                                >
+                                  ×
+                                </button>
+                              </Badge>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
-              )}
-            />
-          </Form>
-        </div>
-
-        {/* Due Date */}
-        <div className="space-y-2 mb-6">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Calendar className="h-3 w-3" />
-            Due Date
-          </div>
-          <Form {...form}>
-            <FormField
-              control={form.control}
-              name="due_date"
-              render={({ field }) => (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal text-xs h-7"
-                    >
-                      <Calendar className="mr-2 h-3 w-3" />
-                      {field.value ? format(field.value, 'MMM dd, yyyy') : 'Set due date'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={field.value}
-                      onSelect={(date) => {
-                        field.onChange(date);
-                        form.setValue('due_date', date);
-                        form.handleSubmit(handleSubmit)();
-                      }}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              )}
-            />
-          </Form>
-        </div>
-
-        {/* Description */}
-        <div className="space-y-2 mb-6">
-          <h3 className="text-xs font-medium">Description</h3>
-          <Form {...form}>
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Textarea 
-                      {...field} 
-                      placeholder="Add a description..."
-                      rows={3}
-                      className="resize-none text-xs"
-                      onBlur={() => form.handleSubmit(handleSubmit)()}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </Form>
-        </div>
-
-        {/* Tabs */}
-        <Tabs defaultValue="activity" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 h-8">
-            <TabsTrigger value="activity" className="text-xs">Activity</TabsTrigger>
-            <TabsTrigger value="comments" className="text-xs">
-              Comments ({task.comments?.length || 0})
-            </TabsTrigger>
-            <TabsTrigger value="attachments" className="text-xs">
-              Files ({task.attachments?.length || 0})
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="activity" className="space-y-3 mt-3">
-            <div className="text-xs text-muted-foreground">
-              Task created on {format(new Date(task.created_at), 'MMM dd, yyyy HH:mm')}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="comments" className="space-y-3 mt-3">
-            <ScrollArea className="h-40">
-              <div className="space-y-2">
-                {task.comments?.map((comment) => (
-                  <div key={comment.id} className="border rounded p-2">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium">User</span>
-                      <span className="text-xs text-muted-foreground">
-                        {format(new Date(comment.created_at), 'MMM dd, HH:mm')}
-                      </span>
-                    </div>
-                    <p className="text-xs">{comment.content}</p>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-            <div className="flex gap-2 mt-3">
-              <Input
-                placeholder="Add a comment..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="text-xs h-7"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleAddComment();
-                  }
-                }}
-              />
-              <Button size="sm" onClick={handleAddComment} className="h-7 px-2">
-                <Send className="h-3 w-3" />
-              </Button>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="attachments" className="space-y-3 mt-3">
-            <ScrollArea className="h-40">
-              <div className="space-y-2">
-                {task.attachments?.map((attachment) => (
-                  <div key={attachment.id} className="flex items-center gap-2 p-2 border rounded">
-                    <Paperclip className="h-3 w-3 text-muted-foreground" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate">{attachment.file_name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatFileSize(attachment.file_size)}
-                      </p>
-                    </div>
-                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                      <Download className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-            <div className="mt-3">
-              <label className="block">
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                  disabled={isUploading}
                 />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={isUploading}
-                  className="w-full h-7 text-xs"
-                  onClick={(e) => {
-                    const input = e.currentTarget.parentNode?.querySelector('input[type="file"]') as HTMLInputElement;
-                    input?.click();
-                  }}
-                >
-                  <Upload className="h-3 w-3 mr-1" />
-                  {isUploading ? 'Uploading...' : 'Upload File'}
-                </Button>
-              </label>
+              </Form>
             </div>
-          </TabsContent>
-        </Tabs>
-      </ScrollArea>
-    </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                Due Date
+              </div>
+              <Form {...form}>
+                <FormField
+                  control={form.control}
+                  name="due_date"
+                  render={({ field }) => (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal text-sm h-9"
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {field.value ? format(field.value, 'MMM dd, yyyy') : 'Set due date'}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={field.value}
+                          onSelect={(date) => {
+                            field.onChange(date);
+                            form.setValue('due_date', date);
+                            form.handleSubmit(handleSubmit)();
+                          }}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                />
+              </Form>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="space-y-3 mb-8">
+            <h3 className="text-sm font-medium">Description</h3>
+            <Form {...form}>
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        placeholder="Add a description..."
+                        rows={4}
+                        className="resize-none text-sm"
+                        onBlur={() => form.handleSubmit(handleSubmit)()}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </Form>
+          </div>
+
+          {/* Tabs */}
+          <Tabs defaultValue="activity" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 h-10">
+              <TabsTrigger value="activity" className="text-sm">Activity</TabsTrigger>
+              <TabsTrigger value="comments" className="text-sm">
+                Comments ({task.comments?.length || 0})
+              </TabsTrigger>
+              <TabsTrigger value="attachments" className="text-sm">
+                Files ({task.attachments?.length || 0})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="activity" className="space-y-4 mt-6">
+              <div className="text-sm text-muted-foreground">
+                Task created on {format(new Date(task.created_at), 'MMM dd, yyyy HH:mm')}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="comments" className="space-y-4 mt-6">
+              <ScrollArea className="h-64">
+                <div className="space-y-3">
+                  {task.comments?.map((comment) => (
+                    <div key={comment.id} className="border rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">User</span>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(comment.created_at), 'MMM dd, yyyy HH:mm')}
+                        </span>
+                      </div>
+                      <p className="text-sm">{comment.content}</p>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+              <div className="flex gap-3 mt-4">
+                <Input
+                  placeholder="Add a comment..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="text-sm h-9"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleAddComment();
+                    }
+                  }}
+                />
+                <Button size="sm" onClick={handleAddComment} className="h-9 px-3">
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="attachments" className="space-y-4 mt-6">
+              <ScrollArea className="h-64">
+                <div className="space-y-3">
+                  {task.attachments?.map((attachment) => (
+                    <div key={attachment.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                      <Paperclip className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{attachment.file_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatFileSize(attachment.file_size)}
+                        </p>
+                      </div>
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+              <div className="mt-4">
+                <label className="block">
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                    disabled={isUploading}
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={isUploading}
+                    className="w-full h-9 text-sm"
+                    onClick={(e) => {
+                      const input = e.currentTarget.parentNode?.querySelector('input[type="file"]') as HTMLInputElement;
+                      input?.click();
+                    }}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    {isUploading ? 'Uploading...' : 'Upload File'}
+                  </Button>
+                </label>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </ScrollArea>
+      </div>
+    </>
   );
 };
