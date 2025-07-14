@@ -6,8 +6,6 @@ import { useProjectDetails } from "@/hooks/useProjectDetails";
 import ProjectDetailsLayout from "@/components/project-details/ProjectDetailsLayout";
 import ProjectContent from "@/components/project-details/ProjectContent";
 import ProjectsLoading from "@/components/projects/ProjectsLoading";
-import { TaskManager } from "@/components/tasks/TaskManager";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Lottie from "lottie-react";
 
 const ProjectDetails = () => {
@@ -279,38 +277,25 @@ const ProjectDetails = () => {
                 />
               </div>
             )}
-            <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="overview">Project Overview</TabsTrigger>
-                <TabsTrigger value="tasks">Tasks</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="overview">
-                <ProjectContent
-                  project={project}
-                  client={client}
-                  teamMembers={teamMembers}
-                  currentPayment={currentPayment}
-                  dialogState={dialogState}
-                  selectedStatus={selectedStatus}
-                  onEdit={() => setIsEditDialogOpen(true)}
-                  onDelete={() => setIsDeleteDialogOpen(true)}
-                  onMarkAsCompleted={handleMarkAsCompleted}
-                  onChangeStatus={() => {
-                    setSelectedStatus("In progress");
-                    setIsStatusDialogOpen(true);
-                  }}
-                  onAddPayment={() => setIsPaymentDialogOpen(true)}
-                  onEditPayment={openEditPaymentDialog}
-                  onDeletePayment={openDeletePaymentDialog}
-                  handlers={handlers}
-                />
-              </TabsContent>
-              
-              <TabsContent value="tasks">
-                <TaskManager project={project} />
-              </TabsContent>
-            </Tabs>
+            <ProjectContent
+              project={project}
+              client={client}
+              teamMembers={teamMembers}
+              currentPayment={currentPayment}
+              dialogState={dialogState}
+              selectedStatus={selectedStatus}
+              onEdit={() => setIsEditDialogOpen(true)}
+              onDelete={() => setIsDeleteDialogOpen(true)}
+              onMarkAsCompleted={handleMarkAsCompleted}
+              onChangeStatus={() => {
+                setSelectedStatus("In progress");
+                setIsStatusDialogOpen(true);
+              }}
+              onAddPayment={() => setIsPaymentDialogOpen(true)}
+              onEditPayment={openEditPaymentDialog}
+              onDeletePayment={openDeletePaymentDialog}
+              handlers={handlers}
+            />
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-12">
