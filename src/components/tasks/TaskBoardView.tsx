@@ -65,6 +65,7 @@ export const TaskBoardView = ({
   };
 
   const getInitials = (name: string) => {
+    if (!name || typeof name !== 'string') return '?';
     return name
       .split(' ')
       .map(word => word.charAt(0))
@@ -127,12 +128,12 @@ export const TaskBoardView = ({
                     <div className="flex items-center justify-between">
                       {/* Left side - Assignees */}
                       <div className="flex items-center gap-2">
-                        {task.assignees.length > 0 ? (
+                        {task.assignees && task.assignees.length > 0 ? (
                           <div className="flex -space-x-1">
-                            {task.assignees.slice(0, 3).map((assignee, index) => (
+                            {task.assignees.slice(0, 3).map((assigneeName, index) => (
                               <Avatar key={index} className="h-6 w-6 border-2 border-white">
                                 <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                                  {getInitials(assignee)}
+                                  {getInitials(assigneeName)}
                                 </AvatarFallback>
                               </Avatar>
                             ))}

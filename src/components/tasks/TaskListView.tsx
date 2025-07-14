@@ -73,6 +73,7 @@ export const TaskListView = ({
   };
 
   const getInitials = (name: string) => {
+    if (!name || typeof name !== 'string') return '?';
     return name
       .split(' ')
       .map(word => word.charAt(0))
@@ -126,7 +127,7 @@ export const TaskListView = ({
                     <h3 className={`font-medium ${task.status === 'Completed' ? 'line-through text-muted-foreground' : ''}`}>
                       {task.title}
                     </h3>
-                    <div className="flex gap-1">
+                    <div className="flex gap-2">
                       <div className={`flex items-center gap-1 text-xs ${getPriorityTextColor(task.priority)}`}>
                         <Flag className="h-3 w-3" />
                         <span>{task.priority}</span>
@@ -154,13 +155,13 @@ export const TaskListView = ({
                       </div>
                     )}
                     
-                    {task.assignees.length > 0 && (
+                    {task.assignees && task.assignees.length > 0 && (
                       <div className="flex items-center gap-2">
                         <div className="flex -space-x-1">
-                          {task.assignees.slice(0, 3).map((assignee, index) => (
+                          {task.assignees.slice(0, 3).map((assigneeName, index) => (
                             <Avatar key={index} className="h-5 w-5 border border-white">
                               <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                                {getInitials(assignee)}
+                                {getInitials(assigneeName)}
                               </AvatarFallback>
                             </Avatar>
                           ))}
