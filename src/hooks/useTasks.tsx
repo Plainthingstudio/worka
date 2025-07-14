@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Task, TaskComment, TaskAttachment, TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/task';
@@ -19,13 +18,13 @@ export const useTasks = (projectId: string) => {
         return;
       }
 
+      // First fetch main tasks (no parent)
       const { data: tasksData, error } = await supabase
         .from('tasks')
         .select(`
           *,
           task_comments(*),
-          task_attachments(*),
-          subtasks:tasks!tasks_parent_task_id_fkey(*)
+          task_attachments(*)
         `)
         .eq('project_id', projectId)
         .is('parent_task_id', null)
@@ -43,7 +42,28 @@ export const useTasks = (projectId: string) => {
 
       console.log('Fetched tasks data:', tasksData);
 
-      const transformedTasks: TaskWithRelations[] = (tasksData || []).map(task => ({
+      if (!tasksData) {
+        setTasks([]);
+        return;
+      }
+
+      // Now fetch subtasks separately for each main task
+      const tasksWithSubtasks = await Promise.all(
+        tasksData.map(async (task) => {
+          const { data: subtasks } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('parent_task_id', task.id)
+            .order('created_at', { ascending: false });
+
+          return {
+            ...task,
+            subtasks: subtasks || []
+          };
+        })
+      );
+
+      const transformedTasks: TaskWithRelations[] = tasksWithSubtasks.map(task => ({
         ...task,
         status: task.status as TaskStatus,
         priority: task.priority as TaskPriority,
