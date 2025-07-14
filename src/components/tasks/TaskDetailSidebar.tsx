@@ -89,15 +89,30 @@ export const TaskDetailSidebar = ({
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
-      title: task?.title || '',
-      description: task?.description || '',
-      priority: task?.priority || 'Normal',
-      task_type: task?.task_type || 'Primary',
-      status: task?.status || 'Planning',
-      assignees: task?.assignees || [],
-      due_date: task?.due_date ? new Date(task.due_date) : undefined,
+      title: '',
+      description: '',
+      priority: 'Normal',
+      task_type: 'Primary', 
+      status: 'Planning',
+      assignees: [],
+      due_date: undefined,
     },
   });
+
+  // Reset form when task changes
+  useEffect(() => {
+    if (task) {
+      form.reset({
+        title: task.title || '',
+        description: task.description || '',
+        priority: task.priority || 'Normal',
+        task_type: task.task_type || 'Primary',
+        status: task.status || 'Planning',
+        assignees: task.assignees || [],
+        due_date: task.due_date ? new Date(task.due_date) : undefined,
+      });
+    }
+  }, [task, form]);
 
   // Don't render if task is null or not open
   console.log('TaskDetailSidebar render:', { task: !!task, isOpen, taskTitle: task?.title });
@@ -194,24 +209,22 @@ export const TaskDetailSidebar = ({
                 <CheckCircle className="h-4 w-4 text-gray-600" />
               </div>
               {isEditing ? (
-                <Form {...form}>
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            className="text-lg font-semibold border-none p-0 h-auto focus-visible:ring-0"
-                            onBlur={() => form.handleSubmit(handleSubmit)()}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </Form>
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          className="text-lg font-semibold border-none p-0 h-auto focus-visible:ring-0"
+                          onBlur={() => form.handleSubmit(handleSubmit)()}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               ) : (
                 <h2 
                   className="text-lg font-semibold cursor-text hover:bg-gray-50 px-2 py-1 rounded"
@@ -227,15 +240,15 @@ export const TaskDetailSidebar = ({
           </div>
         </div>
 
-        <ScrollArea className="flex-1 p-6">
-          {/* Status and Priority Row */}
-          <div className="grid grid-cols-2 gap-6 mb-8">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Target className="h-4 w-4" />
-                Status
-              </div>
-              <Form {...form}>
+        <Form {...form}>
+          <ScrollArea className="flex-1 p-6">
+            {/* Status and Priority Row */}
+            <div className="grid grid-cols-2 gap-6 mb-8">
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Target className="h-4 w-4" />
+                  Status
+                </div>
                 <FormField
                   control={form.control}
                   name="status"
@@ -243,11 +256,11 @@ export const TaskDetailSidebar = ({
                     <Select onValueChange={(value) => {
                       field.onChange(value);
                       form.handleSubmit(handleSubmit)();
-                    }} defaultValue={field.value}>
+                    }} value={field.value}>
                       <SelectTrigger className={`${getStatusColor(field.value)} text-white border-none text-sm h-9`}>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-background border z-[80]">
                         <SelectItem value="Planning">Planning</SelectItem>
                         <SelectItem value="In progress">In Progress</SelectItem>
                         <SelectItem value="Paused">Paused</SelectItem>
@@ -257,15 +270,13 @@ export const TaskDetailSidebar = ({
                     </Select>
                   )}
                 />
-              </Form>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Flag className="h-4 w-4" />
-                Priority
               </div>
-              <Form {...form}>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Flag className="h-4 w-4" />
+                  Priority
+                </div>
                 <FormField
                   control={form.control}
                   name="priority"
@@ -273,14 +284,14 @@ export const TaskDetailSidebar = ({
                     <Select onValueChange={(value) => {
                       field.onChange(value);
                       form.handleSubmit(handleSubmit)();
-                    }} defaultValue={field.value}>
+                    }} value={field.value}>
                       <SelectTrigger className="text-sm h-9">
                         <div className="flex items-center gap-2">
                           {getPriorityIcon(field.value)}
                           <SelectValue />
                         </div>
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-background border z-[80]">
                         <SelectItem value="Low">Low</SelectItem>
                         <SelectItem value="Normal">Normal</SelectItem>
                         <SelectItem value="High">High</SelectItem>
@@ -289,18 +300,15 @@ export const TaskDetailSidebar = ({
                     </Select>
                   )}
                 />
-              </Form>
-            </div>
-          </div>
-
-          {/* Assignees and Due Date Row */}
-          <div className="grid grid-cols-2 gap-6 mb-8">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Users className="h-4 w-4" />
-                Assignees
               </div>
-              <Form {...form}>
+            </div>
+            {/* Assignees and Due Date Row */}
+            <div className="grid grid-cols-2 gap-6 mb-8">
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Users className="h-4 w-4" />
+                  Assignees
+                </div>
                 <FormField
                   control={form.control}
                   name="assignees"
@@ -312,7 +320,6 @@ export const TaskDetailSidebar = ({
                           if (!currentAssignees.includes(value)) {
                             const newAssignees = [...currentAssignees, value];
                             field.onChange(newAssignees);
-                            form.setValue('assignees', newAssignees);
                             form.handleSubmit(handleSubmit)();
                           }
                         }}
@@ -320,7 +327,7 @@ export const TaskDetailSidebar = ({
                         <SelectTrigger className="text-sm h-9">
                           <SelectValue placeholder="Add assignee" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-background border z-[80]">
                           {teamMembers.map((member) => (
                             <SelectItem key={member.id} value={member.user_id}>
                               {member.name} ({member.position})
@@ -340,7 +347,6 @@ export const TaskDetailSidebar = ({
                                   onClick={() => {
                                     const newAssignees = field.value?.filter(id => id !== assigneeId) || [];
                                     field.onChange(newAssignees);
-                                    form.setValue('assignees', newAssignees);
                                     form.handleSubmit(handleSubmit)();
                                   }}
                                   className="ml-2 hover:text-destructive"
@@ -355,15 +361,13 @@ export const TaskDetailSidebar = ({
                     </div>
                   )}
                 />
-              </Form>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                Due Date
               </div>
-              <Form {...form}>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  Due Date
+                </div>
                 <FormField
                   control={form.control}
                   name="due_date"
@@ -378,13 +382,12 @@ export const TaskDetailSidebar = ({
                           {field.value ? format(field.value, 'MMM dd, yyyy') : 'Set due date'}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-auto p-0 bg-background border z-[80]" align="start">
                         <CalendarComponent
                           mode="single"
                           selected={field.value}
                           onSelect={(date) => {
                             field.onChange(date);
-                            form.setValue('due_date', date);
                             form.handleSubmit(handleSubmit)();
                           }}
                           initialFocus
@@ -393,14 +396,11 @@ export const TaskDetailSidebar = ({
                     </Popover>
                   )}
                 />
-              </Form>
+              </div>
             </div>
-          </div>
-
-          {/* Description */}
-          <div className="space-y-3 mb-8">
-            <h3 className="text-sm font-medium">Description</h3>
-            <Form {...form}>
+            {/* Description */}
+            <div className="space-y-3 mb-8">
+              <h3 className="text-sm font-medium">Description</h3>
               <FormField
                 control={form.control}
                 name="description"
@@ -419,8 +419,7 @@ export const TaskDetailSidebar = ({
                   </FormItem>
                 )}
               />
-            </Form>
-          </div>
+            </div>
 
           {/* Tabs */}
           <Tabs defaultValue="activity" className="w-full">
@@ -519,7 +518,8 @@ export const TaskDetailSidebar = ({
               </div>
             </TabsContent>
           </Tabs>
-        </ScrollArea>
+          </ScrollArea>
+        </Form>
       </div>
     </>
   );
