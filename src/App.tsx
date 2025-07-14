@@ -25,6 +25,7 @@ import ThankYou from '@/pages/ThankYou';
 import Settings from '@/pages/Settings';
 import NotFound from '@/pages/NotFound';
 import Leads from '@/pages/Leads';
+import Tasks from '@/pages/Tasks';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:projectId" element={<ProjectDetails />} />
+            <Route path="/tasks" element={<Tasks />} />
             <Route path="/clients" element={<Clients />} />
             <Route path="/leads" element={<Leads />} />
             <Route path="/invoices" element={<Invoices />} />

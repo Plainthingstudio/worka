@@ -13,7 +13,8 @@ import {
   BarChart,
   UserRound,
   Settings,
-  FolderKanban
+  FolderKanban,
+  CheckSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "./ThemeProvider";
@@ -77,6 +78,12 @@ const Sidebar = () => {
       icon: ListChecks,
       label: "Projects",
       href: "/projects",
+      roles: ['owner', 'administrator', 'team']
+    },
+    {
+      icon: CheckSquare,
+      label: "Tasks",
+      href: "/tasks",
       roles: ['owner', 'administrator', 'team']
     },
     {
