@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -113,7 +111,6 @@ export const TaskDetailSidebar = ({
         assignees: task.assignees || [],
         due_date: task.due_date ? new Date(task.due_date) : undefined,
       });
-      console.log('TaskDetailSidebar: Form reset for task:', task.title);
     }
   }, [task]); // Only depend on task, not form
 
@@ -468,7 +465,22 @@ export const TaskDetailSidebar = ({
             </TabsContent>
 
             <TabsContent value="comments" className="space-y-4 mt-6">
-              <div className="flex gap-3 mb-4">
+              <ScrollArea className="h-64">
+                <div className="space-y-3">
+                  {sortedComments.map((comment) => (
+                    <div key={comment.id} className="border rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">User</span>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(comment.created_at), 'MMM dd, yyyy HH:mm')}
+                        </span>
+                      </div>
+                      <p className="text-sm">{comment.content}</p>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+              <div className="flex gap-3 mt-4">
                 <Input
                   placeholder="Add a comment..."
                   value={newComment}
@@ -485,21 +497,6 @@ export const TaskDetailSidebar = ({
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
-              <ScrollArea className="h-64">
-                <div className="space-y-3">
-                  {sortedComments.map((comment) => (
-                    <div key={comment.id} className="border rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">User</span>
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(comment.created_at), 'MMM dd, yyyy HH:mm')}
-                        </span>
-                      </div>
-                      <p className="text-sm">{comment.content}</p>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
             </TabsContent>
 
             <TabsContent value="attachments" className="space-y-4 mt-6">
@@ -552,4 +549,3 @@ export const TaskDetailSidebar = ({
     </>
   );
 };
-
