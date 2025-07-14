@@ -685,7 +685,7 @@ export type Database = {
           id: string
           parent_task_id: string | null
           priority: string
-          project_id: string
+          project_id: string | null
           status: string
           task_type: string
           title: string
@@ -701,7 +701,7 @@ export type Database = {
           id?: string
           parent_task_id?: string | null
           priority?: string
-          project_id: string
+          project_id?: string | null
           status?: string
           task_type?: string
           title: string
@@ -717,7 +717,7 @@ export type Database = {
           id?: string
           parent_task_id?: string | null
           priority?: string
-          project_id?: string
+          project_id?: string | null
           status?: string
           task_type?: string
           title?: string
