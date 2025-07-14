@@ -5,6 +5,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import { ClickUpTaskList } from '@/components/tasks/ClickUpTaskList';
+import { TaskListView } from '@/components/tasks/TaskListView';
+import { TaskBoardView } from '@/components/tasks/TaskBoardView';
+import { TaskCalendarView } from '@/components/tasks/TaskCalendarView';
 import { TaskDetailSidebar } from '@/components/tasks/TaskDetailSidebar';
 import { TaskDialog } from '@/components/tasks/TaskDialog';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +27,7 @@ export const Tasks = () => {
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [newTaskStatus, setNewTaskStatus] = useState<TaskStatus>('Planning');
+  const [activeView, setActiveView] = useState<'list' | 'board' | 'calendar'>('list');
 
   const fetchProjects = async () => {
     try {
