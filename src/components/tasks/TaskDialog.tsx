@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -26,13 +28,24 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { TaskPriority, TaskType } from '@/types/task';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { TaskPriority, TaskType, TaskStatus } from '@/types/task';
+import { useTeamMembers } from '@/hooks/useTeamMembers';
+import { cn } from '@/lib/utils';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
   priority: z.enum(['Low', 'Normal', 'High', 'Urgent']),
   task_type: z.enum(['Primary', 'Secondary', 'Tertiary']),
+  status: z.enum(['Planning', 'In progress', 'Completed', 'Paused', 'Cancelled']),
+  due_date: z.date().optional(),
+  assignees: z.array(z.string()).optional(),
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -46,6 +59,8 @@ interface TaskDialogProps {
 }
 
 export const TaskDialog = ({ isOpen, onClose, onSubmit, title, initialData }: TaskDialogProps) => {
+  const { teamMembers, fetchTeamMembers } = useTeamMembers();
+
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
@@ -53,8 +68,17 @@ export const TaskDialog = ({ isOpen, onClose, onSubmit, title, initialData }: Ta
       description: initialData?.description || '',
       priority: initialData?.priority || 'Normal',
       task_type: initialData?.task_type || 'Primary',
+      status: 'Planning',
+      due_date: undefined,
+      assignees: [],
     },
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchTeamMembers();
+    }
+  }, [isOpen, fetchTeamMembers]);
 
   const handleSubmit = (data: TaskFormData) => {
     onSubmit(data);
