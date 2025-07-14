@@ -246,12 +246,19 @@ export const Tasks = () => {
 
   const addComment = async (taskId: string, content: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.error('No authenticated user found');
+        return false;
+      }
+
       const { error } = await supabase
         .from('task_comments')
         .insert([{
           task_id: taskId,
           content,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: user.id,
         }]);
 
       if (error) {
