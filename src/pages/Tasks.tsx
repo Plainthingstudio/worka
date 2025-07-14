@@ -335,167 +335,168 @@ export const Tasks = () => {
       <div className="flex">
         <Sidebar />
         <div className="flex-1 ml-56">
-          <div className="flex h-[calc(100vh-64px)]">
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col">
-              {/* Header */}
-              <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 py-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <h1 className="text-2xl font-semibold">Internal Tasks</h1>
-                    <div className="flex items-center gap-0 border rounded-lg p-1">
-                      <Button 
-                        variant={activeView === 'list' ? 'default' : 'ghost'}
-                        size="sm"
-                        className="h-8"
-                        onClick={() => setActiveView('list')}
-                      >
-                        <LayoutList className="h-4 w-4 mr-2" />
-                        List
-                      </Button>
-                      <Button 
-                        variant={activeView === 'board' ? 'default' : 'ghost'}
-                        size="sm"
-                        className="h-8"
-                        onClick={() => setActiveView('board')}
-                      >
-                        <Kanban className="h-4 w-4 mr-2" />
-                        Board
-                      </Button>
-                      <Button 
-                        variant={activeView === 'calendar' ? 'default' : 'ghost'}
-                        size="sm"
-                        className="h-8"
-                        onClick={() => setActiveView('calendar')}
-                      >
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Calendar
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <Button variant="outline" size="sm">
-                      <MoreHorizontal className="h-4 w-4" />
+          <div className="flex flex-col h-[calc(100vh-64px)]">
+            {/* Header */}
+            <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 py-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <h1 className="text-2xl font-semibold">Internal Tasks</h1>
+                  <div className="flex items-center gap-0 border rounded-lg p-1">
+                    <Button 
+                      variant={activeView === 'list' ? 'default' : 'ghost'}
+                      size="sm"
+                      className="h-8"
+                      onClick={() => setActiveView('list')}
+                    >
+                      <LayoutList className="h-4 w-4 mr-2" />
+                      List
                     </Button>
-                    <Button onClick={() => handleAddTask()}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Task
+                    <Button 
+                      variant={activeView === 'board' ? 'default' : 'ghost'}
+                      size="sm"
+                      className="h-8"
+                      onClick={() => setActiveView('board')}
+                    >
+                      <Kanban className="h-4 w-4 mr-2" />
+                      Board
+                    </Button>
+                    <Button 
+                      variant={activeView === 'calendar' ? 'default' : 'ghost'}
+                      size="sm"
+                      className="h-8"
+                      onClick={() => setActiveView('calendar')}
+                    >
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Calendar
                     </Button>
                   </div>
                 </div>
-              </div>
 
-              {/* Filters */}
-              <div className="border-b bg-background px-6 py-4">
-                <div className="flex items-center gap-4">
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search tasks..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-
-                  <Select value={selectedProject} onValueChange={setSelectedProject}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="All Projects" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Projects</SelectItem>
-                      {projects.map((project) => (
-                        <SelectItem key={project.id} value={project.id}>
-                          {project.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="All Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="Planning">Planning</SelectItem>
-                      <SelectItem value="In progress">In Progress</SelectItem>
-                      <SelectItem value="Paused">Paused</SelectItem>
-                      <SelectItem value="Completed">Completed</SelectItem>
-                      <SelectItem value="Cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="All Priority" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Priority</SelectItem>
-                      <SelectItem value="Low">Low</SelectItem>
-                      <SelectItem value="Normal">Normal</SelectItem>
-                      <SelectItem value="High">High</SelectItem>
-                      <SelectItem value="Urgent">Urgent</SelectItem>
-                    </SelectContent>
-                  </Select>
-
+                <div className="flex items-center gap-3">
                   <Button variant="outline" size="sm">
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filter
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                  <Button onClick={() => handleAddTask()}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Task
                   </Button>
                 </div>
               </div>
+            </div>
 
-              {/* Content */}
-              <div className="flex-1 overflow-hidden px-6 py-6">
-                {/* Dynamic View Rendering */}
-                {activeView === 'list' && (
-                  <ClickUpTaskList
-                    tasks={filteredTasks}
-                    isLoading={isLoading}
-                    onTaskClick={(task) => {
-                      console.log('Task clicked:', task.title);
-                      setSelectedTask(task);
-                    }}
-                    onUpdateTask={updateTask}
-                    onAddTask={handleAddTask}
+            {/* Filters */}
+            <div className="border-b bg-background px-6 py-4">
+              <div className="flex items-center gap-4">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search tasks..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
                   />
-                )}
-                
-                {activeView === 'board' && (
-                  <TaskBoardView
-                    tasks={filteredTasks}
-                    isLoading={isLoading}
-                    onUpdateTask={updateTask}
-                    onDeleteTask={deleteTask}
-                    onAddComment={addComment}
-                    onUploadAttachment={uploadAttachment}
-                    onAddTask={(status) => handleAddTask(status)}
-                  />
-                )}
-                
-                {activeView === 'calendar' && (
-                  <TaskCalendarView
-                    tasks={filteredTasks}
-                    isLoading={isLoading}
-                    onUpdateTask={updateTask}
-                  />
-                )}
+                </div>
+
+                <Select value={selectedProject} onValueChange={setSelectedProject}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="All Projects" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Projects</SelectItem>
+                    {projects.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="All Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="Planning">Planning</SelectItem>
+                    <SelectItem value="In progress">In Progress</SelectItem>
+                    <SelectItem value="Paused">Paused</SelectItem>
+                    <SelectItem value="Completed">Completed</SelectItem>
+                    <SelectItem value="Cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="All Priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Priority</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                    <SelectItem value="Normal">Normal</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Urgent">Urgent</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filter
+                </Button>
               </div>
             </div>
 
-            {/* Task Detail Sidebar */}
-            <TaskDetailSidebar
-              task={selectedTask}
-              isOpen={!!selectedTask}
-              onClose={() => setSelectedTask(null)}
-              onUpdateTask={updateTask}
-              onDeleteTask={deleteTask}
-              onAddComment={addComment}
-              onUploadAttachment={uploadAttachment}
-            />
+            {/* Content */}
+            <div className="flex-1 overflow-hidden px-6 py-6">
+              {/* Dynamic View Rendering */}
+              {activeView === 'list' && (
+                <ClickUpTaskList
+                  tasks={filteredTasks}
+                  isLoading={isLoading}
+                  onTaskClick={(task) => {
+                    console.log('Task clicked:', task.title);
+                    setSelectedTask(task);
+                  }}
+                  onUpdateTask={updateTask}
+                  onAddTask={handleAddTask}
+                />
+              )}
+              
+              {activeView === 'board' && (
+                <TaskBoardView
+                  tasks={filteredTasks}
+                  isLoading={isLoading}
+                  onUpdateTask={updateTask}
+                  onDeleteTask={deleteTask}
+                  onAddComment={addComment}
+                  onUploadAttachment={uploadAttachment}
+                  onAddTask={(status) => handleAddTask(status)}
+                  onTaskClick={(task) => {
+                    console.log('Board task clicked:', task.title);
+                    setSelectedTask(task);
+                  }}
+                />
+              )}
+              
+              {activeView === 'calendar' && (
+                <TaskCalendarView
+                  tasks={filteredTasks}
+                  isLoading={isLoading}
+                  onUpdateTask={updateTask}
+                />
+              )}
+            </div>
           </div>
+
+          {/* Task Detail Sidebar */}
+          <TaskDetailSidebar
+            task={selectedTask}
+            isOpen={!!selectedTask}
+            onClose={() => setSelectedTask(null)}
+            onUpdateTask={updateTask}
+            onDeleteTask={deleteTask}
+            onAddComment={addComment}
+            onUploadAttachment={uploadAttachment}
+          />
 
           {/* Create Task Dialog */}
           <TaskDialog

@@ -40,6 +40,7 @@ import {
 import { TaskWithRelations } from '@/types/task';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 
@@ -171,7 +172,17 @@ export const TaskDetailSidebar = ({
   };
 
   return (
-    <div className="w-80 h-full border-l bg-background flex flex-col">
+    <div className={cn(
+      "fixed top-0 right-0 w-96 h-full bg-background border-l shadow-lg z-50 flex flex-col transition-transform duration-300 ease-in-out",
+      isOpen ? "translate-x-0" : "translate-x-full"
+    )}>
+      {/* Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 z-40" 
+          onClick={onClose}
+        />
+      )}
       {/* Header */}
       <div className="px-4 py-3 border-b">
         <div className="flex items-center justify-between">

@@ -22,6 +22,7 @@ interface TaskBoardViewProps {
   onAddComment: (taskId: string, content: string) => Promise<boolean>;
   onUploadAttachment: (taskId: string, file: File) => Promise<boolean>;
   onAddTask?: (status: TaskStatus) => void;
+  onTaskClick?: (task: TaskWithRelations) => void;
 }
 
 const statusColumns: { status: TaskStatus; title: string; color: string; bgColor: string; textColor: string }[] = [
@@ -39,10 +40,9 @@ export const TaskBoardView = ({
   onDeleteTask, 
   onAddComment, 
   onUploadAttachment,
-  onAddTask 
+  onAddTask,
+  onTaskClick 
 }: TaskBoardViewProps) => {
-  const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
-
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'Urgent': return 'bg-destructive';
@@ -89,7 +89,7 @@ export const TaskBoardView = ({
                 <Card 
                   key={task.id} 
                   className="bg-white hover:shadow-md transition-all duration-200 cursor-pointer border-l-4 border-l-transparent hover:border-l-primary"
-                  onClick={() => setSelectedTask(task)}
+                  onClick={() => onTaskClick?.(task)}
                 >
                   <CardContent className="p-4">
                     {/* Task Title */}
@@ -210,18 +210,6 @@ export const TaskBoardView = ({
           </div>
         );
       })}
-
-      {selectedTask && (
-        <ClickUpTaskDetail
-          task={selectedTask}
-          isOpen={!!selectedTask}
-          onClose={() => setSelectedTask(null)}
-          onUpdateTask={onUpdateTask}
-          onDeleteTask={onDeleteTask}
-          onAddComment={onAddComment}
-          onUploadAttachment={onUploadAttachment}
-        />
-      )}
     </div>
   );
 };
