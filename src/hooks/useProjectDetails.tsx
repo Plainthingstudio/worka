@@ -4,11 +4,15 @@ import { useProjectDialogs } from "./useProjectDialogs";
 import { useProjectOperations } from "./useProjectOperations";
 import { usePaymentOperations } from "./usePaymentOperations";
 import { useStatisticsData } from "./useStatisticsData";
+import { useProjectToTask } from "./useProjectToTask";
 import { ProjectStatus } from "@/types";
+import { useState } from "react";
 
 export const useProjectDetails = (projectId: string | undefined) => {
   const { project, setProject, client, isLoading: projectLoading, refetchClient } = useProjectData(projectId);
   const { teamMembers, isLoading: statisticsLoading } = useStatisticsData();
+  const { createTaskFromProject, isCreating: isCreatingTask } = useProjectToTask();
+  const [isCreateTaskDialogOpen, setIsCreateTaskDialogOpen] = useState(false);
   
   const {
     isEditDialogOpen,
@@ -67,6 +71,23 @@ export const useProjectDetails = (projectId: string | undefined) => {
     setIsDeletePaymentDialogOpen(false);
   };
 
+  const handleCreateTask = () => {
+    setIsCreateTaskDialogOpen(true);
+  };
+
+  const handleCreateTaskSubmit = async (data: any) => {
+    if (!project) return;
+    
+    const task = await createTaskFromProject({
+      ...project,
+      ...data // Override with form data
+    });
+    
+    if (task) {
+      setIsCreateTaskDialogOpen(false);
+    }
+  };
+
   return {
     project,
     client,
@@ -79,12 +100,14 @@ export const useProjectDetails = (projectId: string | undefined) => {
     isPaymentDialogOpen,
     isEditPaymentDialogOpen,
     isDeletePaymentDialogOpen,
+    isCreateTaskDialogOpen,
     setIsEditDialogOpen,
     setIsDeleteDialogOpen,
     setIsStatusDialogOpen,
     setIsPaymentDialogOpen,
     setIsEditPaymentDialogOpen,
     setIsDeletePaymentDialogOpen,
+    setIsCreateTaskDialogOpen,
     setSelectedStatus,
     handleEditProject,
     handleDeleteProject,
@@ -93,9 +116,12 @@ export const useProjectDetails = (projectId: string | undefined) => {
     handleAddPayment,
     handleEditPayment,
     handleDeletePayment,
+    handleCreateTask,
+    handleCreateTaskSubmit,
     openEditPaymentDialog,
     openDeletePaymentDialog,
     isLoading: projectLoading || statisticsLoading,
+    isCreatingTask,
     refetchClient,
     showConfetti
   };

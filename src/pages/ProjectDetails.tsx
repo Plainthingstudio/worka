@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -23,12 +22,14 @@ const ProjectDetails = () => {
     isPaymentDialogOpen,
     isEditPaymentDialogOpen,
     isDeletePaymentDialogOpen,
+    isCreateTaskDialogOpen,
     setIsEditDialogOpen,
     setIsDeleteDialogOpen,
     setIsStatusDialogOpen,
     setIsPaymentDialogOpen,
     setIsEditPaymentDialogOpen,
     setIsDeletePaymentDialogOpen,
+    setIsCreateTaskDialogOpen,
     setSelectedStatus,
     handleEditProject,
     handleDeleteProject,
@@ -37,9 +38,12 @@ const ProjectDetails = () => {
     handleAddPayment,
     handleEditPayment,
     handleDeletePayment,
+    handleCreateTask,
+    handleCreateTaskSubmit,
     openEditPaymentDialog,
     openDeletePaymentDialog,
     isLoading,
+    isCreatingTask,
     refetchClient,
     showConfetti
   } = useProjectDetails(projectId);
@@ -50,7 +54,8 @@ const ProjectDetails = () => {
     isStatusDialogOpen,
     isPaymentDialogOpen,
     isEditPaymentDialogOpen,
-    isDeletePaymentDialogOpen
+    isDeletePaymentDialogOpen,
+    isCreateTaskDialogOpen
   };
 
   const handlers = {
@@ -64,6 +69,9 @@ const ProjectDetails = () => {
     onCloseDeletePaymentDialog: () => {
       setIsDeletePaymentDialogOpen(false);
     },
+    onCloseCreateTaskDialog: () => {
+      setIsCreateTaskDialogOpen(false);
+    },
     onEditProject: (data: any) => handleEditProject(data),
     onDeleteProject: handleDeleteProject,
     onChangeStatusSubmit: handleChangeStatus,
@@ -71,6 +79,7 @@ const ProjectDetails = () => {
     onAddPaymentSubmit: handleAddPayment,
     onEditPaymentSubmit: handleEditPayment,
     onDeletePaymentSubmit: handleDeletePayment,
+    onCreateTaskSubmit: handleCreateTaskSubmit,
   };
 
   // Confetti animation data
@@ -214,7 +223,6 @@ const ProjectDetails = () => {
                 ty: "fl",
                 c: { a: 0, k: [0.2, 0.9, 0.3, 1] },
                 o: { a: 0, k: 100 },
-                // Fix the problem: Remove this.v which is undefined and use 1 instead
                 r: 1,
                 nm: "Fill 1",
                 mn: "ADBE Vector Graphic - Fill"
@@ -291,6 +299,7 @@ const ProjectDetails = () => {
                 setSelectedStatus("In progress");
                 setIsStatusDialogOpen(true);
               }}
+              onCreateTask={handleCreateTask}
               onAddPayment={() => setIsPaymentDialogOpen(true)}
               onEditPayment={openEditPaymentDialog}
               onDeletePayment={openDeletePaymentDialog}

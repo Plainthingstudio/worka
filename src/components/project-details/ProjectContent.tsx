@@ -5,6 +5,7 @@ import ProjectInfo from "@/components/project-details/ProjectInfo";
 import PaymentSummary from "@/components/project-details/PaymentSummary";
 import PaymentHistory from "@/components/project-details/PaymentHistory";
 import ProjectDialogs from "@/components/project-details/ProjectDialogs";
+import { CreateTaskFromProjectDialog } from "@/components/project-details/CreateTaskFromProjectDialog";
 import { Project, Client, Payment, ProjectStatus, TeamMember } from "@/types";
 
 interface ProjectContentProps {
@@ -19,12 +20,14 @@ interface ProjectContentProps {
     isPaymentDialogOpen: boolean;
     isEditPaymentDialogOpen: boolean;
     isDeletePaymentDialogOpen: boolean;
+    isCreateTaskDialogOpen: boolean;
   };
   selectedStatus: ProjectStatus;
   onEdit: () => void;
   onDelete: () => void;
   onMarkAsCompleted: () => void;
   onChangeStatus: () => void;
+  onCreateTask: () => void;
   onAddPayment: () => void;
   onEditPayment: (payment: Payment) => void;
   onDeletePayment: (payment: Payment) => void;
@@ -35,6 +38,7 @@ interface ProjectContentProps {
     onClosePaymentDialog: () => void;
     onCloseEditPaymentDialog: () => void;
     onCloseDeletePaymentDialog: () => void;
+    onCloseCreateTaskDialog: () => void;
     onEditProject: (data: any) => void;
     onDeleteProject: () => void;
     onChangeStatusSubmit: () => void;
@@ -42,6 +46,7 @@ interface ProjectContentProps {
     onAddPaymentSubmit: (data: any) => void;
     onEditPaymentSubmit: (data: any) => void;
     onDeletePaymentSubmit: () => void;
+    onCreateTaskSubmit: (data: any) => void;
   };
 }
 
@@ -56,6 +61,7 @@ const ProjectContent = ({
   onDelete,
   onMarkAsCompleted,
   onChangeStatus,
+  onCreateTask,
   onAddPayment,
   onEditPayment,
   onDeletePayment,
@@ -69,6 +75,7 @@ const ProjectContent = ({
         onDelete={onDelete}
         onMarkAsCompleted={onMarkAsCompleted}
         onChangeStatus={onChangeStatus}
+        onCreateTask={onCreateTask}
       />
 
       <div className="grid gap-6 md:grid-cols-7">
@@ -115,6 +122,13 @@ const ProjectContent = ({
         onAddPayment={handlers.onAddPaymentSubmit}
         onEditPayment={handlers.onEditPaymentSubmit}
         onDeletePayment={handlers.onDeletePaymentSubmit}
+      />
+
+      <CreateTaskFromProjectDialog
+        isOpen={dialogState.isCreateTaskDialogOpen}
+        onClose={handlers.onCloseCreateTaskDialog}
+        onSubmit={handlers.onCreateTaskSubmit}
+        project={project}
       />
     </>
   );

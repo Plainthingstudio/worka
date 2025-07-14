@@ -1,7 +1,7 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Pencil, Trash, CheckCircle, X, RotateCcw } from "lucide-react";
+import { Pencil, Trash, CheckCircle, X, RotateCcw, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Project } from "@/types";
 
@@ -11,6 +11,7 @@ interface ProjectHeaderProps {
   onDelete: () => void;
   onMarkAsCompleted: () => void;
   onChangeStatus: () => void;
+  onCreateTask: () => void;
 }
 
 const ProjectHeader = ({ 
@@ -18,7 +19,8 @@ const ProjectHeader = ({
   onEdit, 
   onDelete, 
   onMarkAsCompleted, 
-  onChangeStatus 
+  onChangeStatus,
+  onCreateTask
 }: ProjectHeaderProps) => {
   const navigate = useNavigate();
 
@@ -34,6 +36,13 @@ const ProjectHeader = ({
         </Button>
       </div>
       <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          className="gap-2"
+          onClick={onCreateTask}
+        >
+          <Plus className="h-4 w-4" /> Create Task
+        </Button>
         <Button
           variant="outline"
           className="gap-2"
