@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
+import { ClickUpTaskList } from '@/components/tasks/ClickUpTaskList';
+import { TaskDetailSidebar } from '@/components/tasks/TaskDetailSidebar';
+import { TaskDialog } from '@/components/tasks/TaskDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/task';
 import { Project } from '@/types';
-import { TaskListView } from '@/components/tasks/TaskListView';
-import { TaskBoardView } from '@/components/tasks/TaskBoardView';
-import { TaskCalendarView } from '@/components/tasks/TaskCalendarView';
-import { TaskDialog } from '@/components/tasks/TaskDialog';
-import { Plus, Search, Filter, CheckSquare } from 'lucide-react';
+import { Plus, Search, Filter, LayoutList, Users, Calendar, MoreHorizontal } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 export const Tasks = () => {
@@ -22,11 +18,12 @@ export const Tasks = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
   const [selectedProject, setSelectedProject] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeView, setActiveView] = useState('list');
+  const [newTaskStatus, setNewTaskStatus] = useState<TaskStatus>('Planning');
 
   const fetchProjects = async () => {
     try {
@@ -122,7 +119,7 @@ export const Tasks = () => {
       const insertData = {
         title: taskData.title || '',
         description: taskData.description,
-        status: 'Planning' as TaskStatus,
+        status: newTaskStatus,
         priority: taskData.priority,
         task_type: taskData.task_type,
         assignees: [],
@@ -174,8 +171,8 @@ export const Tasks = () => {
       if (updates.priority !== undefined) processedUpdates.priority = updates.priority;
       if (updates.task_type !== undefined) processedUpdates.task_type = updates.task_type;
       if (updates.assignees !== undefined) processedUpdates.assignees = updates.assignees;
-      if (updates.due_date !== undefined) processedUpdates.due_date = updates.due_date?.toISOString();
-      if (updates.completed_at !== undefined) processedUpdates.completed_at = updates.completed_at?.toISOString();
+      if (updates.due_date !== undefined) processedUpdates.due_date = updates.due_date;
+      if (updates.completed_at !== undefined) processedUpdates.completed_at = updates.completed_at;
 
       const { error } = await supabase
         .from('tasks')
@@ -308,6 +305,11 @@ export const Tasks = () => {
     }
   };
 
+  const handleAddTask = (status: TaskStatus) => {
+    setNewTaskStatus(status);
+    setIsCreateDialogOpen(true);
+  };
+
   // Filter tasks based on selected filters
   const filteredTasks = tasks.filter(task => {
     if (selectedProject !== 'all' && task.project_id !== selectedProject) return false;
@@ -316,11 +318,6 @@ export const Tasks = () => {
     if (searchQuery && !task.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
-
-  const getProjectName = (projectId: string) => {
-    const project = projects.find(p => p.id === projectId);
-    return project?.name || 'Unknown Project';
-  };
 
   useEffect(() => {
     fetchProjects();
@@ -332,182 +329,131 @@ export const Tasks = () => {
       <Navbar title="Tasks" />
       <div className="flex">
         <Sidebar />
-        <div className="flex-1 ml-56 space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <CheckSquare className="h-6 w-6" />
-          <h1 className="text-3xl font-bold">Tasks</h1>
-        </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Task
-        </Button>
-      </div>
-
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            Filters
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search tasks..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+        <div className="flex-1 ml-56">
+          {/* ClickUp-style Header */}
+          <div className="border-b bg-background px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <h1 className="text-2xl font-semibold">Internal Tasks</h1>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm">
+                    <LayoutList className="h-4 w-4 mr-2" />
+                    List
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <Users className="h-4 w-4 mr-2" />
+                    Team
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Calendar
+                  </Button>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={() => handleAddTask('Planning')}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Task
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-            
-            <Select value={selectedProject} onValueChange={setSelectedProject}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Projects" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
-                {projects.map(project => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
 
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Planning">Planning</SelectItem>
-                <SelectItem value="In progress">In Progress</SelectItem>
-                <SelectItem value="Paused">Paused</SelectItem>
-                <SelectItem value="Completed">Completed</SelectItem>
-                <SelectItem value="Cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Filters Bar */}
+            <div className="flex items-center gap-4 mt-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search tasks..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 h-9 w-64"
+                />
+              </div>
+              
+              <Select value={selectedProject} onValueChange={setSelectedProject}>
+                <SelectTrigger className="h-9 w-48">
+                  <SelectValue placeholder="All Projects" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Projects</SelectItem>
+                  {projects.map(project => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Priority" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Priority</SelectItem>
-                <SelectItem value="Low">Low</SelectItem>
-                <SelectItem value="Normal">Normal</SelectItem>
-                <SelectItem value="High">High</SelectItem>
-                <SelectItem value="Urgent">Urgent</SelectItem>
-              </SelectContent>
-            </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-9 w-32">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="Planning">Planning</SelectItem>
+                  <SelectItem value="In progress">In Progress</SelectItem>
+                  <SelectItem value="Paused">Paused</SelectItem>
+                  <SelectItem value="Completed">Completed</SelectItem>
+                  <SelectItem value="Cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger className="h-9 w-32">
+                  <SelectValue placeholder="Priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Priority</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                  <SelectItem value="Normal">Normal</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Urgent">Urgent</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button variant="ghost" size="sm">
+                <Filter className="h-4 w-4 mr-2" />
+                Filter
+              </Button>
+            </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Task Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Tasks</p>
-                <p className="text-2xl font-bold">{filteredTasks.length}</p>
-              </div>
-              <Badge variant="secondary">{filteredTasks.length}</Badge>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">In Progress</p>
-                <p className="text-2xl font-bold">{filteredTasks.filter(t => t.status === 'In progress').length}</p>
-              </div>
-              <Badge variant="secondary" className="bg-blue-500 text-white">Active</Badge>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Completed</p>
-                <p className="text-2xl font-bold">{filteredTasks.filter(t => t.status === 'Completed').length}</p>
-              </div>
-              <Badge variant="secondary" className="bg-green-500 text-white">Done</Badge>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">High Priority</p>
-                <p className="text-2xl font-bold">{filteredTasks.filter(t => t.priority === 'High' || t.priority === 'Urgent').length}</p>
-              </div>
-              <Badge variant="secondary" className="bg-orange-500 text-white">Priority</Badge>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          {/* Task List */}
+          <div className="flex-1">
+            <ClickUpTaskList
+              tasks={filteredTasks}
+              isLoading={isLoading}
+              onTaskClick={setSelectedTask}
+              onUpdateTask={updateTask}
+              onAddTask={handleAddTask}
+            />
+          </div>
 
-      {/* Task Views */}
-      <Card>
-        <CardContent className="p-6">
-          <Tabs value={activeView} onValueChange={setActiveView} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="list">List View</TabsTrigger>
-              <TabsTrigger value="board">Board View</TabsTrigger>
-              <TabsTrigger value="calendar">Calendar View</TabsTrigger>
-            </TabsList>
+          {/* Task Detail Sidebar */}
+          <TaskDetailSidebar
+            task={selectedTask}
+            isOpen={!!selectedTask}
+            onClose={() => setSelectedTask(null)}
+            onUpdateTask={updateTask}
+            onDeleteTask={deleteTask}
+            onAddComment={addComment}
+            onUploadAttachment={uploadAttachment}
+          />
 
-            <TabsContent value="list" className="mt-6">
-              <TaskListView 
-                tasks={filteredTasks}
-                isLoading={isLoading}
-                onUpdateTask={updateTask}
-                onDeleteTask={deleteTask}
-                onAddComment={addComment}
-                onUploadAttachment={uploadAttachment}
-              />
-            </TabsContent>
-
-            <TabsContent value="board" className="mt-6">
-              <TaskBoardView 
-                tasks={filteredTasks}
-                isLoading={isLoading}
-                onUpdateTask={updateTask}
-                onDeleteTask={deleteTask}
-                onAddComment={addComment}
-                onUploadAttachment={uploadAttachment}
-              />
-            </TabsContent>
-
-            <TabsContent value="calendar" className="mt-6">
-              <TaskCalendarView 
-                tasks={filteredTasks}
-                isLoading={isLoading}
-                onUpdateTask={updateTask}
-              />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-
-      <TaskDialog
-        isOpen={isCreateDialogOpen}
-        onClose={() => setIsCreateDialogOpen(false)}
-        onSubmit={handleCreateTask}
-        title="Create New Task"
-      />
+          {/* Create Task Dialog */}
+          <TaskDialog
+            isOpen={isCreateDialogOpen}
+            onClose={() => setIsCreateDialogOpen(false)}
+            onSubmit={handleCreateTask}
+            title="Create New Task"
+          />
         </div>
       </div>
     </div>
