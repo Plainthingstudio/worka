@@ -218,7 +218,30 @@ export const TaskDetailSidebar = ({
                         <Input 
                           {...field} 
                           className="text-lg font-semibold border-none p-0 h-auto focus-visible:ring-0"
-                          onBlur={() => form.handleSubmit(handleSubmit)()}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              form.handleSubmit(handleSubmit)();
+                              setIsEditing(false);
+                            } else if (e.key === 'Escape') {
+                              e.preventDefault();
+                              form.reset({
+                                title: task.title || '',
+                                description: task.description || '',
+                                priority: task.priority || 'Normal',
+                                task_type: task.task_type || 'Primary',
+                                status: task.status || 'Planning',
+                                assignees: task.assignees || [],
+                                due_date: task.due_date ? new Date(task.due_date) : undefined,
+                              });
+                              setIsEditing(false);
+                            }
+                          }}
+                          onBlur={() => {
+                            form.handleSubmit(handleSubmit)();
+                            setIsEditing(false);
+                          }}
+                          autoFocus
                         />
                       </FormControl>
                       <FormMessage />
