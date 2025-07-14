@@ -1,9 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
-export type UserRole = 'owner' | 'administrator' | 'team' | null;
+type UserRole = 'owner' | 'administrator' | 'team' | null;
 
 export const useUserRole = () => {
   const [userRole, setUserRole] = useState<UserRole>(null);
@@ -11,43 +10,39 @@ export const useUserRole = () => {
 
   const fetchUserRole = async () => {
     try {
+      setIsLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        console.log("No authenticated user found");
+        console.log('No authenticated user found');
         setUserRole(null);
         setIsLoading(false);
         return;
       }
 
-      console.log("Fetching role for user:", user.id);
+      console.log('Fetching role for user:', user.id);
 
-      // First try to get the role directly from user_roles table
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .single();
 
       if (error) {
-        console.error("Error fetching user role:", error);
-        // Try using the RPC function as fallback
-        const { data: rpcData, error: rpcError } = await supabase
-          .rpc('get_user_role', { _user_id: user.id });
-        
-        if (rpcError) {
-          console.error("Error calling get_user_role RPC:", rpcError);
+        if (error.code === 'PGRST116') {
+          // No role found - user might be new
+          console.log('No role found for user');
           setUserRole(null);
         } else {
-          console.log("RPC returned role:", rpcData);
-          setUserRole(rpcData || null);
+          console.error('Error fetching user role:', error);
+          setUserRole(null);
         }
       } else {
-        console.log("Direct query returned role:", data?.role);
-        setUserRole(data?.role || null);
+        console.log('User role fetched:', data.role);
+        setUserRole(data.role as UserRole);
       }
     } catch (error) {
-      console.error("Error in fetchUserRole:", error);
+      console.error('Error in fetchUserRole:', error);
       setUserRole(null);
     } finally {
       setIsLoading(false);
@@ -55,14 +50,15 @@ export const useUserRole = () => {
   };
 
   useEffect(() => {
+    // Initial fetch
     fetchUserRole();
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event, session?.user?.id);
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      console.log('Auth state changed:', event, session);
+      if (session) {
         fetchUserRole();
-      } else if (event === 'SIGNED_OUT') {
+      } else {
         setUserRole(null);
         setIsLoading(false);
       }
@@ -71,29 +67,19 @@ export const useUserRole = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const hasPermission = (requiredRole: UserRole | UserRole[]) => {
-    if (!userRole) return false;
-    
-    const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
-    return roles.includes(userRole);
-  };
+  // Log current state for debugging
+  useEffect(() => {
+    console.log('Current user role:', userRole, 'isLoading:', isLoading);
+  }, [userRole, isLoading]);
 
-  const canManageTeam = () => userRole === 'owner';
-  const canManageProjects = () => userRole === 'owner' || userRole === 'administrator';
-  const canViewTeam = () => userRole === 'owner' || userRole === 'administrator' || userRole === 'team';
-  const canViewProjects = () => userRole === 'owner' || userRole === 'administrator' || userRole === 'team';
-
-  // Add debugging info
-  console.log("Current user role:", userRole, "isLoading:", isLoading);
+  const canViewTeam = userRole === 'owner' || userRole === 'administrator';
+  const canViewProjects = userRole === 'owner' || userRole === 'administrator' || userRole === 'team';
 
   return {
     userRole,
     isLoading,
-    hasPermission,
-    canManageTeam,
-    canManageProjects,
     canViewTeam,
     canViewProjects,
-    refetchRole: fetchUserRole
+    fetchUserRole
   };
 };

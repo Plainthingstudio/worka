@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import Navbar from '@/components/Navbar';
-import Sidebar from '@/components/Sidebar';
+import { Layout } from '@/components/Layout';
 import { ClickUpTaskList } from '@/components/tasks/ClickUpTaskList';
 import { TaskListView } from '@/components/tasks/TaskListView';
 import { TaskBoardView } from '@/components/tasks/TaskBoardView';
@@ -15,8 +14,10 @@ import { TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/t
 import { Project } from '@/types';
 import { Plus, Search, Filter, LayoutList, Users, Calendar, MoreHorizontal, Kanban } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 export const Tasks = () => {
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,6 +29,37 @@ export const Tasks = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [newTaskStatus, setNewTaskStatus] = useState<TaskStatus>('Planning');
   const [activeView, setActiveView] = useState<'list' | 'board' | 'calendar'>('list');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Session check:', session);
+      
+      if (!session) {
+        console.log('No session found, redirecting to auth');
+        navigate('/auth');
+        return;
+      }
+      
+      setIsAuthenticated(true);
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session);
+      if (!session) {
+        navigate('/auth');
+      } else {
+        setIsAuthenticated(true);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const fetchProjects = async () => {
     try {
@@ -63,6 +95,11 @@ export const Tasks = () => {
   };
 
   const fetchAllTasks = async () => {
+    if (!isAuthenticated) {
+      console.log('Not authenticated, skipping task fetch');
+      return;
+    }
+
     try {
       setIsLoading(true);
       const { data: tasksData, error } = await supabase
@@ -83,6 +120,8 @@ export const Tasks = () => {
         });
         return;
       }
+
+      console.log('Fetched tasks:', tasksData);
 
       const transformedTasks: TaskWithRelations[] = tasksData.map(task => ({
         ...task,
@@ -194,7 +233,6 @@ export const Tasks = () => {
         return false;
       }
 
-      // Update the local tasks state immediately for better UX
       setTasks(prevTasks => 
         prevTasks.map(task => 
           task.id === taskId ? { ...task, ...processedUpdates } : task
@@ -268,7 +306,6 @@ export const Tasks = () => {
         return false;
       }
 
-      // Immediately update local state for instant UI feedback
       setTasks(prevTasks => 
         prevTasks.map(task => 
           task.id === taskId 
@@ -352,7 +389,6 @@ export const Tasks = () => {
     setIsCreateDialogOpen(true);
   };
 
-  // Filter tasks based on selected filters
   const filteredTasks = tasks.filter(task => {
     if (selectedProject !== 'all' && task.project_id !== selectedProject) return false;
     if (statusFilter !== 'all' && task.status !== statusFilter) return false;
@@ -362,189 +398,198 @@ export const Tasks = () => {
   });
 
   useEffect(() => {
-    fetchProjects();
-    fetchAllTasks();
-  }, []);
+    if (isAuthenticated) {
+      fetchProjects();
+      fetchAllTasks();
+    }
+  }, [isAuthenticated]);
+
+  // Show loading state while checking authentication
+  if (!isAuthenticated) {
+    return (
+      <Layout title="Tasks">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="text-lg">Loading...</div>
+            <div className="text-sm text-muted-foreground">Verifying authentication</div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar title="Tasks" />
-      <div className="flex">
-        <Sidebar />
-        <div className="flex-1 ml-56">
-          <div className="flex flex-col h-[calc(100vh-64px)]">
-            {/* Header */}
-            <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 py-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <h1 className="text-2xl font-semibold">Internal Tasks</h1>
-                  <div className="flex items-center gap-0 border rounded-lg p-1">
-                    <Button 
-                      variant={activeView === 'list' ? 'default' : 'ghost'}
-                      size="sm"
-                      className="h-8"
-                      onClick={() => setActiveView('list')}
-                    >
-                      <LayoutList className="h-4 w-4 mr-2" />
-                      List
-                    </Button>
-                    <Button 
-                      variant={activeView === 'board' ? 'default' : 'ghost'}
-                      size="sm"
-                      className="h-8"
-                      onClick={() => setActiveView('board')}
-                    >
-                      <Kanban className="h-4 w-4 mr-2" />
-                      Board
-                    </Button>
-                    <Button 
-                      variant={activeView === 'calendar' ? 'default' : 'ghost'}
-                      size="sm"
-                      className="h-8"
-                      onClick={() => setActiveView('calendar')}
-                    >
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Calendar
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Button variant="outline" size="sm">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                  <Button onClick={() => handleAddTask()}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Task
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Filters */}
-            <div className="border-b bg-background px-6 py-4">
-              <div className="flex items-center gap-4">
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search tasks..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-
-                <Select value={selectedProject} onValueChange={setSelectedProject}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="All Projects" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Projects</SelectItem>
-                    {projects.map((project) => (
-                      <SelectItem key={project.id} value={project.id}>
-                        {project.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="All Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="Planning">Planning</SelectItem>
-                    <SelectItem value="In progress">In Progress</SelectItem>
-                    <SelectItem value="Paused">Paused</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                    <SelectItem value="Cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="All Priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Priority</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                    <SelectItem value="Normal">Normal</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Urgent">Urgent</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filter
+    <Layout title="Tasks">
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-semibold">Internal Tasks</h1>
+              <div className="flex items-center gap-0 border rounded-lg p-1">
+                <Button 
+                  variant={activeView === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  className="h-8"
+                  onClick={() => setActiveView('list')}
+                >
+                  <LayoutList className="h-4 w-4 mr-2" />
+                  List
+                </Button>
+                <Button 
+                  variant={activeView === 'board' ? 'default' : 'ghost'}
+                  size="sm"
+                  className="h-8"
+                  onClick={() => setActiveView('board')}
+                >
+                  <Kanban className="h-4 w-4 mr-2" />
+                  Board
+                </Button>
+                <Button 
+                  variant={activeView === 'calendar' ? 'default' : 'ghost'}
+                  size="sm"
+                  className="h-8"
+                  onClick={() => setActiveView('calendar')}
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Calendar
                 </Button>
               </div>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-hidden px-6 py-6">
-              {/* Dynamic View Rendering */}
-              {activeView === 'list' && (
-                <ClickUpTaskList
-                  tasks={filteredTasks}
-                  isLoading={isLoading}
-                  onTaskClick={(task) => {
-                    console.log('Task clicked:', task.title);
-                    setSelectedTask(task);
-                  }}
-                  onUpdateTask={updateTask}
-                  onAddTask={handleAddTask}
-                />
-              )}
-              
-              {activeView === 'board' && (
-                <TaskBoardView
-                  tasks={filteredTasks}
-                  isLoading={isLoading}
-                  onUpdateTask={updateTask}
-                  onDeleteTask={deleteTask}
-                  onAddComment={addComment}
-                  onUploadAttachment={uploadAttachment}
-                  onAddTask={(status) => handleAddTask(status)}
-                  onTaskClick={(task) => {
-                    console.log('Board task clicked:', task.title);
-                    setSelectedTask(task);
-                  }}
-                />
-              )}
-              
-              {activeView === 'calendar' && (
-                <TaskCalendarView
-                  tasks={filteredTasks}
-                  isLoading={isLoading}
-                  onUpdateTask={updateTask}
-                />
-              )}
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+              <Button onClick={() => handleAddTask()}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Task
+              </Button>
             </div>
           </div>
+        </div>
 
-          {/* Task Detail Sidebar */}
-          <TaskDetailSidebar
-            task={selectedTask}
-            isOpen={!!selectedTask}
-            onClose={() => setSelectedTask(null)}
-            onUpdateTask={updateTask}
-            onDeleteTask={deleteTask}
-            onAddComment={addComment}
-            onUploadAttachment={uploadAttachment}
-          />
+        {/* Filters */}
+        <div className="border-b bg-background px-6 py-4">
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search tasks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
 
-          {/* Create Task Dialog */}
-          <TaskDialog
-            isOpen={isCreateDialogOpen}
-            onClose={() => setIsCreateDialogOpen(false)}
-            onSubmit={handleCreateTask}
-            title="Create New Task"
-          />
+            <Select value={selectedProject} onValueChange={setSelectedProject}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="All Projects" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Projects</SelectItem>
+                {projects.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    {project.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="Planning">Planning</SelectItem>
+                <SelectItem value="In progress">In Progress</SelectItem>
+                <SelectItem value="Paused">Paused</SelectItem>
+                <SelectItem value="Completed">Completed</SelectItem>
+                <SelectItem value="Cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="All Priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Priority</SelectItem>
+                <SelectItem value="Low">Low</SelectItem>
+                <SelectItem value="Normal">Normal</SelectItem>
+                <SelectItem value="High">High</SelectItem>
+                <SelectItem value="Urgent">Urgent</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button variant="outline" size="sm">
+              <Filter className="h-4 w-4 mr-2" />
+              Filter
+            </Button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-hidden px-6 py-6">
+          {activeView === 'list' && (
+            <ClickUpTaskList
+              tasks={filteredTasks}
+              isLoading={isLoading}
+              onTaskClick={(task) => {
+                console.log('Task clicked:', task.title);
+                setSelectedTask(task);
+              }}
+              onUpdateTask={updateTask}
+              onAddTask={handleAddTask}
+            />
+          )}
+          
+          {activeView === 'board' && (
+            <TaskBoardView
+              tasks={filteredTasks}
+              isLoading={isLoading}
+              onUpdateTask={updateTask}
+              onDeleteTask={deleteTask}
+              onAddComment={addComment}
+              onUploadAttachment={uploadAttachment}
+              onAddTask={(status) => handleAddTask(status)}
+              onTaskClick={(task) => {
+                console.log('Board task clicked:', task.title);
+                setSelectedTask(task);
+              }}
+            />
+          )}
+          
+          {activeView === 'calendar' && (
+            <TaskCalendarView
+              tasks={filteredTasks}
+              isLoading={isLoading}
+              onUpdateTask={updateTask}
+            />
+          )}
         </div>
       </div>
-    </div>
+
+      {/* Task Detail Sidebar */}
+      <TaskDetailSidebar
+        task={selectedTask}
+        isOpen={!!selectedTask}
+        onClose={() => setSelectedTask(null)}
+        onUpdateTask={updateTask}
+        onDeleteTask={deleteTask}
+        onAddComment={addComment}
+        onUploadAttachment={uploadAttachment}
+      />
+
+      {/* Create Task Dialog */}
+      <TaskDialog
+        isOpen={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        onSubmit={handleCreateTask}
+        title="Create New Task"
+      />
+    </Layout>
   );
 };
 
