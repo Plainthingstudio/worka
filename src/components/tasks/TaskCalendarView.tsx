@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { TaskWithRelations } from '@/types/task';
-import { TaskDetailDialog } from './TaskDetailDialog';
+import { ClickUpTaskDetail } from './ClickUpTaskDetail';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from 'date-fns';
 
 interface TaskCalendarViewProps {
@@ -165,7 +165,7 @@ export const TaskCalendarView = ({ tasks, isLoading, onUpdateTask }: TaskCalenda
       )}
 
       {selectedTask && (
-        <TaskDetailDialog
+        <ClickUpTaskDetail
           task={selectedTask}
           isOpen={!!selectedTask}
           onClose={() => setSelectedTask(null)}

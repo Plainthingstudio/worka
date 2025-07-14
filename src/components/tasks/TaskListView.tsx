@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { TaskWithRelations } from '@/types/task';
-import { TaskDetailDialog } from './TaskDetailDialog';
+import { ClickUpTaskDetail } from './ClickUpTaskDetail';
 import { format } from 'date-fns';
 
 interface TaskListViewProps {
@@ -190,7 +190,7 @@ export const TaskListView = ({
       ))}
 
       {selectedTask && (
-        <TaskDetailDialog
+        <ClickUpTaskDetail
           task={selectedTask}
           isOpen={!!selectedTask}
           onClose={() => setSelectedTask(null)}

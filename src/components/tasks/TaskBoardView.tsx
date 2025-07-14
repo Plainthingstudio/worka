@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Flag, Calendar, User, MessageSquare, Paperclip, MoreHorizontal, Plus, MoreVertical } from 'lucide-react';
 import { TaskWithRelations, TaskStatus } from '@/types/task';
-import { TaskDetailDialog } from './TaskDetailDialog';
+import { ClickUpTaskDetail } from './ClickUpTaskDetail';
 import { format } from 'date-fns';
 import {
   DropdownMenu,
@@ -212,7 +212,7 @@ export const TaskBoardView = ({
       })}
 
       {selectedTask && (
-        <TaskDetailDialog
+        <ClickUpTaskDetail
           task={selectedTask}
           isOpen={!!selectedTask}
           onClose={() => setSelectedTask(null)}
