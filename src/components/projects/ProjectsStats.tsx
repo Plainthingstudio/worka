@@ -31,7 +31,7 @@ const ProjectsStats: React.FC<ProjectsStatsProps> = ({ projects }) => {
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
           <CardTitle className="text-sm font-medium">Planning</CardTitle>
           <CalendarIcon className="h-4 w-4 text-blue-600" />
         </CardHeader>
@@ -44,7 +44,7 @@ const ProjectsStats: React.FC<ProjectsStatsProps> = ({ projects }) => {
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
           <CardTitle className="text-sm font-medium">Cancelled</CardTitle>
           <X className="h-4 w-4 text-red-600" />
         </CardHeader>
@@ -57,7 +57,7 @@ const ProjectsStats: React.FC<ProjectsStatsProps> = ({ projects }) => {
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
           <CardTitle className="text-sm font-medium">Completed</CardTitle>
           <CheckCircle className="h-4 w-4 text-green-600" />
         </CardHeader>
