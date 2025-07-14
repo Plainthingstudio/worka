@@ -16,7 +16,6 @@ import { Project } from '@/types';
 import { Plus, Search, Filter, LayoutList, Users, Calendar, MoreHorizontal, Kanban } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-
 export const Tasks = () => {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
@@ -36,22 +35,27 @@ export const Tasks = () => {
   // Check authentication on component mount
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       console.log('Session check:', session);
-      
       if (!session) {
         console.log('No session found, redirecting to auth');
         navigate('/auth');
         return;
       }
-      
       setIsAuthenticated(true);
     };
-
     checkAuth();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: {
+        subscription
+      }
+    } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, session);
       if (!session) {
         navigate('/auth');
@@ -59,7 +63,6 @@ export const Tasks = () => {
         setIsAuthenticated(true);
       }
     });
-
     return () => subscription.unsubscribe();
   }, [navigate]);
 
@@ -76,26 +79,26 @@ export const Tasks = () => {
     // Set up mutation observer to watch for class changes on the sidebar
     const observer = new MutationObserver(handleSidebarChange);
     const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
-    
     if (sidebarElement) {
-      observer.observe(sidebarElement, { attributes: true, attributeFilter: ['class'] });
+      observer.observe(sidebarElement, {
+        attributes: true,
+        attributeFilter: ['class']
+      });
     }
-
     return () => observer.disconnect();
   }, []);
-
   const fetchProjects = async () => {
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
-
+      const {
+        data,
+        error
+      } = await supabase.from('projects').select('*').order('created_at', {
+        ascending: false
+      });
       if (error) {
         console.error('Error fetching projects:', error);
         return;
       }
-
       const transformedProjects: Project[] = data.map(project => ({
         id: project.id,
         name: project.name,
@@ -108,44 +111,40 @@ export const Tasks = () => {
         categories: project.categories as any,
         payments: [],
         teamMembers: project.team_members || [],
-        createdAt: new Date(project.created_at),
+        createdAt: new Date(project.created_at)
       }));
-
       setProjects(transformedProjects);
     } catch (error) {
       console.error('Error fetching projects:', error);
     }
   };
-
   const fetchAllTasks = async () => {
     if (!isAuthenticated) {
       console.log('Not authenticated, skipping task fetch');
       return;
     }
-
     try {
       setIsLoading(true);
-      const { data: tasksData, error } = await supabase
-        .from('tasks')
-        .select(`
+      const {
+        data: tasksData,
+        error
+      } = await supabase.from('tasks').select(`
           *,
           task_comments(*),
           task_attachments(*)
-        `)
-        .order('created_at', { ascending: false });
-
+        `).order('created_at', {
+        ascending: false
+      });
       if (error) {
         console.error('Error fetching tasks:', error);
         toast({
           title: "Error",
           description: "Failed to fetch tasks",
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
-
       console.log('Fetched tasks:', tasksData);
-
       const transformedTasks: TaskWithRelations[] = tasksData.map(task => ({
         ...task,
         status: task.status as TaskStatus,
@@ -158,28 +157,26 @@ export const Tasks = () => {
         comments: task.task_comments?.map((comment: any) => ({
           ...comment,
           created_at: new Date(comment.created_at),
-          updated_at: new Date(comment.updated_at),
+          updated_at: new Date(comment.updated_at)
         })) || [],
         attachments: task.task_attachments?.map((attachment: any) => ({
           ...attachment,
-          created_at: new Date(attachment.created_at),
+          created_at: new Date(attachment.created_at)
         })) || [],
-        subtasks: [],
+        subtasks: []
       }));
-
       setTasks(transformedTasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast({
         title: "Error",
         description: "Failed to fetch tasks",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
-
   const createTask = async (taskData: any) => {
     try {
       const insertData = {
@@ -191,30 +188,25 @@ export const Tasks = () => {
         assignees: taskData.assignees || [],
         due_date: taskData.due_date,
         project_id: selectedProject === 'all' ? null : selectedProject,
-        user_id: (await supabase.auth.getUser()).data.user?.id,
+        user_id: (await supabase.auth.getUser()).data.user?.id
       };
-
-      const { data, error } = await supabase
-        .from('tasks')
-        .insert([insertData])
-        .select()
-        .single();
-
+      const {
+        data,
+        error
+      } = await supabase.from('tasks').insert([insertData]).select().single();
       if (error) {
         console.error('Error creating task:', error);
         toast({
           title: "Error",
           description: "Failed to create task",
-          variant: "destructive",
+          variant: "destructive"
         });
         return null;
       }
-
       toast({
         title: "Success",
-        description: "Task created successfully",
+        description: "Task created successfully"
       });
-
       await fetchAllTasks();
       return data;
     } catch (error) {
@@ -222,16 +214,14 @@ export const Tasks = () => {
       toast({
         title: "Error",
         description: "Failed to create task",
-        variant: "destructive",
+        variant: "destructive"
       });
       return null;
     }
   };
-
   const updateTask = async (taskId: string, updates: any) => {
     try {
       const processedUpdates: any = {};
-      
       if (updates.title !== undefined) processedUpdates.title = updates.title;
       if (updates.description !== undefined) processedUpdates.description = updates.description;
       if (updates.status !== undefined) processedUpdates.status = updates.status;
@@ -240,33 +230,26 @@ export const Tasks = () => {
       if (updates.assignees !== undefined) processedUpdates.assignees = updates.assignees;
       if (updates.due_date !== undefined) processedUpdates.due_date = updates.due_date;
       if (updates.completed_at !== undefined) processedUpdates.completed_at = updates.completed_at;
-
-      const { error } = await supabase
-        .from('tasks')
-        .update(processedUpdates)
-        .eq('id', taskId);
-
+      const {
+        error
+      } = await supabase.from('tasks').update(processedUpdates).eq('id', taskId);
       if (error) {
         console.error('Error updating task:', error);
         toast({
           title: "Error",
           description: "Failed to update task",
-          variant: "destructive",
+          variant: "destructive"
         });
         return false;
       }
-
-      setTasks(prevTasks => 
-        prevTasks.map(task => 
-          task.id === taskId ? { ...task, ...processedUpdates } : task
-        )
-      );
-
+      setTasks(prevTasks => prevTasks.map(task => task.id === taskId ? {
+        ...task,
+        ...processedUpdates
+      } : task));
       toast({
         title: "Success",
-        description: "Task updated successfully",
+        description: "Task updated successfully"
       });
-
       await fetchAllTasks();
       return true;
     } catch (error) {
@@ -274,29 +257,24 @@ export const Tasks = () => {
       return false;
     }
   };
-
   const deleteTask = async (taskId: string) => {
     try {
-      const { error } = await supabase
-        .from('tasks')
-        .delete()
-        .eq('id', taskId);
-
+      const {
+        error
+      } = await supabase.from('tasks').delete().eq('id', taskId);
       if (error) {
         console.error('Error deleting task:', error);
         toast({
           title: "Error",
           description: "Failed to delete task",
-          variant: "destructive",
+          variant: "destructive"
         });
         return false;
       }
-
       toast({
         title: "Success",
-        description: "Task deleted successfully",
+        description: "Task deleted successfully"
       });
-
       await fetchAllTasks();
       return true;
     } catch (error) {
@@ -304,94 +282,77 @@ export const Tasks = () => {
       return false;
     }
   };
-
   const addComment = async (taskId: string, content: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) {
         console.error('No authenticated user found');
         return false;
       }
-
-      const { data, error } = await supabase
-        .from('task_comments')
-        .insert([{
-          task_id: taskId,
-          content,
-          user_id: user.id,
-        }])
-        .select('*')
-        .single();
-
+      const {
+        data,
+        error
+      } = await supabase.from('task_comments').insert([{
+        task_id: taskId,
+        content,
+        user_id: user.id
+      }]).select('*').single();
       if (error) {
         console.error('Error adding comment:', error);
         return false;
       }
-
-      setTasks(prevTasks => 
-        prevTasks.map(task => 
-          task.id === taskId 
-            ? {
-                ...task,
-                comments: [
-                  ...(task.comments || []),
-                  {
-                    id: data.id,
-                    content: data.content,
-                    created_at: new Date(data.created_at),
-                    updated_at: new Date(data.updated_at),
-                    user_id: data.user_id,
-                    task_id: data.task_id
-                  }
-                ]
-              }
-            : task
-        )
-      );
-
+      setTasks(prevTasks => prevTasks.map(task => task.id === taskId ? {
+        ...task,
+        comments: [...(task.comments || []), {
+          id: data.id,
+          content: data.content,
+          created_at: new Date(data.created_at),
+          updated_at: new Date(data.updated_at),
+          user_id: data.user_id,
+          task_id: data.task_id
+        }]
+      } : task));
       return true;
     } catch (error) {
       console.error('Error adding comment:', error);
       return false;
     }
   };
-
   const uploadAttachment = async (taskId: string, file: File) => {
     try {
       const userId = (await supabase.auth.getUser()).data.user?.id;
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}/${taskId}/${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('task-attachments')
-        .upload(fileName, file);
-
+      const {
+        error: uploadError
+      } = await supabase.storage.from('task-attachments').upload(fileName, file);
       if (uploadError) {
         console.error('Error uploading file:', uploadError);
         return false;
       }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('task-attachments')
-        .getPublicUrl(fileName);
-
-      const { error: dbError } = await supabase
-        .from('task_attachments')
-        .insert([{
-          task_id: taskId,
-          user_id: userId,
-          file_name: file.name,
-          file_url: publicUrl,
-          file_size: file.size,
-          file_type: file.type,
-        }]);
-
+      const {
+        data: {
+          publicUrl
+        }
+      } = supabase.storage.from('task-attachments').getPublicUrl(fileName);
+      const {
+        error: dbError
+      } = await supabase.from('task_attachments').insert([{
+        task_id: taskId,
+        user_id: userId,
+        file_name: file.name,
+        file_url: publicUrl,
+        file_size: file.size,
+        file_type: file.type
+      }]);
       if (dbError) {
         console.error('Error saving attachment record:', dbError);
         return false;
       }
-
       await fetchAllTasks();
       return true;
     } catch (error) {
@@ -399,19 +360,16 @@ export const Tasks = () => {
       return false;
     }
   };
-
   const handleCreateTask = async (taskData: any) => {
     const success = await createTask(taskData);
     if (success) {
       setIsCreateDialogOpen(false);
     }
   };
-
   const handleAddTask = (status: TaskStatus = 'Planning') => {
     setNewTaskStatus(status);
     setIsCreateDialogOpen(true);
   };
-
   const filteredTasks = tasks.filter(task => {
     if (selectedProject !== 'all' && task.project_id !== selectedProject) return false;
     if (statusFilter !== 'all' && task.status !== statusFilter) return false;
@@ -419,7 +377,6 @@ export const Tasks = () => {
     if (searchQuery && !task.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
-
   useEffect(() => {
     if (isAuthenticated) {
       fetchProjects();
@@ -429,14 +386,9 @@ export const Tasks = () => {
 
   // Show loading state while checking authentication
   if (!isAuthenticated) {
-    return (
-      <div className="flex min-h-screen bg-background">
+    return <div className="flex min-h-screen bg-background">
         <Sidebar />
-        <div 
-          className={`flex-1 w-full transition-all duration-300 ease-in-out ${
-            isSidebarExpanded ? "ml-56" : "ml-14"
-          }`}
-        >
+        <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
           <Navbar title="Tasks" />
           <main className="p-6">
             <div className="flex items-center justify-center h-64">
@@ -447,51 +399,29 @@ export const Tasks = () => {
             </div>
           </main>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="flex min-h-screen bg-background">
+  return <div className="flex min-h-screen bg-background">
       <Sidebar />
-      <div 
-        className={`flex-1 w-full transition-all duration-300 ease-in-out ${
-          isSidebarExpanded ? "ml-56" : "ml-14"
-        }`}
-      >
+      <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
         <Navbar title="Tasks" />
-        <main className="p-6">
+        <main className="p-6 py-0">
           <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6 py-4 sm:py-6 -mx-6 mb-6">
+            <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6 sm:py-6 -mx-6 mb-6 py-[8px]">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                   <h1 className="text-xl sm:text-2xl font-semibold">Internal Tasks</h1>
                   <div className="flex items-center gap-0 border rounded-lg p-1">
-                    <Button 
-                      variant={activeView === 'list' ? 'default' : 'ghost'}
-                      size="sm"
-                      className="h-8 px-2 sm:px-3"
-                      onClick={() => setActiveView('list')}
-                    >
+                    <Button variant={activeView === 'list' ? 'default' : 'ghost'} size="sm" className="h-8 px-2 sm:px-3" onClick={() => setActiveView('list')}>
                       <LayoutList className="h-4 w-4 sm:mr-2" />
                       <span className="hidden sm:inline">List</span>
                     </Button>
-                    <Button 
-                      variant={activeView === 'board' ? 'default' : 'ghost'}
-                      size="sm"
-                      className="h-8 px-2 sm:px-3"
-                      onClick={() => setActiveView('board')}
-                    >
+                    <Button variant={activeView === 'board' ? 'default' : 'ghost'} size="sm" className="h-8 px-2 sm:px-3" onClick={() => setActiveView('board')}>
                       <Kanban className="h-4 w-4 sm:mr-2" />
                       <span className="hidden sm:inline">Board</span>
                     </Button>
-                    <Button 
-                      variant={activeView === 'calendar' ? 'default' : 'ghost'}
-                      size="sm"
-                      className="h-8 px-2 sm:px-3"
-                      onClick={() => setActiveView('calendar')}
-                    >
+                    <Button variant={activeView === 'calendar' ? 'default' : 'ghost'} size="sm" className="h-8 px-2 sm:px-3" onClick={() => setActiveView('calendar')}>
                       <Calendar className="h-4 w-4 sm:mr-2" />
                       <span className="hidden sm:inline">Calendar</span>
                     </Button>
@@ -515,12 +445,7 @@ export const Tasks = () => {
               <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
                 <div className="relative flex-1 max-w-full lg:max-w-md">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search tasks..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
+                  <Input placeholder="Search tasks..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10" />
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 lg:gap-4">
@@ -530,11 +455,9 @@ export const Tasks = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Projects</SelectItem>
-                      {projects.map((project) => (
-                        <SelectItem key={project.id} value={project.id}>
+                      {projects.map(project => <SelectItem key={project.id} value={project.id}>
                           {project.name}
-                        </SelectItem>
-                      ))}
+                        </SelectItem>)}
                     </SelectContent>
                   </Select>
 
@@ -575,67 +498,27 @@ export const Tasks = () => {
 
             {/* Content */}
             <div className="flex-1 overflow-hidden">
-              {activeView === 'list' && (
-                <ClickUpTaskList
-                  tasks={filteredTasks}
-                  isLoading={isLoading}
-                  onTaskClick={(task) => {
-                    console.log('Task clicked:', task.title);
-                    setSelectedTask(task);
-                  }}
-                  onUpdateTask={updateTask}
-                  onAddTask={handleAddTask}
-                />
-              )}
+              {activeView === 'list' && <ClickUpTaskList tasks={filteredTasks} isLoading={isLoading} onTaskClick={task => {
+              console.log('Task clicked:', task.title);
+              setSelectedTask(task);
+            }} onUpdateTask={updateTask} onAddTask={handleAddTask} />}
               
-              {activeView === 'board' && (
-                <TaskBoardView
-                  tasks={filteredTasks}
-                  isLoading={isLoading}
-                  onUpdateTask={updateTask}
-                  onDeleteTask={deleteTask}
-                  onAddComment={addComment}
-                  onUploadAttachment={uploadAttachment}
-                  onAddTask={(status) => handleAddTask(status)}
-                  onTaskClick={(task) => {
-                    console.log('Board task clicked:', task.title);
-                    setSelectedTask(task);
-                  }}
-                />
-              )}
+              {activeView === 'board' && <TaskBoardView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddTask={status => handleAddTask(status)} onTaskClick={task => {
+              console.log('Board task clicked:', task.title);
+              setSelectedTask(task);
+            }} />}
               
-              {activeView === 'calendar' && (
-                <TaskCalendarView
-                  tasks={filteredTasks}
-                  isLoading={isLoading}
-                  onUpdateTask={updateTask}
-                />
-              )}
+              {activeView === 'calendar' && <TaskCalendarView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} />}
             </div>
           </div>
         </main>
       </div>
 
       {/* Task Detail Sidebar */}
-      <TaskDetailSidebar
-        task={selectedTask}
-        isOpen={!!selectedTask}
-        onClose={() => setSelectedTask(null)}
-        onUpdateTask={updateTask}
-        onDeleteTask={deleteTask}
-        onAddComment={addComment}
-        onUploadAttachment={uploadAttachment}
-      />
+      <TaskDetailSidebar task={selectedTask} isOpen={!!selectedTask} onClose={() => setSelectedTask(null)} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} />
 
       {/* Create Task Dialog */}
-      <TaskDialog
-        isOpen={isCreateDialogOpen}
-        onClose={() => setIsCreateDialogOpen(false)}
-        onSubmit={handleCreateTask}
-        title="Create New Task"
-      />
-    </div>
-  );
+      <TaskDialog isOpen={isCreateDialogOpen} onClose={() => setIsCreateDialogOpen(false)} onSubmit={handleCreateTask} title="Create New Task" />
+    </div>;
 };
-
 export default Tasks;
