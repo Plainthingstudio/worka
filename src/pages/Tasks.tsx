@@ -13,7 +13,7 @@ import { TaskDialog } from '@/components/tasks/TaskDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/task';
 import { Project } from '@/types';
-import { Plus, Search, Filter, LayoutList, Users, Calendar, MoreHorizontal } from 'lucide-react';
+import { Plus, Search, Filter, LayoutList, Users, Calendar, MoreHorizontal, Kanban } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 export const Tasks = () => {
@@ -339,16 +339,31 @@ export const Tasks = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <h1 className="text-2xl font-semibold">Internal Tasks</h1>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm">
+                <div className="flex items-center gap-0 border rounded-lg p-1">
+                  <Button 
+                    variant={activeView === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    className="h-8"
+                    onClick={() => setActiveView('list')}
+                  >
                     <LayoutList className="h-4 w-4 mr-2" />
                     List
                   </Button>
-                  <Button variant="ghost" size="sm">
-                    <Users className="h-4 w-4 mr-2" />
-                    Team
+                  <Button 
+                    variant={activeView === 'board' ? 'default' : 'ghost'}
+                    size="sm"
+                    className="h-8"
+                    onClick={() => setActiveView('board')}
+                  >
+                    <Kanban className="h-4 w-4 mr-2" />
+                    Board
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant={activeView === 'calendar' ? 'default' : 'ghost'}
+                    size="sm"
+                    className="h-8"
+                    onClick={() => setActiveView('calendar')}
+                  >
                     <Calendar className="h-4 w-4 mr-2" />
                     Calendar
                   </Button>
@@ -429,15 +444,36 @@ export const Tasks = () => {
             </div>
           </div>
 
-          {/* Task List */}
+          {/* Dynamic View Rendering */}
           <div className="flex-1">
-            <ClickUpTaskList
-              tasks={filteredTasks}
-              isLoading={isLoading}
-              onTaskClick={setSelectedTask}
-              onUpdateTask={updateTask}
-              onAddTask={handleAddTask}
-            />
+            {activeView === 'list' && (
+              <ClickUpTaskList
+                tasks={filteredTasks}
+                isLoading={isLoading}
+                onTaskClick={setSelectedTask}
+                onUpdateTask={updateTask}
+                onAddTask={handleAddTask}
+              />
+            )}
+            
+            {activeView === 'board' && (
+              <TaskBoardView
+                tasks={filteredTasks}
+                isLoading={isLoading}
+                onUpdateTask={updateTask}
+                onDeleteTask={deleteTask}
+                onAddComment={addComment}
+                onUploadAttachment={uploadAttachment}
+              />
+            )}
+            
+            {activeView === 'calendar' && (
+              <TaskCalendarView
+                tasks={filteredTasks}
+                isLoading={isLoading}
+                onUpdateTask={updateTask}
+              />
+            )}
           </div>
 
           {/* Task Detail Sidebar */}
