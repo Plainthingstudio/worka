@@ -61,7 +61,7 @@ const taskSchema = z.object({
 type TaskFormData = z.infer<typeof taskSchema>;
 
 interface ClickUpTaskDetailProps {
-  task: TaskWithRelations;
+  task: TaskWithRelations | null;
   isOpen: boolean;
   onClose: () => void;
   onUpdateTask: (taskId: string, updates: any) => Promise<boolean>;
@@ -93,17 +93,23 @@ export const ClickUpTaskDetail = ({
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
-      title: task.title,
-      description: task.description || '',
-      priority: task.priority,
-      task_type: task.task_type,
-      status: task.status,
-      assignees: task.assignees || [],
-      due_date: task.due_date ? new Date(task.due_date) : undefined,
+      title: task?.title || '',
+      description: task?.description || '',
+      priority: task?.priority || 'Normal',
+      task_type: task?.task_type || 'Primary',
+      status: task?.status || 'Planning',
+      assignees: task?.assignees || [],
+      due_date: task?.due_date ? new Date(task.due_date) : undefined,
     },
   });
 
+  // Don't render if task is null
+  if (!task) {
+    return null;
+  }
+
   const handleSubmit = async (data: TaskFormData) => {
+    if (!task) return;
     const success = await onUpdateTask(task.id, {
       ...data,
       due_date: data.due_date?.toISOString(),
@@ -114,7 +120,7 @@ export const ClickUpTaskDetail = ({
   };
 
   const handleAddComment = async () => {
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || !task) return;
     
     const success = await onAddComment(task.id, newComment);
     if (success) {
@@ -123,6 +129,7 @@ export const ClickUpTaskDetail = ({
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!task) return;
     const file = event.target.files?.[0];
     if (!file) return;
 
