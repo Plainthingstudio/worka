@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -39,10 +39,12 @@ import {
   Upload,
   Download,
   Trash2,
-  Send
+  Send,
+  ExternalLink
 } from 'lucide-react';
 import { TaskWithRelations, TaskPriority, TaskType, TaskStatus } from '@/types/task';
 import { format } from 'date-fns';
+import { useTaskProject } from '@/hooks/useTaskProject';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -75,6 +77,8 @@ export const TaskDetailDialog = ({
 }: TaskDetailDialogProps) => {
   const [newComment, setNewComment] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const navigate = useNavigate();
+  const { project } = useTaskProject(task.project_id);
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -86,6 +90,12 @@ export const TaskDetailDialog = ({
       status: task.status,
     },
   });
+
+  const handleSeeProject = () => {
+    if (task.project_id) {
+      navigate(`/projects/${task.project_id}`);
+    }
+  };
 
   const handleSubmit = async (data: TaskFormData) => {
     const success = await onUpdateTask(task.id, data);
@@ -159,10 +169,23 @@ export const TaskDetailDialog = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${getPriorityColor(task.priority)}`} />
-            {task.title}
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${getPriorityColor(task.priority)}`} />
+              {task.title}
+            </DialogTitle>
+            {task.project_id && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleSeeProject}
+                className="flex items-center gap-2"
+              >
+                <ExternalLink className="h-4 w-4" />
+                {project ? `Go to ${project.name}` : 'See Project'}
+              </Button>
+            )}
+          </div>
         </DialogHeader>
 
         <Tabs defaultValue="details" className="w-full">

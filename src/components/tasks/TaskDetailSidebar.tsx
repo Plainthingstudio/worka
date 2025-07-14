@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useNavigate } from 'react-router-dom';
 import {
   Form,
   FormControl,
@@ -35,7 +36,8 @@ import {
   Clock,
   Target,
   Users,
-  CheckCircle
+  CheckCircle,
+  ExternalLink
 } from 'lucide-react';
 import { TaskWithRelations } from '@/types/task';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
@@ -43,6 +45,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { useTaskProject } from '@/hooks/useTaskProject';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -79,6 +82,8 @@ export const TaskDetailSidebar = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
+  const navigate = useNavigate();
+  const { project } = useTaskProject(task?.project_id || null);
 
   useEffect(() => {
     if (isOpen) {
@@ -118,6 +123,12 @@ export const TaskDetailSidebar = ({
   if (!task || !isOpen) {
     return null;
   }
+
+  const handleSeeProject = () => {
+    if (task.project_id) {
+      navigate(`/projects/${task.project_id}`);
+    }
+  };
 
   const handleSubmit = async (data: TaskFormData) => {
     if (!task) return;
@@ -207,7 +218,7 @@ export const TaskDetailSidebar = ({
         <Form {...form}>
           {/* Header */}
           <div className="px-6 py-4 border-b">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center">
                   <CheckCircle className="h-4 w-4 text-gray-600" />
@@ -265,6 +276,19 @@ export const TaskDetailSidebar = ({
                 <X className="h-4 w-4" />
               </Button>
             </div>
+            
+            {/* See Project Button */}
+            {task.project_id && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleSeeProject}
+                className="w-full flex items-center gap-2"
+              >
+                <ExternalLink className="h-4 w-4" />
+                {project ? `Go to ${project.name}` : 'See Project'}
+              </Button>
+            )}
           </div>
           <ScrollArea className="flex-1 p-6">
             {/* Status and Priority Row */}
