@@ -253,20 +253,43 @@ export const Tasks = () => {
         return false;
       }
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('task_comments')
         .insert([{
           task_id: taskId,
           content,
           user_id: user.id,
-        }]);
+        }])
+        .select('*')
+        .single();
 
       if (error) {
         console.error('Error adding comment:', error);
         return false;
       }
 
-      await fetchAllTasks();
+      // Immediately update local state for instant UI feedback
+      setTasks(prevTasks => 
+        prevTasks.map(task => 
+          task.id === taskId 
+            ? {
+                ...task,
+                comments: [
+                  ...(task.comments || []),
+                  {
+                    id: data.id,
+                    content: data.content,
+                    created_at: new Date(data.created_at),
+                    updated_at: new Date(data.updated_at),
+                    user_id: data.user_id,
+                    task_id: data.task_id
+                  }
+                ]
+              }
+            : task
+        )
+      );
+
       return true;
     } catch (error) {
       console.error('Error adding comment:', error);
