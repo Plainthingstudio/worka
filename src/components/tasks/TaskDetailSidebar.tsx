@@ -201,69 +201,68 @@ export const TaskDetailSidebar = ({
         "fixed top-0 right-0 w-[500px] h-full bg-background border-l shadow-xl z-[70] flex flex-col transition-transform duration-300 ease-in-out",
         isOpen ? "translate-x-0" : "translate-x-full"
       )}>
-        {/* Header */}
-        <div className="px-6 py-4 border-b">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center">
-                <CheckCircle className="h-4 w-4 text-gray-600" />
-              </div>
-              {isEditing ? (
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          className="text-lg font-semibold border-none p-0 h-auto focus-visible:ring-0"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
+        <Form {...form}>
+          {/* Header */}
+          <div className="px-6 py-4 border-b">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center">
+                  <CheckCircle className="h-4 w-4 text-gray-600" />
+                </div>
+                {isEditing ? (
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="text-lg font-semibold border-none p-0 h-auto focus-visible:ring-0"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                form.handleSubmit(handleSubmit)();
+                                setIsEditing(false);
+                              } else if (e.key === 'Escape') {
+                                e.preventDefault();
+                                form.reset({
+                                  title: task.title || '',
+                                  description: task.description || '',
+                                  priority: task.priority || 'Normal',
+                                  task_type: task.task_type || 'Primary',
+                                  status: task.status || 'Planning',
+                                  assignees: task.assignees || [],
+                                  due_date: task.due_date ? new Date(task.due_date) : undefined,
+                                });
+                                setIsEditing(false);
+                              }
+                            }}
+                            onBlur={() => {
                               form.handleSubmit(handleSubmit)();
                               setIsEditing(false);
-                            } else if (e.key === 'Escape') {
-                              e.preventDefault();
-                              form.reset({
-                                title: task.title || '',
-                                description: task.description || '',
-                                priority: task.priority || 'Normal',
-                                task_type: task.task_type || 'Primary',
-                                status: task.status || 'Planning',
-                                assignees: task.assignees || [],
-                                due_date: task.due_date ? new Date(task.due_date) : undefined,
-                              });
-                              setIsEditing(false);
-                            }
-                          }}
-                          onBlur={() => {
-                            form.handleSubmit(handleSubmit)();
-                            setIsEditing(false);
-                          }}
-                          autoFocus
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              ) : (
-                <h2 
-                  className="text-lg font-semibold cursor-text hover:bg-gray-50 px-2 py-1 rounded"
-                  onClick={() => setIsEditing(true)}
-                >
-                  {task.title}
-                </h2>
-              )}
+                            }}
+                            autoFocus
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ) : (
+                  <h2 
+                    className="text-lg font-semibold cursor-text hover:bg-gray-50 px-2 py-1 rounded"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    {task.title}
+                  </h2>
+                )}
+              </div>
+              <Button variant="ghost" size="sm" onClick={onClose}>
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
           </div>
-        </div>
-
-        <Form {...form}>
           <ScrollArea className="flex-1 p-6">
             {/* Status and Priority Row */}
             <div className="grid grid-cols-2 gap-6 mb-8">
