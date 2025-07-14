@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -99,7 +100,7 @@ export const TaskDetailSidebar = ({
     },
   });
 
-  // Reset form when task changes
+  // Reset form when task changes - removed form from dependency array to prevent infinite re-renders
   useEffect(() => {
     if (task) {
       form.reset({
@@ -111,12 +112,11 @@ export const TaskDetailSidebar = ({
         assignees: task.assignees || [],
         due_date: task.due_date ? new Date(task.due_date) : undefined,
       });
+      console.log('TaskDetailSidebar: Form reset for task:', task.title);
     }
-  }, [task, form]);
+  }, [task]); // Only depend on task, not form
 
   // Don't render if task is null or not open
-  console.log('TaskDetailSidebar render:', { task: !!task, isOpen, taskTitle: task?.title });
-  
   if (!task || !isOpen) {
     return null;
   }
