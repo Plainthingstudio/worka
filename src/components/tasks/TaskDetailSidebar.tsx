@@ -176,14 +176,14 @@ export const TaskDetailSidebar = ({
       {/* Backdrop */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/20 z-40" 
+          className="fixed inset-0 bg-black/20 z-[60]" 
           onClick={onClose}
         />
       )}
       
       {/* Sidebar */}
       <div className={cn(
-        "fixed top-0 right-0 w-[500px] h-full bg-background border-l shadow-xl z-50 flex flex-col transition-transform duration-300 ease-in-out",
+        "fixed top-0 right-0 w-[500px] h-full bg-background border-l shadow-xl z-[70] flex flex-col transition-transform duration-300 ease-in-out",
         isOpen ? "translate-x-0" : "translate-x-full"
       )}>
         {/* Header */}

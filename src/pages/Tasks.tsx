@@ -194,6 +194,13 @@ export const Tasks = () => {
         return false;
       }
 
+      // Update the local tasks state immediately for better UX
+      setTasks(prevTasks => 
+        prevTasks.map(task => 
+          task.id === taskId ? { ...task, ...processedUpdates } : task
+        )
+      );
+
       toast({
         title: "Success",
         description: "Task updated successfully",
