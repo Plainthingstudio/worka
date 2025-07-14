@@ -27,9 +27,9 @@ interface TaskBoardViewProps {
 const statusColumns: { status: TaskStatus; title: string; color: string; bgColor: string; textColor: string }[] = [
   { status: 'Planning', title: 'PLANNING', color: 'bg-purple-500', bgColor: 'bg-purple-50', textColor: 'text-purple-700' },
   { status: 'In progress', title: 'IN PROGRESS', color: 'bg-yellow-500', bgColor: 'bg-yellow-50', textColor: 'text-yellow-700' },
-  { status: 'Paused', title: 'BACKLOG', color: 'bg-gray-500', bgColor: 'bg-gray-50', textColor: 'text-gray-700' },
-  { status: 'Completed', title: 'RUNNING', color: 'bg-green-500', bgColor: 'bg-green-50', textColor: 'text-green-700' },
-  { status: 'Cancelled', title: 'READY FOR REVIEW', color: 'bg-purple-600', bgColor: 'bg-purple-50', textColor: 'text-purple-700' },
+  { status: 'Paused', title: 'PAUSED', color: 'bg-gray-500', bgColor: 'bg-gray-50', textColor: 'text-gray-700' },
+  { status: 'Completed', title: 'COMPLETED', color: 'bg-green-500', bgColor: 'bg-green-50', textColor: 'text-green-700' },
+  { status: 'Cancelled', title: 'CANCELLED', color: 'bg-red-500', bgColor: 'bg-red-50', textColor: 'text-red-700' },
 ];
 
 export const TaskBoardView = ({ 
