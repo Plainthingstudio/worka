@@ -37,7 +37,8 @@ import {
   Target,
   Users,
   CheckCircle,
-  ExternalLink
+  ExternalLink,
+  Trash2
 } from 'lucide-react';
 import { TaskWithRelations } from '@/types/task';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
@@ -46,6 +47,7 @@ import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { useTaskProject } from '@/hooks/useTaskProject';
+import DeleteConfirmationDialog from '@/components/projects/DeleteConfirmationDialog';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -81,6 +83,7 @@ export const TaskDetailSidebar = ({
   const [newComment, setNewComment] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
   const navigate = useNavigate();
   const { project } = useTaskProject(task?.project_id || null);
@@ -138,6 +141,15 @@ export const TaskDetailSidebar = ({
     });
     if (success) {
       setIsEditing(false);
+    }
+  };
+
+  const handleDeleteTask = async () => {
+    if (!task) return;
+    const success = await onDeleteTask(task.id);
+    if (success) {
+      setIsDeleteDialogOpen(false);
+      onClose();
     }
   };
 
@@ -272,9 +284,19 @@ export const TaskDetailSidebar = ({
                   </h2>
                 )}
               </div>
-              <Button variant="ghost" size="sm" onClick={onClose}>
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={onClose}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             
             {/* See Project Button */}
@@ -570,6 +592,12 @@ export const TaskDetailSidebar = ({
           </ScrollArea>
         </Form>
       </div>
+
+      <DeleteConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleDeleteTask}
+      />
     </>
   );
 };
