@@ -22,7 +22,7 @@ const DeleteConfirmationDialog = ({
 }: DeleteConfirmationDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] z-[100]">
+      <DialogContent className="sm:max-w-[425px] z-[200]">
         <DialogHeader>
           <DialogTitle>Confirm Deletion</DialogTitle>
           <DialogDescription>
