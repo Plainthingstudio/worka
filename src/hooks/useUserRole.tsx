@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-type UserRole = 'owner' | 'administrator' | 'team' | null;
+export type UserRole = 'owner' | 'administrator' | 'team' | null;
 
 export const useUserRole = () => {
   const [userRole, setUserRole] = useState<UserRole>(null);
@@ -74,12 +74,16 @@ export const useUserRole = () => {
 
   const canViewTeam = userRole === 'owner' || userRole === 'administrator';
   const canViewProjects = userRole === 'owner' || userRole === 'administrator' || userRole === 'team';
+  const canManageTeam = () => userRole === 'owner' || userRole === 'administrator';
+  const canManageProjects = () => userRole === 'owner' || userRole === 'administrator';
 
   return {
     userRole,
     isLoading,
     canViewTeam,
     canViewProjects,
+    canManageTeam,
+    canManageProjects,
     fetchUserRole
   };
 };
