@@ -99,6 +99,8 @@ export const TaskDetailSidebar = ({
   });
 
   // Don't render if task is null or not open
+  console.log('TaskDetailSidebar render:', { task: !!task, isOpen, taskTitle: task?.title });
+  
   if (!task || !isOpen) {
     return null;
   }
