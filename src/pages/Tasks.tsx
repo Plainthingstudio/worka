@@ -464,6 +464,7 @@ export const Tasks = () => {
                 onDeleteTask={deleteTask}
                 onAddComment={addComment}
                 onUploadAttachment={uploadAttachment}
+                onAddTask={(status) => handleAddTask(status)}
               />
             )}
             

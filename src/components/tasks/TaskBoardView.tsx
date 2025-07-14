@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Flag, Calendar, User, MessageSquare, Paperclip, MoreHorizontal } from 'lucide-react';
+import { Flag, Calendar, User, MessageSquare, Paperclip, MoreHorizontal, Plus, MoreVertical } from 'lucide-react';
 import { TaskWithRelations, TaskStatus } from '@/types/task';
 import { TaskDetailDialog } from './TaskDetailDialog';
 import { format } from 'date-fns';
@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface TaskBoardViewProps {
   tasks: TaskWithRelations[];
@@ -20,14 +21,15 @@ interface TaskBoardViewProps {
   onDeleteTask: (taskId: string) => Promise<boolean>;
   onAddComment: (taskId: string, content: string) => Promise<boolean>;
   onUploadAttachment: (taskId: string, file: File) => Promise<boolean>;
+  onAddTask?: (status: TaskStatus) => void;
 }
 
-const statusColumns: { status: TaskStatus; title: string; color: string }[] = [
-  { status: 'Planning', title: 'Planning', color: 'bg-gray-100' },
-  { status: 'In progress', title: 'In Progress', color: 'bg-blue-100' },
-  { status: 'Paused', title: 'Paused', color: 'bg-yellow-100' },
-  { status: 'Completed', title: 'Completed', color: 'bg-green-100' },
-  { status: 'Cancelled', title: 'Cancelled', color: 'bg-red-100' },
+const statusColumns: { status: TaskStatus; title: string; color: string; bgColor: string; textColor: string }[] = [
+  { status: 'Planning', title: 'PLANNING', color: 'bg-purple-500', bgColor: 'bg-purple-50', textColor: 'text-purple-700' },
+  { status: 'In progress', title: 'IN PROGRESS', color: 'bg-yellow-500', bgColor: 'bg-yellow-50', textColor: 'text-yellow-700' },
+  { status: 'Paused', title: 'BACKLOG', color: 'bg-gray-500', bgColor: 'bg-gray-50', textColor: 'text-gray-700' },
+  { status: 'Completed', title: 'RUNNING', color: 'bg-green-500', bgColor: 'bg-green-50', textColor: 'text-green-700' },
+  { status: 'Cancelled', title: 'READY FOR REVIEW', color: 'bg-purple-600', bgColor: 'bg-purple-50', textColor: 'text-purple-700' },
 ];
 
 export const TaskBoardView = ({ 
@@ -36,7 +38,8 @@ export const TaskBoardView = ({
   onUpdateTask, 
   onDeleteTask, 
   onAddComment, 
-  onUploadAttachment 
+  onUploadAttachment,
+  onAddTask 
 }: TaskBoardViewProps) => {
   const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
 
@@ -62,35 +65,100 @@ export const TaskBoardView = ({
   }
 
   return (
-    <div className="flex gap-6 overflow-x-auto pb-4">
+    <div className="flex gap-4 overflow-x-auto pb-4 h-full">
       {statusColumns.map((column) => {
         const columnTasks = tasks.filter(task => task.status === column.status);
         
         return (
-          <div key={column.status} className="min-w-[300px] flex-shrink-0">
-            <Card className={`h-full ${column.color}`}>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{column.title}</span>
-                  <Badge variant="secondary" className="text-xs">
-                    {columnTasks.length}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              
-              <CardContent className="space-y-3">
-                {columnTasks.map((task) => (
-                  <Card 
-                    key={task.id} 
-                    className="bg-white hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => setSelectedTask(task)}
-                  >
-                    <CardContent className="p-3">
-                      <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-medium text-sm line-clamp-2">{task.title}</h4>
+          <div key={column.status} className="min-w-[280px] flex-shrink-0 flex flex-col h-full">
+            {/* Column Header */}
+            <div className={`${column.color} text-white px-4 py-3 rounded-t-lg flex items-center justify-between`}>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+                <span className="text-sm font-medium uppercase tracking-wide">{column.title}</span>
+                <span className="text-sm opacity-80">{columnTasks.length}</span>
+              </div>
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/20">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {/* Column Content */}
+            <div className={`${column.bgColor} flex-1 p-3 space-y-3 overflow-y-auto rounded-b-lg`}>
+              {columnTasks.map((task) => (
+                <Card 
+                  key={task.id} 
+                  className="bg-white hover:shadow-md transition-all duration-200 cursor-pointer border-l-4 border-l-transparent hover:border-l-primary"
+                  onClick={() => setSelectedTask(task)}
+                >
+                  <CardContent className="p-4">
+                    {/* Task Title */}
+                    <h4 className="font-medium text-sm mb-3 line-clamp-2 text-gray-900">{task.title}</h4>
+                    
+                    {/* Task Meta Info */}
+                    <div className="flex items-center justify-between">
+                      {/* Left side - Assignees */}
+                      <div className="flex items-center gap-2">
+                        {task.assignees.length > 0 ? (
+                          <div className="flex -space-x-1">
+                            {task.assignees.slice(0, 3).map((assignee, index) => (
+                              <Avatar key={index} className="h-6 w-6 border-2 border-white">
+                                <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                                  {assignee.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                            ))}
+                            {task.assignees.length > 3 && (
+                              <div className="h-6 w-6 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center">
+                                <span className="text-xs text-gray-600">+{task.assignees.length - 3}</span>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <Avatar className="h-6 w-6">
+                            <AvatarFallback className="text-xs bg-gray-200">
+                              <User className="h-3 w-3" />
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+
+                        {/* Priority Badge */}
+                        {task.priority !== 'Normal' && (
+                          <Badge 
+                            variant="secondary" 
+                            className={`text-white text-xs h-5 ${getPriorityColor(task.priority)}`}
+                          >
+                            <Flag className="h-2 w-2" />
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Right side - Due Date & Actions */}
+                      <div className="flex items-center gap-2">
+                        {task.due_date && (
+                          <div className="flex items-center gap-1 text-xs text-gray-500">
+                            <Calendar className="h-3 w-3" />
+                            {format(task.due_date, 'MMM d')}
+                          </div>
+                        )}
+                        
+                        {/* Attachment/Comment indicators */}
+                        <div className="flex items-center gap-1">
+                          {task.comments && task.comments.length > 0 && (
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <MessageSquare className="h-3 w-3" />
+                            </div>
+                          )}
+                          {task.attachments && task.attachments.length > 0 && (
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <Paperclip className="h-3 w-3" />
+                            </div>
+                          )}
+                        </div>
+
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                            <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100">
                               <MoreHorizontal className="h-3 w-3" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -118,76 +186,27 @@ export const TaskBoardView = ({
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
 
-                      {task.description && (
-                        <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                          {task.description}
-                        </p>
-                      )}
+              {/* Add Task Button */}
+              <Button 
+                variant="ghost" 
+                className={`w-full h-10 border-2 border-dashed border-gray-300 ${column.textColor} hover:bg-white/50 justify-start gap-2`}
+                onClick={() => onAddTask?.(column.status)}
+              >
+                <Plus className="h-4 w-4" />
+                Add Task
+              </Button>
 
-                      <div className="flex items-center gap-1 mb-2">
-                        <Badge 
-                          variant="secondary" 
-                          className={`text-white text-xs ${getPriorityColor(task.priority)}`}
-                        >
-                          <Flag className="h-2 w-2 mr-1" />
-                          {task.priority}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {task.task_type}
-                        </Badge>
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          {task.due_date && (
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {format(task.due_date, 'MMM dd')}
-                            </div>
-                          )}
-                          
-                          {task.assignees.length > 0 && (
-                            <div className="flex items-center gap-1">
-                              <User className="h-3 w-3" />
-                              {task.assignees.length}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          {task.comments && task.comments.length > 0 && (
-                            <div className="flex items-center gap-1">
-                              <MessageSquare className="h-3 w-3" />
-                              {task.comments.length}
-                            </div>
-                          )}
-
-                          {task.attachments && task.attachments.length > 0 && (
-                            <div className="flex items-center gap-1">
-                              <Paperclip className="h-3 w-3" />
-                              {task.attachments.length}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {task.subtasks && task.subtasks.length > 0 && (
-                        <div className="mt-2 text-xs text-muted-foreground">
-                          Subtasks: {task.subtasks.filter(st => st.status === 'Completed').length}/{task.subtasks.length}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-
-                {columnTasks.length === 0 && (
-                  <div className="text-center text-muted-foreground text-sm py-8">
-                    No tasks in {column.title.toLowerCase()}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+              {columnTasks.length === 0 && (
+                <div className="text-center text-gray-400 text-sm py-8">
+                  No tasks
+                </div>
+              )}
+            </div>
           </div>
         );
       })}
