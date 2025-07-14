@@ -1,8 +1,14 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Pencil, Trash, CheckCircle, X, RotateCcw, Plus } from "lucide-react";
+import { Pencil, Trash, CheckCircle, X, RotateCcw, Plus, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Project } from "@/types";
 
 interface ProjectHeaderProps {
@@ -43,20 +49,28 @@ const ProjectHeader = ({
         >
           <Plus className="h-4 w-4" /> Create Task
         </Button>
-        <Button
-          variant="outline"
-          className="gap-2"
-          onClick={onEdit}
-        >
-          <Pencil className="h-4 w-4" /> Edit
-        </Button>
-        <Button
-          variant="destructive"
-          className="gap-2"
-          onClick={onDelete}
-        >
-          <Trash className="h-4 w-4" /> Delete
-        </Button>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onEdit}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={onDelete}
+              className="text-destructive"
+            >
+              <Trash className="h-4 w-4 mr-2" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         {project.status !== "Completed" ? (
           <Button
             variant="outline"
