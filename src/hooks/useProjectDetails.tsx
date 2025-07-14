@@ -5,6 +5,7 @@ import { useProjectOperations } from "./useProjectOperations";
 import { usePaymentOperations } from "./usePaymentOperations";
 import { useStatisticsData } from "./useStatisticsData";
 import { useProjectToTask } from "./useProjectToTask";
+import { useTasks } from "./useTasks";
 import { ProjectStatus } from "@/types";
 import { useState } from "react";
 
@@ -12,6 +13,7 @@ export const useProjectDetails = (projectId: string | undefined) => {
   const { project, setProject, client, isLoading: projectLoading, refetchClient } = useProjectData(projectId);
   const { teamMembers, isLoading: statisticsLoading } = useStatisticsData();
   const { createTaskFromProject, isCreating: isCreatingTask } = useProjectToTask();
+  const { tasks, isLoading: isTasksLoading, fetchTasks } = useTasks(projectId || '');
   const [isCreateTaskDialogOpen, setIsCreateTaskDialogOpen] = useState(false);
   
   const {
@@ -85,6 +87,8 @@ export const useProjectDetails = (projectId: string | undefined) => {
     
     if (task) {
       setIsCreateTaskDialogOpen(false);
+      // Refresh tasks list after creating a new task
+      fetchTasks();
     }
   };
 
@@ -92,6 +96,8 @@ export const useProjectDetails = (projectId: string | undefined) => {
     project,
     client,
     teamMembers,
+    tasks,
+    isTasksLoading,
     currentPayment,
     selectedStatus,
     isEditDialogOpen,

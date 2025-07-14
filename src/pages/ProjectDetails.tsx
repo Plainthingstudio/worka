@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,8 @@ const ProjectDetails = () => {
     project,
     client,
     teamMembers,
+    tasks,
+    isTasksLoading,
     currentPayment,
     selectedStatus,
     isEditDialogOpen,
@@ -289,6 +292,8 @@ const ProjectDetails = () => {
               project={project}
               client={client}
               teamMembers={teamMembers}
+              tasks={tasks}
+              isTasksLoading={isTasksLoading}
               currentPayment={currentPayment}
               dialogState={dialogState}
               selectedStatus={selectedStatus}

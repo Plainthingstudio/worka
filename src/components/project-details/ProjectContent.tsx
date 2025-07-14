@@ -5,14 +5,18 @@ import ProjectInfo from "@/components/project-details/ProjectInfo";
 import PaymentSummary from "@/components/project-details/PaymentSummary";
 import PaymentHistory from "@/components/project-details/PaymentHistory";
 import ProjectDialogs from "@/components/project-details/ProjectDialogs";
+import ProjectTasksPreview from "@/components/project-details/ProjectTasksPreview";
 import { CreateTaskFromProjectDialog } from "@/components/project-details/CreateTaskFromProjectDialog";
 import { Project, Client, Payment, ProjectStatus, TeamMember } from "@/types";
+import { TaskWithRelations } from "@/types/task";
 
 interface ProjectContentProps {
   project: Project;
   client: Client;
   teamMembers?: TeamMember[];
   currentPayment: Payment | null;
+  tasks: TaskWithRelations[];
+  isTasksLoading: boolean;
   dialogState: {
     isEditDialogOpen: boolean;
     isDeleteDialogOpen: boolean;
@@ -55,6 +59,8 @@ const ProjectContent = ({
   client,
   teamMembers,
   currentPayment,
+  tasks,
+  isTasksLoading,
   dialogState,
   selectedStatus,
   onEdit,
@@ -85,6 +91,15 @@ const ProjectContent = ({
           <PaymentSummary 
             project={project} 
             onAddPayment={onAddPayment} 
+          />
+        </div>
+
+        <div className="col-span-7">
+          <ProjectTasksPreview
+            projectId={project.id}
+            tasks={tasks}
+            isLoading={isTasksLoading}
+            onCreateTask={onCreateTask}
           />
         </div>
 
