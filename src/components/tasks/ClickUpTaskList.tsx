@@ -77,14 +77,32 @@ export const ClickUpTaskList = ({
     });
   };
 
-  const getInitials = (name: string) => {
-    if (!name || typeof name !== 'string') return '?';
-    return name
+  const getInitials = (name: string | number) => {
+    console.log('ClickUpTaskList - getInitials called with:', name, 'type:', typeof name);
+    
+    // If it's a number, convert to string and use as initials
+    if (typeof name === 'number') {
+      return name.toString().slice(0, 2);
+    }
+    
+    // If it's not a string, return a default
+    if (!name || typeof name !== 'string') {
+      console.log('Invalid name, returning ?');
+      return '?';
+    }
+    
+    // Extract initials from name
+    const initials = name
+      .trim()
       .split(' ')
+      .filter(word => word.length > 0)
       .map(word => word.charAt(0))
       .join('')
       .toUpperCase()
       .slice(0, 2);
+    
+    console.log('Generated initials:', initials, 'from name:', name);
+    return initials || '?';
   };
 
   // Group tasks by status
@@ -162,105 +180,108 @@ export const ClickUpTaskList = ({
             {/* Task List */}
             {!isCollapsed && (
               <div className="divide-y">
-                {statusTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className={cn(
-                      "grid grid-cols-12 gap-4 px-4 py-3 hover:bg-muted/50 cursor-pointer group border-l-2",
-                      priorityColors[task.priority]
-                    )}
-                    onClick={() => onTaskClick(task)}
-                  >
-                    {/* Name */}
-                    <div className="col-span-4 flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5 p-0"
-                        onClick={(e) => toggleTaskComplete(task, e)}
-                      >
-                        {task.status === 'Completed' ? (
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <Circle className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                        )}
-                      </Button>
-                      <span className={cn(
-                        "text-sm truncate",
-                        task.status === 'Completed' && "line-through text-muted-foreground"
-                      )}>
-                        {task.title}
-                      </span>
-                    </div>
+                {statusTasks.map((task) => {
+                  console.log('Task in ClickUpTaskList:', task.title, 'assignees:', task.assignees);
+                  return (
+                    <div
+                      key={task.id}
+                      className={cn(
+                        "grid grid-cols-12 gap-4 px-4 py-3 hover:bg-muted/50 cursor-pointer group border-l-2",
+                        priorityColors[task.priority]
+                      )}
+                      onClick={() => onTaskClick(task)}
+                    >
+                      {/* Name */}
+                      <div className="col-span-4 flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-5 w-5 p-0"
+                          onClick={(e) => toggleTaskComplete(task, e)}
+                        >
+                          {task.status === 'Completed' ? (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Circle className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                          )}
+                        </Button>
+                        <span className={cn(
+                          "text-sm truncate",
+                          task.status === 'Completed' && "line-through text-muted-foreground"
+                        )}>
+                          {task.title}
+                        </span>
+                      </div>
 
-                    {/* Assignee */}
-                    <div className="col-span-2 flex items-center">
-                      {task.assignees && task.assignees.length > 0 ? (
-                        <div className="flex items-center gap-2">
-                          <div className="flex -space-x-1">
-                            {task.assignees.slice(0, 2).map((assigneeName, index) => (
-                              <Avatar key={index} className="h-5 w-5 border border-white">
-                                <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                                  {getInitials(assigneeName)}
-                                </AvatarFallback>
-                              </Avatar>
-                            ))}
-                            {task.assignees.length > 2 && (
-                              <div className="h-5 w-5 rounded-full bg-gray-200 border border-white flex items-center justify-center">
-                                <span className="text-xs text-gray-600">+{task.assignees.length - 2}</span>
-                              </div>
-                            )}
+                      {/* Assignee */}
+                      <div className="col-span-2 flex items-center">
+                        {task.assignees && task.assignees.length > 0 ? (
+                          <div className="flex items-center gap-2">
+                            <div className="flex -space-x-1">
+                              {task.assignees.slice(0, 2).map((assignee, index) => (
+                                <Avatar key={index} className="h-5 w-5 border border-white">
+                                  <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                                    {getInitials(assignee)}
+                                  </AvatarFallback>
+                                </Avatar>
+                              ))}
+                              {task.assignees.length > 2 && (
+                                <div className="h-5 w-5 rounded-full bg-gray-200 border border-white flex items-center justify-center">
+                                  <span className="text-xs text-gray-600">+{task.assignees.length - 2}</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">–</span>
-                      )}
-                    </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">–</span>
+                        )}
+                      </div>
 
-                    {/* Due Date */}
-                    <div className="col-span-2 flex items-center">
-                      {task.due_date ? (
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
-                            {format(task.due_date, 'MMM dd')}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">–</span>
-                      )}
-                    </div>
+                      {/* Due Date */}
+                      <div className="col-span-2 flex items-center">
+                        {task.due_date ? (
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">
+                              {format(task.due_date, 'MMM dd')}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">–</span>
+                        )}
+                      </div>
 
-                    {/* Priority */}
-                    <div className="col-span-1 flex items-center">
-                      <div className={cn("flex items-center gap-1 text-xs", priorityTextColors[task.priority])}>
-                        <Flag className="h-3 w-3" />
-                        <span>{task.priority}</span>
+                      {/* Priority */}
+                      <div className="col-span-1 flex items-center">
+                        <div className={cn("flex items-center gap-1 text-xs", priorityTextColors[task.priority])}>
+                          <Flag className="h-3 w-3" />
+                          <span>{task.priority}</span>
+                        </div>
+                      </div>
+
+                      {/* Status */}
+                      <div className="col-span-2 flex items-center">
+                        <Badge 
+                          variant="secondary" 
+                          className={cn("text-white text-xs h-5", config.color)}
+                        >
+                          {status}
+                        </Badge>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="col-span-1 flex items-center justify-end">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <MoreHorizontal className="h-3 w-3" />
+                        </Button>
                       </div>
                     </div>
-
-                    {/* Status */}
-                    <div className="col-span-2 flex items-center">
-                      <Badge 
-                        variant="secondary" 
-                        className={cn("text-white text-xs h-5", config.color)}
-                      >
-                        {status}
-                      </Badge>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="col-span-1 flex items-center justify-end">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <MoreHorizontal className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

@@ -64,14 +64,32 @@ export const TaskBoardView = ({
     }
   };
 
-  const getInitials = (name: string) => {
-    if (!name || typeof name !== 'string') return '?';
-    return name
+  const getInitials = (name: string | number) => {
+    console.log('TaskBoardView - getInitials called with:', name, 'type:', typeof name);
+    
+    // If it's a number, convert to string and use as initials
+    if (typeof name === 'number') {
+      return name.toString().slice(0, 2);
+    }
+    
+    // If it's not a string, return a default
+    if (!name || typeof name !== 'string') {
+      console.log('Invalid name, returning ?');
+      return '?';
+    }
+    
+    // Extract initials from name
+    const initials = name
+      .trim()
       .split(' ')
+      .filter(word => word.length > 0)
       .map(word => word.charAt(0))
       .join('')
       .toUpperCase()
       .slice(0, 2);
+    
+    console.log('Generated initials:', initials, 'from name:', name);
+    return initials || '?';
   };
 
   const handleStatusChange = async (taskId: string, newStatus: TaskStatus) => {
@@ -106,109 +124,112 @@ export const TaskBoardView = ({
             
             {/* Column Content */}
             <div className={`${column.bgColor} flex-1 p-3 space-y-3 overflow-y-auto rounded-b-lg`}>
-              {columnTasks.map((task) => (
-                <Card 
-                  key={task.id} 
-                  className="bg-white hover:shadow-md transition-all duration-200 cursor-pointer border-l-4 border-l-transparent hover:border-l-primary"
-                  onClick={() => onTaskClick?.(task)}
-                >
-                  <CardContent className="p-4">
-                    {/* Task Title */}
-                    <h4 className="font-medium text-sm mb-3 line-clamp-2 text-gray-900">{task.title}</h4>
-                    
-                    {/* Priority Badge */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className={`flex items-center gap-1 text-xs ${getPriorityTextColor(task.priority)}`}>
-                        <Flag className="h-3 w-3" />
-                        <span>{task.priority}</span>
+              {columnTasks.map((task) => {
+                console.log('Task in TaskBoardView:', task.title, 'assignees:', task.assignees);
+                return (
+                  <Card 
+                    key={task.id} 
+                    className="bg-white hover:shadow-md transition-all duration-200 cursor-pointer border-l-4 border-l-transparent hover:border-l-primary"
+                    onClick={() => onTaskClick?.(task)}
+                  >
+                    <CardContent className="p-4">
+                      {/* Task Title */}
+                      <h4 className="font-medium text-sm mb-3 line-clamp-2 text-gray-900">{task.title}</h4>
+                      
+                      {/* Priority Badge */}
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className={`flex items-center gap-1 text-xs ${getPriorityTextColor(task.priority)}`}>
+                          <Flag className="h-3 w-3" />
+                          <span>{task.priority}</span>
+                        </div>
                       </div>
-                    </div>
-                    
-                    {/* Task Meta Info */}
-                    <div className="flex items-center justify-between">
-                      {/* Left side - Assignees */}
-                      <div className="flex items-center gap-2">
-                        {task.assignees && task.assignees.length > 0 ? (
-                          <div className="flex -space-x-1">
-                            {task.assignees.slice(0, 3).map((assigneeName, index) => (
-                              <Avatar key={index} className="h-6 w-6 border-2 border-white">
-                                <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                                  {getInitials(assigneeName)}
-                                </AvatarFallback>
-                              </Avatar>
-                            ))}
-                            {task.assignees.length > 3 && (
-                              <div className="h-6 w-6 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center">
-                                <span className="text-xs text-gray-600">+{task.assignees.length - 3}</span>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback className="text-xs bg-gray-200">
-                              <User className="h-3 w-3" />
-                            </AvatarFallback>
-                          </Avatar>
-                        )}
-                      </div>
-
-                      {/* Right side - Due Date & Actions */}
-                      <div className="flex items-center gap-2">
-                        {task.due_date && (
-                          <div className="flex items-center gap-1 text-xs text-gray-500">
-                            <Calendar className="h-3 w-3" />
-                            {format(task.due_date, 'MMM d')}
-                          </div>
-                        )}
-                        
-                        {/* Attachment/Comment indicators */}
-                        <div className="flex items-center gap-1">
-                          {task.comments && task.comments.length > 0 && (
-                            <div className="flex items-center gap-1 text-xs text-gray-500">
-                              <MessageSquare className="h-3 w-3" />
+                      
+                      {/* Task Meta Info */}
+                      <div className="flex items-center justify-between">
+                        {/* Left side - Assignees */}
+                        <div className="flex items-center gap-2">
+                          {task.assignees && task.assignees.length > 0 ? (
+                            <div className="flex -space-x-1">
+                              {task.assignees.slice(0, 3).map((assignee, index) => (
+                                <Avatar key={index} className="h-6 w-6 border-2 border-white">
+                                  <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                                    {getInitials(assignee)}
+                                  </AvatarFallback>
+                                </Avatar>
+                              ))}
+                              {task.assignees.length > 3 && (
+                                <div className="h-6 w-6 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center">
+                                  <span className="text-xs text-gray-600">+{task.assignees.length - 3}</span>
+                                </div>
+                              )}
                             </div>
-                          )}
-                          {task.attachments && task.attachments.length > 0 && (
-                            <div className="flex items-center gap-1 text-xs text-gray-500">
-                              <Paperclip className="h-3 w-3" />
-                            </div>
+                          ) : (
+                            <Avatar className="h-6 w-6">
+                              <AvatarFallback className="text-xs bg-gray-200">
+                                <User className="h-3 w-3" />
+                              </AvatarFallback>
+                            </Avatar>
                           )}
                         </div>
 
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100">
-                              <MoreHorizontal className="h-3 w-3" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {statusColumns.map((status) => (
+                        {/* Right side - Due Date & Actions */}
+                        <div className="flex items-center gap-2">
+                          {task.due_date && (
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <Calendar className="h-3 w-3" />
+                              {format(task.due_date, 'MMM d')}
+                            </div>
+                          )}
+                          
+                          {/* Attachment/Comment indicators */}
+                          <div className="flex items-center gap-1">
+                            {task.comments && task.comments.length > 0 && (
+                              <div className="flex items-center gap-1 text-xs text-gray-500">
+                                <MessageSquare className="h-3 w-3" />
+                              </div>
+                            )}
+                            {task.attachments && task.attachments.length > 0 && (
+                              <div className="flex items-center gap-1 text-xs text-gray-500">
+                                <Paperclip className="h-3 w-3" />
+                              </div>
+                            )}
+                          </div>
+
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                              <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100">
+                                <MoreHorizontal className="h-3 w-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {statusColumns.map((status) => (
+                                <DropdownMenuItem 
+                                  key={status.status}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleStatusChange(task.id, status.status);
+                                  }}
+                                >
+                                  Move to {status.title}
+                                </DropdownMenuItem>
+                              ))}
                               <DropdownMenuItem 
-                                key={status.status}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleStatusChange(task.id, status.status);
+                                  onDeleteTask(task.id);
                                 }}
+                                className="text-destructive"
                               >
-                                Move to {status.title}
+                                Delete Task
                               </DropdownMenuItem>
-                            ))}
-                            <DropdownMenuItem 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onDeleteTask(task.id);
-                              }}
-                              className="text-destructive"
-                            >
-                              Delete Task
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
 
               {/* Add Task Button */}
               <Button 
