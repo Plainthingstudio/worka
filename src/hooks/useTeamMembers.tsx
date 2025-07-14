@@ -21,10 +21,7 @@ export const useTeamMembers = () => {
       // Fetch team members with profile data
       const { data: teamData, error: teamError } = await supabase
         .from('team_members')
-        .select(`
-          *,
-          profiles!inner(email, full_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (teamError) {
@@ -54,7 +51,7 @@ export const useTeamMembers = () => {
           skills: member.skills || [],
           createdAt: new Date(member.created_at),
           role: role,
-          email: member.profiles?.email || null
+          email: null
         };
       });
 

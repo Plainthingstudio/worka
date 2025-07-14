@@ -76,7 +76,9 @@ export const TaskDialog = ({ isOpen, onClose, onSubmit, title, initialData }: Ta
 
   useEffect(() => {
     if (isOpen) {
-      fetchTeamMembers();
+      fetchTeamMembers().then((members) => {
+        console.log('Fetched team members:', members);
+      });
     }
   }, [isOpen, fetchTeamMembers]);
 
