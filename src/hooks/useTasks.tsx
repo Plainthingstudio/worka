@@ -11,6 +11,14 @@ export const useTasks = (projectId: string) => {
   const fetchTasks = async () => {
     try {
       setIsLoading(true);
+      console.log('Fetching tasks for project:', projectId);
+      
+      if (!projectId) {
+        setTasks([]);
+        setIsLoading(false);
+        return;
+      }
+
       const { data: tasksData, error } = await supabase
         .from('tasks')
         .select(`
@@ -27,13 +35,15 @@ export const useTasks = (projectId: string) => {
         console.error('Error fetching tasks:', error);
         toast({
           title: "Error",
-          description: "Failed to fetch tasks",
+          description: "Failed to fetch tasks: " + error.message,
           variant: "destructive",
         });
         return;
       }
 
-      const transformedTasks: TaskWithRelations[] = tasksData.map(task => ({
+      console.log('Fetched tasks data:', tasksData);
+
+      const transformedTasks: TaskWithRelations[] = (tasksData || []).map(task => ({
         ...task,
         status: task.status as TaskStatus,
         priority: task.priority as TaskPriority,
@@ -63,6 +73,7 @@ export const useTasks = (projectId: string) => {
         })) || [],
       }));
 
+      console.log('Transformed tasks:', transformedTasks);
       setTasks(transformedTasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -346,6 +357,9 @@ export const useTasks = (projectId: string) => {
   useEffect(() => {
     if (projectId) {
       fetchTasks();
+    } else {
+      setTasks([]);
+      setIsLoading(false);
     }
   }, [projectId]);
 

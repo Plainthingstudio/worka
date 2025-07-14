@@ -80,15 +80,18 @@ export const useProjectDetails = (projectId: string | undefined) => {
   const handleCreateTaskSubmit = async (data: any) => {
     if (!project) return;
     
+    console.log('Creating task with form data:', data);
+    
     const task = await createTaskFromProject({
       ...project,
       ...data // Override with form data
     });
     
     if (task) {
+      console.log('Task created, closing dialog and refreshing tasks');
       setIsCreateTaskDialogOpen(false);
       // Refresh tasks list after creating a new task
-      fetchTasks();
+      await fetchTasks();
     }
   };
 

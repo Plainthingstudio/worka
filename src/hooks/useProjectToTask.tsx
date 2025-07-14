@@ -25,6 +25,7 @@ export const useProjectToTask = () => {
   const createTaskFromProject = async (project: Project) => {
     try {
       setIsCreating(true);
+      console.log('Creating task from project:', project);
       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -32,9 +33,12 @@ export const useProjectToTask = () => {
         return null;
       }
 
+      console.log('Current user:', user.id);
+
       // Get team member user_ids from project.teamMembers
       let assignees: string[] = [];
       if (project.teamMembers && project.teamMembers.length > 0) {
+        console.log('Fetching team members for IDs:', project.teamMembers);
         const { data: teamMembersData, error: teamError } = await supabase
           .from('team_members')
           .select('user_id')
@@ -44,6 +48,7 @@ export const useProjectToTask = () => {
           console.error('Error fetching team members:', teamError);
         } else {
           assignees = teamMembersData?.map(tm => tm.user_id) || [];
+          console.log('Team member user IDs:', assignees);
         }
       }
 
@@ -59,6 +64,8 @@ export const useProjectToTask = () => {
         user_id: user.id,
       };
 
+      console.log('Inserting task with data:', taskData);
+
       const { data, error } = await supabase
         .from('tasks')
         .insert([taskData])
@@ -67,10 +74,11 @@ export const useProjectToTask = () => {
 
       if (error) {
         console.error('Error creating task:', error);
-        toast.error("Failed to create task");
+        toast.error("Failed to create task: " + (error.message || "Unknown error"));
         return null;
       }
 
+      console.log('Task created successfully:', data);
       toast.success("Task created successfully from project");
       return data;
     } catch (error) {
