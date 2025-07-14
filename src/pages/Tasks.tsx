@@ -8,7 +8,7 @@ import { ClickUpTaskList } from '@/components/tasks/ClickUpTaskList';
 import { TaskListView } from '@/components/tasks/TaskListView';
 import { TaskBoardView } from '@/components/tasks/TaskBoardView';
 import { TaskCalendarView } from '@/components/tasks/TaskCalendarView';
-import { ClickUpTaskDetail } from '@/components/tasks/ClickUpTaskDetail';
+import { TaskDetailSidebar } from '@/components/tasks/TaskDetailSidebar';
 import { TaskDialog } from '@/components/tasks/TaskDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/task';
@@ -481,7 +481,7 @@ export const Tasks = () => {
           </div>
 
           {/* Task Detail Sidebar */}
-          <ClickUpTaskDetail
+          <TaskDetailSidebar
             task={selectedTask}
             isOpen={!!selectedTask}
             onClose={() => setSelectedTask(null)}
