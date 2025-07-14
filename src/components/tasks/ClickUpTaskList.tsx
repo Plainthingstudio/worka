@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import {
 import { TaskWithRelations, TaskStatus } from '@/types/task';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface ClickUpTaskListProps {
   tasks: TaskWithRelations[];
@@ -38,6 +40,13 @@ const priorityColors = {
   'High': 'border-l-orange-500',
   'Normal': 'border-l-blue-500',
   'Low': 'border-l-gray-400'
+};
+
+const priorityTextColors = {
+  'Urgent': 'text-red-500',
+  'High': 'text-orange-500',
+  'Normal': 'text-blue-500',
+  'Low': 'text-gray-400'
 };
 
 export const ClickUpTaskList = ({ 
@@ -66,6 +75,15 @@ export const ClickUpTaskList = ({
       status: isCompleted ? 'In progress' : 'Completed',
       completed_at: isCompleted ? null : new Date().toISOString(),
     });
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   // Group tasks by status
@@ -177,11 +195,21 @@ export const ClickUpTaskList = ({
                     {/* Assignee */}
                     <div className="col-span-2 flex items-center">
                       {task.assignees.length > 0 ? (
-                        <div className="flex items-center gap-1">
-                          <User className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
-                            {task.assignees.length} assignee{task.assignees.length > 1 ? 's' : ''}
-                          </span>
+                        <div className="flex items-center gap-2">
+                          <div className="flex -space-x-1">
+                            {task.assignees.slice(0, 2).map((assignee, index) => (
+                              <Avatar key={index} className="h-5 w-5 border border-white">
+                                <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                                  {getInitials(assignee)}
+                                </AvatarFallback>
+                              </Avatar>
+                            ))}
+                            {task.assignees.length > 2 && (
+                              <div className="h-5 w-5 rounded-full bg-gray-200 border border-white flex items-center justify-center">
+                                <span className="text-xs text-gray-600">+{task.assignees.length - 2}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       ) : (
                         <span className="text-xs text-muted-foreground">–</span>
@@ -204,14 +232,9 @@ export const ClickUpTaskList = ({
 
                     {/* Priority */}
                     <div className="col-span-1 flex items-center">
-                      <div className="flex items-center gap-1">
-                        <Flag className={cn(
-                          "h-3 w-3",
-                          task.priority === 'Urgent' && "text-red-500",
-                          task.priority === 'High' && "text-orange-500",
-                          task.priority === 'Normal' && "text-blue-500",
-                          task.priority === 'Low' && "text-gray-400"
-                        )} />
+                      <div className={cn("flex items-center gap-1 text-xs", priorityTextColors[task.priority])}>
+                        <Flag className="h-3 w-3" />
+                        <span>{task.priority}</span>
                       </div>
                     </div>
 

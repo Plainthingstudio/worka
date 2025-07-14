@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +22,7 @@ import {
 import { TaskWithRelations } from '@/types/task';
 import { ClickUpTaskDetail } from './ClickUpTaskDetail';
 import { format } from 'date-fns';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface TaskListViewProps {
   tasks: TaskWithRelations[];
@@ -51,6 +53,16 @@ export const TaskListView = ({
     }
   };
 
+  const getPriorityTextColor = (priority: string) => {
+    switch (priority) {
+      case 'Urgent': return 'text-red-500';
+      case 'High': return 'text-orange-500';
+      case 'Normal': return 'text-blue-500';
+      case 'Low': return 'text-gray-400';
+      default: return 'text-gray-400';
+    }
+  };
+
   const getTaskTypeColor = (taskType: string) => {
     switch (taskType) {
       case 'Primary': return 'bg-primary';
@@ -58,6 +70,15 @@ export const TaskListView = ({
       case 'Tertiary': return 'bg-muted';
       default: return 'bg-muted';
     }
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   const toggleTaskComplete = async (task: TaskWithRelations) => {
@@ -106,13 +127,10 @@ export const TaskListView = ({
                       {task.title}
                     </h3>
                     <div className="flex gap-1">
-                      <Badge 
-                        variant="secondary" 
-                        className={`text-white text-xs ${getPriorityColor(task.priority)}`}
-                      >
-                        <Flag className="h-3 w-3 mr-1" />
-                        {task.priority}
-                      </Badge>
+                      <div className={`flex items-center gap-1 text-xs ${getPriorityTextColor(task.priority)}`}>
+                        <Flag className="h-3 w-3" />
+                        <span>{task.priority}</span>
+                      </div>
                       <Badge 
                         variant="outline" 
                         className={`text-xs ${getTaskTypeColor(task.task_type)}`}
@@ -137,9 +155,22 @@ export const TaskListView = ({
                     )}
                     
                     {task.assignees.length > 0 && (
-                      <div className="flex items-center gap-1">
-                        <User className="h-3 w-3" />
-                        {task.assignees.length} assignee{task.assignees.length > 1 ? 's' : ''}
+                      <div className="flex items-center gap-2">
+                        <div className="flex -space-x-1">
+                          {task.assignees.slice(0, 3).map((assignee, index) => (
+                            <Avatar key={index} className="h-5 w-5 border border-white">
+                              <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                                {getInitials(assignee)}
+                              </AvatarFallback>
+                            </Avatar>
+                          ))}
+                          {task.assignees.length > 3 && (
+                            <div className="h-5 w-5 rounded-full bg-gray-200 border border-white flex items-center justify-center">
+                              <span className="text-xs text-gray-600">+{task.assignees.length - 3}</span>
+                            </div>
+                          )}
+                        </div>
+                        <span>{task.assignees.length} assignee{task.assignees.length > 1 ? 's' : ''}</span>
                       </div>
                     )}
 

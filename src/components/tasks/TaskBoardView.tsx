@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -53,6 +54,25 @@ export const TaskBoardView = ({
     }
   };
 
+  const getPriorityTextColor = (priority: string) => {
+    switch (priority) {
+      case 'Urgent': return 'text-red-500';
+      case 'High': return 'text-orange-500';
+      case 'Normal': return 'text-blue-500';
+      case 'Low': return 'text-gray-400';
+      default: return 'text-gray-400';
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   const handleStatusChange = async (taskId: string, newStatus: TaskStatus) => {
     await onUpdateTask(taskId, { 
       status: newStatus,
@@ -95,6 +115,14 @@ export const TaskBoardView = ({
                     {/* Task Title */}
                     <h4 className="font-medium text-sm mb-3 line-clamp-2 text-gray-900">{task.title}</h4>
                     
+                    {/* Priority Badge */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className={`flex items-center gap-1 text-xs ${getPriorityTextColor(task.priority)}`}>
+                        <Flag className="h-3 w-3" />
+                        <span>{task.priority}</span>
+                      </div>
+                    </div>
+                    
                     {/* Task Meta Info */}
                     <div className="flex items-center justify-between">
                       {/* Left side - Assignees */}
@@ -104,7 +132,7 @@ export const TaskBoardView = ({
                             {task.assignees.slice(0, 3).map((assignee, index) => (
                               <Avatar key={index} className="h-6 w-6 border-2 border-white">
                                 <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                                  {assignee.charAt(0).toUpperCase()}
+                                  {getInitials(assignee)}
                                 </AvatarFallback>
                               </Avatar>
                             ))}
@@ -120,16 +148,6 @@ export const TaskBoardView = ({
                               <User className="h-3 w-3" />
                             </AvatarFallback>
                           </Avatar>
-                        )}
-
-                        {/* Priority Badge */}
-                        {task.priority !== 'Normal' && (
-                          <Badge 
-                            variant="secondary" 
-                            className={`text-white text-xs h-5 ${getPriorityColor(task.priority)}`}
-                          >
-                            <Flag className="h-2 w-2" />
-                          </Badge>
                         )}
                       </div>
 
