@@ -18,6 +18,7 @@ import { TaskWithRelations, TaskStatus } from '@/types/task';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useAssigneeNames } from '@/hooks/useAssigneeNames';
 
 interface ClickUpTaskListProps {
   tasks: TaskWithRelations[];
@@ -57,6 +58,7 @@ export const ClickUpTaskList = ({
   onAddTask 
 }: ClickUpTaskListProps) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const { getAssigneeNames } = useAssigneeNames();
 
   const toggleGroup = (status: string) => {
     const newCollapsed = new Set(collapsedGroups);
@@ -77,21 +79,11 @@ export const ClickUpTaskList = ({
     });
   };
 
-  const getInitials = (name: string | number) => {
-    console.log('ClickUpTaskList - getInitials called with:', name, 'type:', typeof name);
-    
-    // If it's a number, convert to string and use as initials
-    if (typeof name === 'number') {
-      return name.toString().slice(0, 2);
-    }
-    
-    // If it's not a string, return a default
+  const getInitials = (name: string) => {
     if (!name || typeof name !== 'string') {
-      console.log('Invalid name, returning ?');
       return '?';
     }
     
-    // Extract initials from name
     const initials = name
       .trim()
       .split(' ')
@@ -101,7 +93,6 @@ export const ClickUpTaskList = ({
       .toUpperCase()
       .slice(0, 2);
     
-    console.log('Generated initials:', initials, 'from name:', name);
     return initials || '?';
   };
 
@@ -181,7 +172,9 @@ export const ClickUpTaskList = ({
             {!isCollapsed && (
               <div className="divide-y">
                 {statusTasks.map((task) => {
-                  console.log('Task in ClickUpTaskList:', task.title, 'assignees:', task.assignees);
+                  const assigneeNames = getAssigneeNames(task.assignees || []);
+                  console.log('List task assignees for', task.title, ':', task.assignees, 'converted to names:', assigneeNames);
+                  
                   return (
                     <div
                       key={task.id}
@@ -215,19 +208,19 @@ export const ClickUpTaskList = ({
 
                       {/* Assignee */}
                       <div className="col-span-2 flex items-center">
-                        {task.assignees && task.assignees.length > 0 ? (
+                        {assigneeNames.length > 0 ? (
                           <div className="flex items-center gap-2">
                             <div className="flex -space-x-1">
-                              {task.assignees.slice(0, 2).map((assignee, index) => (
+                              {assigneeNames.slice(0, 2).map((name, index) => (
                                 <Avatar key={index} className="h-5 w-5 border border-white">
                                   <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                                    {getInitials(assignee)}
+                                    {getInitials(name)}
                                   </AvatarFallback>
                                 </Avatar>
                               ))}
-                              {task.assignees.length > 2 && (
+                              {assigneeNames.length > 2 && (
                                 <div className="h-5 w-5 rounded-full bg-gray-200 border border-white flex items-center justify-center">
-                                  <span className="text-xs text-gray-600">+{task.assignees.length - 2}</span>
+                                  <span className="text-xs text-gray-600">+{assigneeNames.length - 2}</span>
                                 </div>
                               )}
                             </div>

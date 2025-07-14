@@ -23,6 +23,7 @@ import { TaskWithRelations } from '@/types/task';
 import { ClickUpTaskDetail } from './ClickUpTaskDetail';
 import { format } from 'date-fns';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useAssigneeNames } from '@/hooks/useAssigneeNames';
 
 interface TaskListViewProps {
   tasks: TaskWithRelations[];
@@ -42,6 +43,7 @@ export const TaskListView = ({
   onUploadAttachment 
 }: TaskListViewProps) => {
   const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
+  const { getAssigneeNames } = useAssigneeNames();
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -72,21 +74,11 @@ export const TaskListView = ({
     }
   };
 
-  const getInitials = (name: string | number) => {
-    console.log('getInitials called with:', name, 'type:', typeof name);
-    
-    // If it's a number, convert to string and use as initials
-    if (typeof name === 'number') {
-      return name.toString().slice(0, 2);
-    }
-    
-    // If it's not a string, return a default
+  const getInitials = (name: string) => {
     if (!name || typeof name !== 'string') {
-      console.log('Invalid name, returning ?');
       return '?';
     }
     
-    // Extract initials from name
     const initials = name
       .trim()
       .split(' ')
@@ -96,7 +88,6 @@ export const TaskListView = ({
       .toUpperCase()
       .slice(0, 2);
     
-    console.log('Generated initials:', initials, 'from name:', name);
     return initials || '?';
   };
 
@@ -123,7 +114,9 @@ export const TaskListView = ({
   return (
     <div className="space-y-4">
       {tasks.map((task) => {
-        console.log('Task assignees:', task.assignees);
+        const assigneeNames = getAssigneeNames(task.assignees || []);
+        console.log('Task assignees for', task.title, ':', task.assignees, 'converted to names:', assigneeNames);
+        
         return (
           <Card key={task.id} className="hover:shadow-md transition-shadow cursor-pointer">
             <CardContent className="p-4">
@@ -175,23 +168,23 @@ export const TaskListView = ({
                         </div>
                       )}
                       
-                      {task.assignees && task.assignees.length > 0 && (
+                      {assigneeNames.length > 0 && (
                         <div className="flex items-center gap-2">
                           <div className="flex -space-x-1">
-                            {task.assignees.slice(0, 3).map((assignee, index) => (
+                            {assigneeNames.slice(0, 3).map((name, index) => (
                               <Avatar key={index} className="h-5 w-5 border border-white">
                                 <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                                  {getInitials(assignee)}
+                                  {getInitials(name)}
                                 </AvatarFallback>
                               </Avatar>
                             ))}
-                            {task.assignees.length > 3 && (
+                            {assigneeNames.length > 3 && (
                               <div className="h-5 w-5 rounded-full bg-gray-200 border border-white flex items-center justify-center">
-                                <span className="text-xs text-gray-600">+{task.assignees.length - 3}</span>
+                                <span className="text-xs text-gray-600">+{assigneeNames.length - 3}</span>
                               </div>
                             )}
                           </div>
-                          <span>{task.assignees.length} assignee{task.assignees.length > 1 ? 's' : ''}</span>
+                          <span>{assigneeNames.length} assignee{assigneeNames.length > 1 ? 's' : ''}</span>
                         </div>
                       )}
 
