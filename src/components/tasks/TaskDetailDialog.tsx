@@ -30,6 +30,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { 
   Calendar, 
   User, 
@@ -38,9 +44,11 @@ import {
   Flag, 
   Upload,
   Download,
-  Trash2,
   Send,
-  ExternalLink
+  ExternalLink,
+  MoreHorizontal,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { TaskWithRelations, TaskPriority, TaskType, TaskStatus } from '@/types/task';
 import { format } from 'date-fns';
@@ -185,17 +193,39 @@ export const TaskDetailDialog = ({
                 <div className={`w-3 h-3 rounded-full ${getPriorityColor(task.priority)}`} />
                 {task.title}
               </DialogTitle>
-              {task.project_id && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleSeeProject}
-                  className="flex items-center gap-2"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  {project ? `Go to ${project.name}` : 'See Project'}
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                {task.project_id && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleSeeProject}
+                    className="flex items-center gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    {project ? `Go to ${project.name}` : 'See Project'}
+                  </Button>
+                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-background border z-[80]">
+                    <DropdownMenuItem onClick={() => {}}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => setIsDeleteDialogOpen(true)}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </DialogHeader>
 
@@ -340,15 +370,7 @@ export const TaskDetailDialog = ({
                     </div>
                   </div>
 
-                  <div className="flex justify-between pt-4">
-                    <Button 
-                      type="button" 
-                      variant="destructive" 
-                      onClick={() => setIsDeleteDialogOpen(true)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Task
-                    </Button>
+                  <div className="flex justify-end pt-4">
                     <div className="flex gap-2">
                       <Button type="button" variant="outline" onClick={onClose}>
                         Cancel
