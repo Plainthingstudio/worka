@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import Navbar from '@/components/Navbar';
+import Sidebar from '@/components/Sidebar';
 import { supabase } from '@/integrations/supabase/client';
 import { TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/task';
 import { Project } from '@/types';
@@ -337,7 +339,11 @@ export const Tasks = () => {
   }, []);
 
   return (
-    <div className="flex-1 space-y-6 p-6">
+    <div className="min-h-screen bg-background">
+      <Navbar title="Tasks" />
+      <div className="flex">
+        <Sidebar />
+        <div className="flex-1 ml-56 space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <CheckSquare className="h-6 w-6" />
@@ -513,6 +519,8 @@ export const Tasks = () => {
         onSubmit={handleCreateTask}
         title="Create New Task"
       />
+        </div>
+      </div>
     </div>
   );
 };
