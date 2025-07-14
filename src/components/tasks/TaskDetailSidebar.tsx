@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -185,6 +186,11 @@ export const TaskDetailSidebar = ({
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
+
+  // Sort comments by creation date in descending order (newest first)
+  const sortedComments = task.comments?.slice().sort((a, b) => 
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  ) || [];
 
   return (
     <>
@@ -462,22 +468,7 @@ export const TaskDetailSidebar = ({
             </TabsContent>
 
             <TabsContent value="comments" className="space-y-4 mt-6">
-              <ScrollArea className="h-64">
-                <div className="space-y-3">
-                  {task.comments?.map((comment) => (
-                    <div key={comment.id} className="border rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">User</span>
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(comment.created_at), 'MMM dd, yyyy HH:mm')}
-                        </span>
-                      </div>
-                      <p className="text-sm">{comment.content}</p>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-              <div className="flex gap-3 mt-4">
+              <div className="flex gap-3 mb-4">
                 <Input
                   placeholder="Add a comment..."
                   value={newComment}
@@ -494,6 +485,21 @@ export const TaskDetailSidebar = ({
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
+              <ScrollArea className="h-64">
+                <div className="space-y-3">
+                  {sortedComments.map((comment) => (
+                    <div key={comment.id} className="border rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">User</span>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(comment.created_at), 'MMM dd, yyyy HH:mm')}
+                        </span>
+                      </div>
+                      <p className="text-sm">{comment.content}</p>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
             </TabsContent>
 
             <TabsContent value="attachments" className="space-y-4 mt-6">
@@ -546,3 +552,4 @@ export const TaskDetailSidebar = ({
     </>
   );
 };
+
