@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -106,15 +107,29 @@ export const TaskDetailDialog = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      alert('File size must be less than 5MB');
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      alert('File size must be less than 10MB');
       return;
     }
 
+    console.log('Starting file upload from TaskDetailDialog:', file.name);
     setIsUploading(true);
-    await onUploadAttachment(task.id, file);
-    setIsUploading(false);
-    event.target.value = ''; // Reset input
+    
+    try {
+      const success = await onUploadAttachment(task.id, file);
+      console.log('Upload result:', success);
+      
+      if (success) {
+        console.log('File uploaded successfully');
+      } else {
+        console.error('File upload failed');
+      }
+    } catch (error) {
+      console.error('File upload error:', error);
+    } finally {
+      setIsUploading(false);
+      event.target.value = ''; // Reset input
+    }
   };
 
   const getPriorityColor = (priority: string) => {
@@ -134,6 +149,11 @@ export const TaskDetailDialog = ({
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
+
+  // Sort comments by creation date in descending order (newest first)
+  const sortedComments = task.comments?.slice().sort((a, b) => 
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  ) || [];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -311,7 +331,7 @@ export const TaskDetailDialog = ({
           <TabsContent value="comments" className="space-y-4">
             <ScrollArea className="h-64">
               <div className="space-y-3">
-                {task.comments?.map((comment) => (
+                {sortedComments.map((comment) => (
                   <div key={comment.id} className="border rounded-lg p-3">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium">User</span>
@@ -351,7 +371,7 @@ export const TaskDetailDialog = ({
                   id="file-upload"
                   className="hidden"
                   onChange={handleFileUpload}
-                  accept="image/*,application/pdf,.doc,.docx,.txt"
+                  accept="image/*,application/pdf,.doc,.docx,.txt,.zip,.rar"
                 />
                 <Button 
                   variant="outline" 
