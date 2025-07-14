@@ -69,10 +69,8 @@ export const Tasks = () => {
         .select(`
           *,
           task_comments(*),
-          task_attachments(*),
-          subtasks:tasks!tasks_parent_task_id_fkey(*)
+          task_attachments(*)
         `)
-        .is('parent_task_id', null)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -103,16 +101,7 @@ export const Tasks = () => {
           ...attachment,
           created_at: new Date(attachment.created_at),
         })) || [],
-        subtasks: task.subtasks?.map((subtask: any) => ({
-          ...subtask,
-          status: subtask.status as TaskStatus,
-          priority: subtask.priority as TaskPriority,
-          task_type: subtask.task_type as TaskType,
-          due_date: subtask.due_date ? new Date(subtask.due_date) : undefined,
-          completed_at: subtask.completed_at ? new Date(subtask.completed_at) : undefined,
-          created_at: new Date(subtask.created_at),
-          updated_at: new Date(subtask.updated_at),
-        })) || [],
+        subtasks: [],
       }));
 
       setTasks(transformedTasks);
