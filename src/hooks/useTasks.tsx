@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Task, TaskComment, TaskAttachment, TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/task';
@@ -77,6 +78,16 @@ export const useTasks = (projectId: string) => {
 
   const createTask = async (taskData: Partial<Task>) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to create tasks",
+          variant: "destructive",
+        });
+        return null;
+      }
+
       const insertData = {
         title: taskData.title || '',
         description: taskData.description,
@@ -87,7 +98,7 @@ export const useTasks = (projectId: string) => {
         completed_at: taskData.completed_at?.toISOString(),
         assignees: taskData.assignees,
         project_id: projectId,
-        user_id: (await supabase.auth.getUser()).data.user?.id,
+        user_id: user.id,
       };
 
       const { data, error } = await supabase
@@ -207,12 +218,22 @@ export const useTasks = (projectId: string) => {
 
   const addComment = async (taskId: string, content: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to add comments",
+          variant: "destructive",
+        });
+        return false;
+      }
+
       const { error } = await supabase
         .from('task_comments')
         .insert([{
           task_id: taskId,
           content,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: user.id,
         }]);
 
       if (error) {
@@ -235,33 +256,57 @@ export const useTasks = (projectId: string) => {
 
   const uploadAttachment = async (taskId: string, file: File) => {
     try {
-      const userId = (await supabase.auth.getUser()).data.user?.id;
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/${taskId}/${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('task-attachments')
-        .upload(fileName, file);
-
-      if (uploadError) {
-        console.error('Error uploading file:', uploadError);
+      console.log('Starting file upload for task:', taskId, 'file:', file.name);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
         toast({
           title: "Error",
-          description: "Failed to upload file",
+          description: "You must be logged in to upload files",
           variant: "destructive",
         });
         return false;
       }
 
+      // Create a unique file name
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${taskId}/${Date.now()}.${fileExt}`;
+      
+      console.log('Uploading file to path:', fileName);
+
+      // Upload file to storage
+      const { error: uploadError } = await supabase.storage
+        .from('task-attachments')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Error uploading file:', uploadError);
+        toast({
+          title: "Error",
+          description: `Failed to upload file: ${uploadError.message}`,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      console.log('File uploaded successfully, getting public URL');
+
+      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('task-attachments')
         .getPublicUrl(fileName);
 
+      console.log('Public URL:', publicUrl);
+
+      // Save attachment record to database  
       const { error: dbError } = await supabase
         .from('task_attachments')
         .insert([{
           task_id: taskId,
-          user_id: userId,
+          user_id: user.id,
           file_name: file.name,
           file_url: publicUrl,
           file_size: file.size,
@@ -272,16 +317,28 @@ export const useTasks = (projectId: string) => {
         console.error('Error saving attachment record:', dbError);
         toast({
           title: "Error",
-          description: "Failed to save attachment",
+          description: `Failed to save attachment record: ${dbError.message}`,
           variant: "destructive",
         });
         return false;
       }
 
+      console.log('Attachment record saved successfully');
+      
+      toast({
+        title: "Success",
+        description: "File uploaded successfully",
+      });
+
       await fetchTasks();
       return true;
     } catch (error) {
       console.error('Error uploading attachment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload attachment",
+        variant: "destructive",
+      });
       return false;
     }
   };
