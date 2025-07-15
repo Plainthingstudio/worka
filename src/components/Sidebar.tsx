@@ -130,11 +130,10 @@ const Sidebar = () => {
   });
 
   return (
-    <div
+    <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-border transition-all duration-300 ease-in-out",
-        expanded ? "w-56" : "w-14",
-        "bg-sidebar text-sidebar-foreground"
+        "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-border transition-all duration-300 ease-in-out bg-sidebar text-sidebar-foreground",
+        expanded ? "w-56" : "w-14"
       )}
     >
       <div className="flex h-14 items-center justify-between px-3">
@@ -191,7 +190,7 @@ const Sidebar = () => {
           {expanded && <span>Logout</span>}
         </button>
       </div>
-    </div>
+    </aside>
   );
 };
 

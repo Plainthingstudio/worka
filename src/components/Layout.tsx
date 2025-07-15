@@ -12,9 +12,9 @@ export const Layout = ({ children, title }: LayoutProps) => {
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
       <Sidebar />
-      <div className="flex flex-col flex-1 w-full overflow-hidden">
+      <div className="flex flex-col flex-1 min-w-0">
         <Navbar title={title} />
-        <main className="flex-1 w-full overflow-auto">
+        <main className="flex-1 overflow-auto">
           {children}
         </main>
       </div>
