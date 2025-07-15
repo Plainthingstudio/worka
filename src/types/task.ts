@@ -18,6 +18,8 @@ export interface Task {
   completed_at?: Date;
   created_at: Date;
   updated_at: Date;
+  brief_id?: string;
+  brief_type?: string;
 }
 
 export interface TaskComment {
@@ -44,7 +46,7 @@ export interface TaskActivity {
   id: string;
   task_id: string;
   user_id: string;
-  activity_type: 'comment' | 'status_change' | 'assignee_change' | 'priority_change' | 'attachment' | 'task_created' | 'due_date_change' | 'task_updated';
+  activity_type: 'comment' | 'status_change' | 'assignee_change' | 'priority_change' | 'attachment' | 'task_created' | 'due_date_change' | 'task_updated' | 'brief_connected' | 'brief_disconnected';
   content?: string;
   metadata: Record<string, any>;
   attachments: any[];

@@ -74,6 +74,8 @@ export const useTasks = (projectId: string) => {
         completed_at: task.completed_at ? new Date(task.completed_at) : undefined,
         created_at: new Date(task.created_at),
         updated_at: new Date(task.updated_at),
+        brief_id: task.brief_id,
+        brief_type: task.brief_type,
         comments: task.task_comments?.map((comment: any) => ({
           ...comment,
           created_at: new Date(comment.created_at),
@@ -92,6 +94,8 @@ export const useTasks = (projectId: string) => {
           completed_at: subtask.completed_at ? new Date(subtask.completed_at) : undefined,
           created_at: new Date(subtask.created_at),
           updated_at: new Date(subtask.updated_at),
+          brief_id: subtask.brief_id,
+          brief_type: subtask.brief_type,
         })) || [],
       }));
 
@@ -132,6 +136,8 @@ export const useTasks = (projectId: string) => {
         assignees: taskData.assignees,
         project_id: projectId,
         user_id: user.id,
+        brief_id: taskData.brief_id,
+        brief_type: taskData.brief_type,
       };
 
       const { data, error } = await supabase
@@ -186,6 +192,8 @@ export const useTasks = (projectId: string) => {
       if (updates.assignees !== undefined) processedUpdates.assignees = updates.assignees;
       if (updates.due_date !== undefined) processedUpdates.due_date = updates.due_date?.toISOString();
       if (updates.completed_at !== undefined) processedUpdates.completed_at = updates.completed_at?.toISOString();
+      if (updates.brief_id !== undefined) processedUpdates.brief_id = updates.brief_id;
+      if (updates.brief_type !== undefined) processedUpdates.brief_type = updates.brief_type;
 
       const { error } = await supabase
         .from('tasks')

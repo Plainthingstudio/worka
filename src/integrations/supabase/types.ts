@@ -719,6 +719,8 @@ export type Database = {
       tasks: {
         Row: {
           assignees: string[] | null
+          brief_id: string | null
+          brief_type: string | null
           completed_at: string | null
           created_at: string
           description: string | null
@@ -735,6 +737,8 @@ export type Database = {
         }
         Insert: {
           assignees?: string[] | null
+          brief_id?: string | null
+          brief_type?: string | null
           completed_at?: string | null
           created_at?: string
           description?: string | null
@@ -751,6 +755,8 @@ export type Database = {
         }
         Update: {
           assignees?: string[] | null
+          brief_id?: string | null
+          brief_type?: string | null
           completed_at?: string | null
           created_at?: string
           description?: string | null
@@ -1025,6 +1031,10 @@ export type Database = {
           _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
         }
+        Returns: boolean
+      }
+      user_can_access_brief: {
+        Args: { brief_id: string; brief_type: string; user_id: string }
         Returns: boolean
       }
     }

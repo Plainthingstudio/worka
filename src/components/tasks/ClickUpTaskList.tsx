@@ -12,7 +12,8 @@ import {
   Circle,
   Plus,
   MoreHorizontal,
-  User
+  User,
+  FileText
 } from 'lucide-react';
 import { TaskWithRelations, TaskStatus } from '@/types/task';
 import { format } from 'date-fns';
@@ -48,6 +49,15 @@ const priorityTextColors = {
   'High': 'text-orange-500',
   'Normal': 'text-blue-500',
   'Low': 'text-gray-400'
+};
+
+const getBriefTypeColor = (type: string) => {
+  switch (type) {
+    case 'UI Design': return 'bg-blue-500';
+    case 'Graphic Design': return 'bg-green-500';
+    case 'Illustration Design': return 'bg-purple-500';
+    default: return 'bg-gray-500';
+  }
 };
 
 export const ClickUpTaskList = ({ 
@@ -121,11 +131,12 @@ export const ClickUpTaskList = ({
       {/* Header */}
       <div className="sticky top-0 bg-background border-b z-10">
         <div className="grid grid-cols-12 gap-4 px-4 py-3 text-xs font-medium text-muted-foreground">
-          <div className="col-span-4">Name</div>
+          <div className="col-span-3">Name</div>
           <div className="col-span-2">Assignee</div>
           <div className="col-span-2">Due date</div>
           <div className="col-span-1">Priority</div>
-          <div className="col-span-2">Status</div>
+          <div className="col-span-2">Brief</div>
+          <div className="col-span-1">Status</div>
           <div className="col-span-1"></div>
         </div>
       </div>
@@ -173,7 +184,6 @@ export const ClickUpTaskList = ({
               <div className="divide-y">
                 {statusTasks.map((task) => {
                   const assigneeNames = getAssigneeNames(task.assignees || []);
-                  console.log('List task assignees for', task.title, ':', task.assignees, 'converted to names:', assigneeNames);
                   
                   return (
                     <div
@@ -185,7 +195,7 @@ export const ClickUpTaskList = ({
                       onClick={() => onTaskClick(task)}
                     >
                       {/* Name */}
-                      <div className="col-span-4 flex items-center gap-2">
+                      <div className="col-span-3 flex items-center gap-2">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -252,8 +262,22 @@ export const ClickUpTaskList = ({
                         </div>
                       </div>
 
-                      {/* Status */}
+                      {/* Brief */}
                       <div className="col-span-2 flex items-center">
+                        {task.brief_type ? (
+                          <div className="flex items-center gap-1">
+                            <FileText className="h-3 w-3 text-muted-foreground" />
+                            <Badge className={`${getBriefTypeColor(task.brief_type)} text-white text-xs h-4`}>
+                              {task.brief_type.split(' ')[0]}
+                            </Badge>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">–</span>
+                        )}
+                      </div>
+
+                      {/* Status */}
+                      <div className="col-span-1 flex items-center">
                         <Badge 
                           variant="secondary" 
                           className={cn("text-white text-xs h-5", config.color)}

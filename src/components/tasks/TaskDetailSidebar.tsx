@@ -50,6 +50,7 @@ import { TaskWithRelations } from '@/types/task';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { useTaskActivities } from '@/hooks/useTaskActivities';
 import { TaskActivityFeed } from './TaskActivityFeed';
+import { BriefSelector } from './BriefSelector';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -195,6 +196,11 @@ export const TaskDetailSidebar = ({
       setIsDeleteDialogOpen(false);
       onClose();
     }
+  };
+
+  const handleBriefChange = () => {
+    // Refresh task data when brief connection changes
+    window.location.reload(); // Simple refresh for now
   };
 
   const getStatusColor = (status: string) => {
@@ -382,6 +388,16 @@ export const TaskDetailSidebar = ({
           <div className="flex-1 flex flex-col min-h-0">
             <ScrollArea className="flex-1">
               <div className="p-6 space-y-8">
+                {/* Brief Connection Section */}
+                <BriefSelector
+                  taskId={task.id}
+                  currentBrief={task.brief_id ? {
+                    id: task.brief_id,
+                    type: task.brief_type || '',
+                  } : null}
+                  onBriefChange={handleBriefChange}
+                />
+
                 {/* Status and Priority Row */}
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-3">
