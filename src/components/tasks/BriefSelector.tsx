@@ -61,12 +61,16 @@ export const BriefSelector = ({ taskId, currentBrief, onBriefChange }: BriefSele
   };
 
   const handleBriefSelect = async (briefId: string) => {
+    console.log('Selecting brief:', briefId);
     const selectedBrief = availableBriefs.find(b => b.id === briefId);
     if (selectedBrief) {
+      console.log('Found brief:', selectedBrief);
       const success = await connectBriefToTask(taskId, briefId, selectedBrief.type);
       if (success && onBriefChange) {
         onBriefChange();
       }
+    } else {
+      console.error('Brief not found:', briefId);
     }
   };
 

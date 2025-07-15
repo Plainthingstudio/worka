@@ -12,6 +12,8 @@ export const useBriefConnection = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
+      console.log('Fetching briefs for user:', user.id);
+
       // Fetch all briefs using the existing function
       const { data, error } = await supabase.rpc('get_user_briefs', {
         user_uuid: user.id
@@ -22,6 +24,7 @@ export const useBriefConnection = () => {
         return [];
       }
 
+      console.log('Briefs fetched successfully:', data?.length || 0);
       return data || [];
     } catch (error) {
       console.error('Error fetching available briefs:', error);
@@ -32,6 +35,8 @@ export const useBriefConnection = () => {
   const connectBriefToTask = async (taskId: string, briefId: string, briefType: string) => {
     try {
       setIsLoading(true);
+      
+      console.log('Connecting brief to task:', { taskId, briefId, briefType });
       
       const { error } = await supabase
         .from('tasks')
@@ -45,12 +50,13 @@ export const useBriefConnection = () => {
         console.error('Error connecting brief to task:', error);
         toast({
           title: "Error",
-          description: "Failed to connect brief to task",
+          description: `Failed to connect brief to task: ${error.message}`,
           variant: "destructive",
         });
         return false;
       }
 
+      console.log('Brief connected successfully');
       toast({
         title: "Success",
         description: "Brief connected to task successfully",
