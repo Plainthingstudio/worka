@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -344,261 +343,263 @@ export const TaskDetailSidebar = ({
             )}
           </div>
 
-          {/* Task Details - Scrollable */}
-          <ScrollArea className="flex-1 pb-0">
-            <div className="p-6 space-y-8">
-              {/* Status and Priority Row */}
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Target className="h-4 w-4" />
-                    Status
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <Select onValueChange={(value) => {
-                        field.onChange(value);
-                        form.handleSubmit(handleSubmit)();
-                      }} value={field.value}>
-                        <SelectTrigger className={`${getStatusColor(field.value)} text-white border-none text-sm h-9`}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background border z-[80]">
-                          <SelectItem value="Planning">Planning</SelectItem>
-                          <SelectItem value="In progress">In Progress</SelectItem>
-                          <SelectItem value="Paused">Paused</SelectItem>
-                          <SelectItem value="Completed">Completed</SelectItem>
-                          <SelectItem value="Cancelled">Cancelled</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Flag className="h-4 w-4" />
-                    Priority
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="priority"
-                    render={({ field }) => (
-                      <Select onValueChange={(value) => {
-                        field.onChange(value);
-                        form.handleSubmit(handleSubmit)();
-                      }} value={field.value}>
-                        <SelectTrigger className="text-sm h-9">
-                          <div className="flex items-center gap-2">
-                            {getPriorityIcon(field.value)}
+          {/* Task Details - Scrollable Content */}
+          <div className="flex-1 flex flex-col min-h-0">
+            <ScrollArea className="flex-1">
+              <div className="p-6 space-y-8">
+                {/* Status and Priority Row */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Target className="h-4 w-4" />
+                      Status
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                        <Select onValueChange={(value) => {
+                          field.onChange(value);
+                          form.handleSubmit(handleSubmit)();
+                        }} value={field.value}>
+                          <SelectTrigger className={`${getStatusColor(field.value)} text-white border-none text-sm h-9`}>
                             <SelectValue />
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent className="bg-background border z-[80]">
-                          <SelectItem value="Low">Low</SelectItem>
-                          <SelectItem value="Normal">Normal</SelectItem>
-                          <SelectItem value="High">High</SelectItem>
-                          <SelectItem value="Urgent">Urgent</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                </div>
-              </div>
-
-              {/* Assignees and Due Date Row */}
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    Assignees
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="assignees"
-                    render={({ field }) => (
-                      <div className="space-y-3">
-                        <Select
-                          onValueChange={(value) => {
-                            const currentAssignees = field.value || [];
-                            if (!currentAssignees.includes(value)) {
-                              const newAssignees = [...currentAssignees, value];
-                              field.onChange(newAssignees);
-                              form.handleSubmit(handleSubmit)();
-                            }
-                          }}
-                        >
-                          <SelectTrigger className="text-sm h-9">
-                            <SelectValue placeholder="Add assignee" />
                           </SelectTrigger>
                           <SelectContent className="bg-background border z-[80]">
-                            {teamMembers.map((member) => (
-                              <SelectItem key={member.id} value={member.user_id}>
-                                {member.name} ({member.position})
-                              </SelectItem>
-                            ))}
+                            <SelectItem value="Planning">Planning</SelectItem>
+                            <SelectItem value="In progress">In Progress</SelectItem>
+                            <SelectItem value="Paused">Paused</SelectItem>
+                            <SelectItem value="Completed">Completed</SelectItem>
+                            <SelectItem value="Cancelled">Cancelled</SelectItem>
                           </SelectContent>
                         </Select>
-                        {field.value && field.value.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {field.value.map((assigneeId) => {
-                              const member = teamMembers.find(m => m.user_id === assigneeId);
-                              return member ? (
-                                <Badge key={assigneeId} variant="secondary" className="text-sm">
-                                  {member.name}
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const newAssignees = field.value?.filter(id => id !== assigneeId) || [];
-                                      field.onChange(newAssignees);
-                                      form.handleSubmit(handleSubmit)();
-                                    }}
-                                    className="ml-2 hover:text-destructive"
-                                  >
-                                    ×
-                                  </button>
-                                </Badge>
-                              ) : null;
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  />
+                      )}
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Flag className="h-4 w-4" />
+                      Priority
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="priority"
+                      render={({ field }) => (
+                        <Select onValueChange={(value) => {
+                          field.onChange(value);
+                          form.handleSubmit(handleSubmit)();
+                        }} value={field.value}>
+                          <SelectTrigger className="text-sm h-9">
+                            <div className="flex items-center gap-2">
+                              {getPriorityIcon(field.value)}
+                              <SelectValue />
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent className="bg-background border z-[80]">
+                            <SelectItem value="Low">Low</SelectItem>
+                            <SelectItem value="Normal">Normal</SelectItem>
+                            <SelectItem value="High">High</SelectItem>
+                            <SelectItem value="Urgent">Urgent</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    Due Date
+                {/* Assignees and Due Date Row */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Users className="h-4 w-4" />
+                      Assignees
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="assignees"
+                      render={({ field }) => (
+                        <div className="space-y-3">
+                          <Select
+                            onValueChange={(value) => {
+                              const currentAssignees = field.value || [];
+                              if (!currentAssignees.includes(value)) {
+                                const newAssignees = [...currentAssignees, value];
+                                field.onChange(newAssignees);
+                                form.handleSubmit(handleSubmit)();
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="text-sm h-9">
+                              <SelectValue placeholder="Add assignee" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background border z-[80]">
+                              {teamMembers.map((member) => (
+                                <SelectItem key={member.id} value={member.user_id}>
+                                  {member.name} ({member.position})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {field.value && field.value.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {field.value.map((assigneeId) => {
+                                const member = teamMembers.find(m => m.user_id === assigneeId);
+                                return member ? (
+                                  <Badge key={assigneeId} variant="secondary" className="text-sm">
+                                    {member.name}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newAssignees = field.value?.filter(id => id !== assigneeId) || [];
+                                        field.onChange(newAssignees);
+                                        form.handleSubmit(handleSubmit)();
+                                      }}
+                                      className="ml-2 hover:text-destructive"
+                                    >
+                                      ×
+                                    </button>
+                                  </Badge>
+                                ) : null;
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    />
                   </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      Due Date
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="due_date"
+                      render={({ field }) => (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className="w-full justify-start text-left font-normal text-sm h-9"
+                            >
+                              <Calendar className="mr-2 h-4 w-4" />
+                              {field.value ? format(field.value, 'MMM dd, yyyy') : 'Set due date'}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0 bg-background border z-[80]" align="start">
+                            <CalendarComponent
+                              mode="single"
+                              selected={field.value}
+                              onSelect={(date) => {
+                                field.onChange(date);
+                                form.handleSubmit(handleSubmit)();
+                              }}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium">Description</h3>
                   <FormField
                     control={form.control}
-                    name="due_date"
+                    name="description"
                     render={({ field }) => (
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="w-full justify-start text-left font-normal text-sm h-9"
-                          >
-                            <Calendar className="mr-2 h-4 w-4" />
-                            {field.value ? format(field.value, 'MMM dd, yyyy') : 'Set due date'}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 bg-background border z-[80]" align="start">
-                          <CalendarComponent
-                            mode="single"
-                            selected={field.value}
-                            onSelect={(date) => {
-                              field.onChange(date);
-                              form.handleSubmit(handleSubmit)();
-                            }}
-                            initialFocus
+                      <FormItem>
+                        <FormControl>
+                          <Textarea 
+                            {...field} 
+                            placeholder="Add a description..."
+                            rows={4}
+                            className="resize-none text-sm"
+                            onBlur={() => form.handleSubmit(handleSubmit)()}
                           />
-                        </PopoverContent>
-                      </Popover>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
                   />
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium">Description</h3>
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Textarea 
-                          {...field} 
-                          placeholder="Add a description..."
-                          rows={4}
-                          className="resize-none text-sm"
-                          onBlur={() => form.handleSubmit(handleSubmit)()}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            {/* Activity Section - Responsive Height */}
-            <div className="px-6 pb-6">
-              <Separator className="mb-4" />
-              <h3 className="text-sm font-medium mb-4">Activity</h3>
-              <div className="space-y-3">
-                {activitiesLoading ? (
-                  <div className="text-center text-muted-foreground py-8">Loading activities...</div>
-                ) : activities.length === 0 ? (
-                  <div className="text-center text-muted-foreground py-8">No activities yet</div>
-                ) : (
-                  activities.map((activity) => (
-                    <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="text-xs">
-                          {activity.user_id ? 'U' : '?'}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1 text-sm">
-                            {getActivityIcon(activity.activity_type)}
-                            <span className="font-medium">User</span>
+              {/* Activity Section */}
+              <div className="px-6 pb-6">
+                <Separator className="mb-4" />
+                <h3 className="text-sm font-medium mb-4">Activity</h3>
+                <div className="space-y-3 mb-6">
+                  {activitiesLoading ? (
+                    <div className="text-center text-muted-foreground py-8">Loading activities...</div>
+                  ) : activities.length === 0 ? (
+                    <div className="text-center text-muted-foreground py-8">No activities yet</div>
+                  ) : (
+                    activities.map((activity) => (
+                      <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback className="text-xs">
+                            {activity.user_id ? 'U' : '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                        
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1 text-sm">
+                              {getActivityIcon(activity.activity_type)}
+                              <span className="font-medium">User</span>
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {format(new Date(activity.created_at), 'MMM dd, yyyy HH:mm')}
+                            </span>
                           </div>
-                          <span className="text-xs text-muted-foreground">
-                            {format(new Date(activity.created_at), 'MMM dd, yyyy HH:mm')}
-                          </span>
+                          
+                          <div className="text-sm">{getActivityDescription(activity)}</div>
+                          
+                          {/* Attachments */}
+                          {activity.attachments && activity.attachments.length > 0 && (
+                            <div className="space-y-2">
+                              {activity.attachments.map((attachment: any, index: number) => (
+                                <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
+                                  <Paperclip className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm">{attachment.file_name}</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 ml-auto"
+                                    asChild
+                                  >
+                                    <a href={attachment.file_url} target="_blank" rel="noopener noreferrer">
+                                      <Download className="h-3 w-3" />
+                                    </a>
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        
-                        <div className="text-sm">{getActivityDescription(activity)}</div>
-                        
-                        {/* Attachments */}
-                        {activity.attachments && activity.attachments.length > 0 && (
-                          <div className="space-y-2">
-                            {activity.attachments.map((attachment: any, index: number) => (
-                              <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
-                                <Paperclip className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm">{attachment.file_name}</span>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0 ml-auto"
-                                  asChild
-                                >
-                                  <a href={attachment.file_url} target="_blank" rel="noopener noreferrer">
-                                    <Download className="h-3 w-3" />
-                                  </a>
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
                       </div>
-                    </div>
-                  ))
-                )}
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
-          </ScrollArea>
+            </ScrollArea>
 
-          {/* Fixed Comment Input at Bottom */}
-          <div className="absolute bottom-0 left-0 right-0 bg-background border-t p-6 pb-8">
-            <TaskActivityFeed
-              task={task}
-              activities={[]}
-              onAddActivity={addActivity}
-              onUploadAttachment={onUploadAttachment}
-              isLoading={activitiesLoading}
-              showActivities={false}
-            />
+            {/* Fixed Comment Input at Bottom */}
+            <div className="border-t bg-background p-6">
+              <TaskActivityFeed
+                task={task}
+                activities={[]}
+                onAddActivity={addActivity}
+                onUploadAttachment={onUploadAttachment}
+                isLoading={activitiesLoading}
+                showActivities={false}
+              />
+            </div>
           </div>
         </Form>
       </div>
