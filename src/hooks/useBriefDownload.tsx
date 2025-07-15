@@ -43,27 +43,33 @@ export const useBriefDownload = () => {
       
       try {
         if (briefType === 'UI Design') {
-          const result = generateUIDesignBriefPDF(data);
-          if (result && typeof result === 'object' && result.constructor === Blob) {
-            pdfBlob = result;
-          } else {
-            // If it's not a Blob, try to create one from the result
-            pdfBlob = new Blob([result || ''], { type: 'application/pdf' });
-          }
+          await generateUIDesignBriefPDF(data);
+          // The function handles the download internally, so we don't need to return a blob
+          toast({
+            title: "Success",
+            description: "Brief downloaded successfully",
+          });
+          return;
         } else if (briefType === 'Graphic Design') {
-          const result = generateGraphicDesignBriefPDF(data);
-          if (result && typeof result === 'object' && result.constructor === Blob) {
-            pdfBlob = result;
+          const result = await generateGraphicDesignBriefPDF(data);
+          if (result === true) {
+            // The function handles the download internally
+            toast({
+              title: "Success", 
+              description: "Brief downloaded successfully",
+            });
+            return;
           } else {
-            pdfBlob = new Blob([result || ''], { type: 'application/pdf' });
+            throw new Error('Failed to generate Graphic Design PDF');
           }
         } else if (briefType === 'Illustration Design') {
-          const result = generateIllustrationBriefPDF(data);
-          if (result && typeof result === 'object' && result.constructor === Blob) {
-            pdfBlob = result;
-          } else {
-            pdfBlob = new Blob([result || ''], { type: 'application/pdf' });
-          }
+          await generateIllustrationBriefPDF(data);
+          // The function handles the download internally, so we don't need to return a blob
+          toast({
+            title: "Success",
+            description: "Brief downloaded successfully",
+          });
+          return;
         } else {
           toast({
             title: "Error",
@@ -71,10 +77,6 @@ export const useBriefDownload = () => {
             variant: "destructive",
           });
           return;
-        }
-
-        if (!pdfBlob || pdfBlob.size === 0) {
-          throw new Error('Failed to generate valid PDF');
         }
       } catch (pdfError) {
         console.error('Error generating PDF:', pdfError);
@@ -85,27 +87,6 @@ export const useBriefDownload = () => {
         });
         return;
       }
-
-      // Extract name safely from the data object
-      let briefName = 'Brief';
-      if (data && typeof data === 'object' && 'name' in data && typeof data.name === 'string') {
-        briefName = data.name;
-      }
-
-      // Create download link
-      const url = window.URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${briefType.replace(/\s+/g, '_')}_Brief_${briefName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      toast({
-        title: "Success",
-        description: "Brief downloaded successfully",
-      });
 
     } catch (error) {
       console.error('Error downloading brief:', error);
