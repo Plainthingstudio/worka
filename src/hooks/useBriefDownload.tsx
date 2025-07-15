@@ -41,26 +41,57 @@ export const useBriefDownload = () => {
       // Generate PDF based on brief type
       let pdfBlob: Blob;
       
-      if (briefType === 'UI Design') {
-        pdfBlob = await generateUIDesignBriefPDF(data);
-      } else if (briefType === 'Graphic Design') {
-        pdfBlob = await generateGraphicDesignBriefPDF(data);
-      } else if (briefType === 'Illustration Design') {
-        pdfBlob = await generateIllustrationBriefPDF(data);
-      } else {
+      try {
+        if (briefType === 'UI Design') {
+          const result = await generateUIDesignBriefPDF(data);
+          if (result instanceof Blob) {
+            pdfBlob = result;
+          } else {
+            throw new Error('Failed to generate UI Design PDF');
+          }
+        } else if (briefType === 'Graphic Design') {
+          const result = await generateGraphicDesignBriefPDF(data);
+          if (result instanceof Blob) {
+            pdfBlob = result;
+          } else {
+            throw new Error('Failed to generate Graphic Design PDF');
+          }
+        } else if (briefType === 'Illustration Design') {
+          const result = await generateIllustrationBriefPDF(data);
+          if (result instanceof Blob) {
+            pdfBlob = result;
+          } else {
+            throw new Error('Failed to generate Illustration PDF');
+          }
+        } else {
+          toast({
+            title: "Error",
+            description: "Unsupported brief type",
+            variant: "destructive",
+          });
+          return;
+        }
+      } catch (pdfError) {
+        console.error('Error generating PDF:', pdfError);
         toast({
           title: "Error",
-          description: "Unsupported brief type",
+          description: "Failed to generate PDF",
           variant: "destructive",
         });
         return;
+      }
+
+      // Extract name safely from the data object
+      let briefName = 'Brief';
+      if (data && typeof data === 'object' && 'name' in data && typeof data.name === 'string') {
+        briefName = data.name;
       }
 
       // Create download link
       const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${briefType.replace(' ', '_')}_Brief_${data.name.replace(' ', '_')}.pdf`;
+      link.download = `${briefType.replace(' ', '_')}_Brief_${briefName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
