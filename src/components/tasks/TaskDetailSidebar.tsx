@@ -345,7 +345,7 @@ export const TaskDetailSidebar = ({
           </div>
 
           {/* Task Details - Scrollable */}
-          <ScrollArea className="flex-1 pb-80">
+          <ScrollArea className="flex-1 pb-0">
             <div className="p-6 space-y-8">
               {/* Status and Priority Row */}
               <div className="grid grid-cols-2 gap-6">
