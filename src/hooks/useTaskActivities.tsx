@@ -42,6 +42,7 @@ export const useTaskActivities = (taskId: string) => {
 
       const transformedActivities: TaskActivity[] = data.map(activity => ({
         ...activity,
+        activity_type: activity.activity_type as TaskActivity['activity_type'],
         attachments: Array.isArray(activity.attachments) ? activity.attachments : [],
         created_at: new Date(activity.created_at),
       }));
