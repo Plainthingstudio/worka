@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,20 +37,19 @@ import {
   Paperclip, 
   Flag, 
   X,
-  Send,
-  Upload,
-  Download,
-  Clock,
-  Target,
   Users,
   CheckCircle,
   ExternalLink,
   MoreHorizontal,
   Edit,
-  Trash2
+  Trash2,
+  Target,
+  Clock
 } from 'lucide-react';
 import { TaskWithRelations } from '@/types/task';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
+import { useTaskActivities } from '@/hooks/useTaskActivities';
+import { TaskActivityFeed } from './TaskActivityFeed';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -88,13 +88,12 @@ export const TaskDetailSidebar = ({
   onAddComment, 
   onUploadAttachment 
 }: TaskDetailSidebarProps) => {
-  const [newComment, setNewComment] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
   const navigate = useNavigate();
   const { project } = useTaskProject(task?.project_id || null);
+  const { activities, isLoading: activitiesLoading, addActivity } = useTaskActivities(task?.id || '');
 
   useEffect(() => {
     if (isOpen) {
@@ -115,7 +114,7 @@ export const TaskDetailSidebar = ({
     },
   });
 
-  // Reset form when task changes - removed form from dependency array to prevent infinite re-renders
+  // Reset form when task changes
   useEffect(() => {
     if (task) {
       form.reset({
@@ -128,7 +127,7 @@ export const TaskDetailSidebar = ({
         due_date: task.due_date ? new Date(task.due_date) : undefined,
       });
     }
-  }, [task]); // Only depend on task, not form
+  }, [task]);
 
   // Don't render if task is null or not open
   if (!task || !isOpen) {
@@ -161,31 +160,6 @@ export const TaskDetailSidebar = ({
     }
   };
 
-  const handleAddComment = async () => {
-    if (!newComment.trim() || !task) return;
-    
-    const success = await onAddComment(task.id, newComment);
-    if (success) {
-      setNewComment('');
-    }
-  };
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!task) return;
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
-      return;
-    }
-
-    setIsUploading(true);
-    await onUploadAttachment(task.id, file);
-    setIsUploading(false);
-    event.target.value = '';
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Completed': return 'bg-green-500 hover:bg-green-600';
@@ -206,19 +180,6 @@ export const TaskDetailSidebar = ({
       default: return <Flag className="h-3 w-3 text-gray-500" />;
     }
   };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  // Sort comments by creation date in descending order (newest first)
-  const sortedComments = task.comments?.slice().sort((a, b) => 
-    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  ) || [];
 
   return (
     <>
@@ -332,6 +293,7 @@ export const TaskDetailSidebar = ({
               </Button>
             )}
           </div>
+
           <ScrollArea className="flex-1 p-6">
             {/* Status and Priority Row */}
             <div className="grid grid-cols-2 gap-6 mb-8">
@@ -393,6 +355,7 @@ export const TaskDetailSidebar = ({
                 />
               </div>
             </div>
+
             {/* Assignees and Due Date Row */}
             <div className="grid grid-cols-2 gap-6 mb-8">
               <div className="space-y-3">
@@ -489,6 +452,7 @@ export const TaskDetailSidebar = ({
                 />
               </div>
             </div>
+
             {/* Description */}
             <div className="space-y-3 mb-8">
               <h3 className="text-sm font-medium">Description</h3>
@@ -512,103 +476,17 @@ export const TaskDetailSidebar = ({
               />
             </div>
 
-          {/* Tabs */}
-          <Tabs defaultValue="activity" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 h-10">
-              <TabsTrigger value="activity" className="text-sm">Activity</TabsTrigger>
-              <TabsTrigger value="comments" className="text-sm">
-                Comments ({task.comments?.length || 0})
-              </TabsTrigger>
-              <TabsTrigger value="attachments" className="text-sm">
-                Files ({task.attachments?.length || 0})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="activity" className="space-y-4 mt-6">
-              <div className="text-sm text-muted-foreground">
-                Task created on {format(new Date(task.created_at), 'MMM dd, yyyy HH:mm')}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="comments" className="space-y-4 mt-6">
-              <ScrollArea className="h-64">
-                <div className="space-y-3">
-                  {sortedComments.map((comment) => (
-                    <div key={comment.id} className="border rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">User</span>
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(comment.created_at), 'MMM dd, yyyy HH:mm')}
-                        </span>
-                      </div>
-                      <p className="text-sm">{comment.content}</p>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-              <div className="flex gap-3 mt-4">
-                <Input
-                  placeholder="Add a comment..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="text-sm h-9"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleAddComment();
-                    }
-                  }}
-                />
-                <Button size="sm" onClick={handleAddComment} className="h-9 px-3">
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="attachments" className="space-y-4 mt-6">
-              <ScrollArea className="h-64">
-                <div className="space-y-3">
-                  {task.attachments?.map((attachment) => (
-                    <div key={attachment.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                      <Paperclip className="h-4 w-4 text-muted-foreground" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{attachment.file_name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatFileSize(attachment.file_size)}
-                        </p>
-                      </div>
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-              <div className="mt-4">
-                <label className="block">
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={handleFileUpload}
-                    disabled={isUploading}
-                  />
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={isUploading}
-                    className="w-full h-9 text-sm"
-                    onClick={(e) => {
-                      const input = e.currentTarget.parentNode?.querySelector('input[type="file"]') as HTMLInputElement;
-                      input?.click();
-                    }}
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    {isUploading ? 'Uploading...' : 'Upload File'}
-                  </Button>
-                </label>
-              </div>
-            </TabsContent>
-          </Tabs>
+            {/* Unified Activity Feed */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium">Activity</h3>
+              <TaskActivityFeed
+                task={task}
+                activities={activities}
+                onAddActivity={addActivity}
+                onUploadAttachment={onUploadAttachment}
+                isLoading={activitiesLoading}
+              />
+            </div>
           </ScrollArea>
         </Form>
       </div>

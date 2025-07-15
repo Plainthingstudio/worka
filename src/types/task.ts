@@ -1,3 +1,4 @@
+
 export type TaskPriority = 'Low' | 'Normal' | 'High' | 'Urgent';
 export type TaskType = 'Primary' | 'Secondary' | 'Tertiary';
 export type TaskStatus = 'Planning' | 'In progress' | 'Completed' | 'Paused' | 'Cancelled';
@@ -39,8 +40,20 @@ export interface TaskAttachment {
   created_at: Date;
 }
 
+export interface TaskActivity {
+  id: string;
+  task_id: string;
+  user_id: string;
+  activity_type: 'comment' | 'status_change' | 'assignee_change' | 'priority_change' | 'attachment' | 'task_created' | 'due_date_change' | 'task_updated';
+  content?: string;
+  metadata: Record<string, any>;
+  attachments: any[];
+  created_at: Date;
+}
+
 export interface TaskWithRelations extends Task {
   comments?: TaskComment[];
   attachments?: TaskAttachment[];
   subtasks?: Task[];
+  activities?: TaskActivity[];
 }

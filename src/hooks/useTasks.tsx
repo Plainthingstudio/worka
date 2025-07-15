@@ -1,7 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Task, TaskComment, TaskAttachment, TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/task';
 import { toast } from '@/hooks/use-toast';
+import { logStatusChange, logAssigneeChange, logPriorityChange, logDueDateChange, logTaskCreated } from '@/utils/activityLogger';
 
 export const useTasks = (projectId: string) => {
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
@@ -148,6 +150,9 @@ export const useTasks = (projectId: string) => {
         return null;
       }
 
+      // Log task creation activity
+      await logTaskCreated(data.id);
+
       toast({
         title: "Success",
         description: "Task created successfully",
@@ -168,6 +173,9 @@ export const useTasks = (projectId: string) => {
 
   const updateTask = async (taskId: string, updates: Partial<Task>) => {
     try {
+      // Get current task data for comparison
+      const currentTask = tasks.find(t => t.id === taskId);
+      
       const processedUpdates: any = {};
       
       if (updates.title !== undefined) processedUpdates.title = updates.title;
@@ -192,6 +200,43 @@ export const useTasks = (projectId: string) => {
           variant: "destructive",
         });
         return false;
+      }
+
+      // Log activity based on what changed
+      if (currentTask) {
+        if (updates.status !== undefined && updates.status !== currentTask.status) {
+          await logStatusChange(taskId, currentTask.status, updates.status);
+        }
+        
+        if (updates.priority !== undefined && updates.priority !== currentTask.priority) {
+          await logPriorityChange(taskId, currentTask.priority, updates.priority);
+        }
+        
+        if (updates.due_date !== undefined) {
+          const oldDate = currentTask.due_date;
+          const newDate = updates.due_date;
+          if (oldDate?.getTime() !== newDate?.getTime()) {
+            await logDueDateChange(taskId, oldDate, newDate);
+          }
+        }
+        
+        // Log assignee changes
+        if (updates.assignees !== undefined) {
+          const oldAssignees = currentTask.assignees || [];
+          const newAssignees = updates.assignees || [];
+          
+          // Find added assignees
+          const addedAssignees = newAssignees.filter(id => !oldAssignees.includes(id));
+          const removedAssignees = oldAssignees.filter(id => !newAssignees.includes(id));
+          
+          for (const assigneeId of addedAssignees) {
+            await logAssigneeChange(taskId, 'added', 'User'); // Would need team member lookup for name
+          }
+          
+          for (const assigneeId of removedAssignees) {
+            await logAssigneeChange(taskId, 'removed', 'User'); // Would need team member lookup for name
+          }
+        }
       }
 
       toast({
