@@ -43,7 +43,9 @@ import {
   Edit,
   Trash2,
   Target,
-  Clock
+  Clock,
+  Plus,
+  Download
 } from 'lucide-react';
 import { TaskWithRelations } from '@/types/task';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
@@ -55,6 +57,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { useTaskProject } from '@/hooks/useTaskProject';
 import DeleteConfirmationDialog from '@/components/projects/DeleteConfirmationDialog';
+import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -180,6 +184,53 @@ export const TaskDetailSidebar = ({
     }
   };
 
+  const getActivityIcon = (activityType: string) => {
+    switch (activityType) {
+      case 'comment': return <MessageSquare className="h-4 w-4" />;
+      case 'attachment': return <Paperclip className="h-4 w-4" />;
+      case 'status_change': return <CheckCircle className="h-4 w-4" />;
+      case 'assignee_change': return <Users className="h-4 w-4" />;
+      case 'priority_change': return <Flag className="h-4 w-4" />;
+      case 'due_date_change': return <Calendar className="h-4 w-4" />;
+      case 'task_created': return <Plus className="h-4 w-4" />;
+      default: return <Clock className="h-4 w-4" />;
+    }
+  };
+
+  const getActivityDescription = (activity: any) => {
+    const { activity_type, metadata, content } = activity;
+    
+    switch (activity_type) {
+      case 'comment':
+        return content || 'Added a comment';
+      case 'status_change':
+        return `Changed status from ${metadata.old_value || 'Unknown'} to ${metadata.new_value || 'Unknown'}`;
+      case 'assignee_change':
+        if (metadata.action === 'added') {
+          return `Assigned ${metadata.assignee_name || 'user'}`;
+        } else if (metadata.action === 'removed') {
+          return `Unassigned ${metadata.assignee_name || 'user'}`;
+        }
+        return 'Updated assignees';
+      case 'priority_change':
+        return `Changed priority from ${metadata.old_value || 'Unknown'} to ${metadata.new_value || 'Unknown'}`;
+      case 'due_date_change':
+        if (metadata.old_value && metadata.new_value) {
+          return `Changed due date from ${format(new Date(metadata.old_value), 'MMM dd, yyyy')} to ${format(new Date(metadata.new_value), 'MMM dd, yyyy')}`;
+        } else if (metadata.new_value) {
+          return `Set due date to ${format(new Date(metadata.new_value), 'MMM dd, yyyy')}`;
+        } else {
+          return 'Removed due date';
+        }
+      case 'attachment':
+        return `Uploaded ${activity.attachments?.length || 1} file(s)`;
+      case 'task_created':
+        return 'Created this task';
+      default:
+        return 'Updated the task';
+    }
+  };
+
   return (
     <>
       {/* Backdrop */}
@@ -294,7 +345,7 @@ export const TaskDetailSidebar = ({
           </div>
 
           {/* Task Details - Scrollable */}
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1 pb-80">
             <div className="p-6 space-y-8">
               {/* Status and Priority Row */}
               <div className="grid grid-cols-2 gap-6">
@@ -477,20 +528,77 @@ export const TaskDetailSidebar = ({
                 />
               </div>
             </div>
+
+            {/* Activity Section - Responsive Height */}
+            <div className="px-6 pb-6">
+              <Separator className="mb-4" />
+              <h3 className="text-sm font-medium mb-4">Activity</h3>
+              <div className="space-y-3">
+                {activitiesLoading ? (
+                  <div className="text-center text-muted-foreground py-8">Loading activities...</div>
+                ) : activities.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-8">No activities yet</div>
+                ) : (
+                  activities.map((activity) => (
+                    <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="text-xs">
+                          {activity.user_id ? 'U' : '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 text-sm">
+                            {getActivityIcon(activity.activity_type)}
+                            <span className="font-medium">User</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {format(new Date(activity.created_at), 'MMM dd, yyyy HH:mm')}
+                          </span>
+                        </div>
+                        
+                        <div className="text-sm">{getActivityDescription(activity)}</div>
+                        
+                        {/* Attachments */}
+                        {activity.attachments && activity.attachments.length > 0 && (
+                          <div className="space-y-2">
+                            {activity.attachments.map((attachment: any, index: number) => (
+                              <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
+                                <Paperclip className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm">{attachment.file_name}</span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 w-6 p-0 ml-auto"
+                                  asChild
+                                >
+                                  <a href={attachment.file_url} target="_blank" rel="noopener noreferrer">
+                                    <Download className="h-3 w-3" />
+                                  </a>
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </ScrollArea>
 
-          {/* Activity Section - Fixed Height with Internal Scroll */}
-          <div className="h-80 border-t bg-background">
-            <div className="p-6 h-full">
-              <h3 className="text-sm font-medium mb-4">Activity</h3>
-              <TaskActivityFeed
-                task={task}
-                activities={activities}
-                onAddActivity={addActivity}
-                onUploadAttachment={onUploadAttachment}
-                isLoading={activitiesLoading}
-              />
-            </div>
+          {/* Fixed Comment Input at Bottom */}
+          <div className="absolute bottom-0 left-0 right-0 bg-background border-t p-6 pb-8">
+            <TaskActivityFeed
+              task={task}
+              activities={[]}
+              onAddActivity={addActivity}
+              onUploadAttachment={onUploadAttachment}
+              isLoading={activitiesLoading}
+              showActivities={false}
+            />
           </div>
         </Form>
       </div>

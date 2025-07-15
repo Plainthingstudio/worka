@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { 
@@ -40,6 +39,7 @@ interface TaskActivityFeedProps {
   onAddActivity: (content: string, files?: File[]) => Promise<boolean>;
   onUploadAttachment: (taskId: string, file: File) => Promise<boolean>;
   isLoading?: boolean;
+  showActivities?: boolean; // New prop to control whether to show activities
 }
 
 export const TaskActivityFeed = ({ 
@@ -47,7 +47,8 @@ export const TaskActivityFeed = ({
   activities, 
   onAddActivity, 
   onUploadAttachment,
-  isLoading = false 
+  isLoading = false,
+  showActivities = true // Default to true for backward compatibility
 }: TaskActivityFeedProps) => {
   const [newComment, setNewComment] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -142,6 +143,81 @@ export const TaskActivityFeed = ({
   const sortedActivities = [...activities].sort((a, b) => 
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
+
+  if (!showActivities) {
+    // Only render the comment input section
+    return (
+      <div className="space-y-4">
+        <Input
+          placeholder="Add a comment..."
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit();
+            }
+          }}
+          className="border-none p-0 focus-visible:ring-0 text-sm"
+        />
+        
+        {/* Selected Files Preview */}
+        {selectedFiles.length > 0 && (
+          <div className="space-y-2">
+            {selectedFiles.map((file, index) => (
+              <div key={index} className="flex items-center justify-between bg-muted p-2 rounded">
+                <div className="flex items-center gap-2">
+                  <Paperclip className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{file.name}</span>
+                  <span className="text-xs text-muted-foreground">({formatFileSize(file.size)})</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeFile(index)}
+                  className="h-6 w-6 p-0"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between">
+          <div>
+            <input
+              type="file"
+              id="file-upload"
+              className="hidden"
+              multiple
+              onChange={handleFileSelect}
+              accept="image/*,application/pdf,.doc,.docx,.txt,.zip,.rar"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => document.getElementById('file-upload')?.click()}
+              className="h-8 px-2"
+            >
+              <Upload className="h-4 w-4 mr-1" />
+              Attach
+            </Button>
+          </div>
+          
+          <Button
+            size="sm"
+            onClick={handleSubmit}
+            disabled={isSubmitting || (!newComment.trim() && selectedFiles.length === 0)}
+            className="h-8"
+          >
+            <Send className="h-4 w-4 mr-1" />
+            {isSubmitting ? 'Sending...' : 'Send'}
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
