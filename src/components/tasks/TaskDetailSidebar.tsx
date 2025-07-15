@@ -58,6 +58,7 @@ import { useTaskProject } from '@/hooks/useTaskProject';
 import DeleteConfirmationDialog from '@/components/projects/DeleteConfirmationDialog';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { supabase } from '@/integrations/supabase/client';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -92,6 +93,7 @@ export const TaskDetailSidebar = ({
 }: TaskDetailSidebarProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [userNames, setUserNames] = useState<Record<string, string>>({});
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
   const navigate = useNavigate();
   const { project } = useTaskProject(task?.project_id || null);
@@ -102,6 +104,39 @@ export const TaskDetailSidebar = ({
       fetchTeamMembers();
     }
   }, [isOpen, fetchTeamMembers]);
+
+  // Fetch user names for activities
+  useEffect(() => {
+    const fetchUserNames = async () => {
+      if (activities.length === 0) return;
+      
+      const userIds = [...new Set(activities.map(activity => activity.user_id))];
+      const names: Record<string, string> = {};
+      
+      for (const userId of userIds) {
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', userId)
+            .single();
+          
+          if (profile?.full_name) {
+            names[userId] = profile.full_name;
+          } else {
+            names[userId] = 'User';
+          }
+        } catch (error) {
+          console.error('Error fetching user name:', error);
+          names[userId] = 'User';
+        }
+      }
+      
+      setUserNames(names);
+    };
+
+    fetchUserNames();
+  }, [activities]);
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -527,64 +562,64 @@ export const TaskDetailSidebar = ({
                     )}
                   />
                 </div>
-              </div>
 
-              {/* Activity Section */}
-              <div className="px-6 pb-6">
-                <Separator className="mb-4" />
-                <h3 className="text-sm font-medium mb-4">Activity</h3>
-                <div className="space-y-3 mb-6">
-                  {activitiesLoading ? (
-                    <div className="text-center text-muted-foreground py-8">Loading activities...</div>
-                  ) : activities.length === 0 ? (
-                    <div className="text-center text-muted-foreground py-8">No activities yet</div>
-                  ) : (
-                    activities.map((activity) => (
-                      <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback className="text-xs">
-                            {activity.user_id ? 'U' : '?'}
-                          </AvatarFallback>
-                        </Avatar>
-                        
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1 text-sm">
-                              {getActivityIcon(activity.activity_type)}
-                              <span className="font-medium">User</span>
+                {/* Activity Section */}
+                <div>
+                  <Separator className="mb-4" />
+                  <h3 className="text-sm font-medium mb-4">Activity</h3>
+                  <div className="space-y-3 mb-6">
+                    {activitiesLoading ? (
+                      <div className="text-center text-muted-foreground py-8">Loading activities...</div>
+                    ) : activities.length === 0 ? (
+                      <div className="text-center text-muted-foreground py-8">No activities yet</div>
+                    ) : (
+                      activities.map((activity) => (
+                        <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="text-xs">
+                              {userNames[activity.user_id]?.charAt(0)?.toUpperCase() || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          
+                          <div className="flex-1 space-y-2">
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1 text-sm">
+                                {getActivityIcon(activity.activity_type)}
+                                <span className="font-medium">{userNames[activity.user_id] || 'User'}</span>
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {format(new Date(activity.created_at), 'MMM dd, yyyy HH:mm')}
+                              </span>
                             </div>
-                            <span className="text-xs text-muted-foreground">
-                              {format(new Date(activity.created_at), 'MMM dd, yyyy HH:mm')}
-                            </span>
+                            
+                            <div className="text-sm">{getActivityDescription(activity)}</div>
+                            
+                            {/* Attachments */}
+                            {activity.attachments && activity.attachments.length > 0 && (
+                              <div className="space-y-2">
+                                {activity.attachments.map((attachment: any, index: number) => (
+                                  <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
+                                    <Paperclip className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-sm">{attachment.file_name}</span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 w-6 p-0 ml-auto"
+                                      asChild
+                                    >
+                                      <a href={attachment.file_url} target="_blank" rel="noopener noreferrer">
+                                        <Download className="h-3 w-3" />
+                                      </a>
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                          
-                          <div className="text-sm">{getActivityDescription(activity)}</div>
-                          
-                          {/* Attachments */}
-                          {activity.attachments && activity.attachments.length > 0 && (
-                            <div className="space-y-2">
-                              {activity.attachments.map((attachment: any, index: number) => (
-                                <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
-                                  <Paperclip className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-sm">{attachment.file_name}</span>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-6 w-6 p-0 ml-auto"
-                                    asChild
-                                  >
-                                    <a href={attachment.file_url} target="_blank" rel="noopener noreferrer">
-                                      <Download className="h-3 w-3" />
-                                    </a>
-                                  </Button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
                         </div>
-                      </div>
-                    ))
-                  )}
+                      ))
+                    )}
+                  </div>
                 </div>
               </div>
             </ScrollArea>
