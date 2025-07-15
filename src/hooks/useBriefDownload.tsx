@@ -39,15 +39,31 @@ export const useBriefDownload = () => {
       }
 
       // Generate PDF based on brief type
-      let pdfBlob: Blob;
+      let pdfBlob: Blob | null = null;
       
       try {
         if (briefType === 'UI Design') {
-          pdfBlob = await generateUIDesignBriefPDF(data) as Blob;
+          const result = generateUIDesignBriefPDF(data);
+          if (result && typeof result === 'object' && result.constructor === Blob) {
+            pdfBlob = result;
+          } else {
+            // If it's not a Blob, try to create one from the result
+            pdfBlob = new Blob([result || ''], { type: 'application/pdf' });
+          }
         } else if (briefType === 'Graphic Design') {
-          pdfBlob = await generateGraphicDesignBriefPDF(data) as Blob;
+          const result = generateGraphicDesignBriefPDF(data);
+          if (result && typeof result === 'object' && result.constructor === Blob) {
+            pdfBlob = result;
+          } else {
+            pdfBlob = new Blob([result || ''], { type: 'application/pdf' });
+          }
         } else if (briefType === 'Illustration Design') {
-          pdfBlob = await generateIllustrationBriefPDF(data) as Blob;
+          const result = generateIllustrationBriefPDF(data);
+          if (result && typeof result === 'object' && result.constructor === Blob) {
+            pdfBlob = result;
+          } else {
+            pdfBlob = new Blob([result || ''], { type: 'application/pdf' });
+          }
         } else {
           toast({
             title: "Error",
@@ -57,8 +73,8 @@ export const useBriefDownload = () => {
           return;
         }
 
-        if (!pdfBlob) {
-          throw new Error('Failed to generate PDF');
+        if (!pdfBlob || pdfBlob.size === 0) {
+          throw new Error('Failed to generate valid PDF');
         }
       } catch (pdfError) {
         console.error('Error generating PDF:', pdfError);
@@ -80,7 +96,7 @@ export const useBriefDownload = () => {
       const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${briefType.replace(' ', '_')}_Brief_${briefName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+      link.download = `${briefType.replace(/\s+/g, '_')}_Brief_${briefName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
