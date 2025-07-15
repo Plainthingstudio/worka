@@ -20,14 +20,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
 import { TaskWithRelations } from '@/types/task';
 
-interface TaskActivity {
+interface TaskActivityFeedActivity {
   id: string;
   task_id: string;
   user_id: string;
   activity_type: 'comment' | 'status_change' | 'assignee_change' | 'priority_change' | 'attachment' | 'task_created' | 'due_date_change' | 'task_updated';
-  content?: string;
+  content?: string | null;
   metadata: any;
   attachments: any[];
   created_at: Date;
@@ -35,7 +36,7 @@ interface TaskActivity {
 
 interface TaskActivityFeedProps {
   task: TaskWithRelations;
-  activities: TaskActivity[];
+  activities: TaskActivityFeedActivity[];
   onAddActivity: (content: string, files?: File[]) => Promise<boolean>;
   onUploadAttachment: (taskId: string, file: File) => Promise<boolean>;
   isLoading?: boolean;
@@ -96,7 +97,7 @@ export const TaskActivityFeed = ({
     }
   };
 
-  const getActivityDescription = (activity: TaskActivity) => {
+  const getActivityDescription = (activity: TaskActivityFeedActivity) => {
     const { activity_type, metadata, content } = activity;
     
     switch (activity_type) {
@@ -143,9 +144,69 @@ export const TaskActivityFeed = ({
   );
 
   return (
-    <div className="space-y-4">
-      {/* Comment Input */}
-      <div className="border rounded-lg p-4 space-y-4">
+    <div className="flex flex-col h-full">
+      {/* Activity Feed - Scrollable */}
+      <div className="flex-1 overflow-y-auto mb-4">
+        <div className="space-y-3">
+          {isLoading ? (
+            <div className="text-center text-muted-foreground py-8">Loading activities...</div>
+          ) : sortedActivities.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">No activities yet</div>
+          ) : (
+            sortedActivities.map((activity) => (
+              <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="text-xs">
+                    {activity.user_id ? 'U' : '?'}
+                  </AvatarFallback>
+                </Avatar>
+                
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 text-sm">
+                      {getActivityIcon(activity.activity_type)}
+                      <span className="font-medium">User</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {format(new Date(activity.created_at), 'MMM dd, yyyy HH:mm')}
+                    </span>
+                  </div>
+                  
+                  <div className="text-sm">{getActivityDescription(activity)}</div>
+                  
+                  {/* Attachments */}
+                  {activity.attachments && activity.attachments.length > 0 && (
+                    <div className="space-y-2">
+                      {activity.attachments.map((attachment: any, index: number) => (
+                        <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
+                          <Paperclip className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">{attachment.file_name}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 ml-auto"
+                            asChild
+                          >
+                            <a href={attachment.file_url} target="_blank" rel="noopener noreferrer">
+                              <Download className="h-3 w-3" />
+                            </a>
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Separator */}
+      <Separator className="mb-4" />
+
+      {/* Fixed Comment Input at Bottom */}
+      <div className="border rounded-lg p-4 space-y-4 bg-background">
         <Input
           placeholder="Add a comment..."
           value={newComment}
@@ -213,61 +274,6 @@ export const TaskActivityFeed = ({
             {isSubmitting ? 'Sending...' : 'Send'}
           </Button>
         </div>
-      </div>
-
-      {/* Activity Feed */}
-      <div className="space-y-3">
-        {isLoading ? (
-          <div className="text-center text-muted-foreground py-8">Loading activities...</div>
-        ) : sortedActivities.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8">No activities yet</div>
-        ) : (
-          sortedActivities.map((activity) => (
-            <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="text-xs">
-                  {activity.user_id ? 'U' : '?'}
-                </AvatarFallback>
-              </Avatar>
-              
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 text-sm">
-                    {getActivityIcon(activity.activity_type)}
-                    <span className="font-medium">User</span>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {format(new Date(activity.created_at), 'MMM dd, yyyy HH:mm')}
-                  </span>
-                </div>
-                
-                <div className="text-sm">{getActivityDescription(activity)}</div>
-                
-                {/* Attachments */}
-                {activity.attachments && activity.attachments.length > 0 && (
-                  <div className="space-y-2">
-                    {activity.attachments.map((attachment: any, index: number) => (
-                      <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
-                        <Paperclip className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{attachment.file_name}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0 ml-auto"
-                          asChild
-                        >
-                          <a href={attachment.file_url} target="_blank" rel="noopener noreferrer">
-                            <Download className="h-3 w-3" />
-                          </a>
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))
-        )}
       </div>
     </div>
   );

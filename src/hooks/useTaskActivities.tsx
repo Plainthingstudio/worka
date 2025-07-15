@@ -8,8 +8,8 @@ interface TaskActivity {
   id: string;
   task_id: string;
   user_id: string;
-  activity_type: string;
-  content?: string;
+  activity_type: 'comment' | 'status_change' | 'assignee_change' | 'priority_change' | 'attachment' | 'task_created' | 'due_date_change' | 'task_updated';
+  content?: string | null;
   metadata: any;
   attachments: any[];
   created_at: Date;
@@ -42,6 +42,7 @@ export const useTaskActivities = (taskId: string) => {
 
       const transformedActivities: TaskActivity[] = data.map(activity => ({
         ...activity,
+        attachments: Array.isArray(activity.attachments) ? activity.attachments : [],
         created_at: new Date(activity.created_at),
       }));
 
