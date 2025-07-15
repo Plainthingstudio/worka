@@ -9,9 +9,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { FileText, ExternalLink, Unlink } from 'lucide-react';
+import { FileText, ExternalLink, Unlink, Download } from 'lucide-react';
 import { Brief } from '@/types/brief';
 import { useBriefConnection } from '@/hooks/useBriefConnection';
+import { useBriefDownload } from '@/hooks/useBriefDownload';
 
 interface BriefSelectorProps {
   taskId: string;
@@ -34,6 +35,8 @@ export const BriefSelector = ({ taskId, currentBrief, onBriefChange }: BriefSele
     disconnectBriefFromTask, 
     fetchBriefDetails 
   } = useBriefConnection();
+  
+  const { isDownloading, downloadBrief } = useBriefDownload();
 
   useEffect(() => {
     loadAvailableBriefs();
@@ -80,6 +83,12 @@ export const BriefSelector = ({ taskId, currentBrief, onBriefChange }: BriefSele
     console.log('View brief:', currentBrief);
   };
 
+  const handleDownloadBrief = async () => {
+    if (currentBrief?.id && currentBrief?.type) {
+      await downloadBrief(currentBrief.id, currentBrief.type);
+    }
+  };
+
   const getBriefTypeColor = (type: string) => {
     switch (type) {
       case 'UI Design': return 'bg-blue-500';
@@ -104,6 +113,16 @@ export const BriefSelector = ({ taskId, currentBrief, onBriefChange }: BriefSele
                 {currentBrief.type}
               </Badge>
               <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDownloadBrief}
+                  disabled={isDownloading}
+                  className="h-6 text-xs"
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  {isDownloading ? 'Downloading...' : 'Download'}
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
