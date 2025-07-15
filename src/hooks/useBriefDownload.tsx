@@ -43,26 +43,11 @@ export const useBriefDownload = () => {
       
       try {
         if (briefType === 'UI Design') {
-          const result = await generateUIDesignBriefPDF(data);
-          if (result instanceof Blob) {
-            pdfBlob = result;
-          } else {
-            throw new Error('Failed to generate UI Design PDF');
-          }
+          pdfBlob = await generateUIDesignBriefPDF(data) as Blob;
         } else if (briefType === 'Graphic Design') {
-          const result = await generateGraphicDesignBriefPDF(data);
-          if (result instanceof Blob) {
-            pdfBlob = result;
-          } else {
-            throw new Error('Failed to generate Graphic Design PDF');
-          }
+          pdfBlob = await generateGraphicDesignBriefPDF(data) as Blob;
         } else if (briefType === 'Illustration Design') {
-          const result = await generateIllustrationBriefPDF(data);
-          if (result instanceof Blob) {
-            pdfBlob = result;
-          } else {
-            throw new Error('Failed to generate Illustration PDF');
-          }
+          pdfBlob = await generateIllustrationBriefPDF(data) as Blob;
         } else {
           toast({
             title: "Error",
@@ -70,6 +55,10 @@ export const useBriefDownload = () => {
             variant: "destructive",
           });
           return;
+        }
+
+        if (!pdfBlob) {
+          throw new Error('Failed to generate PDF');
         }
       } catch (pdfError) {
         console.error('Error generating PDF:', pdfError);
