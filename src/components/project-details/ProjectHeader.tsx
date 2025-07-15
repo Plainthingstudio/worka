@@ -43,12 +43,29 @@ const ProjectHeader = ({
       </div>
       <div className="flex items-center gap-2">
         <Button
-          variant="outline"
           className="gap-2"
           onClick={onCreateTask}
         >
           <Plus className="h-4 w-4" /> Create Task
         </Button>
+
+        {project.status !== "Completed" ? (
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={onMarkAsCompleted}
+          >
+            <CheckCircle className="h-4 w-4" /> Mark as Completed
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={onChangeStatus}
+          >
+            <RotateCcw className="h-4 w-4" /> Change Status
+          </Button>
+        )}
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -70,24 +87,6 @@ const ProjectHeader = ({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        {project.status !== "Completed" ? (
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={onMarkAsCompleted}
-          >
-            <CheckCircle className="h-4 w-4" /> Mark as Completed
-          </Button>
-        ) : (
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={onChangeStatus}
-          >
-            <RotateCcw className="h-4 w-4" /> Change Status
-          </Button>
-        )}
       </div>
     </div>
   );
