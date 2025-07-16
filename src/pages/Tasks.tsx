@@ -16,11 +16,9 @@ import { Project } from '@/types';
 import { Plus, Search, Filter, LayoutList, Users, Calendar, MoreHorizontal, Kanban } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-
 export const Tasks = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,12 +37,12 @@ export const Tasks = () => {
   useEffect(() => {
     const taskId = searchParams.get('taskId');
     const projectId = searchParams.get('projectId');
-    
+
     // Set project filter if provided
     if (projectId) {
       setSelectedProject(projectId);
     }
-    
+
     // Auto-select task if provided
     if (taskId && tasks.length > 0) {
       const task = tasks.find(t => t.id === taskId);
@@ -109,7 +107,6 @@ export const Tasks = () => {
     }
     return () => observer.disconnect();
   }, []);
-
   const fetchProjects = async () => {
     try {
       const {
@@ -141,7 +138,6 @@ export const Tasks = () => {
       console.error('Error fetching projects:', error);
     }
   };
-
   const fetchAllTasks = async () => {
     if (!isAuthenticated) {
       console.log('Not authenticated, skipping task fetch');
@@ -201,7 +197,6 @@ export const Tasks = () => {
       setIsLoading(false);
     }
   };
-
   const createTask = async (taskData: any) => {
     try {
       const insertData = {
@@ -244,7 +239,6 @@ export const Tasks = () => {
       return null;
     }
   };
-
   const updateTask = async (taskId: string, updates: any) => {
     try {
       const processedUpdates: any = {};
@@ -283,7 +277,6 @@ export const Tasks = () => {
       return false;
     }
   };
-
   const deleteTask = async (taskId: string) => {
     try {
       const {
@@ -309,7 +302,6 @@ export const Tasks = () => {
       return false;
     }
   };
-
   const addComment = async (taskId: string, content: string) => {
     try {
       const {
@@ -350,7 +342,6 @@ export const Tasks = () => {
       return false;
     }
   };
-
   const uploadAttachment = async (taskId: string, file: File) => {
     try {
       const userId = (await supabase.auth.getUser()).data.user?.id;
@@ -389,19 +380,16 @@ export const Tasks = () => {
       return false;
     }
   };
-
   const handleCreateTask = async (taskData: any) => {
     const success = await createTask(taskData);
     if (success) {
       setIsCreateDialogOpen(false);
     }
   };
-
   const handleAddTask = (status: TaskStatus = 'Planning') => {
     setNewTaskStatus(status);
     setIsCreateDialogOpen(true);
   };
-
   const filteredTasks = tasks.filter(task => {
     if (selectedProject !== 'all' && task.project_id !== selectedProject) return false;
     if (statusFilter !== 'all' && task.status !== statusFilter) return false;
@@ -409,7 +397,6 @@ export const Tasks = () => {
     if (searchQuery && !task.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
-
   useEffect(() => {
     if (isAuthenticated) {
       fetchProjects();
@@ -434,7 +421,6 @@ export const Tasks = () => {
         </div>
       </div>;
   }
-
   return <div className="flex min-h-screen bg-background">
       <Sidebar />
       <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
@@ -522,10 +508,7 @@ export const Tasks = () => {
                     </SelectContent>
                   </Select>
 
-                  <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filter
-                  </Button>
+                  
                 </div>
               </div>
             </div>
@@ -555,5 +538,4 @@ export const Tasks = () => {
       <TaskDialog isOpen={isCreateDialogOpen} onClose={() => setIsCreateDialogOpen(false)} onSubmit={handleCreateTask} title="Create New Task" />
     </div>;
 };
-
 export default Tasks;
