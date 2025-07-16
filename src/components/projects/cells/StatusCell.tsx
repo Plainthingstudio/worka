@@ -1,7 +1,8 @@
 
 import React from "react";
+import { Badge } from "@/components/ui/badge";
 import { ProjectStatus } from "@/types";
-import { getStatusBadgeClass } from "../utils/projectItemUtils";
+import { getStatusBadgeVariant } from "../utils/projectItemUtils";
 
 interface StatusCellProps {
   status: ProjectStatus;
@@ -9,9 +10,9 @@ interface StatusCellProps {
 
 const StatusCell = ({ status }: StatusCellProps) => {
   return (
-    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${getStatusBadgeClass(status)}`}>
+    <Badge variant={getStatusBadgeVariant(status)}>
       {status}
-    </span>
+    </Badge>
   );
 };
 

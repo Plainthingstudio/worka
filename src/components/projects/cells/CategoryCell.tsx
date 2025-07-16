@@ -21,7 +21,7 @@ const CategoryCell = ({ categories }: CategoryCellProps) => {
   return (
     <div className="flex flex-wrap gap-1">
       {categories.slice(0, 2).map((category, index) => (
-        <Badge key={index} variant="outline" className="text-xs">
+        <Badge key={index} variant="category" className="text-xs">
           {category}
         </Badge>
       ))}
@@ -30,7 +30,7 @@ const CategoryCell = ({ categories }: CategoryCellProps) => {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge variant="outline" className="text-xs cursor-help">
+              <Badge variant="category" className="text-xs cursor-help">
                 +{categories.length - 2}
               </Badge>
             </TooltipTrigger>

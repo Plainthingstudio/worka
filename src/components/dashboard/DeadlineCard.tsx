@@ -5,6 +5,7 @@ import { Calendar, Clock, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Project, ProjectType } from "@/types";
+import { getProjectTypeBadgeVariant } from "@/components/projects/utils/projectItemUtils";
 
 interface DeadlineCardProps {
   projects: Project[];
@@ -23,18 +24,6 @@ const DeadlineCard: React.FC<DeadlineCardProps> = ({ projects, getClientById }) 
     return deadline >= now && deadline <= threeDaysFromNow;
   }).sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
 
-  const getProjectTypeBadgeClass = (type: ProjectType) => {
-    switch (type) {
-      case "Project Based":
-        return "bg-blue-50 text-blue-700 ring-blue-700/10";
-      case "Monthly Retainer":
-        return "bg-purple-50 text-purple-700 ring-purple-700/10";
-      case "Monthly Pay as you go":
-        return "bg-yellow-50 text-yellow-800 ring-yellow-600/20";
-      default:
-        return "bg-gray-50 text-gray-600 ring-gray-500/10";
-    }
-  };
 
   const getDaysUntilDeadline = (deadline: Date) => {
     const days = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
@@ -76,7 +65,7 @@ const DeadlineCard: React.FC<DeadlineCardProps> = ({ projects, getClientById }) 
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium text-sm">{project.name}</h4>
-                      <Badge className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${getProjectTypeBadgeClass(project.projectType)}`}>
+                      <Badge variant={getProjectTypeBadgeVariant(project.projectType)}>
                         {project.projectType}
                       </Badge>
                     </div>

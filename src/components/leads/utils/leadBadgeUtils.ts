@@ -9,21 +9,19 @@ export const getStageBadgeVariant = (stage: string) => {
     case 'Leads':
       return 'secondary';
     case 'First Meeting':
-      return 'project-based';
+      return 'first-meeting';
     case 'Follow up 1':
-      return 'in-progress';
     case 'Follow up 2':
-      return 'monthly-retainer';
-    case 'Provide Moodboard':
-      return 'monthly-pay';
     case 'Follow up 3':
-      return 'outline';
+      return 'follow-up';
+    case 'Provide Moodboard':
+      return 'moodboard';
     case 'Down Payment':
-      return 'default';
+      return 'down-payment';
     case 'Kickoff':
-      return 'destructive';
+      return 'kickoff';
     case 'Finish':
-      return 'completed';
+      return 'finish';
     default:
       return 'secondary';
   }

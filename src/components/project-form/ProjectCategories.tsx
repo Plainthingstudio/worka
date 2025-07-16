@@ -68,7 +68,7 @@ const ProjectCategories = ({
             </div>
             <div className="flex flex-wrap gap-2 pb-2">
               {selectedCategories.map(category => (
-                <Badge key={category} variant="outline" className="flex items-center gap-1">
+                <Badge key={category} variant="category" className="flex items-center gap-1">
                   {category}
                   <button 
                     type="button" 

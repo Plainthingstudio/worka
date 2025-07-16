@@ -79,7 +79,7 @@ const ProjectTeamMembers = ({
 
             <div className="flex flex-wrap gap-2 mt-2">
               {selectedTeamMembers.map(memberId => (
-                <Badge key={memberId} variant="outline" className="flex items-center gap-1 py-1 pl-2">
+                <Badge key={memberId} variant="category" className="flex items-center gap-1 py-1 pl-2">
                   <User className="h-3.5 w-3.5 text-muted-foreground mr-1" />
                   {getTeamMemberNameById(memberId)}
                   <button 

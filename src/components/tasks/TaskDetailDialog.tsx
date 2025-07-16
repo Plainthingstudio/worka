@@ -478,7 +478,7 @@ export const TaskDetailDialog = ({
                           {subtask.title}
                         </div>
                         <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="category" className="text-xs">
                             {subtask.status}
                           </Badge>
                           <Badge 

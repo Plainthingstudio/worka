@@ -180,7 +180,7 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
                     <p className="text-sm font-medium">Categories</p>
                     <div className="flex flex-wrap gap-1.5 mt-1">
                       {project.categories.map((category, index) => (
-                        <Badge key={index} variant="outline" className="bg-background">
+                        <Badge key={index} variant="category">
                           {category}
                         </Badge>
                       ))}
@@ -197,7 +197,7 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
                         <p className="text-sm text-muted-foreground">Loading team members...</p>
                       ) : assignedTeamMembers.length > 0 ? (
                         assignedTeamMembers.map((member) => (
-                          <Badge key={member.id} variant="outline" className="flex items-center gap-1 py-1 pl-2 bg-background">
+                          <Badge key={member.id} variant="category" className="flex items-center gap-1 py-1 pl-2">
                             <Users className="h-3 w-3 text-muted-foreground mr-1" />
                             {member.name} - <span className="text-muted-foreground text-xs">{member.position}</span>
                           </Badge>

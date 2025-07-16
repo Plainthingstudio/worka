@@ -154,7 +154,7 @@ export const BriefSelector = ({ taskId, currentBrief, onBriefChange }: BriefSele
                 <div className="font-medium">{briefDetails.name}</div>
                 <div className="text-muted-foreground">{briefDetails.company_name}</div>
                 {briefDetails.status && (
-                  <Badge variant="outline" className="mt-1 text-xs">
+                  <Badge variant="category" className="mt-1 text-xs">
                     {briefDetails.status}
                   </Badge>
                 )}

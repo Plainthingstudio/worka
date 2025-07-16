@@ -20,6 +20,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAssigneeNames } from '@/hooks/useAssigneeNames';
+import { getStatusBadgeVariant } from '@/components/projects/utils/projectItemUtils';
 
 interface ClickUpTaskListProps {
   tasks: TaskWithRelations[];
@@ -278,10 +279,7 @@ export const ClickUpTaskList = ({
 
                       {/* Status */}
                       <div className="col-span-1 flex items-center">
-                        <Badge 
-                          variant="secondary" 
-                          className={cn("text-white text-xs px-2 py-1 whitespace-nowrap w-fit", config.color)}
-                        >
+                        <Badge variant={getStatusBadgeVariant(status)}>
                           {status}
                         </Badge>
                       </div>

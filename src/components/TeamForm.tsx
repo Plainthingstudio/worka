@@ -352,7 +352,7 @@ const TeamForm = ({
                 </div>
                 <div className="flex flex-wrap gap-2 pb-2">
                   {selectedSkills.map(skill => (
-                    <Badge key={skill} variant="outline" className="flex items-center gap-1">
+                    <Badge key={skill} variant="category" className="flex items-center gap-1">
                       {skill}
                       <button 
                         type="button" 

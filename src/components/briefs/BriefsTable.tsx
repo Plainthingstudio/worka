@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Brief } from "@/types/brief";
+import { getBriefStatusBadgeVariant } from "@/components/projects/utils/projectItemUtils";
 interface BriefsTableProps {
   briefs: Brief[];
   onView: (brief: Brief) => void;
@@ -41,20 +42,6 @@ const BriefsTable: React.FC<BriefsTableProps> = ({
         return <AlertCircle className="h-4 w-4 text-red-500" />;
       default:
         return <CircleDashed className="h-4 w-4" />;
-    }
-  };
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case "New":
-        return "bg-blue-50 text-blue-700 ring-blue-700/10 ring-inset";
-      case "In Progress":
-        return "bg-yellow-50 text-yellow-800 ring-yellow-600/20 ring-inset";
-      case "Completed":
-        return "bg-green-50 text-green-700 ring-green-600/20 ring-inset";
-      case "Cancelled":
-        return "bg-red-50 text-red-700 ring-red-600/10 ring-inset";
-      default:
-        return "bg-gray-50 text-gray-600 ring-gray-500/10 ring-inset";
     }
   };
   const getCompanyName = (brief: Brief) => {
@@ -101,7 +88,7 @@ const BriefsTable: React.FC<BriefsTableProps> = ({
                   {getSubmissionDate(brief)}
                 </TableCell>
                 <TableCell>
-                  <Badge className={`inline-flex items-center gap-1 w-fit ${getStatusBadgeClass(brief.status || "New")}`}>
+                  <Badge variant={getBriefStatusBadgeVariant(brief.status || "New")} className="inline-flex items-center gap-1">
                     {getStatusIcon(brief.status || "New")}
                     <span>{brief.status || "New"}</span>
                   </Badge>

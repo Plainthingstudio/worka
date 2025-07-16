@@ -68,13 +68,13 @@ const TeamMemberItem = ({ member, onEdit, onDelete }: TeamMemberItemProps) => {
         {member.skills && member.skills.length > 0 ? (
           <div className="flex flex-wrap gap-1">
             {member.skills.slice(0, 2).map((skill, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
+              <Badge key={index} variant="category" className="text-xs">
                 {skill}
               </Badge>
             ))}
             
             {member.skills.length > 2 && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="category" className="text-xs">
                 +{member.skills.length - 2}
               </Badge>
             )}
