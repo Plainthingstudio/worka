@@ -8,6 +8,7 @@ import { TaskWithRelations } from "@/types/task";
 import { useNavigate } from "react-router-dom";
 import { useAssigneeNames } from "@/hooks/useAssigneeNames";
 import { format } from "date-fns";
+import { getStatusBadgeVariant } from "@/components/projects/utils/projectItemUtils";
 
 interface ProjectTasksPreviewProps {
   projectId: string;
@@ -40,22 +41,6 @@ const ProjectTasksPreview: React.FC<ProjectTasksPreviewProps> = ({
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Completed':
-        return 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'In progress':
-        return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
-      case 'Paused':
-        return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
-      case 'Cancelled':
-        return 'bg-red-100 text-red-800 hover:bg-red-200';
-      case 'Planning':
-        return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
-      default:
-        return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
-    }
-  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -139,10 +124,7 @@ const ProjectTasksPreview: React.FC<ProjectTasksPreviewProps> = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
                       <h4 className="font-medium text-sm truncate">{task.title}</h4>
-                      <Badge
-                        variant="secondary"
-                        className={`text-xs ${getStatusColor(task.status)}`}
-                      >
+                      <Badge variant={getStatusBadgeVariant(task.status as any)}>
                         {getStatusIcon(task.status)}
                         <span className="ml-1">{task.status}</span>
                       </Badge>

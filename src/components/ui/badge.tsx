@@ -51,7 +51,7 @@ const badgeVariants = cva(
         "down-payment":
           "bg-primary text-primary-foreground border-transparent",
         "kickoff":
-          "bg-destructive text-destructive-foreground border-transparent",
+          "bg-green-50 text-green-700 ring-green-600/20",
         "finish":
           "bg-green-50 text-green-700 ring-green-600/20",
         

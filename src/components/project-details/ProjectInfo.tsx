@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Client, Project, TeamMember } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { getStatusBadgeVariant, getProjectTypeBadgeVariant } from "@/components/projects/utils/projectItemUtils";
 
 interface ProjectInfoProps {
   project: Project;
@@ -57,17 +58,6 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
     loadTeamMembers();
   }, [project.teamMembers, project.id]);
 
-  // Format status badge class
-  const getStatusClass = (status: string) => {
-    switch(status.toLowerCase()) {
-      case 'planning': return 'bg-blue-100 text-blue-700';
-      case 'in progress': return 'bg-yellow-100 text-yellow-700';
-      case 'completed': return 'bg-green-100 text-green-700';
-      case 'paused': return 'bg-purple-100 text-purple-700';
-      case 'cancelled': return 'bg-red-100 text-red-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
-  };
 
   return (
     <div className="col-span-7 md:col-span-5">
@@ -78,10 +68,10 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
             <div>
               <h1 className="text-2xl font-bold tracking-tight">{project.name}</h1>
               <div className="flex items-center gap-2 mt-2">
-                <Badge variant="outline" className={`px-3 py-1 ${getStatusClass(project.status)}`}>
+                <Badge variant={getStatusBadgeVariant(project.status as any)}>
                   {project.status}
                 </Badge>
-                <Badge variant="secondary" className="flex items-center gap-1">
+                <Badge variant={getProjectTypeBadgeVariant(project.projectType as any)}>
                   <Tag className="h-3.5 w-3.5" />
                   {project.projectType}
                 </Badge>
