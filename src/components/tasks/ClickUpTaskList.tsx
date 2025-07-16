@@ -280,7 +280,7 @@ export const ClickUpTaskList = ({
                       <div className="col-span-1 flex items-center">
                         <Badge 
                           variant="secondary" 
-                          className={cn("text-white text-xs h-5", config.color)}
+                          className={cn("text-white text-xs px-2 py-1", config.color)}
                         >
                           {status}
                         </Badge>
