@@ -81,6 +81,7 @@ interface TaskDetailSidebarProps {
   onDeleteTask: (taskId: string) => Promise<boolean>;
   onAddComment: (taskId: string, content: string) => Promise<boolean>;
   onUploadAttachment: (taskId: string, file: File) => Promise<boolean>;
+  onAddSubtask?: (taskId: string) => void;
 }
 
 export const TaskDetailSidebar = ({ 
@@ -90,7 +91,8 @@ export const TaskDetailSidebar = ({
   onUpdateTask, 
   onDeleteTask, 
   onAddComment, 
-  onUploadAttachment 
+  onUploadAttachment,
+  onAddSubtask 
 }: TaskDetailSidebarProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -579,9 +581,69 @@ export const TaskDetailSidebar = ({
                   />
                 </div>
 
+                {/* Subtasks Section */}
+                {!task.parent_task_id && (
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-medium">Subtasks ({task.subtasks?.length || 0})</h3>
+                      {onAddSubtask && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => onAddSubtask(task.id)}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Subtask
+                        </Button>
+                      )}
+                    </div>
+                    <div className="space-y-2 mb-6">
+                      {task.subtasks?.map((subtask) => (
+                        <div key={subtask.id} className="border rounded-lg p-3 hover:bg-muted/50">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${subtask.status === 'Completed' ? 'bg-green-500' : 'bg-gray-400'}`} />
+                              <span className="text-sm font-medium">{subtask.title}</span>
+                              <Badge variant={subtask.status === 'Completed' ? 'default' : 'secondary'} className="text-xs">
+                                {subtask.status}
+                              </Badge>
+                            </div>
+                            {getPriorityIcon(subtask.priority)}
+                          </div>
+                          {subtask.description && (
+                            <p className="text-xs text-muted-foreground mb-2">{subtask.description}</p>
+                          )}
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <div className="flex items-center gap-3">
+                              {subtask.assignees.length > 0 && (
+                                <span className="flex items-center gap-1">
+                                  <Users className="h-3 w-3" />
+                                  {subtask.assignees.length}
+                                </span>
+                              )}
+                              {subtask.due_date && (
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  {format(subtask.due_date, 'MMM dd')}
+                                </span>
+                              )}
+                            </div>
+                            <span>{format(subtask.created_at, 'MMM dd, yyyy')}</span>
+                          </div>
+                        </div>
+                      ))}
+                      {(!task.subtasks || task.subtasks.length === 0) && (
+                        <div className="text-center text-muted-foreground py-4 text-sm">
+                          No subtasks yet. Click "Add Subtask" to create one.
+                        </div>
+                      )}
+                    </div>
+                    <Separator className="mb-4" />
+                  </div>
+                )}
+
                 {/* Activity Section */}
                 <div>
-                  <Separator className="mb-4" />
                   <h3 className="text-sm font-medium mb-4">Activity</h3>
                   <div className="space-y-3 mb-6">
                     {activitiesLoading ? (

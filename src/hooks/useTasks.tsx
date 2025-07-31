@@ -32,6 +32,18 @@ export const useTasks = (projectId: string) => {
         .is('parent_task_id', null)
         .order('created_at', { ascending: false });
 
+      // Also fetch subtasks for each task
+      const { data: subtasksData } = await supabase
+        .from('tasks')
+        .select(`
+          *,
+          task_comments(*),
+          task_attachments(*)
+        `)
+        .eq('project_id', projectId)
+        .not('parent_task_id', 'is', null)
+        .order('created_at', { ascending: false });
+
       if (error) {
         console.error('Error fetching tasks:', error);
         toast({
@@ -43,6 +55,7 @@ export const useTasks = (projectId: string) => {
       }
 
       console.log('Fetched tasks data:', tasksData);
+      console.log('Fetched subtasks data:', subtasksData);
 
       if (!tasksData) {
         setTasks([]);
@@ -54,7 +67,11 @@ export const useTasks = (projectId: string) => {
         tasksData.map(async (task) => {
           const { data: subtasks } = await supabase
             .from('tasks')
-            .select('*')
+            .select(`
+              *,
+              task_comments(*),
+              task_attachments(*)
+            `)
             .eq('parent_task_id', task.id)
             .order('created_at', { ascending: false });
 
@@ -113,7 +130,7 @@ export const useTasks = (projectId: string) => {
     }
   };
 
-  const createTask = async (taskData: Partial<Task>) => {
+  const createTask = async (taskData: Partial<Task> & { parent_task_id?: string }) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -138,6 +155,7 @@ export const useTasks = (projectId: string) => {
         user_id: user.id,
         brief_id: taskData.brief_id,
         brief_type: taskData.brief_type,
+        parent_task_id: taskData.parent_task_id,
       };
 
       const { data, error } = await supabase

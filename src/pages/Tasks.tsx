@@ -10,6 +10,7 @@ import { TaskBoardView } from '@/components/tasks/TaskBoardView';
 import { TaskCalendarView } from '@/components/tasks/TaskCalendarView';
 import { TaskDetailSidebar } from '@/components/tasks/TaskDetailSidebar';
 import { TaskDialog } from '@/components/tasks/TaskDialog';
+import { SubtaskDialog } from '@/components/tasks/SubtaskDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/task';
 import { Project } from '@/types';
@@ -25,6 +26,8 @@ export const Tasks = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
   const [selectedProject, setSelectedProject] = useState<string>('all');
+  const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = useState(false);
+  const [parentTaskId, setParentTaskId] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -390,6 +393,59 @@ export const Tasks = () => {
     setNewTaskStatus(status);
     setIsCreateDialogOpen(true);
   };
+
+  const handleCreateSubtask = async (subtaskData: any) => {
+    try {
+      const insertData = {
+        title: subtaskData.title || '',
+        description: subtaskData.description,
+        status: subtaskData.status || 'Planning',
+        priority: subtaskData.priority,
+        task_type: subtaskData.task_type,
+        assignees: subtaskData.assignees || [],
+        due_date: subtaskData.due_date,
+        parent_task_id: subtaskData.parent_task_id,
+        project_id: selectedProject === 'all' ? null : selectedProject,
+        user_id: (await supabase.auth.getUser()).data.user?.id,
+      };
+
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert([insertData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating subtask:', error);
+        toast({
+          title: "Error",
+          description: "Failed to create subtask",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Subtask created successfully",
+      });
+
+      await fetchAllTasks();
+      setIsSubtaskDialogOpen(false);
+    } catch (error) {
+      console.error('Error creating subtask:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create subtask",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddSubtask = (taskId: string) => {
+    setParentTaskId(taskId);
+    setIsSubtaskDialogOpen(true);
+  };
   const filteredTasks = tasks.filter(task => {
     if (selectedProject !== 'all' && task.project_id !== selectedProject) return false;
     if (statusFilter !== 'all' && task.status !== statusFilter) return false;
@@ -532,10 +588,28 @@ export const Tasks = () => {
       </div>
 
       {/* Task Detail Sidebar */}
-      <TaskDetailSidebar task={selectedTask} isOpen={!!selectedTask} onClose={() => setSelectedTask(null)} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} />
+      <TaskDetailSidebar 
+        task={selectedTask} 
+        isOpen={!!selectedTask} 
+        onClose={() => setSelectedTask(null)} 
+        onUpdateTask={updateTask} 
+        onDeleteTask={deleteTask} 
+        onAddComment={addComment} 
+        onUploadAttachment={uploadAttachment}
+        onAddSubtask={handleAddSubtask}
+      />
 
       {/* Create Task Dialog */}
       <TaskDialog isOpen={isCreateDialogOpen} onClose={() => setIsCreateDialogOpen(false)} onSubmit={handleCreateTask} title="Create New Task" />
+
+      {/* Create Subtask Dialog */}
+      <SubtaskDialog 
+        isOpen={isSubtaskDialogOpen} 
+        onClose={() => setIsSubtaskDialogOpen(false)} 
+        onSubmit={handleCreateSubtask} 
+        parentTaskId={parentTaskId}
+        title="Create New Subtask"
+      />
     </div>;
 };
 export default Tasks;

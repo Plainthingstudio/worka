@@ -48,7 +48,8 @@ import {
   ExternalLink,
   MoreHorizontal,
   Edit,
-  Trash2
+  Trash2,
+  Plus
 } from 'lucide-react';
 import { TaskWithRelations, TaskPriority, TaskType, TaskStatus } from '@/types/task';
 import { format } from 'date-fns';
@@ -469,38 +470,73 @@ export const TaskDetailDialog = ({
             </TabsContent>
 
             <TabsContent value="subtasks" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-sm font-medium">Subtasks</h3>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    // This will be handled by the parent component
+                    console.log('Create subtask for task:', task.id);
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Subtask
+                </Button>
+              </div>
+
               <ScrollArea className="h-64">
                 <div className="space-y-2">
                   {task.subtasks?.map((subtask) => (
-                    <div key={subtask.id} className="flex items-center justify-between border rounded-lg p-3">
-                      <div>
-                        <div className={`text-sm font-medium ${subtask.status === 'Completed' ? 'line-through text-muted-foreground' : ''}`}>
-                          {subtask.title}
-                        </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="category" className="text-xs">
+                    <div key={subtask.id} className="border rounded-lg p-3 hover:bg-muted/50">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${getPriorityColor(subtask.priority)}`} />
+                          <span className="text-sm font-medium">{subtask.title}</span>
+                          <Badge variant={subtask.status === 'Completed' ? 'default' : 'secondary'} className="text-xs">
                             {subtask.status}
                           </Badge>
-                          <Badge 
-                            variant="secondary" 
-                            className={`text-white text-xs ${getPriorityColor(subtask.priority)}`}
-                          >
-                            {subtask.priority}
-                          </Badge>
                         </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            console.log('Open subtask:', subtask.id);
+                            // This will open the subtask in detail view
+                          }}
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      {subtask.description && (
+                        <p className="text-xs text-muted-foreground mb-2">{subtask.description}</p>
+                      )}
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <div className="flex items-center gap-3">
+                          {subtask.assignees.length > 0 && (
+                            <span className="flex items-center gap-1">
+                              <User className="h-3 w-3" />
+                              {subtask.assignees.length}
+                            </span>
+                          )}
+                          {subtask.due_date && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {format(subtask.due_date, 'MMM dd')}
+                            </span>
+                          )}
+                        </div>
+                        <span>{format(subtask.created_at, 'MMM dd, yyyy')}</span>
                       </div>
                     </div>
                   ))}
                   {(!task.subtasks || task.subtasks.length === 0) && (
-                    <div className="text-center text-muted-foreground">No subtasks</div>
+                    <div className="text-center text-muted-foreground py-8">
+                      No subtasks yet. Click "Add Subtask" to create one.
+                    </div>
                   )}
                 </div>
               </ScrollArea>
-
-              <Button variant="outline" className="w-full">
-                <Upload className="h-4 w-4 mr-2" />
-                Add Subtask
-              </Button>
             </TabsContent>
           </Tabs>
         </DialogContent>
