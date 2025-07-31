@@ -68,49 +68,58 @@ const BriefPersonalizedLinks = () => {
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center gap-2 border rounded-md">
-            <div className="truncate px-3 py-2 text-sm flex-1 bg-muted/50">
-              {briefLinks.graphic}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Graphic Design Brief</label>
+            <div className="flex items-center gap-2 border rounded-md">
+              <div className="truncate px-3 py-2 text-sm flex-1 bg-muted/50">
+                {briefLinks.graphic}
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-full rounded-l-none" 
+                onClick={() => handleCopyLink('graphic')}
+                title="Copy Graphic Design Brief Link"
+              >
+                {copied.graphic ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </Button>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-full rounded-l-none" 
-              onClick={() => handleCopyLink('graphic')}
-              title="Copy Graphic Design Brief Link"
-            >
-              {copied.graphic ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            </Button>
           </div>
           
-          <div className="flex items-center gap-2 border rounded-md">
-            <div className="truncate px-3 py-2 text-sm flex-1 bg-muted/50">
-              {briefLinks.ui}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">UI Design Brief</label>
+            <div className="flex items-center gap-2 border rounded-md">
+              <div className="truncate px-3 py-2 text-sm flex-1 bg-muted/50">
+                {briefLinks.ui}
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-full rounded-l-none" 
+                onClick={() => handleCopyLink('ui')}
+                title="Copy UI Design Brief Link"
+              >
+                {copied.ui ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </Button>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-full rounded-l-none" 
-              onClick={() => handleCopyLink('ui')}
-              title="Copy UI Design Brief Link"
-            >
-              {copied.ui ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            </Button>
           </div>
           
-          <div className="flex items-center gap-2 border rounded-md">
-            <div className="truncate px-3 py-2 text-sm flex-1 bg-muted/50">
-              {briefLinks.illustration}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Illustration Brief</label>
+            <div className="flex items-center gap-2 border rounded-md">
+              <div className="truncate px-3 py-2 text-sm flex-1 bg-muted/50">
+                {briefLinks.illustration}
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-full rounded-l-none" 
+                onClick={() => handleCopyLink('illustration')}
+                title="Copy Illustration Brief Link"
+              >
+                {copied.illustration ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </Button>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-full rounded-l-none" 
-              onClick={() => handleCopyLink('illustration')}
-              title="Copy Illustration Brief Link"
-            >
-              {copied.illustration ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            </Button>
           </div>
         </div>
       </CardContent>
