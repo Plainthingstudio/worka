@@ -396,6 +396,17 @@ export const Tasks = () => {
 
   const handleCreateSubtask = async (subtaskData: any) => {
     try {
+      // Get user first
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to create subtasks",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const insertData = {
         title: subtaskData.title || '',
         description: subtaskData.description,
@@ -406,8 +417,10 @@ export const Tasks = () => {
         due_date: subtaskData.due_date,
         parent_task_id: subtaskData.parent_task_id,
         project_id: selectedProject === 'all' ? null : selectedProject,
-        user_id: (await supabase.auth.getUser()).data.user?.id,
+        user_id: user.id,
       };
+
+      console.log('Creating subtask with data:', insertData);
 
       const { data, error } = await supabase
         .from('tasks')
@@ -416,15 +429,17 @@ export const Tasks = () => {
         .single();
 
       if (error) {
-        console.error('Error creating subtask:', error);
+        console.error('Supabase error creating subtask:', error);
         toast({
           title: "Error",
-          description: "Failed to create subtask: " + error.message,
+          description: `Failed to create subtask: ${error.message}`,
           variant: "destructive",
         });
         return;
       }
 
+      console.log('Subtask created successfully:', data);
+      
       toast({
         title: "Success",
         description: "Subtask created successfully",
@@ -436,7 +451,7 @@ export const Tasks = () => {
       console.error('Error creating subtask:', error);
       toast({
         title: "Error",
-        description: "Failed to create subtask",
+        description: error instanceof Error ? error.message : "Failed to create subtask",
         variant: "destructive",
       });
     }

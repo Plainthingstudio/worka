@@ -87,12 +87,15 @@ export const SubtaskDialog = ({
 
   useEffect(() => {
     if (isOpen) {
-      fetchTeamMembers();
+      // Only fetch team members if we don't have them already
+      if (teamMembers.length === 0) {
+        fetchTeamMembers();
+      }
       const assignees = initialData?.assignees || [];
       setSelectedAssignees(assignees);
       form.setValue('assignees', assignees);
     }
-  }, [isOpen, fetchTeamMembers, initialData, form]);
+  }, [isOpen, initialData, form, teamMembers.length, fetchTeamMembers]);
 
   const handleSubmit = async (data: SubtaskFormData) => {
     try {
