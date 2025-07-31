@@ -459,6 +459,62 @@ export const useTasks = (projectId: string) => {
     isLoading,
     fetchTasks,
     createTask,
+    createSubtask: async (subtaskData: any) => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          toast({
+            title: "Error",
+            description: "You must be logged in to create subtasks",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const insertData = {
+          title: subtaskData.title || '',
+          description: subtaskData.description,
+          status: subtaskData.status || 'Planning',
+          priority: subtaskData.priority,
+          task_type: subtaskData.task_type,
+          assignees: subtaskData.assignees || [],
+          due_date: subtaskData.due_date,
+          parent_task_id: subtaskData.parent_task_id,
+          project_id: projectId,
+          user_id: user.id,
+        };
+
+        const { data, error } = await supabase
+          .from('tasks')
+          .insert([insertData])
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error creating subtask:', error);
+          toast({
+            title: "Error",
+            description: "Failed to create subtask: " + error.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "Success",
+          description: "Subtask created successfully",
+        });
+
+        await fetchTasks();
+      } catch (error) {
+        console.error('Error creating subtask:', error);
+        toast({
+          title: "Error",
+          description: "Failed to create subtask",
+          variant: "destructive",
+        });
+      }
+    },
     updateTask,
     deleteTask,
     addComment,

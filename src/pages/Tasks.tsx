@@ -419,7 +419,7 @@ export const Tasks = () => {
         console.error('Error creating subtask:', error);
         toast({
           title: "Error",
-          description: "Failed to create subtask",
+          description: "Failed to create subtask: " + error.message,
           variant: "destructive",
         });
         return;

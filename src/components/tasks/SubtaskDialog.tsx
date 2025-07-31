@@ -95,10 +95,6 @@ export const SubtaskDialog = ({
   }, [isOpen, fetchTeamMembers, initialData, form]);
 
   const handleSubmit = async (data: SubtaskFormData) => {
-    console.log('Form submission data:', data);
-    console.log('Selected assignees:', selectedAssignees);
-    console.log('Parent task ID:', parentTaskId);
-    
     try {
       await onSubmit({
         ...data,
