@@ -168,7 +168,9 @@ export const Tasks = () => {
         return;
       }
       console.log('Fetched tasks:', tasksData);
-      const transformedTasks: TaskWithRelations[] = tasksData.map(task => ({
+      
+      // Transform tasks and organize subtasks
+      const allTasks: TaskWithRelations[] = tasksData.map(task => ({
         ...task,
         status: task.status as TaskStatus,
         priority: task.priority as TaskPriority,
@@ -188,6 +190,21 @@ export const Tasks = () => {
         })) || [],
         subtasks: []
       }));
+
+      // Organize subtasks under their parent tasks
+      const taskMap = new Map<string, TaskWithRelations>();
+      allTasks.forEach(task => taskMap.set(task.id, task));
+
+      allTasks.forEach(task => {
+        if (task.parent_task_id && taskMap.has(task.parent_task_id)) {
+          const parentTask = taskMap.get(task.parent_task_id)!;
+          if (!parentTask.subtasks) parentTask.subtasks = [];
+          parentTask.subtasks.push(task);
+        }
+      });
+
+      // Filter out subtasks from the main tasks list (only show parent tasks)
+      const transformedTasks = allTasks.filter(task => !task.parent_task_id);
       setTasks(transformedTasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
