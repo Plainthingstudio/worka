@@ -88,11 +88,17 @@ export const SubtaskDialog = ({
   useEffect(() => {
     if (isOpen) {
       fetchTeamMembers();
-      setSelectedAssignees(initialData?.assignees || []);
+      const assignees = initialData?.assignees || [];
+      setSelectedAssignees(assignees);
+      form.setValue('assignees', assignees);
     }
-  }, [isOpen, fetchTeamMembers, initialData]);
+  }, [isOpen, fetchTeamMembers, initialData, form]);
 
   const handleSubmit = async (data: SubtaskFormData) => {
+    console.log('Form submission data:', data);
+    console.log('Selected assignees:', selectedAssignees);
+    console.log('Parent task ID:', parentTaskId);
+    
     try {
       await onSubmit({
         ...data,
@@ -114,11 +120,12 @@ export const SubtaskDialog = ({
   };
 
   const toggleAssignee = (memberId: string) => {
-    setSelectedAssignees(prev => 
-      prev.includes(memberId) 
-        ? prev.filter(id => id !== memberId)
-        : [...prev, memberId]
-    );
+    const newAssignees = selectedAssignees.includes(memberId) 
+      ? selectedAssignees.filter(id => id !== memberId)
+      : [...selectedAssignees, memberId];
+    
+    setSelectedAssignees(newAssignees);
+    form.setValue('assignees', newAssignees);
   };
 
   const getSelectedAssigneeNames = () => {
