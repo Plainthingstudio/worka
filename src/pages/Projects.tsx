@@ -19,10 +19,10 @@ import { Navigate } from "react-router-dom";
 import { LeadSource } from "@/types";
 
 const Projects = () => {
-  const { canViewProjects } = useUserRole();
+  const { canViewProjects, isLoading: roleLoading } = useUserRole();
   
-  // Redirect team members away from projects page
-  if (!canViewProjects) {
+  // Redirect team members away from projects page (but only after role is loaded)
+  if (!roleLoading && !canViewProjects) {
     return <Navigate to="/tasks" replace />;
   }
 
