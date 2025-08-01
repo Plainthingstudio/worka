@@ -81,25 +81,6 @@ export function useBriefPdf() {
           }
         }
         
-        // Handle page details for UI Design briefs
-        if (brief.type === "UI Design" && jsonData.page_details) {
-          let pageDetails = jsonData.page_details;
-          console.log("Raw page details from database:", pageDetails);
-          
-          // If it's a string, try to parse it
-          if (typeof pageDetails === 'string') {
-            try {
-              pageDetails = JSON.parse(pageDetails);
-              console.log("Parsed page details from string:", pageDetails);
-            } catch (e) {
-              console.error("Error parsing page_details string:", e);
-              pageDetails = [];
-            }
-          }
-          
-          // Ensure pageDetails is properly assigned regardless of its format
-          fullBriefData.pageDetails = pageDetails;
-        }
         
         console.log("Full brief data prepared for PDF generation:", fullBriefData);
         return fullBriefData;
