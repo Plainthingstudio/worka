@@ -208,26 +208,28 @@ export const TaskDetailDialog = ({
                     {project ? `Go to ${project.name}` : 'See Project'}
                   </Button>
                 )}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-background border z-[80]">
-                    <DropdownMenuItem onClick={() => {}}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => setIsDeleteDialogOpen(true)}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {userRole !== 'team' && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-background border z-[80]">
+                      <DropdownMenuItem onClick={() => {}}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setIsDeleteDialogOpen(true)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
           </DialogHeader>
@@ -247,108 +249,45 @@ export const TaskDetailDialog = ({
             </TabsList>
 
             <TabsContent value="details" className="space-y-4">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Title</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+              {userRole === 'team' ? (
+                // Read-only view for team members
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Title</label>
+                    <div className="mt-1 p-3 bg-muted rounded-md">
+                      {task.title}
+                    </div>
+                  </div>
 
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Textarea rows={4} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Description</label>
+                    <div className="mt-1 p-3 bg-muted rounded-md min-h-[100px]">
+                      {task.description || 'No description'}
+                    </div>
+                  </div>
 
                   <div className="grid grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="status"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Status</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Planning">Planning</SelectItem>
-                              <SelectItem value="In progress">In Progress</SelectItem>
-                              <SelectItem value="Paused">Paused</SelectItem>
-                              <SelectItem value="Completed">Completed</SelectItem>
-                              <SelectItem value="Cancelled">Cancelled</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Status</label>
+                      <div className="mt-1">
+                        <Badge variant="secondary">{task.status}</Badge>
+                      </div>
+                    </div>
 
-                    <FormField
-                      control={form.control}
-                      name="priority"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Priority</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Low">Low</SelectItem>
-                              <SelectItem value="Normal">Normal</SelectItem>
-                              <SelectItem value="High">High</SelectItem>
-                              <SelectItem value="Urgent">Urgent</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Priority</label>
+                      <div className="mt-1 flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${getPriorityColor(task.priority)}`} />
+                        {task.priority}
+                      </div>
+                    </div>
 
-                    <FormField
-                      control={form.control}
-                      name="task_type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Task Type</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Primary">Primary</SelectItem>
-                              <SelectItem value="Secondary">Secondary</SelectItem>
-                              <SelectItem value="Tertiary">Tertiary</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Task Type</label>
+                      <div className="mt-1">
+                        <Badge variant="outline">{task.task_type}</Badge>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -372,19 +311,148 @@ export const TaskDetailDialog = ({
                       </div>
                     </div>
                   </div>
+                </div>
+              ) : (
+                // Editable form for non-team members
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Title</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <div className="flex justify-end pt-4">
-                    <div className="flex gap-2">
-                      <Button type="button" variant="outline" onClick={onClose}>
-                        Cancel
-                      </Button>
-                      <Button type="submit">
-                        Save Changes
-                      </Button>
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea rows={4} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-3 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Status</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="Planning">Planning</SelectItem>
+                                <SelectItem value="In progress">In Progress</SelectItem>
+                                <SelectItem value="Paused">Paused</SelectItem>
+                                <SelectItem value="Completed">Completed</SelectItem>
+                                <SelectItem value="Cancelled">Cancelled</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="priority"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Priority</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="Low">Low</SelectItem>
+                                <SelectItem value="Normal">Normal</SelectItem>
+                                <SelectItem value="High">High</SelectItem>
+                                <SelectItem value="Urgent">Urgent</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="task_type"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Task Type</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="Primary">Primary</SelectItem>
+                                <SelectItem value="Secondary">Secondary</SelectItem>
+                                <SelectItem value="Tertiary">Tertiary</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
-                  </div>
-                </form>
-              </Form>
+
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                          <Calendar className="h-4 w-4" />
+                          Due Date
+                        </div>
+                        <div>
+                          {task.due_date ? format(task.due_date, 'MMM dd, yyyy') : 'No due date'}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                          <User className="h-4 w-4" />
+                          Assignees
+                        </div>
+                        <div>
+                          {task.assignees.length > 0 ? `${task.assignees.length} assigned` : 'No assignees'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-4">
+                      <div className="flex gap-2">
+                        <Button type="button" variant="outline" onClick={onClose}>
+                          Cancel
+                        </Button>
+                        <Button type="submit">
+                          Save Changes
+                        </Button>
+                      </div>
+                    </div>
+                  </form>
+                </Form>
+              )}
             </TabsContent>
 
             <TabsContent value="comments" className="space-y-4">
