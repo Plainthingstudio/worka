@@ -13,6 +13,8 @@ interface TaskActivity {
   metadata: any;
   attachments: any[];
   created_at: Date;
+  user_name?: string;  // Add user name field
+  user_email?: string; // Add user email field
 }
 
 export const useTaskActivities = (taskId: string) => {
@@ -24,7 +26,8 @@ export const useTaskActivities = (taskId: string) => {
     
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      // First fetch activities
+      const { data: activitiesData, error } = await supabase
         .from('task_activities')
         .select('*')
         .eq('task_id', taskId)
@@ -40,12 +43,39 @@ export const useTaskActivities = (taskId: string) => {
         return;
       }
 
-      const transformedActivities: TaskActivity[] = data.map(activity => ({
-        ...activity,
-        activity_type: activity.activity_type as TaskActivity['activity_type'],
-        attachments: Array.isArray(activity.attachments) ? activity.attachments : [],
-        created_at: new Date(activity.created_at),
-      }));
+      if (!activitiesData || activitiesData.length === 0) {
+        setActivities([]);
+        return;
+      }
+
+      // Get unique user IDs
+      const userIds = [...new Set(activitiesData.map(activity => activity.user_id))];
+      
+      // Fetch user profiles
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', userIds);
+
+      // Create a map of user profiles
+      const profilesMap = new Map();
+      if (profilesData) {
+        profilesData.forEach(profile => {
+          profilesMap.set(profile.id, profile);
+        });
+      }
+
+      const transformedActivities: TaskActivity[] = activitiesData.map(activity => {
+        const profile = profilesMap.get(activity.user_id);
+        return {
+          ...activity,
+          activity_type: activity.activity_type as TaskActivity['activity_type'],
+          attachments: Array.isArray(activity.attachments) ? activity.attachments : [],
+          created_at: new Date(activity.created_at),
+          user_name: profile?.full_name || 'Unknown User',
+          user_email: profile?.email || '',
+        };
+      });
 
       setActivities(transformedActivities);
     } catch (error) {

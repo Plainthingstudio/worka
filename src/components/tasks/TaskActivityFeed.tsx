@@ -31,6 +31,8 @@ interface TaskActivityFeedActivity {
   metadata: any;
   attachments: any[];
   created_at: Date;
+  user_name?: string;  // Add user name field
+  user_email?: string; // Add user email field
 }
 
 interface TaskActivityFeedProps {
@@ -233,7 +235,7 @@ export const TaskActivityFeed = ({
               <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="text-xs">
-                    {activity.user_id ? 'U' : '?'}
+                    {activity.user_name ? activity.user_name.charAt(0).toUpperCase() : 'U'}
                   </AvatarFallback>
                 </Avatar>
                 
@@ -241,7 +243,7 @@ export const TaskActivityFeed = ({
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1 text-sm">
                       {getActivityIcon(activity.activity_type)}
-                      <span className="font-medium">User</span>
+                      <span className="font-medium">{activity.user_name || 'Unknown User'}</span>
                     </div>
                     <span className="text-xs text-muted-foreground">
                       {format(new Date(activity.created_at), 'MMM dd, yyyy HH:mm')}
