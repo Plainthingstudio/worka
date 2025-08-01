@@ -69,15 +69,20 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
         }
       }
       
-      // Handle case where details might be an object with numeric keys
+      // Handle case where details might be an object with numeric keys (from form data)
       if (details && typeof details === 'object' && !Array.isArray(details)) {
-        if (Object.keys(details).length > 0) {
-          const detailsArray = [];
-          for (const key in details) {
-            if (details.hasOwnProperty(key)) {
-              detailsArray.push(details[key]);
-            }
+        console.log("Converting object to array:", details);
+        const detailsArray = [];
+        
+        // Check if it's a form-style object with numeric keys
+        const keys = Object.keys(details).sort((a, b) => parseInt(a) - parseInt(b));
+        for (const key of keys) {
+          if (details[key] && typeof details[key] === 'object') {
+            detailsArray.push(details[key]);
           }
+        }
+        
+        if (detailsArray.length > 0) {
           details = detailsArray;
           console.log("Converted page details object to array:", details);
         } else {
@@ -91,8 +96,16 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
         return [];
       }
       
-      // Filter out any null or empty entries
-      return details.filter(item => item && (item.name || item.description || item.page_name || item.page_description));
+      // Filter out any null or empty entries and ensure we have valid page data
+      const validDetails = details.filter(item => {
+        if (!item) return false;
+        const hasName = item.name || item.page_name;
+        const hasDescription = item.description || item.page_description;
+        return hasName || hasDescription;
+      });
+      
+      console.log("Final processed page details:", validDetails);
+      return validDetails;
     };
     
     // Client Information Section
