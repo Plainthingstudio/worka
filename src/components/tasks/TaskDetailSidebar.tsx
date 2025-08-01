@@ -599,7 +599,16 @@ export const TaskDetailSidebar = ({
                     </div>
                     <div className="space-y-2 mb-6">
                       {task.subtasks?.map((subtask) => (
-                        <div key={subtask.id} className="border rounded-lg p-3 hover:bg-muted/50">
+                        <div key={subtask.id} className="border rounded-lg p-3 hover:bg-muted/50 cursor-pointer" onClick={(e) => {
+                          e.stopPropagation();
+                          // Open subtask details by calling parent's onUpdateTask with the subtask
+                          // We'll simulate opening the subtask by setting it as the current task
+                          onClose(); // Close current sidebar
+                          setTimeout(() => {
+                            // Trigger opening the subtask details
+                            window.dispatchEvent(new CustomEvent('openTaskDetails', { detail: subtask }));
+                          }, 100);
+                        }}>
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <div className={`w-2 h-2 rounded-full ${subtask.status === 'Completed' ? 'bg-green-500' : 'bg-gray-400'}`} />

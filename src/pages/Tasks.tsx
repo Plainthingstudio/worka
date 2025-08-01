@@ -492,6 +492,21 @@ export const Tasks = () => {
     }
   }, [isAuthenticated]);
 
+  // Listen for subtask detail opening events
+  useEffect(() => {
+    const handleOpenTaskDetails = (event: CustomEvent) => {
+      const subtask = event.detail;
+      if (subtask) {
+        setSelectedTask(subtask);
+      }
+    };
+
+    window.addEventListener('openTaskDetails', handleOpenTaskDetails as EventListener);
+    return () => {
+      window.removeEventListener('openTaskDetails', handleOpenTaskDetails as EventListener);
+    };
+  }, []);
+
   // Show loading state while checking authentication
   if (!isAuthenticated) {
     return <div className="flex min-h-screen bg-background">
