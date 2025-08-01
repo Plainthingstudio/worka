@@ -44,7 +44,7 @@ const TeamDashboard: React.FC = () => {
           title="Total Projects"
           value={stats.totalProjects}
           icon={Briefcase}
-          description="Projects involved in"
+          description="Projects you're involved in"
         />
       </div>
 
