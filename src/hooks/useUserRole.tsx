@@ -73,7 +73,7 @@ export const useUserRole = () => {
   }, [userRole, isLoading]);
 
   const canViewTeam = userRole === 'owner' || userRole === 'administrator';
-  const canViewProjects = userRole === 'owner' || userRole === 'administrator' || userRole === 'team';
+  const canViewProjects = userRole === 'owner' || userRole === 'administrator';
   const canManageTeam = () => userRole === 'owner' || userRole === 'administrator';
   const canManageProjects = () => userRole === 'owner' || userRole === 'administrator';
 

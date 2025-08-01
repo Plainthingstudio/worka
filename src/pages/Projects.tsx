@@ -14,9 +14,18 @@ import { useProjects } from "@/hooks/useProjects";
 import { useProjectDialogs } from "@/hooks/useProjectDialogs";
 import { useProjectFilters } from "@/hooks/useProjectFilters";
 import { useSidebarWidth } from "@/hooks/useSidebarWidth";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Navigate } from "react-router-dom";
 import { LeadSource } from "@/types";
 
 const Projects = () => {
+  const { canViewProjects } = useUserRole();
+  
+  // Redirect team members away from projects page
+  if (!canViewProjects) {
+    return <Navigate to="/tasks" replace />;
+  }
+
   const { 
     projects, 
     clients, 

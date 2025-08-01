@@ -78,7 +78,7 @@ const Sidebar = () => {
       icon: ListChecks,
       label: "Projects",
       href: "/projects",
-      roles: ['owner', 'administrator', 'team']
+      roles: ['owner', 'administrator']
     },
     {
       icon: CheckSquare,
