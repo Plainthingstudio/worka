@@ -54,9 +54,19 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
       // First try to get page details from either property
       let details = briefData.pageDetails || briefData.page_details;
       console.log("Initial page details:", details);
+      console.log("All brief data keys:", Object.keys(briefData));
+      
+      // Also check for other possible field names
+      if (!details) {
+        details = briefData.page_information || briefData.pageInformation;
+        console.log("Trying alternative field names:", details);
+      }
       
       // If details don't exist, return empty array
-      if (!details) return [];
+      if (!details) {
+        console.log("No page details found in any field");
+        return [];
+      }
       
       // If it's a string, try to parse it as JSON
       if (typeof details === 'string') {
@@ -76,9 +86,15 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
         
         // Check if it's a form-style object with numeric keys
         const keys = Object.keys(details).sort((a, b) => parseInt(a) - parseInt(b));
+        console.log("Object keys found:", keys);
+        
         for (const key of keys) {
+          console.log(`Processing key ${key}:`, details[key]);
           if (details[key] && typeof details[key] === 'object') {
             detailsArray.push(details[key]);
+          } else if (details[key] && typeof details[key] === 'string') {
+            // Handle case where the value might be a simple string
+            detailsArray.push({ name: `Page ${parseInt(key) + 1}`, description: details[key] });
           }
         }
         
@@ -86,6 +102,7 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
           details = detailsArray;
           console.log("Converted page details object to array:", details);
         } else {
+          console.log("No valid details found in object");
           return [];
         }
       }
