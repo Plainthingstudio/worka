@@ -644,6 +644,7 @@ export const Tasks = () => {
         onAddComment={addComment} 
         onUploadAttachment={uploadAttachment}
         onAddSubtask={handleAddSubtask}
+        allTasks={tasks}
       />
 
       {/* Create Task Dialog */}
