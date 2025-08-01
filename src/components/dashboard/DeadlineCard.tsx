@@ -5,24 +5,45 @@ import { Calendar, Clock, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Project, ProjectType } from "@/types";
+import { TaskWithRelations } from "@/types/task";
 import { getProjectTypeBadgeVariant } from "@/components/projects/utils/projectItemUtils";
 
 interface DeadlineCardProps {
   projects: Project[];
+  tasks: TaskWithRelations[];
   getClientById: (clientId: string) => string;
 }
 
-const DeadlineCard: React.FC<DeadlineCardProps> = ({ projects, getClientById }) => {
+const DeadlineCard: React.FC<DeadlineCardProps> = ({ projects, tasks, getClientById }) => {
   // Get current date
   const now = new Date();
   const threeDaysFromNow = new Date();
   threeDaysFromNow.setDate(now.getDate() + 3);
 
   // Filter projects with deadlines in next 3 days
-  const upcomingDeadlines = projects.filter(project => {
+  const upcomingProjectDeadlines = projects.filter(project => {
     const deadline = new Date(project.deadline);
     return deadline >= now && deadline <= threeDaysFromNow;
-  }).sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+  }).map(project => ({
+    ...project,
+    type: 'project' as const,
+    deadline: new Date(project.deadline)
+  }));
+
+  // Filter tasks with due dates in next 3 days
+  const upcomingTaskDeadlines = tasks.filter(task => {
+    if (!task.due_date) return false;
+    const dueDate = new Date(task.due_date);
+    return dueDate >= now && dueDate <= threeDaysFromNow;
+  }).map(task => ({
+    ...task,
+    type: 'task' as const,
+    deadline: new Date(task.due_date!)
+  }));
+
+  // Combine and sort all deadlines
+  const upcomingDeadlines = [...upcomingProjectDeadlines, ...upcomingTaskDeadlines]
+    .sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
 
 
   const getDaysUntilDeadline = (deadline: Date) => {
@@ -53,24 +74,35 @@ const DeadlineCard: React.FC<DeadlineCardProps> = ({ projects, getClientById }) 
           </div>
         ) : (
           <div className="space-y-4">
-            {upcomingDeadlines.map((project) => {
-              const deadline = new Date(project.deadline);
+            {upcomingDeadlines.map((item) => {
+              const deadline = item.deadline;
               const daysUntil = getDaysUntilDeadline(deadline);
               
               return (
                 <div 
-                  key={project.id} 
+                  key={`${item.type}-${item.id}`} 
                   className="flex items-center justify-between p-3 rounded-lg border border-border bg-gray-50/50 hover:bg-gray-100/50 transition-colors"
                 >
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-medium text-sm">{project.name}</h4>
-                      <Badge variant={getProjectTypeBadgeVariant(project.projectType)}>
-                        {project.projectType}
-                      </Badge>
+                      <h4 className="font-medium text-sm">
+                        {item.type === 'project' ? item.name : item.title}
+                      </h4>
+                      {item.type === 'project' ? (
+                        <Badge variant={getProjectTypeBadgeVariant(item.projectType)}>
+                          {item.projectType}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs">
+                          Task
+                        </Badge>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Client: {getClientById(project.clientId)}
+                      {item.type === 'project' 
+                        ? `Client: ${getClientById(item.clientId)}`
+                        : `Priority: ${item.priority}`
+                      }
                     </p>
                   </div>
                   <div className="text-right space-y-1">

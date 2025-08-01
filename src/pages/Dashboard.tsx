@@ -18,12 +18,14 @@ import Sidebar from "@/components/Sidebar";
 import StatCard from "@/components/StatCard";
 import DeadlineCard from "@/components/dashboard/DeadlineCard";
 import { Client, Project, ProjectType } from "@/types";
+import { TaskWithRelations } from "@/types/task";
 import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [clients, setClients] = useState<Client[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
   const [stats, setStats] = useState({
     totalClients: 0,
     totalProjects: 0,
@@ -107,6 +109,45 @@ const Dashboard = () => {
           };
         });
         
+        // Fetch tasks
+        const { data: tasksData, error: tasksError } = await supabase
+          .from('tasks')
+          .select(`
+            *,
+            task_comments(*),
+            task_attachments(*),
+            task_activities(*)
+          `)
+          .order('created_at', { ascending: false });
+        
+        if (tasksError) {
+          console.error("Error fetching tasks:", tasksError);
+          throw tasksError;
+        }
+        
+        // Transform tasks data
+        const transformedTasks = tasksData.map((task: any) => ({
+          id: task.id,
+          project_id: task.project_id,
+          user_id: task.user_id,
+          title: task.title,
+          description: task.description,
+          status: task.status,
+          due_date: task.due_date ? new Date(task.due_date) : undefined,
+          priority: task.priority,
+          task_type: task.task_type,
+          assignees: task.assignees || [],
+          parent_task_id: task.parent_task_id,
+          completed_at: task.completed_at ? new Date(task.completed_at) : undefined,
+          created_at: new Date(task.created_at),
+          updated_at: new Date(task.updated_at),
+          brief_id: task.brief_id,
+          brief_type: task.brief_type,
+          comments: task.task_comments || [],
+          attachments: task.task_attachments || [],
+          activities: task.task_activities || []
+        }));
+        
         // Calculate stats
         const activeProjects = transformedProjects.filter(p => p.status === "In progress").length;
         const totalEarnings = transformedProjects.reduce((sum, project) => {
@@ -115,6 +156,7 @@ const Dashboard = () => {
         
         setClients(transformedClients);
         setProjects(transformedProjects);
+        setTasks(transformedTasks);
         setStats({
           totalClients: transformedClients.length,
           totalProjects: transformedProjects.length,
@@ -239,7 +281,7 @@ const Dashboard = () => {
 
           {/* Deadline Card */}
           <div className="mb-8">
-            <DeadlineCard projects={projects} getClientById={getClientById} />
+            <DeadlineCard projects={projects} tasks={tasks} getClientById={getClientById} />
           </div>
 
           {/* Recent Clients */}
