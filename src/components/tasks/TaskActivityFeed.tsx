@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { 
@@ -146,6 +147,8 @@ export const TaskActivityFeed = ({
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
+  console.log('TaskActivityFeed: Rendering activities:', sortedActivities.map(a => ({ id: a.id, user_name: a.user_name, user_id: a.user_id })));
+
   if (!showActivities) {
     // Only render the comment input section
     return (
@@ -231,51 +234,58 @@ export const TaskActivityFeed = ({
           ) : sortedActivities.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">No activities yet</div>
           ) : (
-            sortedActivities.map((activity) => (
-              <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="text-xs">
-                    {activity.user_name ? activity.user_name.charAt(0).toUpperCase() : 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 text-sm">
-                      {getActivityIcon(activity.activity_type)}
-                      <span className="font-medium">{activity.user_name || 'Unknown User'}</span>
+            sortedActivities.map((activity) => {
+              const displayName = activity.user_name || 'Unknown User';
+              const avatarInitial = displayName.charAt(0).toUpperCase();
+              
+              console.log(`Rendering activity ${activity.id} by user ${activity.user_id} with name: "${displayName}"`);
+              
+              return (
+                <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="text-xs">
+                      {avatarInitial}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 text-sm">
+                        {getActivityIcon(activity.activity_type)}
+                        <span className="font-medium">{displayName}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {format(new Date(activity.created_at), 'MMM dd, yyyy HH:mm')}
+                      </span>
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(activity.created_at), 'MMM dd, yyyy HH:mm')}
-                    </span>
+                    
+                    <div className="text-sm">{getActivityDescription(activity)}</div>
+                    
+                    {/* Attachments */}
+                    {activity.attachments && activity.attachments.length > 0 && (
+                      <div className="space-y-2">
+                        {activity.attachments.map((attachment: any, index: number) => (
+                          <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
+                            <Paperclip className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">{attachment.file_name}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 ml-auto"
+                              asChild
+                            >
+                              <a href={attachment.file_url} target="_blank" rel="noopener noreferrer">
+                                <Download className="h-3 w-3" />
+                              </a>
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  
-                  <div className="text-sm">{getActivityDescription(activity)}</div>
-                  
-                  {/* Attachments */}
-                  {activity.attachments && activity.attachments.length > 0 && (
-                    <div className="space-y-2">
-                      {activity.attachments.map((attachment: any, index: number) => (
-                        <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
-                          <Paperclip className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{attachment.file_name}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0 ml-auto"
-                            asChild
-                          >
-                            <a href={attachment.file_url} target="_blank" rel="noopener noreferrer">
-                              <Download className="h-3 w-3" />
-                            </a>
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>

@@ -26,6 +26,8 @@ export const useTaskActivities = (taskId: string) => {
     
     try {
       setIsLoading(true);
+      console.log('Fetching activities for task:', taskId);
+      
       // First fetch activities
       const { data: activitiesData, error } = await supabase
         .from('task_activities')
@@ -44,12 +46,16 @@ export const useTaskActivities = (taskId: string) => {
       }
 
       if (!activitiesData || activitiesData.length === 0) {
+        console.log('No activities found for task:', taskId);
         setActivities([]);
         return;
       }
 
+      console.log('Raw activities data:', activitiesData);
+
       // Get unique user IDs
       const userIds = [...new Set(activitiesData.map(activity => activity.user_id))];
+      console.log('Unique user IDs from activities:', userIds);
       
       // Fetch user profiles
       const { data: profilesData, error: profilesError } = await supabase
@@ -57,24 +63,32 @@ export const useTaskActivities = (taskId: string) => {
         .select('id, full_name, email')
         .in('id', userIds);
 
+      console.log('Profiles query result:', { profilesData, profilesError });
+
       // Create a map of user profiles
       const profilesMap = new Map();
       if (profilesData) {
         profilesData.forEach(profile => {
+          console.log('Adding profile to map:', profile);
           profilesMap.set(profile.id, profile);
         });
       }
 
+      console.log('Final profiles map:', Object.fromEntries(profilesMap));
+
       const transformedActivities: TaskActivity[] = activitiesData.map(activity => {
         const profile = profilesMap.get(activity.user_id);
+        console.log(`Processing activity by user ${activity.user_id}:`, { activity, profile });
         
         // Try full_name first, then email, then fallback
         let displayName = 'Unknown User';
         if (profile?.full_name && profile.full_name.trim()) {
-          displayName = profile.full_name;
+          displayName = profile.full_name.trim();
         } else if (profile?.email && profile.email.trim()) {
           displayName = profile.email.split('@')[0]; // Use email username part
         }
+        
+        console.log(`User ${activity.user_id} will be displayed as: "${displayName}"`);
         
         return {
           ...activity,
@@ -86,6 +100,7 @@ export const useTaskActivities = (taskId: string) => {
         };
       });
 
+      console.log('Final transformed activities:', transformedActivities);
       setActivities(transformedActivities);
     } catch (error) {
       console.error('Error fetching activities:', error);
