@@ -1,6 +1,6 @@
 
-import jsPDF from "jspdf";
-import 'jspdf-autotable';
+import { jsPDF } from "jspdf";
+import autoTable from 'jspdf-autotable';
 import { format } from "date-fns";
 import { addLogoToDocument } from "./pdfHelpers";
 import { 
@@ -10,13 +10,6 @@ import {
   addPdfTitle,
   addMultiParagraphField
 } from "./pdfUtils";
-
-// Declare the autoTable plugin for TypeScript
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
 
 export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> => {
   try {
@@ -244,7 +237,7 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
       console.log("Table data for page details:", tableData);
       
       // Add the table to the document using autoTable
-      doc.autoTable({
+      autoTable(doc, {
         head: [tableHeaders],
         body: tableData,
         startY: yPosition,
