@@ -48,14 +48,20 @@ export const useTaskActivities = (taskId: string) => {
         return;
       }
 
+      console.log('Fetched activities:', activitiesData);
+
       // Get unique user IDs
       const userIds = [...new Set(activitiesData.map(activity => activity.user_id))];
+      console.log('User IDs to fetch profiles for:', userIds);
       
       // Fetch user profiles
-      const { data: profilesData } = await supabase
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('id, full_name, email')
         .in('id', userIds);
+
+      console.log('Fetched profiles:', profilesData);
+      console.log('Profiles error:', profilesError);
 
       // Create a map of user profiles
       const profilesMap = new Map();
@@ -65,18 +71,31 @@ export const useTaskActivities = (taskId: string) => {
         });
       }
 
+      console.log('Profiles map:', profilesMap);
+
       const transformedActivities: TaskActivity[] = activitiesData.map(activity => {
         const profile = profilesMap.get(activity.user_id);
+        console.log(`User ${activity.user_id} profile:`, profile);
+        
+        // Try full_name first, then email, then fallback
+        let displayName = 'Unknown User';
+        if (profile?.full_name && profile.full_name.trim()) {
+          displayName = profile.full_name;
+        } else if (profile?.email && profile.email.trim()) {
+          displayName = profile.email.split('@')[0]; // Use email username part
+        }
+        
         return {
           ...activity,
           activity_type: activity.activity_type as TaskActivity['activity_type'],
           attachments: Array.isArray(activity.attachments) ? activity.attachments : [],
           created_at: new Date(activity.created_at),
-          user_name: profile?.full_name || 'Unknown User',
+          user_name: displayName,
           user_email: profile?.email || '',
         };
       });
 
+      console.log('Transformed activities:', transformedActivities);
       setActivities(transformedActivities);
     } catch (error) {
       console.error('Error fetching activities:', error);
