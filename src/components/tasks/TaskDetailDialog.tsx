@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
+import { useUserRole } from '@/hooks/useUserRole';
 import {
   Dialog,
   DialogContent,
@@ -90,6 +91,7 @@ export const TaskDetailDialog = ({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { project } = useTaskProject(task.project_id);
+  const { canViewProjects } = useUserRole();
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -195,7 +197,7 @@ export const TaskDetailDialog = ({
                 {task.title}
               </DialogTitle>
               <div className="flex items-center gap-2">
-                {task.project_id && (
+                {task.project_id && canViewProjects && (
                   <Button 
                     variant="outline" 
                     size="sm"

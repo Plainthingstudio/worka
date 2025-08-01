@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
+import { useUserRole } from '@/hooks/useUserRole';
 import {
   Form,
   FormControl,
@@ -103,6 +104,7 @@ export const TaskDetailSidebar = ({
   const navigate = useNavigate();
   const { project } = useTaskProject(task?.project_id || null);
   const { activities, isLoading: activitiesLoading, addActivity } = useTaskActivities(task?.id || '');
+  const { canViewProjects } = useUserRole();
 
   useEffect(() => {
     if (isOpen) {
@@ -385,7 +387,7 @@ export const TaskDetailSidebar = ({
             </div>
             
             {/* See Project Button */}
-            {task.project_id && (
+            {task.project_id && canViewProjects && (
               <Button 
                 variant="outline" 
                 size="sm"
