@@ -1,6 +1,6 @@
 
 import jsPDF from "jspdf";
-import autoTable from 'jspdf-autotable';
+import 'jspdf-autotable';
 import { format } from "date-fns";
 import { addLogoToDocument } from "./pdfHelpers";
 import { 
@@ -8,9 +8,15 @@ import {
   addField, 
   checkPageOverflow,
   addPdfTitle,
-  addMultiParagraphField,
-  addTableToDocument
+  addMultiParagraphField
 } from "./pdfUtils";
+
+// Declare the autoTable plugin for TypeScript
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 
 export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> => {
   try {
@@ -237,8 +243,29 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
       
       console.log("Table data for page details:", tableData);
       
-      // Add the table to the document
-      yPosition = addTableToDocument(doc, tableHeaders, tableData, yPosition);
+      // Add the table to the document using autoTable
+      doc.autoTable({
+        head: [tableHeaders],
+        body: tableData,
+        startY: yPosition,
+        margin: { left: 20, right: 20 },
+        styles: {
+          fontSize: 10,
+          cellPadding: 4,
+        },
+        headStyles: {
+          fillColor: [41, 128, 185],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          0: { cellWidth: 60 },
+          1: { cellWidth: 110 }
+        }
+      });
+      
+      // Update yPosition to continue after the table
+      yPosition = (doc as any).lastAutoTable.finalY + 10;
     } else {
       console.warn("No page details found or they are in an unexpected format");
       yPosition = addField(doc, "Page Details", "No specific page details provided", yPosition);
