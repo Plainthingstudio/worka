@@ -106,9 +106,26 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     
     // Project Information Section
     yPosition = addSectionTitle(doc, "Project Information", yPosition);
+    yPosition = addMultiParagraphField(doc, "Project Description", getValue("projectDescription", "project_description"), yPosition);
+    
+    // Format deadline for PDF
+    const deadlineValue = getValue("completionDeadline", "completion_deadline");
+    let formattedDeadline = "Not provided";
+    if (deadlineValue && deadlineValue !== "Not provided") {
+      try {
+        const deadlineDate = new Date(deadlineValue);
+        if (!isNaN(deadlineDate.getTime())) {
+          formattedDeadline = format(deadlineDate, "MMMM d, yyyy");
+        }
+      } catch (e) {
+        console.error("Error formatting deadline:", e);
+      }
+    }
+    yPosition = addField(doc, "Deadline Project", formattedDeadline, yPosition);
+    
     yPosition = addField(doc, "Project Type", getValue("projectType", "project_type"), yPosition);
     yPosition = addField(doc, "Project Size", getValue("projectSize", "project_size"), yPosition);
-    yPosition = addField(doc, "Website Type", getValue("websiteTypeInterest", "website_type_interest"), yPosition);
+    yPosition = addField(doc, "Website Type", getValue("websiteType", "website_type_interest"), yPosition);
     yPosition = addField(doc, "Current Website", getValue("currentWebsite", "current_website"), yPosition);
     yPosition = addMultiParagraphField(doc, "Website Purpose", getValue("websitePurpose", "website_purpose"), yPosition);
     
@@ -116,37 +133,7 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     yPosition = addSectionTitle(doc, "Company & Target Audience", yPosition);
     yPosition = addMultiParagraphField(doc, "About Company", getValue("aboutCompany", "about_company"), yPosition);
     yPosition = addMultiParagraphField(doc, "Target Audience", getValue("targetAudience", "target_audience"), yPosition);
-    
-    // Brand & Design
-    yPosition = addSectionTitle(doc, "Brand & Design", yPosition);
-    yPosition = addField(doc, "Existing Brand Assets", getValue("existingBrandAssets", "existing_brand_assets"), yPosition);
-    yPosition = addField(doc, "Brand Guidelines", getValue("hasBrandGuidelines", "has_brand_guidelines"), yPosition);
-    if (getValue("hasBrandGuidelines", "has_brand_guidelines") === "Yes") {
-      yPosition = addMultiParagraphField(doc, "Guidelines Details", getValue("brandGuidelinesDetails", "brand_guidelines_details"), yPosition);
-    }
-    yPosition = addField(doc, "Wireframe Status", getValue("hasWireframe", "has_wireframe"), yPosition);
-    if (getValue("hasWireframe", "has_wireframe") === "Yes") {
-      yPosition = addMultiParagraphField(doc, "Wireframe Details", getValue("wireframeDetails", "wireframe_details"), yPosition);
-    }
-    
-    // Design Preferences
-    yPosition = addSectionTitle(doc, "Design Preferences", yPosition);
-    yPosition = addField(doc, "General Style", getValue("generalStyle", "general_style"), yPosition);
-    yPosition = addField(doc, "Color Preferences", getValue("colorPreferences", "color_preferences"), yPosition);
-    yPosition = addField(doc, "Font Preferences", getValue("fontPreferences", "font_preferences"), yPosition);
-    yPosition = addMultiParagraphField(doc, "Style Preferences", getValue("stylePreferences", "style_preferences"), yPosition);
-    
-    // References Section
-    const references = [];
-    if (getValue("reference1", "reference1") !== "Not provided") references.push(getValue("reference1", "reference1"));
-    if (getValue("reference2", "reference2") !== "Not provided") references.push(getValue("reference2", "reference2"));
-    if (getValue("reference3", "reference3") !== "Not provided") references.push(getValue("reference3", "reference3"));
-    if (getValue("reference4", "reference4") !== "Not provided") references.push(getValue("reference4", "reference4"));
-    
-    if (references.length > 0) {
-      yPosition = checkPageOverflow(doc, yPosition + 8);
-      yPosition = addField(doc, "Design References", references.map((ref, idx) => `${idx + 1}. ${ref}`).join('\n'), yPosition);
-    }
+    yPosition = addField(doc, "Industry", getValue("industry", "industry"), yPosition);
     
     // Competitors Section
     const competitors = [];
@@ -159,6 +146,35 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
       yPosition = checkPageOverflow(doc, yPosition + 8);
       yPosition = addField(doc, "Competitors", competitors.map((comp, idx) => `${idx + 1}. ${comp}`).join('\n'), yPosition);
     }
+    
+    // Design Preferences
+    yPosition = addSectionTitle(doc, "Design Preferences", yPosition);
+    yPosition = addMultiParagraphField(doc, "General Style", getValue("generalStyle", "general_style"), yPosition);
+    yPosition = addField(doc, "Color Preferences", getValue("colorPreferences", "color_preferences"), yPosition);
+    
+    // References Section
+    const references = [];
+    if (getValue("reference1", "reference1") !== "Not provided") references.push(getValue("reference1", "reference1"));
+    if (getValue("reference2", "reference2") !== "Not provided") references.push(getValue("reference2", "reference2"));
+    if (getValue("reference3", "reference3") !== "Not provided") references.push(getValue("reference3", "reference3"));
+    if (getValue("reference4", "reference4") !== "Not provided") references.push(getValue("reference4", "reference4"));
+    
+    if (references.length > 0) {
+      yPosition = checkPageOverflow(doc, yPosition + 8);
+      yPosition = addField(doc, "References", references.map((ref, idx) => `${idx + 1}. ${ref}`).join('\n'), yPosition);
+    }
+    
+    // Brand & Design
+    yPosition = addSectionTitle(doc, "Brand & Design", yPosition);
+    yPosition = addField(doc, "Existing Brand Assets", getValue("existingBrandAssets", "existing_brand_assets"), yPosition);
+    if (getValue("brandAssetsDetails", "brand_guidelines_details") !== "Not provided") {
+      yPosition = addMultiParagraphField(doc, "Brand Assets Details", getValue("brandAssetsDetails", "brand_guidelines_details"), yPosition);
+    }
+    yPosition = addField(doc, "Wireframe", getValue("hasWireframe", "has_wireframe"), yPosition);
+    if (getValue("wireframeDetails", "wireframe_details") !== "Not provided") {
+      yPosition = addMultiParagraphField(doc, "Wireframe Details", getValue("wireframeDetails", "wireframe_details"), yPosition);
+    }
+    
     
     // Page Information Section
     yPosition = addSectionTitle(doc, "Page Information", yPosition);
@@ -196,25 +212,9 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
       yPosition = addField(doc, "Page Details", "No specific page details provided", yPosition);
     }
     
-    // Project Delivery
-    yPosition = addSectionTitle(doc, "Project Delivery", yPosition);
+    // Add website content and development service to page information
     yPosition = addField(doc, "Website Content", getValue("websiteContent", "website_content"), yPosition);
     yPosition = addField(doc, "Development Service", getValue("developmentService", "development_service"), yPosition);
-    
-    // Format the date properly for the deadline
-    const deadlineValue = getValue("completionDeadline", "completion_deadline");
-    let formattedDeadline = "Not provided";
-    if (deadlineValue && deadlineValue !== "Not provided") {
-      try {
-        const deadlineDate = new Date(deadlineValue);
-        if (!isNaN(deadlineDate.getTime())) {
-          formattedDeadline = format(deadlineDate, "MMMM d, yyyy");
-        }
-      } catch (e) {
-        console.error("Error formatting deadline:", e);
-      }
-    }
-    yPosition = addField(doc, "Completion Deadline", formattedDeadline, yPosition);
     
     // Save the PDF
     const fileName = `UI_Design_Brief_${getValue("name", "name").replace(/\s+/g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.pdf`;

@@ -1,9 +1,12 @@
-
 import React from "react";
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Form,
   FormControl,
@@ -19,22 +22,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface UIStepOneProps {
   onNext: () => void;
 }
 
 const UIStepOne = ({ onNext }: UIStepOneProps) => {
-  const { control, register, formState: { errors }, trigger } = useFormContext();
+  const { control, trigger } = useFormContext();
 
   const handleNext = async () => {
     const isValid = await trigger([
       "name", 
       "email", 
       "companyName", 
-      "aboutCompany",
+      "projectDescription",
+      "completionDeadline",
       "projectType",
-      "projectSize"
+      "projectSize",
+      "websiteType",
+      "currentWebsite",
+      "websitePurpose"
     ]);
     
     if (isValid) {
@@ -43,36 +55,51 @@ const UIStepOne = ({ onNext }: UIStepOneProps) => {
   };
 
   const projectTypes = [
-    "Website Redesign",
-    "New Website",
-    "Web Application",
-    "Mobile App UI",
-    "E-commerce Platform",
-    "Dashboard UI",
-    "Landing Page",
-    "Design System",
-    "Other"
+    "Redesign website",
+    "New website", 
+    "Landing page",
+    "Web app",
+    "Mobile app",
+    "E-commerce",
+    "Dashboard",
+    "Design system"
   ];
 
   const projectSizes = [
-    "Small (1-5 screens)",
-    "Medium (6-15 screens)",
-    "Large (16-30 screens)",
-    "Enterprise (30+ screens)"
+    "Small (1-5 screen/page)",
+    "Medium (6-15 screen/page)",
+    "Large (15-30 screen/page)",
+    "Enterprise (30+ screen)"
+  ];
+
+  const websiteTypes = [
+    "Corporate Website",
+    "E-commerce Store",
+    "Blog/Magazine",
+    "Portfolio",
+    "Landing Page",
+    "Web Application",
+    "Mobile App",
+    "Educational Website",
+    "Crypto",
+    "Web3",
+    "Other"
   ];
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-medium">Contact & Company Information</h2>
-      
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
+    <div className="space-y-8">
+      {/* Client Information */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Client Information</h2>
+        
+        <div className="grid gap-4 md:grid-cols-3">
           <FormField
             control={control}
             name="name"
+            rules={{ required: "Name is required" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Your Name*</FormLabel>
+                <FormLabel>Name*</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter your name" {...field} />
                 </FormControl>
@@ -80,15 +107,14 @@ const UIStepOne = ({ onNext }: UIStepOneProps) => {
               </FormItem>
             )}
           />
-        </div>
-        
-        <div className="space-y-2">
+          
           <FormField
             control={control}
             name="email"
+            rules={{ required: "Email is required" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Your Email*</FormLabel>
+                <FormLabel>Email*</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter your email" type="email" {...field} />
                 </FormControl>
@@ -96,35 +122,38 @@ const UIStepOne = ({ onNext }: UIStepOneProps) => {
               </FormItem>
             )}
           />
+
+          <FormField
+            control={control}
+            name="companyName"
+            rules={{ required: "Company name is required" }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Company*</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter company name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
       </div>
-      
-      <div className="space-y-2">
+
+      {/* Project Information */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Project Information</h2>
+        
         <FormField
           control={control}
-          name="companyName"
+          name="projectDescription"
+          rules={{ required: "Project description is required" }}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Company Name*</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter your company name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <FormField
-          control={control}
-          name="aboutCompany"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>About Your Company*</FormLabel>
+              <FormLabel>Project Description*</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Briefly describe your company, product, or service" 
+                  placeholder="Describe your project in detail"
                   className="min-h-[120px]"
                   {...field} 
                 />
@@ -133,13 +162,54 @@ const UIStepOne = ({ onNext }: UIStepOneProps) => {
             </FormItem>
           )}
         />
-      </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
+        <FormField
+          control={control}
+          name="completionDeadline"
+          rules={{ required: "Deadline is required" }}
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Deadline Project*</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-[240px] pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(new Date(field.value), "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value ? new Date(field.value) : undefined}
+                    onSelect={(date) => field.onChange(date?.toISOString())}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid gap-4 md:grid-cols-3">
           <FormField
             control={control}
             name="projectType"
+            rules={{ required: "Project type is required" }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Project Type*</FormLabel>
@@ -161,12 +231,11 @@ const UIStepOne = ({ onNext }: UIStepOneProps) => {
               </FormItem>
             )}
           />
-        </div>
-        
-        <div className="space-y-2">
+          
           <FormField
             control={control}
             name="projectSize"
+            rules={{ required: "Project size is required" }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Project Size*</FormLabel>
@@ -188,16 +257,40 @@ const UIStepOne = ({ onNext }: UIStepOneProps) => {
               </FormItem>
             )}
           />
+
+          <FormField
+            control={control}
+            name="websiteType"
+            rules={{ required: "Website type is required" }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Website Type*</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select website type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {websiteTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-      </div>
-      
-      <div className="space-y-2">
+
         <FormField
           control={control}
           name="currentWebsite"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Current Website URL (if any)</FormLabel>
+              <FormLabel>Current Website</FormLabel>
               <FormControl>
                 <Input placeholder="https://example.com" {...field} />
               </FormControl>
@@ -205,27 +298,25 @@ const UIStepOne = ({ onNext }: UIStepOneProps) => {
             </FormItem>
           )}
         />
-      </div>
-      
-      <h3 className="text-lg font-medium">Competitor Websites/Apps</h3>
-      <div className="grid gap-4 md:grid-cols-2">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="space-y-2">
-            <FormField
-              control={control}
-              name={`competitor${i}`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Competitor {i}</FormLabel>
-                  <FormControl>
-                    <Input placeholder={`https://competitor${i}.com`} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        ))}
+
+        <FormField
+          control={control}
+          name="websitePurpose"
+          rules={{ required: "Website purpose is required" }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Website Purpose*</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="What is the main purpose of your website?"
+                  className="min-h-[120px]"
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
       
       <div className="flex justify-end">
