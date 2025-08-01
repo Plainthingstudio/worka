@@ -147,8 +147,6 @@ export const TaskActivityFeed = ({
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
-  console.log('TaskActivityFeed: Rendering activities:', sortedActivities.map(a => ({ id: a.id, user_name: a.user_name, user_id: a.user_id })));
-
   if (!showActivities) {
     // Only render the comment input section
     return (
@@ -237,8 +235,6 @@ export const TaskActivityFeed = ({
             sortedActivities.map((activity) => {
               const displayName = activity.user_name || 'Unknown User';
               const avatarInitial = displayName.charAt(0).toUpperCase();
-              
-              console.log(`Rendering activity ${activity.id} by user ${activity.user_id} with name: "${displayName}"`);
               
               return (
                 <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">

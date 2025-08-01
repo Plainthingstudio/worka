@@ -63,32 +63,24 @@ export const useTaskActivities = (taskId: string) => {
         .select('id, full_name, email')
         .in('id', userIds);
 
-      console.log('Profiles query result:', { profilesData, profilesError });
-
       // Create a map of user profiles
       const profilesMap = new Map();
       if (profilesData) {
         profilesData.forEach(profile => {
-          console.log('Adding profile to map:', profile);
           profilesMap.set(profile.id, profile);
         });
       }
 
-      console.log('Final profiles map:', Object.fromEntries(profilesMap));
-
       const transformedActivities: TaskActivity[] = activitiesData.map(activity => {
         const profile = profilesMap.get(activity.user_id);
-        console.log(`Processing activity by user ${activity.user_id}:`, { activity, profile });
         
-        // Try full_name first, then email, then fallback
+        // Try full_name first, then email username, then fallback
         let displayName = 'Unknown User';
         if (profile?.full_name && profile.full_name.trim()) {
           displayName = profile.full_name.trim();
         } else if (profile?.email && profile.email.trim()) {
-          displayName = profile.email.split('@')[0]; // Use email username part
+          displayName = profile.email.split('@')[0];
         }
-        
-        console.log(`User ${activity.user_id} will be displayed as: "${displayName}"`);
         
         return {
           ...activity,
@@ -99,8 +91,6 @@ export const useTaskActivities = (taskId: string) => {
           user_email: profile?.email || '',
         };
       });
-
-      console.log('Final transformed activities:', transformedActivities);
       setActivities(transformedActivities);
     } catch (error) {
       console.error('Error fetching activities:', error);
