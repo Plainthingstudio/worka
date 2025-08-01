@@ -196,6 +196,7 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     // Process page details into a clean array
     const pageDetails = processPageDetails();
     console.log("Processed page details ready for PDF:", pageDetails);
+    console.log("Original brief data for page details:", briefData.pageDetails, briefData.page_details);
     
     // Add page details table if available
     if (pageDetails && pageDetails.length > 0) {
