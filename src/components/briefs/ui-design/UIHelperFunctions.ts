@@ -46,6 +46,12 @@ export const formatDate = (dateValue: any): string => {
 };
 
 
+export const getPageDetails = (briefData: any) => {
+  const details = getValue(briefData, "pageDetails", "page_details", []);
+  return Array.isArray(details) ? details : 
+         details && typeof details === 'object' ? [details] : [];
+};
+
 // Helper to check if any competitor is provided
 export const hasCompetitors = (briefData: any): boolean => {
   return Boolean(

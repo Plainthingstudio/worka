@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getValue, formatDate } from "./ui-design/UIHelperFunctions";
+import { getValue, formatDate, getPageDetails } from "./ui-design/UIHelperFunctions";
 
 interface UIDesignBriefDetailsProps {
   briefDetails: any;
@@ -9,6 +9,8 @@ interface UIDesignBriefDetailsProps {
 
 const UIDesignBriefDetails: React.FC<UIDesignBriefDetailsProps> = ({ briefDetails }) => {
   console.log("UI design brief details:", briefDetails);
+
+  const pageDetails = getPageDetails(briefDetails);
 
   return (
     <div className="space-y-6">
@@ -161,12 +163,29 @@ const UIDesignBriefDetails: React.FC<UIDesignBriefDetailsProps> = ({ briefDetail
         </CardContent>
       </Card>
 
-      {/* Final Details */}
+      {/* Page Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Final Details</CardTitle>
+          <CardTitle>Page Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div>
+            <span className="font-medium">Number of Pages:</span>
+            <p>{getValue(briefDetails, "pageCount", "page_count", 1)}</p>
+          </div>
+          {pageDetails.length > 0 && (
+            <div>
+              <span className="font-medium">Page Details:</span>
+              <div className="mt-2 space-y-3">
+                {pageDetails.map((page: any, index: number) => (
+                  <div key={index} className="p-3 border rounded-lg bg-muted/50">
+                    <h4 className="font-medium">Page {index + 1}: {page.name || "Unnamed"}</h4>
+                    <p className="text-sm text-muted-foreground mt-1">{page.description || "No description"}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div>
             <span className="font-medium">Website Content:</span>
             <p>{getValue(briefDetails, "websiteContent", "website_content")}</p>

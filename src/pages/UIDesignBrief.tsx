@@ -72,6 +72,8 @@ const UIDesignBrief = () => {
       brandAssetsDetails: "",
       hasWireframe: "",
       wireframeDetails: "",
+      pageCount: 1,
+      pageDetails: [{ name: "", description: "" }],
       websiteContent: "",
       developmentService: "",
     },
@@ -158,6 +160,8 @@ const UIDesignBrief = () => {
         brand_guidelines_details: formData.brandAssetsDetails,
         has_wireframe: formData.hasWireframe,
         wireframe_details: formData.wireframeDetails,
+        page_count: formData.pageCount,
+        page_details: formData.pageDetails,
         website_content: formData.websiteContent,
         development_service: formData.developmentService,
         submission_date: new Date().toISOString()
