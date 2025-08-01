@@ -91,7 +91,7 @@ export const TaskDetailDialog = ({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { project } = useTaskProject(task.project_id);
-  const { userRole } = useUserRole();
+  const { userRole, isLoading: roleLoading } = useUserRole();
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -197,7 +197,7 @@ export const TaskDetailDialog = ({
                 {task.title}
               </DialogTitle>
               <div className="flex items-center gap-2">
-                {task.project_id && userRole !== 'team' && (
+                {task.project_id && !roleLoading && userRole !== 'team' && (
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -208,7 +208,7 @@ export const TaskDetailDialog = ({
                     {project ? `Go to ${project.name}` : 'See Project'}
                   </Button>
                 )}
-                {userRole !== 'team' && (
+                {!roleLoading && userRole !== 'team' && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm">

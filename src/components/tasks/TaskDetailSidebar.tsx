@@ -104,7 +104,7 @@ export const TaskDetailSidebar = ({
   const navigate = useNavigate();
   const { project } = useTaskProject(task?.project_id || null);
   const { activities, isLoading: activitiesLoading, addActivity } = useTaskActivities(task?.id || '');
-  const { userRole } = useUserRole();
+  const { userRole, isLoading: roleLoading } = useUserRole();
 
   useEffect(() => {
     if (isOpen) {
@@ -362,7 +362,7 @@ export const TaskDetailSidebar = ({
                  )}
               </div>
               <div className="flex items-center gap-2">
-                {userRole !== 'team' && (
+                {!roleLoading && userRole !== 'team' && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm">
@@ -391,7 +391,7 @@ export const TaskDetailSidebar = ({
             </div>
             
             {/* See Project Button */}
-            {task.project_id && userRole !== 'team' && (
+            {task.project_id && !roleLoading && userRole !== 'team' && (
               <Button 
                 variant="outline" 
                 size="sm"
