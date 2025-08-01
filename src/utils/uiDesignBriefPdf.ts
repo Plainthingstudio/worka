@@ -212,6 +212,7 @@ export const generateUIDesignBriefPDF = async (briefData: any): Promise<void> =>
     yPosition = addField(doc, "Number of Pages", getValue("pageCount", "page_count"), yPosition);
     
     // Process page details into a clean array
+    console.log("Full briefData being passed to PDF generator:", JSON.stringify(briefData, null, 2));
     const pageDetails = processPageDetails();
     console.log("Processed page details ready for PDF:", pageDetails);
     
