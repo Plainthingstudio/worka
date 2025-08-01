@@ -1,6 +1,6 @@
 
 import jsPDF from "jspdf";
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 // Define consistent page margins for all sides
 const PAGE_MARGINS = {

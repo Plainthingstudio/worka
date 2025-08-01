@@ -1,6 +1,6 @@
 
-import { jsPDF } from "jspdf";
-import 'jspdf-autotable';
+import jsPDF from "jspdf";
+import autoTable from 'jspdf-autotable';
 import { format } from "date-fns";
 import { addLogoToDocument } from "./pdfHelpers";
 import { 
