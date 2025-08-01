@@ -104,7 +104,7 @@ export const TaskDetailSidebar = ({
   const navigate = useNavigate();
   const { project } = useTaskProject(task?.project_id || null);
   const { activities, isLoading: activitiesLoading, addActivity } = useTaskActivities(task?.id || '');
-  const { canViewProjects } = useUserRole();
+  const { userRole } = useUserRole();
 
   useEffect(() => {
     if (isOpen) {
@@ -387,7 +387,7 @@ export const TaskDetailSidebar = ({
             </div>
             
             {/* See Project Button */}
-            {task.project_id && canViewProjects && (
+            {task.project_id && userRole !== 'team' && (
               <Button 
                 variant="outline" 
                 size="sm"

@@ -91,7 +91,7 @@ export const TaskDetailDialog = ({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { project } = useTaskProject(task.project_id);
-  const { canViewProjects } = useUserRole();
+  const { userRole } = useUserRole();
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -197,7 +197,7 @@ export const TaskDetailDialog = ({
                 {task.title}
               </DialogTitle>
               <div className="flex items-center gap-2">
-                {task.project_id && canViewProjects && (
+                {task.project_id && userRole !== 'team' && (
                   <Button 
                     variant="outline" 
                     size="sm"
