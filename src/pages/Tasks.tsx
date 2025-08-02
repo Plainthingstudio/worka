@@ -168,7 +168,7 @@ export const Tasks = () => {
         return;
       }
       console.log('Fetched tasks:', tasksData);
-      
+
       // Transform tasks and organize subtasks
       const allTasks: TaskWithRelations[] = tasksData.map(task => ({
         ...task,
@@ -194,7 +194,6 @@ export const Tasks = () => {
       // Organize subtasks under their parent tasks
       const taskMap = new Map<string, TaskWithRelations>();
       allTasks.forEach(task => taskMap.set(task.id, task));
-
       allTasks.forEach(task => {
         if (task.parent_task_id && taskMap.has(task.parent_task_id)) {
           const parentTask = taskMap.get(task.parent_task_id)!;
@@ -410,20 +409,23 @@ export const Tasks = () => {
     setNewTaskStatus(status);
     setIsCreateDialogOpen(true);
   };
-
   const handleCreateSubtask = async (subtaskData: any) => {
     try {
       // Get user first
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        },
+        error: userError
+      } = await supabase.auth.getUser();
       if (userError || !user) {
         toast({
           title: "Error",
           description: "You must be logged in to create subtasks",
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
-
       const insertData = {
         title: subtaskData.title || '',
         description: subtaskData.description,
@@ -434,34 +436,27 @@ export const Tasks = () => {
         due_date: subtaskData.due_date,
         parent_task_id: subtaskData.parent_task_id,
         project_id: selectedProject === 'all' ? null : selectedProject,
-        user_id: user.id,
+        user_id: user.id
       };
-
       console.log('Creating subtask with data:', insertData);
-
-      const { data, error } = await supabase
-        .from('tasks')
-        .insert([insertData])
-        .select()
-        .single();
-
+      const {
+        data,
+        error
+      } = await supabase.from('tasks').insert([insertData]).select().single();
       if (error) {
         console.error('Supabase error creating subtask:', error);
         toast({
           title: "Error",
           description: `Failed to create subtask: ${error.message}`,
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
-
       console.log('Subtask created successfully:', data);
-      
       toast({
         title: "Success",
-        description: "Subtask created successfully",
+        description: "Subtask created successfully"
       });
-
       await fetchAllTasks();
       setIsSubtaskDialogOpen(false);
     } catch (error) {
@@ -469,11 +464,10 @@ export const Tasks = () => {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to create subtask",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleAddSubtask = (taskId: string) => {
     setParentTaskId(taskId);
     setIsSubtaskDialogOpen(true);
@@ -500,7 +494,6 @@ export const Tasks = () => {
         setSelectedTask(subtask);
       }
     };
-
     window.addEventListener('openTaskDetails', handleOpenTaskDetails as EventListener);
     return () => {
       window.removeEventListener('openTaskDetails', handleOpenTaskDetails as EventListener);
@@ -531,7 +524,7 @@ export const Tasks = () => {
         <main className="p-6 py-0">
           <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6 sm:py-6 -mx-6 mb-6 py-[8px]">
+            <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6 sm:py-6 -mx-6  py-[8px]">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                   <h1 className="text-xl sm:text-2xl font-semibold">Internal Tasks</h1>
@@ -635,29 +628,13 @@ export const Tasks = () => {
       </div>
 
       {/* Task Detail Sidebar */}
-      <TaskDetailSidebar 
-        task={selectedTask} 
-        isOpen={!!selectedTask} 
-        onClose={() => setSelectedTask(null)} 
-        onUpdateTask={updateTask} 
-        onDeleteTask={deleteTask} 
-        onAddComment={addComment} 
-        onUploadAttachment={uploadAttachment}
-        onAddSubtask={handleAddSubtask}
-        allTasks={tasks}
-      />
+      <TaskDetailSidebar task={selectedTask} isOpen={!!selectedTask} onClose={() => setSelectedTask(null)} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddSubtask={handleAddSubtask} allTasks={tasks} />
 
       {/* Create Task Dialog */}
       <TaskDialog isOpen={isCreateDialogOpen} onClose={() => setIsCreateDialogOpen(false)} onSubmit={handleCreateTask} title="Create New Task" />
 
       {/* Create Subtask Dialog */}
-      <SubtaskDialog 
-        isOpen={isSubtaskDialogOpen} 
-        onClose={() => setIsSubtaskDialogOpen(false)} 
-        onSubmit={handleCreateSubtask} 
-        parentTaskId={parentTaskId}
-        title="Create New Subtask"
-      />
+      <SubtaskDialog isOpen={isSubtaskDialogOpen} onClose={() => setIsSubtaskDialogOpen(false)} onSubmit={handleCreateSubtask} parentTaskId={parentTaskId} title="Create New Subtask" />
     </div>;
 };
 export default Tasks;
