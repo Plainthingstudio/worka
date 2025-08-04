@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Flag, Calendar, User, MessageSquare, Paperclip, MoreHorizontal, Plus, MoreVertical } from 'lucide-react';
+import { Flag, Calendar, User, MessageSquare, Paperclip, MoreHorizontal, Plus, MoreVertical, GripVertical } from 'lucide-react';
 import { TaskWithRelations, TaskStatus } from '@/types/task';
 import { ClickUpTaskDetail } from './ClickUpTaskDetail';
 import { format } from 'date-fns';
@@ -46,6 +46,8 @@ export const TaskBoardView = ({
   onTaskClick 
 }: TaskBoardViewProps) => {
   const { getAssigneeNames } = useAssigneeNames();
+  const [draggedTask, setDraggedTask] = useState<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -116,25 +118,45 @@ export const TaskBoardView = ({
             
             {/* Column Content */}
             <div 
-              className={`${column.bgColor} flex-1 p-3 space-y-3 overflow-y-auto rounded-b-lg transition-colors`}
+              className={`${column.bgColor} flex-1 p-3 space-y-3 overflow-y-auto rounded-b-lg transition-all duration-300 relative ${
+                dragOverColumn === column.status && draggedTask ? 
+                  'bg-primary/10 border-2 border-primary border-dashed shadow-lg transform scale-105' : 
+                  ''
+              }`}
               onDragOver={(e) => {
                 e.preventDefault();
-                e.currentTarget.classList.add('bg-blue-100');
+                setDragOverColumn(column.status);
               }}
               onDragLeave={(e) => {
-                e.currentTarget.classList.remove('bg-blue-100');
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX;
+                const y = e.clientY;
+                
+                // Only remove highlight if mouse is actually outside the element
+                if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+                  setDragOverColumn(null);
+                }
               }}
               onDrop={(e) => {
                 e.preventDefault();
-                e.currentTarget.classList.remove('bg-blue-100');
+                setDragOverColumn(null);
                 const taskId = e.dataTransfer.getData('taskId');
                 const currentStatus = e.dataTransfer.getData('currentStatus');
                 
                 if (taskId && currentStatus !== column.status) {
                   handleStatusChange(taskId, column.status);
                 }
+                setDraggedTask(null);
               }}
             >
+              {/* Drop Zone Indicator */}
+              {dragOverColumn === column.status && draggedTask && (
+                <div className="absolute inset-0 flex items-center justify-center bg-primary/5 rounded-lg border-2 border-primary border-dashed pointer-events-none">
+                  <div className="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium animate-pulse">
+                    Drop task here
+                  </div>
+                </div>
+              )}
               {columnTasks.map((task) => {
                 const assigneeNames = getAssigneeNames(task.assignees || []);
                 console.log('Board task assignees for', task.title, ':', task.assignees, 'converted to names:', assigneeNames);
@@ -142,23 +164,33 @@ export const TaskBoardView = ({
                 return (
                   <Card 
                     key={task.id} 
-                    className="bg-white hover:shadow-md transition-all duration-200 cursor-pointer border-l-4 border-l-transparent hover:border-l-primary"
+                    className={`bg-white hover:shadow-md transition-all duration-300 cursor-pointer border-l-4 border-l-transparent hover:border-l-primary group relative ${
+                      draggedTask === task.id ? 
+                        'opacity-50 transform rotate-2 scale-95 shadow-2xl z-50' : 
+                        'hover:scale-[1.02]'
+                    }`}
                     draggable
                     onDragStart={(e) => {
+                      setDraggedTask(task.id);
                       e.dataTransfer.setData('taskId', task.id);
                       e.dataTransfer.setData('currentStatus', task.status);
+                      e.dataTransfer.effectAllowed = 'move';
                     }}
                     onDragEnd={(e) => {
-                      e.currentTarget.style.opacity = '1';
-                    }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
+                      setDraggedTask(null);
+                      setDragOverColumn(null);
                     }}
                     onClick={() => onTaskClick?.(task)}
                   >
                     <CardContent className="p-4">
-                      {/* Task Title */}
-                      <h4 className="font-medium text-sm mb-3 line-clamp-2 text-gray-900">{task.title}</h4>
+                      <div className="flex items-start gap-2 mb-3">
+                        {/* Drag Handle */}
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing mt-0.5">
+                          <GripVertical className="h-3 w-3 text-muted-foreground" />
+                        </div>
+                        {/* Task Title */}
+                        <h4 className="font-medium text-sm line-clamp-2 text-gray-900 flex-1">{task.title}</h4>
+                      </div>
                       
                       {/* Priority Badge */}
                       <div className="flex items-center gap-2 mb-3">
