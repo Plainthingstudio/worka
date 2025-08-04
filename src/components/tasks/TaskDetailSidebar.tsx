@@ -461,6 +461,8 @@ export const TaskDetailSidebar = ({
                   />
                 )}
 
+                {/* Task Details Container */}
+                <div className="space-y-3 p-4 border rounded-lg bg-background">
                 {/* Created Time */}
                 <div className="flex items-center gap-3">
                   <Clock className="h-4 w-4 text-muted-foreground" />
@@ -710,6 +712,8 @@ export const TaskDetailSidebar = ({
                       />
                     )}
                   </div>
+                </div>
+
                 </div>
 
                 {/* Description */}
