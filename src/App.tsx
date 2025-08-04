@@ -40,32 +40,26 @@ function App() {
             <Route path="/auth" element={<Auth />} />
             <Route path="/thank-you" element={<ThankYou />} />
             <Route path="/404" element={<NotFound />} />
-            <Route path="/*" element={
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                  <Route path="/login" element={<Navigate to="/auth" replace />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/projects" element={<Projects />} />
-                  <Route path="/projects/:projectId" element={<ProjectDetails />} />
-                  <Route path="/tasks" element={<Tasks />} />
-                  <Route path="/clients" element={<Clients />} />
-                  <Route path="/leads" element={<Leads />} />
-                  <Route path="/invoices" element={<Invoices />} />
-                  <Route path="/invoices/new" element={<InvoiceForm />} />
-                  <Route path="/invoices/edit/:invoiceId" element={<InvoiceForm />} />
-                  <Route path="/invoices/:invoiceId" element={<InvoiceDetails />} />
-                  <Route path="/statistics" element={<Statistics />} />
-                  <Route path="/briefs" element={<Briefs />} />
-                  <Route path="/team" element={<Team />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/graphic-design-brief" element={<GraphicDesignBrief />} />
-                  <Route path="/ui-design-brief" element={<UIDesignBrief />} />
-                  <Route path="/illustrations-brief" element={<IllustrationsBrief />} />
-                  <Route path="*" element={<Navigate to="/404" />} />
-                </Routes>
-              </Layout>
-            } />
+            <Route path="/dashboard" element={<Layout title="Dashboard"><Dashboard /></Layout>} />
+            <Route path="/projects" element={<Layout title="Projects"><Projects /></Layout>} />
+            <Route path="/projects/:projectId" element={<Layout title="Project Details"><ProjectDetails /></Layout>} />
+            <Route path="/tasks" element={<Layout title="Tasks"><Tasks /></Layout>} />
+            <Route path="/clients" element={<Layout title="Clients"><Clients /></Layout>} />
+            <Route path="/leads" element={<Layout title="Leads & Pipeline"><Leads /></Layout>} />
+            <Route path="/invoices" element={<Layout title="Invoices"><Invoices /></Layout>} />
+            <Route path="/invoices/new" element={<Layout title="Create Invoice"><InvoiceForm /></Layout>} />
+            <Route path="/invoices/edit/:invoiceId" element={<Layout title="Edit Invoice"><InvoiceForm /></Layout>} />
+            <Route path="/invoices/:invoiceId" element={<Layout title="Invoice Details"><InvoiceDetails /></Layout>} />
+            <Route path="/statistics" element={<Layout title="Statistics"><Statistics /></Layout>} />
+            <Route path="/briefs" element={<Layout title="Briefs"><Briefs /></Layout>} />
+            <Route path="/team" element={<Layout title="Team"><Team /></Layout>} />
+            <Route path="/settings" element={<Layout title="Settings"><Settings /></Layout>} />
+            <Route path="/graphic-design-brief" element={<Layout title="Graphic Design Brief"><GraphicDesignBrief /></Layout>} />
+            <Route path="/ui-design-brief" element={<Layout title="UI Design Brief"><UIDesignBrief /></Layout>} />
+            <Route path="/illustrations-brief" element={<Layout title="Illustrations Brief"><IllustrationsBrief /></Layout>} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/login" element={<Navigate to="/auth" replace />} />
+            <Route path="*" element={<Navigate to="/404" />} />
           </Routes>
         </Router>
         <Toaster />

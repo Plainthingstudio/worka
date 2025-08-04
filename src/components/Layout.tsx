@@ -37,7 +37,7 @@ export const Layout = ({ children, title }: LayoutProps) => {
           isSidebarExpanded ? "pl-56" : "pl-14"
         }`}
       >
-        <Navbar title={title} />
+        <Navbar title={title || ""} />
         <main className="w-full overflow-auto">
           {children}
         </main>

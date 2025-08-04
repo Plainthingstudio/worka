@@ -1,8 +1,6 @@
 
 import React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import Navbar from "@/components/Navbar";
-import Sidebar from "@/components/Sidebar";
 import ClientForm from "@/components/ClientForm";
 import { LeadSource } from "@/types";
 import ClientsFilter from "@/components/clients/ClientsFilter";
@@ -13,7 +11,6 @@ import DeleteConfirmationDialog from "@/components/clients/DeleteConfirmationDia
 import { useClients } from "@/hooks/useClients";
 import { useClientDialogs } from "@/hooks/useClientDialogs";
 import { useClientFilters } from "@/hooks/useClientFilters";
-import { useSidebarWidth } from "@/hooks/useSidebarWidth";
 import { useUserRole } from "@/hooks/useUserRole";
 
 const Clients = () => {
@@ -31,7 +28,6 @@ const Clients = () => {
     closeDeleteDialog 
   } = useClientDialogs();
   const { search, setSearch, sourceFilter, setSourceFilter, filteredClients } = useClientFilters(clients);
-  const { isSidebarExpanded } = useSidebarWidth();
   const { canManageProjects, userRole } = useUserRole();
 
   // Handle client form submissions
@@ -54,39 +50,35 @@ const Clients = () => {
   const leadSources: LeadSource[] = ["Dribbble", "Website", "LinkedIn", "Behance", "Direct Email", "Other"];
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-      <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
-        <Navbar title="Clients" />
-        <main className="container mx-auto p-6">
-          <ClientsHeader 
-            onCreateClient={canManageProjects() ? openAddClientDialog : undefined}
-            userRole={userRole}
-          />
+    <>
+      <main className="container mx-auto p-6">
+        <ClientsHeader 
+          onCreateClient={canManageProjects() ? openAddClientDialog : undefined}
+          userRole={userRole}
+        />
 
-          <ClientsFilter 
-            search={search} 
-            setSearch={setSearch} 
-            sourceFilter={sourceFilter} 
-            setSourceFilter={setSourceFilter} 
-            leadSources={leadSources} 
-          />
+        <ClientsFilter 
+          search={search} 
+          setSearch={setSearch} 
+          sourceFilter={sourceFilter} 
+          setSourceFilter={setSourceFilter} 
+          leadSources={leadSources} 
+        />
 
-          <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
-            <div className="overflow-x-auto p-4 py-[8px] px-[8px]">
-              {isLoading ? (
-                <ClientsLoading />
-              ) : (
-                <ClientsTable 
-                  clients={filteredClients} 
-                  onEdit={canManageProjects() ? openEditClientDialog : undefined} 
-                  onDelete={canManageProjects() ? openDeleteDialog : undefined} 
-                />
-              )}
-            </div>
+        <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
+          <div className="overflow-x-auto p-4 py-[8px] px-[8px]">
+            {isLoading ? (
+              <ClientsLoading />
+            ) : (
+              <ClientsTable 
+                clients={filteredClients} 
+                onEdit={canManageProjects() ? openEditClientDialog : undefined} 
+                onDelete={canManageProjects() ? openDeleteDialog : undefined} 
+              />
+            )}
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
 
       {/* Add Client Dialog */}
       {canManageProjects() && isAddingClient && (
@@ -114,7 +106,7 @@ const Clients = () => {
           onConfirm={() => isDeleting && handleDeleteClient(isDeleting)} 
         />
       )}
-    </div>
+    </>
   );
 };
 

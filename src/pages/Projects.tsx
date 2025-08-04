@@ -2,8 +2,6 @@
 import React, { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import Navbar from "@/components/Navbar";
-import Sidebar from "@/components/Sidebar";
 import ProjectForm from "@/components/ProjectForm";
 import ProjectsFilter from "@/components/projects/ProjectsFilter";
 import ProjectsTable from "@/components/projects/ProjectsTable";
@@ -14,7 +12,6 @@ import ProjectsLoading from "@/components/projects/ProjectsLoading";
 import { useProjects } from "@/hooks/useProjects";
 import { useProjectDialogs } from "@/hooks/useProjectDialogs";
 import { useProjectFilters } from "@/hooks/useProjectFilters";
-import { useSidebarWidth } from "@/hooks/useSidebarWidth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Navigate } from "react-router-dom";
 import { LeadSource } from "@/types";
@@ -58,7 +55,7 @@ const Projects = () => {
     filteredProjects 
   } = useProjectFilters(projects);
 
-  const { isSidebarExpanded } = useSidebarWidth();
+  
 
   // Check for 'new=true' query parameter to auto-open create dialog
   useEffect(() => {
@@ -95,40 +92,36 @@ const Projects = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-      <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
-        <Navbar title="Projects" />
-        <main className="container mx-auto p-6">
-          <ProjectsHeader onCreateProject={openAddProjectDialog} />
+    <>
+      <main className="container mx-auto p-6">
+        <ProjectsHeader onCreateProject={openAddProjectDialog} />
 
-          {isLoading ? (
-            <ProjectsLoading />
-          ) : (
-            <>
-              <ProjectsStats projects={projects} />
+        {isLoading ? (
+          <ProjectsLoading />
+        ) : (
+          <>
+            <ProjectsStats projects={projects} />
 
-              <ProjectsFilter 
-                search={search} 
-                setSearch={setSearch} 
-                statusFilter={statusFilter} 
-                setStatusFilter={setStatusFilter} 
-              />
+            <ProjectsFilter 
+              search={search} 
+              setSearch={setSearch} 
+              statusFilter={statusFilter} 
+              setStatusFilter={setStatusFilter} 
+            />
 
-              <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
-                <div className="overflow-x-auto p-4 py-[8px] px-[8px]">
-                  <ProjectsTable 
-                    projects={filteredProjects} 
-                    clients={clients} 
-                    onEdit={openEditProjectDialog} 
-                    onDelete={openDeleteDialog} 
-                  />
-                </div>
+            <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
+              <div className="overflow-x-auto p-4 py-[8px] px-[8px]">
+                <ProjectsTable 
+                  projects={filteredProjects} 
+                  clients={clients} 
+                  onEdit={openEditProjectDialog} 
+                  onDelete={openDeleteDialog} 
+                />
               </div>
-            </>
-          )}
-        </main>
-      </div>
+            </div>
+          </>
+        )}
+      </main>
 
       {isAddingProject && (
         <Dialog open={isAddingProject} onOpenChange={closeAddProjectDialog}>
@@ -180,7 +173,7 @@ const Projects = () => {
           onConfirm={handleDeleteProjectSubmit} 
         />
       )}
-    </div>
+    </>
   );
 };
 
