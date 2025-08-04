@@ -5,11 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { SettingsFormValues } from "@/components/settings/settingsFormSchema";
-
 const Settings = () => {
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
-  
   const handleSaveSettings = async (formData: SettingsFormValues) => {
     setIsSaving(true);
     try {
@@ -21,9 +19,7 @@ const Settings = () => {
       setIsSaving(false);
     }
   };
-  
-  return (
-    <main className="container py-6 max-w-6xl">
+  return <main className="container py-6 max-w-6xl px-[24px]">
       <div className="flex flex-col gap-6">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Profile Settings</h1>
@@ -32,22 +28,13 @@ const Settings = () => {
         
         <Tabs defaultValue="profile" className="w-full">
           <TabsList className="mb-6 w-full sm:w-auto h-auto bg-background border-b rounded-none p-0 justify-start">
-            <TabsTrigger 
-              value="profile" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4"
-            >
+            <TabsTrigger value="profile" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4">
               Profile
             </TabsTrigger>
-            <TabsTrigger 
-              value="account" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4"
-            >
+            <TabsTrigger value="account" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4">
               Account
             </TabsTrigger>
-            <TabsTrigger 
-              value="notifications" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4"
-            >
+            <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4">
               Notifications
             </TabsTrigger>
           </TabsList>
@@ -93,8 +80,6 @@ const Settings = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </main>
-  );
+    </main>;
 };
-
 export default Settings;
