@@ -399,15 +399,17 @@ export const TaskDetailSidebar = ({
           <div className="flex-1 flex flex-col min-h-0">
             <ScrollArea className="flex-1">
               <div className="p-6 space-y-8">
-                {/* Brief Connection Section */}
-                <BriefSelector
-                  taskId={task.id}
-                  currentBrief={task.brief_id ? {
-                    id: task.brief_id,
-                    type: task.brief_type || '',
-                  } : null}
-                  onBriefChange={handleBriefChange}
-                />
+                {/* Brief Connection Section - Only for non-team users */}
+                {userRole !== 'team' && (
+                  <BriefSelector
+                    taskId={task.id}
+                    currentBrief={task.brief_id ? {
+                      id: task.brief_id,
+                      type: task.brief_type || '',
+                    } : null}
+                    onBriefChange={handleBriefChange}
+                  />
+                )}
 
                 {/* Status and Priority Row */}
                 <div className="grid grid-cols-2 gap-6">
