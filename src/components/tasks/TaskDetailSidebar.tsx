@@ -478,7 +478,7 @@ export const TaskDetailSidebar = ({
                   <span className="text-sm text-muted-foreground w-24">Status</span>
                   <div>
                     {userRole === 'team' ? (
-                      <div className="flex items-center gap-2 p-2 border rounded text-sm h-9 w-48">
+                      <div className="flex items-center gap-2 text-sm h-9 w-48">
                         <Target className="h-4 w-4 text-muted-foreground" />
                         {form.watch('status')}
                       </div>
@@ -491,7 +491,7 @@ export const TaskDetailSidebar = ({
                             field.onChange(value);
                             form.handleSubmit(handleSubmit)();
                           }} value={field.value}>
-                            <SelectTrigger className="text-sm h-9 w-48">
+                            <SelectTrigger className="text-sm h-9 w-48 border-none shadow-none p-0 hover:bg-transparent focus:ring-0">
                               <div className="flex items-center gap-2">
                                 <Target className="h-4 w-4 text-muted-foreground" />
                                 <SelectValue />
@@ -517,7 +517,7 @@ export const TaskDetailSidebar = ({
                   <span className="text-sm text-muted-foreground w-24">Priority</span>
                   <div>
                     {userRole === 'team' ? (
-                      <div className="flex items-center gap-2 p-2 border rounded text-sm h-9 w-48">
+                      <div className="flex items-center gap-2 text-sm h-9 w-48">
                         {getPriorityIcon(form.watch('priority'))}
                         {form.watch('priority')}
                       </div>
@@ -530,7 +530,7 @@ export const TaskDetailSidebar = ({
                             field.onChange(value);
                             form.handleSubmit(handleSubmit)();
                           }} value={field.value}>
-                            <SelectTrigger className="text-sm h-9 w-48">
+                            <SelectTrigger className="text-sm h-9 w-48 border-none shadow-none p-0 hover:bg-transparent focus:ring-0">
                               <div className="flex items-center gap-2">
                                 {getPriorityIcon(field.value)}
                                 <SelectValue />
@@ -556,12 +556,12 @@ export const TaskDetailSidebar = ({
                   <div>
                     {userRole === 'team' ? (
                       task.due_date ? (
-                        <div className="flex items-center gap-2 p-2 border rounded text-sm h-9 w-48">
+                        <div className="flex items-center gap-2 text-sm h-9 w-48">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
                           {format(task.due_date, 'MMMM dd, yyyy')}
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2 p-2 border rounded text-sm h-9 w-48 text-muted-foreground">
+                        <div className="flex items-center gap-2 text-sm h-9 w-48 text-muted-foreground">
                           <Calendar className="h-4 w-4" />
                           No due date
                         </div>
@@ -575,7 +575,7 @@ export const TaskDetailSidebar = ({
                             <PopoverTrigger asChild>
                               <Button
                                 variant="outline"
-                                className="w-48 justify-between text-left font-normal text-sm h-9"
+                                className="w-48 justify-between text-left font-normal text-sm h-9 border-none shadow-none p-0 hover:bg-transparent focus:ring-0"
                               >
                                 <div className="flex items-center gap-2">
                                   <Calendar className="h-4 w-4 text-muted-foreground" />
