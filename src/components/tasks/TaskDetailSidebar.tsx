@@ -61,6 +61,7 @@ import DeleteConfirmationDialog from '@/components/projects/DeleteConfirmationDi
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
+import { getStatusSolidClass } from '@/utils/statusColors';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -209,16 +210,6 @@ export const TaskDetailSidebar = ({
     window.location.reload(); // Simple refresh for now
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Completed': return 'bg-green-500 hover:bg-green-600';
-      case 'In progress': return 'bg-blue-500 hover:bg-blue-600';
-      case 'Planning': return 'bg-gray-500 hover:bg-gray-600';
-      case 'Paused': return 'bg-yellow-500 hover:bg-yellow-600';
-      case 'Cancelled': return 'bg-red-500 hover:bg-red-600';
-      default: return 'bg-gray-500 hover:bg-gray-600';
-    }
-  };
 
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
@@ -426,7 +417,7 @@ export const TaskDetailSidebar = ({
                       Status
                     </div>
                     {userRole === 'team' ? (
-                      <Badge className={`${getStatusColor(form.watch('status'))} text-white border-none text-sm h-9 justify-center`}>
+                      <Badge className={`${getStatusSolidClass(form.watch('status'))} text-white border-none text-sm h-9 justify-center`}>
                         {form.watch('status')}
                       </Badge>
                     ) : (
@@ -438,7 +429,7 @@ export const TaskDetailSidebar = ({
                             field.onChange(value);
                             form.handleSubmit(handleSubmit)();
                           }} value={field.value}>
-                            <SelectTrigger className={`${getStatusColor(field.value)} text-white border-none text-sm h-9`}>
+                            <SelectTrigger className={`${getStatusSolidClass(field.value)} text-white border-none text-sm h-9`}>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent className="bg-background border z-[80]">

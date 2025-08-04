@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { getStatusSolidClass } from '@/utils/statusColors';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -144,16 +145,6 @@ export const ClickUpTaskDetail = ({
     event.target.value = '';
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Completed': return 'bg-green-500 hover:bg-green-600';
-      case 'In progress': return 'bg-blue-500 hover:bg-blue-600';
-      case 'Planning': return 'bg-gray-500 hover:bg-gray-600';
-      case 'Paused': return 'bg-yellow-500 hover:bg-yellow-600';
-      case 'Cancelled': return 'bg-red-500 hover:bg-red-600';
-      default: return 'bg-gray-500 hover:bg-gray-600';
-    }
-  };
 
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
@@ -237,7 +228,7 @@ export const ClickUpTaskDetail = ({
                           field.onChange(value);
                           form.handleSubmit(handleSubmit)();
                         }} defaultValue={field.value}>
-                          <SelectTrigger className={`${getStatusColor(field.value)} text-white border-none`}>
+                          <SelectTrigger className={`${getStatusSolidClass(field.value)} text-white border-none`}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>

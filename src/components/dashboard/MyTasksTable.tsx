@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { TaskWithRelations } from "@/types/task";
+import { getStatusBadgeClass } from "@/utils/statusColors";
 
 interface MyTasksTableProps {
   tasks: TaskWithRelations[];
@@ -40,20 +41,6 @@ const MyTasksTable: React.FC<MyTasksTableProps> = ({
     })
     .slice(0, showAll ? undefined : 5);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Planning':
-        return 'bg-blue-50 text-blue-700';
-      case 'In progress':
-        return 'bg-yellow-50 text-yellow-700';
-      case 'Review':
-        return 'bg-purple-50 text-purple-700';
-      case 'Completed':
-        return 'bg-green-50 text-green-700';
-      default:
-        return 'bg-gray-50 text-gray-700';
-    }
-  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -111,7 +98,7 @@ const MyTasksTable: React.FC<MyTasksTableProps> = ({
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge className={`${getStatusColor(task.status)} text-xs`}>
+                    <Badge className={`${getStatusBadgeClass(task.status)} text-xs`}>
                       {task.status}
                     </Badge>
                   </TableCell>
