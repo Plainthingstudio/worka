@@ -727,7 +727,7 @@ export const TaskDetailSidebar = ({
                             <Textarea 
                               {...field} 
                               placeholder="Add a description..."
-                              rows={4}
+                              rows={6}
                               className="resize-none text-sm"
                               onBlur={() => form.handleSubmit(handleSubmit)()}
                             />
