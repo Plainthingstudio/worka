@@ -366,7 +366,7 @@ export const TaskActivityFeed = ({
                         </div>
                       </div>
                     ) : (
-                      <div className="text-sm">{getActivityDescription(activity)}</div>
+                      <div className="text-sm whitespace-pre-wrap">{getActivityDescription(activity)}</div>
                     )}
                     
                     {/* Attachments */}
