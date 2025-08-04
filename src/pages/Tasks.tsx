@@ -499,7 +499,7 @@ export const Tasks = () => {
     <div className="p-6 py-0">
       <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6 sm:py-6 -mx-6  py-[8px]">
+            <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6 sm:pt-6 -mx-6  pt-[8px]">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex flex-col gap-4">
                   <h1 className="text-xl sm:text-2xl font-semibold">Internal Tasks</h1>
