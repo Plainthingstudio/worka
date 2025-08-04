@@ -317,7 +317,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto z-[100]" style={{ zIndex: 100 }}>
         <DialogHeader>
           <DialogTitle>Brief Details</DialogTitle>
           <DialogDescription>
