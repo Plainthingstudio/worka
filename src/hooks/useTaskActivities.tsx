@@ -159,18 +159,23 @@ export const useTaskActivities = (taskId: string) => {
 
   const updateActivity = async (activityId: string, content: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
+      console.log('Attempting to update activity:', activityId, 'with content:', content);
+      
+      const { data, error } = await supabase
         .from('task_activities')
         .update({ 
           content: content.trim()
         })
-        .eq('id', activityId);
+        .eq('id', activityId)
+        .select();
+
+      console.log('Update result:', { data, error });
 
       if (error) {
         console.error('Error updating activity:', error);
         toast({
           title: "Error",
-          description: "Failed to update comment",
+          description: `Failed to update comment: ${error.message}`,
           variant: "destructive",
         });
         return false;
@@ -183,7 +188,7 @@ export const useTaskActivities = (taskId: string) => {
       });
       return true;
     } catch (error) {
-      console.error('Error updating activity:', error);
+      console.error('Exception updating activity:', error);
       toast({
         title: "Error", 
         description: "Failed to update comment",
