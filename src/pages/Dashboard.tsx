@@ -32,7 +32,7 @@ const Dashboard = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [stats, setStats] = useState({
     totalClients: 0,
-    totalProjects: 0,
+    newProjectsThisMonth: 0,
     totalEarnings: 0,
     activeProjects: 0,
     newLeadsThisMonth: 0,
@@ -197,13 +197,18 @@ const Dashboard = () => {
           lead.createdAt >= startOfMonth
         ).length;
         
+        // Calculate new projects this month
+        const newProjectsThisMonth = transformedProjects.filter(project => 
+          project.createdAt >= startOfMonth
+        ).length;
+        
         setClients(transformedClients);
         setProjects(transformedProjects);
         setTasks(transformedTasks);
         setLeads(transformedLeads);
         setStats({
           totalClients: transformedClients.length,
-          totalProjects: transformedProjects.length,
+          newProjectsThisMonth,
           totalEarnings,
           activeProjects,
           newLeadsThisMonth,
@@ -309,8 +314,8 @@ const Dashboard = () => {
                   className="bg-white shadow-sm border border-border"
                 />
                 <StatCard
-                  title="Total Projects"
-                  value={stats.totalProjects}
+                  title="New Projects"
+                  value={stats.newProjectsThisMonth}
                   icon={Briefcase}
                   className="bg-white shadow-sm border border-border"
                 />
