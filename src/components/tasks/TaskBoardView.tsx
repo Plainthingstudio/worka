@@ -28,10 +28,10 @@ interface TaskBoardViewProps {
 }
 
 const statusColumns: { status: TaskStatus; title: string; color: string; bgColor: string; textColor: string }[] = [
-  { status: 'Planning', title: 'To do', color: 'text-orange-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
+  { status: 'Planning', title: 'Planning', color: 'text-gray-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
   { status: 'In progress', title: 'In Progress', color: 'text-blue-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
-  { status: 'Paused', title: 'Paused', color: 'text-gray-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
-  { status: 'Completed', title: 'Done', color: 'text-green-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
+  { status: 'Paused', title: 'Paused', color: 'text-yellow-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
+  { status: 'Completed', title: 'Completed', color: 'text-green-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
   { status: 'Cancelled', title: 'Cancelled', color: 'text-red-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
 ];
 
@@ -117,7 +117,7 @@ export const TaskBoardView = ({
             {/* Column Header */}
             <div className="px-4 py-3 flex items-center justify-between bg-transparent">
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${column.color === 'text-orange-600' ? 'bg-orange-500' : column.color === 'text-blue-600' ? 'bg-blue-500' : column.color === 'text-gray-600' ? 'bg-gray-500' : column.color === 'text-green-600' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${column.color === 'text-gray-600' ? 'bg-gray-500' : column.color === 'text-blue-600' ? 'bg-blue-500' : column.color === 'text-yellow-600' ? 'bg-yellow-500' : column.color === 'text-green-600' ? 'bg-green-500' : 'bg-red-500'}`}></div>
                 <span className={`text-sm font-medium ${column.color}`}>{column.title}</span>
                 <div className="bg-gray-200 text-gray-700 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">
                   {columnTasks.length}
