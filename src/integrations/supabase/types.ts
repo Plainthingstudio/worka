@@ -846,6 +846,7 @@ export type Database = {
           has_brand_guidelines: string | null
           has_wireframe: string | null
           id: string
+          industry: string | null
           name: string
           page_count: number | null
           page_details: Json | null
@@ -886,6 +887,7 @@ export type Database = {
           has_brand_guidelines?: string | null
           has_wireframe?: string | null
           id?: string
+          industry?: string | null
           name: string
           page_count?: number | null
           page_details?: Json | null
@@ -926,6 +928,7 @@ export type Database = {
           has_brand_guidelines?: string | null
           has_wireframe?: string | null
           id?: string
+          industry?: string | null
           name?: string
           page_count?: number | null
           page_details?: Json | null
