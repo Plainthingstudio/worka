@@ -9,7 +9,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { FileText, ExternalLink, Unlink, Download } from 'lucide-react';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import { FileText, ExternalLink, Unlink, Download, MoreHorizontal } from 'lucide-react';
 import { Brief } from '@/types/brief';
 import { useBriefConnection } from '@/hooks/useBriefConnection';
 import { useBriefDownload } from '@/hooks/useBriefDownload';
@@ -130,34 +136,40 @@ export const BriefSelector = ({ taskId, currentBrief, onBriefChange }: BriefSele
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleDownloadBrief}
-                  disabled={isDownloading}
-                  className="h-6 text-xs"
-                >
-                  <Download className="h-3 w-3 mr-1" />
-                  {isDownloading ? 'Downloading...' : 'Download'}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
                   onClick={handleViewBrief}
                   className="h-6 text-xs"
                 >
                   <ExternalLink className="h-3 w-3 mr-1" />
                   View
                 </Button>
-                {!roleLoading && userRole !== 'team' && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDisconnect}
-                    className="h-6 text-xs text-destructive hover:text-destructive"
-                    disabled={isLoading}
-                  >
-                    <Unlink className="h-3 w-3 mr-1" />
-                    Unlink
-                  </Button>
-                )}
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                    >
+                      <MoreHorizontal className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuItem onClick={handleDownloadBrief} disabled={isDownloading}>
+                      <Download className="h-3 w-3 mr-2" />
+                      {isDownloading ? 'Downloading...' : 'Download'}
+                    </DropdownMenuItem>
+                    {!roleLoading && userRole !== 'team' && (
+                      <DropdownMenuItem 
+                        onClick={handleDisconnect}
+                        disabled={isLoading}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Unlink className="h-3 w-3 mr-2" />
+                        Unlink
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
             
