@@ -14,12 +14,6 @@ const BriefsHeader: React.FC = () => {
           <h1 className="text-2xl font-semibold tracking-tight mb-1">Client Briefs</h1>
           <p className="text-muted-foreground">Manage and review client brief submissions</p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button onClick={() => navigate("/briefs/ui-design")} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            New Brief
-          </Button>
-        </div>
       </div>
     </div>
   );
