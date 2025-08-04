@@ -22,7 +22,7 @@ const Settings = () => {
   return <main className="container py-6 max-w-6xl px-[24px]">
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight md:text-2xl">Profile Settings</h1>
+          <h1 className="text-2xl tracking-tight md:text-2xl font-semibold">Profile Settings</h1>
           <p className="text-muted-foreground mt-1">Manage your personal information and contact details</p>
         </div>
         
