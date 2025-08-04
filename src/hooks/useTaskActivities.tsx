@@ -162,8 +162,7 @@ export const useTaskActivities = (taskId: string) => {
       const { error } = await supabase
         .from('task_activities')
         .update({ 
-          content: content.trim(),
-          updated_at: new Date().toISOString()
+          content: content.trim()
         })
         .eq('id', activityId);
 
