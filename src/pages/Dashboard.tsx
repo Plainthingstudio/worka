@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { ArrowRight, Users, Briefcase, DollarSign, Activity, Tag, Plus, ChevronDown, ListChecks, CheckSquare, FileText } from "lucide-react";
+import { ArrowRight, Users, Briefcase, DollarSign, Activity, Tag, Plus, ChevronDown, ListChecks, CheckSquare, FileText, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,6 +25,7 @@ import StatCard from "@/components/StatCard";
 import DeadlineCard from "@/components/dashboard/DeadlineCard";
 import TeamDashboard from "@/components/dashboard/TeamDashboard";
 import { Client, Project, ProjectType, Lead } from "@/types";
+import { TeamMember } from "@/types";
 import { TaskWithRelations } from "@/types/task";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -36,6 +37,7 @@ const Dashboard = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [stats, setStats] = useState({
     totalClients: 0,
     newProjectsThisMonth: 0,
@@ -190,6 +192,32 @@ const Dashboard = () => {
           updatedAt: new Date(lead.updated_at)
         }));
         
+        // Fetch team members
+        const { data: teamData, error: teamError } = await supabase
+          .from('team_members')
+          .select(`
+            *,
+            profiles(email, full_name)
+          `)
+          .order('created_at', { ascending: false });
+        
+        if (teamError) {
+          console.error("Error fetching team members:", teamError);
+          throw teamError;
+        }
+        
+        // Transform team members data
+        const transformedTeamMembers = teamData.map((member: any) => ({
+          id: member.id,
+          user_id: member.user_id,
+          name: member.name,
+          position: member.position,
+          skills: member.skills || [],
+          startDate: new Date(member.start_date),
+          createdAt: new Date(member.created_at),
+          email: member.profiles?.email || ''
+        }));
+        
         // Calculate stats
         const activeProjects = transformedProjects.filter(p => p.status === "In progress").length;
         const totalEarnings = transformedProjects.reduce((sum, project) => {
@@ -212,6 +240,7 @@ const Dashboard = () => {
         setProjects(transformedProjects);
         setTasks(transformedTasks);
         setLeads(transformedLeads);
+        setTeamMembers(transformedTeamMembers);
         setStats({
           totalClients: transformedClients.length,
           newProjectsThisMonth,
@@ -259,6 +288,16 @@ const Dashboard = () => {
     .filter(p => p.status === "In progress")
     .sort((a, b) => a.deadline.getTime() - b.deadline.getTime())
     .slice(0, 5);
+
+  // Calculate available team members (those without active tasks)
+  const availableTeamMembers = teamMembers.filter(member => {
+    // Check if team member has any active tasks assigned
+    const hasActiveTasks = tasks.some(task => 
+      task.status !== 'Completed' && 
+      task.assignees.includes(member.user_id)
+    );
+    return !hasActiveTasks;
+  }).slice(0, 5);
 
   const getProjectTypeBadgeClass = (type: ProjectType) => {
     switch (type) {
@@ -466,6 +505,65 @@ const Dashboard = () => {
                             </TableCell>
                             <TableCell>
                               {project.currency} {project.fee.toLocaleString()}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+
+              {/* Available Team Members */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">Available Team Members</h2>
+                  <Button variant="ghost" size="sm" onClick={() => navigate("/team")}>
+                    View All
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="glass-card rounded-xl border shadow-sm">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Position</TableHead>
+                        <TableHead>Skills</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {availableTeamMembers.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                            No available team members found.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        availableTeamMembers.map((member) => (
+                          <TableRow key={member.id}>
+                            <TableCell className="font-medium">{member.name}</TableCell>
+                            <TableCell>{member.position}</TableCell>
+                            <TableCell>
+                              <div className="flex flex-wrap gap-1">
+                                {member.skills.slice(0, 2).map((skill, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs">
+                                    {skill}
+                                  </Badge>
+                                ))}
+                                {member.skills.length > 2 && (
+                                  <Badge variant="outline" className="text-xs">
+                                    +{member.skills.length - 2}
+                                  </Badge>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-50 text-green-700 ring-green-700/10">
+                                <UserCheck className="mr-1 h-3 w-3" />
+                                Available
+                              </Badge>
                             </TableCell>
                           </TableRow>
                         ))
