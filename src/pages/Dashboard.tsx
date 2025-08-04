@@ -2,8 +2,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { ArrowRight, Users, Briefcase, DollarSign, Activity, Tag } from "lucide-react";
+import { ArrowRight, Users, Briefcase, DollarSign, Activity, Tag, Plus, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -295,10 +301,44 @@ const Dashboard = () => {
       <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
         <Navbar title="Dashboard" />
         <main className="container mx-auto p-6">
-          <div className="mb-8">
+          <div className="mb-8 flex items-center justify-between">
             <h1 className="text-2xl font-semibold tracking-tight">
               {userRole === 'team' ? 'My Dashboard' : 'Dashboard Overview'}
             </h1>
+            {userRole !== 'team' && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 bg-background border shadow-lg">
+                  <DropdownMenuItem 
+                    onClick={() => navigate("/projects?new=true")}
+                    className="cursor-pointer hover:bg-accent"
+                  >
+                    <Briefcase className="h-4 w-4 mr-2" />
+                    Create Project
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => navigate("/tasks?new=true")}
+                    className="cursor-pointer hover:bg-accent"
+                  >
+                    <Activity className="h-4 w-4 mr-2" />
+                    Create Task
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => navigate("/invoices/new")}
+                    className="cursor-pointer hover:bg-accent"
+                  >
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Create Invoice
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
 
           {userRole === 'team' ? (
