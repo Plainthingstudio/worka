@@ -1,5 +1,6 @@
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -19,6 +20,7 @@ import { Navigate } from "react-router-dom";
 import { LeadSource } from "@/types";
 
 const Projects = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { canViewProjects, isLoading: roleLoading } = useUserRole();
   
   // Redirect team members away from projects page (but only after role is loaded)
@@ -57,6 +59,15 @@ const Projects = () => {
   } = useProjectFilters(projects);
 
   const { isSidebarExpanded } = useSidebarWidth();
+
+  // Check for 'new=true' query parameter to auto-open create dialog
+  useEffect(() => {
+    if (searchParams.get('new') === 'true' && !isLoading && !roleLoading) {
+      openAddProjectDialog();
+      // Remove the query parameter from URL
+      setSearchParams({});
+    }
+  }, [searchParams, isLoading, roleLoading, openAddProjectDialog, setSearchParams]);
 
   const handleAddProjectSubmit = async (data: any) => {
     const result = await handleAddProject(data);
