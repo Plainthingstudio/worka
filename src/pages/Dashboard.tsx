@@ -19,8 +19,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import Navbar from "@/components/Navbar";
-import Sidebar from "@/components/Sidebar";
 import StatCard from "@/components/StatCard";
 import DeadlineCard from "@/components/dashboard/DeadlineCard";
 import TeamDashboard from "@/components/dashboard/TeamDashboard";
@@ -46,7 +44,7 @@ const Dashboard = () => {
     activeProjects: 0,
     newLeadsThisMonth: 0,
   });
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  
   const [isLoading, setIsLoading] = useState(true);
   
   // Fetch data from Supabase - only for owners/administrators
@@ -259,27 +257,6 @@ const Dashboard = () => {
     fetchData();
   }, [navigate, userRole]);
 
-  // Listen for sidebar state changes
-  useEffect(() => {
-    const handleSidebarChange = () => {
-      const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
-      setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
-    };
-
-    // Initial check
-    handleSidebarChange();
-
-    // Set up mutation observer to watch for class changes on the sidebar
-    const observer = new MutationObserver(handleSidebarChange);
-    const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
-    if (sidebarElement) {
-      observer.observe(sidebarElement, {
-        attributes: true,
-        attributeFilter: ['class']
-      });
-    }
-    return () => observer.disconnect();
-  }, []);
 
   const recentClients = [...clients]
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
@@ -320,27 +297,17 @@ const Dashboard = () => {
 
   if (isLoading || roleLoading) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar />
-        <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
-          <Navbar title="Dashboard" />
-          <main className="container mx-auto p-6 flex items-center justify-center">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-              <p className="mt-4 text-lg text-muted-foreground">Loading dashboard data...</p>
-            </div>
-          </main>
+      <div className="container mx-auto p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="mt-4 text-lg text-muted-foreground">Loading dashboard data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-      <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
-        <Navbar title="Dashboard" />
-        <main className="container mx-auto p-6">
+    <div className="container mx-auto p-6">
           <div className="mb-8 flex items-center justify-between">
             <h1 className="text-2xl font-semibold tracking-tight">
               {userRole === 'team' ? 'My Dashboard' : 'Dashboard Overview'}
@@ -560,10 +527,8 @@ const Dashboard = () => {
                 </div>
               </div>
 
-            </>
-          )}
-        </main>
-      </div>
+        </>
+      )}
     </div>
   );
 };

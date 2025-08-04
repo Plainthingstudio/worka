@@ -1,7 +1,5 @@
 
 import React, { useState, useEffect } from "react";
-import Navbar from "@/components/Navbar";
-import Sidebar from "@/components/Sidebar";
 import { DateRange } from "@/types";
 import StatisticsHeader from "@/components/statistics/StatisticsHeader";
 import StatisticsSummaryCards from "@/components/statistics/StatisticsSummaryCards";
@@ -16,7 +14,6 @@ const Statistics = () => {
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     to: new Date()
   });
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   
   const { clients, projects, isLoading, error } = useStatisticsData();
   
@@ -28,21 +25,7 @@ const Statistics = () => {
   }, {});
 
   useEffect(() => {
-    const handleSidebarChange = () => {
-      const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
-      setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
-    };
-
-    handleSidebarChange();
-
-    const observer = new MutationObserver(handleSidebarChange);
-    const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
-    
-    if (sidebarElement) {
-      observer.observe(sidebarElement, { attributes: true, attributeFilter: ['class'] });
-    }
-
-    return () => observer.disconnect();
+    // Remove sidebar width detection since Layout handles this now
   }, []);
 
   const renderLoadingState = () => (
@@ -67,48 +50,38 @@ const Statistics = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <Sidebar />
-      <div
-        className={`flex-1 w-full transition-all duration-300 ease-in-out ${
-          isSidebarExpanded ? "pl-56" : "pl-14"
-        }`}
-      >
-        <Navbar title="Statistics" />
-        <main className="container py-6 px-4">
-          <StatisticsHeader 
-            timeFilter={timeFilter}
-            dateRange={dateRange}
-            setTimeFilter={setTimeFilter}
-            setDateRange={setDateRange}
+    <div className="container py-6 px-4">
+      <StatisticsHeader 
+        timeFilter={timeFilter}
+        dateRange={dateRange}
+        setTimeFilter={setTimeFilter}
+        setDateRange={setDateRange}
+      />
+      
+      {isLoading ? (
+        renderLoadingState()
+      ) : error ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+            <p className="text-red-500 font-medium mb-2">Error loading statistics</p>
+            <p className="text-muted-foreground">Please try again later</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <StatisticsSummaryCards 
+            clients={clients} 
+            projects={projects} 
           />
           
-          {isLoading ? (
-            renderLoadingState()
-          ) : error ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="text-center">
-                <p className="text-red-500 font-medium mb-2">Error loading statistics</p>
-                <p className="text-muted-foreground">Please try again later</p>
-              </div>
-            </div>
-          ) : (
-            <>
-              <StatisticsSummaryCards 
-                clients={clients} 
-                projects={projects} 
-              />
-              
-              <StatisticsChartGrid 
-                dateRange={dateRange} 
-                leadSources={leadSources}
-                clients={clients}
-                projects={projects}
-              />
-            </>
-          )}
-        </main>
-      </div>
+          <StatisticsChartGrid 
+            dateRange={dateRange} 
+            leadSources={leadSources}
+            clients={clients}
+            projects={projects}
+          />
+        </>
+      )}
     </div>
   );
 };
