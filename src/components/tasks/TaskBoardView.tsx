@@ -28,11 +28,11 @@ interface TaskBoardViewProps {
 }
 
 const statusColumns: { status: TaskStatus; title: string; color: string; bgColor: string; textColor: string }[] = [
-  { status: 'Planning', title: 'To do', color: 'text-orange-600', bgColor: 'bg-gray-50', textColor: 'text-gray-700' },
-  { status: 'In progress', title: 'In Progress', color: 'text-blue-600', bgColor: 'bg-gray-50', textColor: 'text-gray-700' },
-  { status: 'Paused', title: 'Paused', color: 'text-gray-600', bgColor: 'bg-gray-50', textColor: 'text-gray-700' },
-  { status: 'Completed', title: 'Done', color: 'text-green-600', bgColor: 'bg-gray-50', textColor: 'text-gray-700' },
-  { status: 'Cancelled', title: 'Cancelled', color: 'text-red-600', bgColor: 'bg-gray-50', textColor: 'text-gray-700' },
+  { status: 'Planning', title: 'To do', color: 'text-orange-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
+  { status: 'In progress', title: 'In Progress', color: 'text-blue-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
+  { status: 'Paused', title: 'Paused', color: 'text-gray-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
+  { status: 'Completed', title: 'Done', color: 'text-green-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
+  { status: 'Cancelled', title: 'Cancelled', color: 'text-red-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
 ];
 
 export const TaskBoardView = ({ 
