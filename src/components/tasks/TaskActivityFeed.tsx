@@ -204,7 +204,7 @@ export const TaskActivityFeed = ({
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
               e.preventDefault();
               handleSubmit();
             }
@@ -212,6 +212,7 @@ export const TaskActivityFeed = ({
           className="border-none p-0 focus-visible:ring-0 text-sm resize-none min-h-[80px]"
           rows={3}
         />
+        <div className="text-xs text-muted-foreground">Press Ctrl+Enter to send</div>
         
         {/* Selected Files Preview */}
         {selectedFiles.length > 0 && (
@@ -342,10 +343,17 @@ export const TaskActivityFeed = ({
                         <Textarea
                           value={editingContent}
                           onChange={(e) => setEditingContent(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                              e.preventDefault();
+                              handleEditSave(activity.id);
+                            }
+                          }}
                           className="text-sm resize-none min-h-[80px]"
                           autoFocus
-                          rows={3}
+          rows={3}
                         />
+                        <div className="text-xs text-muted-foreground">Press Ctrl+Enter to save</div>
                         <div className="flex gap-2">
                           <Button 
                             size="sm" 
@@ -408,7 +416,7 @@ export const TaskActivityFeed = ({
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
               e.preventDefault();
               handleSubmit();
             }
@@ -416,6 +424,7 @@ export const TaskActivityFeed = ({
           className="border-none p-0 focus-visible:ring-0 text-sm resize-none min-h-[80px]"
           rows={3}
         />
+        <div className="text-xs text-muted-foreground">Press Ctrl+Enter to send</div>
         
         {/* Selected Files Preview */}
         {selectedFiles.length > 0 && (
