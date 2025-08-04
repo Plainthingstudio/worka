@@ -115,7 +115,26 @@ export const TaskBoardView = ({
             </div>
             
             {/* Column Content */}
-            <div className={`${column.bgColor} flex-1 p-3 space-y-3 overflow-y-auto rounded-b-lg`}>
+            <div 
+              className={`${column.bgColor} flex-1 p-3 space-y-3 overflow-y-auto rounded-b-lg transition-colors`}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.currentTarget.classList.add('bg-blue-100');
+              }}
+              onDragLeave={(e) => {
+                e.currentTarget.classList.remove('bg-blue-100');
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.currentTarget.classList.remove('bg-blue-100');
+                const taskId = e.dataTransfer.getData('taskId');
+                const currentStatus = e.dataTransfer.getData('currentStatus');
+                
+                if (taskId && currentStatus !== column.status) {
+                  handleStatusChange(taskId, column.status);
+                }
+              }}
+            >
               {columnTasks.map((task) => {
                 const assigneeNames = getAssigneeNames(task.assignees || []);
                 console.log('Board task assignees for', task.title, ':', task.assignees, 'converted to names:', assigneeNames);
@@ -124,6 +143,17 @@ export const TaskBoardView = ({
                   <Card 
                     key={task.id} 
                     className="bg-white hover:shadow-md transition-all duration-200 cursor-pointer border-l-4 border-l-transparent hover:border-l-primary"
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('taskId', task.id);
+                      e.dataTransfer.setData('currentStatus', task.status);
+                    }}
+                    onDragEnd={(e) => {
+                      e.currentTarget.style.opacity = '1';
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                    }}
                     onClick={() => onTaskClick?.(task)}
                   >
                     <CardContent className="p-4">
