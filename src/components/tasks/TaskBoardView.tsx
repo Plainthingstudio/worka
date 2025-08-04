@@ -124,11 +124,13 @@ export const TaskBoardView = ({
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-gray-600">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6 text-gray-400 hover:text-gray-600"
+                  onClick={() => onAddTask?.(column.status)}
+                >
                   <Plus className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-gray-600">
-                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </div>
             </div>
