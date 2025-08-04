@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { ArrowRight, Users, Briefcase, DollarSign, Activity, Tag, Plus, ChevronDown } from "lucide-react";
+import { ArrowRight, Users, Briefcase, DollarSign, Activity, Tag, Plus, ChevronDown, ListChecks, CheckSquare, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -319,21 +319,21 @@ const Dashboard = () => {
                     onClick={() => navigate("/projects?new=true")}
                     className="cursor-pointer hover:bg-accent"
                   >
-                    <Briefcase className="h-4 w-4 mr-2" />
+                    <ListChecks className="h-4 w-4 mr-2" />
                     Create Project
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => navigate("/tasks?new=true")}
                     className="cursor-pointer hover:bg-accent"
                   >
-                    <Activity className="h-4 w-4 mr-2" />
+                    <CheckSquare className="h-4 w-4 mr-2" />
                     Create Task
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => navigate("/invoices/new")}
                     className="cursor-pointer hover:bg-accent"
                   >
-                    <DollarSign className="h-4 w-4 mr-2" />
+                    <FileText className="h-4 w-4 mr-2" />
                     Create Invoice
                   </DropdownMenuItem>
                 </DropdownMenuContent>
