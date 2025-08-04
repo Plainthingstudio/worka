@@ -129,7 +129,6 @@ export const TaskDetailSidebar = ({
     }
   }, [isOpen, fetchTeamMembers]);
 
-  // Fetch user names for activities
   useEffect(() => {
     const fetchUserNames = async () => {
       if (activities.length === 0) return;
@@ -139,20 +138,28 @@ export const TaskDetailSidebar = ({
       
       for (const userId of userIds) {
         try {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('id', userId)
+          // First try to get from team_members
+          const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('name')
+            .eq('user_id', userId)
             .single();
           
-          if (profile?.full_name) {
-            names[userId] = profile.full_name;
+          if (teamMember?.name) {
+            names[userId] = teamMember.name;
           } else {
-            names[userId] = 'User';
+            // Fallback to profiles table
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('id', userId)
+              .single();
+            
+            names[userId] = profile?.full_name || 'Demo User';
           }
         } catch (error) {
           console.error('Error fetching user name:', error);
-          names[userId] = 'User';
+          names[userId] = 'Demo User';
         }
       }
       
