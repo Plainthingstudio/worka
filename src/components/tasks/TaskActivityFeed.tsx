@@ -348,12 +348,14 @@ export const TaskActivityFeed = ({
                               e.preventDefault();
                               handleEditSave(activity.id);
                             }
+                            // Allow regular Enter for line breaks
                           }}
-                          className="text-sm resize-none min-h-[80px]"
+                          className="text-sm resize-none min-h-[80px] whitespace-pre-wrap"
                           autoFocus
-          rows={3}
+                          rows={3}
+                          placeholder="Edit your comment... (Press Ctrl+Enter to save)"
                         />
-                        <div className="text-xs text-muted-foreground">Press Ctrl+Enter to save</div>
+                        <div className="text-xs text-muted-foreground">Press Enter for line breaks, Ctrl+Enter to save</div>
                         <div className="flex gap-2">
                           <Button 
                             size="sm" 
