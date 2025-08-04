@@ -18,7 +18,7 @@ import Sidebar from "@/components/Sidebar";
 import StatCard from "@/components/StatCard";
 import DeadlineCard from "@/components/dashboard/DeadlineCard";
 import TeamDashboard from "@/components/dashboard/TeamDashboard";
-import { Client, Project, ProjectType } from "@/types";
+import { Client, Project, ProjectType, Lead } from "@/types";
 import { TaskWithRelations } from "@/types/task";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -29,11 +29,13 @@ const Dashboard = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [stats, setStats] = useState({
     totalClients: 0,
     totalProjects: 0,
     totalEarnings: 0,
     activeProjects: 0,
+    newLeadsThisMonth: 0,
   });
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -157,20 +159,54 @@ const Dashboard = () => {
           activities: task.task_activities || []
         }));
         
+        // Fetch leads
+        const { data: leadsData, error: leadsError } = await supabase
+          .from('leads')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (leadsError) {
+          console.error("Error fetching leads:", leadsError);
+          throw leadsError;
+        }
+        
+        // Transform leads data
+        const transformedLeads = leadsData.map((lead: any) => ({
+          id: lead.id,
+          name: lead.name,
+          email: lead.email,
+          phone: lead.phone,
+          source: lead.source,
+          stage: lead.stage,
+          notes: lead.notes,
+          address: lead.address,
+          createdAt: new Date(lead.created_at),
+          updatedAt: new Date(lead.updated_at)
+        }));
+        
         // Calculate stats
         const activeProjects = transformedProjects.filter(p => p.status === "In progress").length;
         const totalEarnings = transformedProjects.reduce((sum, project) => {
           return sum + project.payments.reduce((total, payment) => total + payment.amount, 0);
         }, 0);
         
+        // Calculate new leads this month
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const newLeadsThisMonth = transformedLeads.filter(lead => 
+          lead.createdAt >= startOfMonth
+        ).length;
+        
         setClients(transformedClients);
         setProjects(transformedProjects);
         setTasks(transformedTasks);
+        setLeads(transformedLeads);
         setStats({
           totalClients: transformedClients.length,
           totalProjects: transformedProjects.length,
           totalEarnings,
           activeProjects,
+          newLeadsThisMonth,
         });
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -267,8 +303,8 @@ const Dashboard = () => {
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <StatCard
-                  title="Total Clients"
-                  value={stats.totalClients}
+                  title="New Leads This Month"
+                  value={stats.newLeadsThisMonth}
                   icon={Users}
                   className="bg-white shadow-sm border border-border"
                 />
