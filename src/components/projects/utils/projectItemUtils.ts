@@ -45,3 +45,22 @@ export const getBriefStatusBadgeVariant = (status: string) => {
       return "secondary";
   }
 };
+
+export const getLeadSourceBadgeVariant = (source: string) => {
+  switch (source) {
+    case "Dribbble":
+      return "dribbble";
+    case "Website":
+      return "website";
+    case "LinkedIn":
+      return "linkedin";
+    case "Behance":
+      return "behance";
+    case "Direct Email":
+      return "direct-email";
+    case "Other":
+      return "other";
+    default:
+      return "other";
+  }
+};

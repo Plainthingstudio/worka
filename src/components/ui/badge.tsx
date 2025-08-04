@@ -58,6 +58,20 @@ const badgeVariants = cva(
         // Category/Skill variant
         "category":
           "bg-background text-foreground ring-border",
+        
+        // Lead source variants
+        "dribbble":
+          "bg-pink-50 text-pink-700 ring-pink-700/10",
+        "website":
+          "bg-blue-50 text-blue-700 ring-blue-700/10",
+        "linkedin":
+          "bg-blue-600/10 text-blue-600 ring-blue-600/20",
+        "behance":
+          "bg-purple-50 text-purple-700 ring-purple-700/10",
+        "direct-email":
+          "bg-green-50 text-green-700 ring-green-600/20",
+        "other":
+          "bg-gray-50 text-gray-700 ring-gray-600/20",
       },
     },
     defaultVariants: {

@@ -4,7 +4,9 @@ import { format } from "date-fns";
 import { Mail, Phone, Pencil, Trash, MapPin } from "lucide-react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Client } from "@/types";
+import { getLeadSourceBadgeVariant } from "@/components/projects/utils/projectItemUtils";
 import {
   Tooltip,
   TooltipContent,
@@ -45,9 +47,9 @@ const ClientItem = ({ client, onEdit, onDelete }: ClientItemProps) => {
         </div>
       </TableCell>
       <TableCell>
-        <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+        <Badge variant={getLeadSourceBadgeVariant(client.leadSource)}>
           {client.leadSource}
-        </span>
+        </Badge>
       </TableCell>
       <TableCell className="text-muted-foreground">
         {format(new Date(client.createdAt), "MMM dd, yyyy")}
