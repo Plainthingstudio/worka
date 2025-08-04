@@ -417,6 +417,65 @@ const Dashboard = () => {
                 <DeadlineCard projects={projects} tasks={tasks} getClientById={getClientById} />
               </div>
 
+              {/* Available Team Members */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">Available Team Members</h2>
+                  <Button variant="ghost" size="sm" onClick={() => navigate("/team")}>
+                    View All
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="glass-card rounded-xl border shadow-sm">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Position</TableHead>
+                        <TableHead>Skills</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {availableTeamMembers.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                            No available team members found.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        availableTeamMembers.map((member) => (
+                          <TableRow key={member.id}>
+                            <TableCell className="font-medium">{member.name}</TableCell>
+                            <TableCell>{member.position}</TableCell>
+                            <TableCell>
+                              <div className="flex flex-wrap gap-1">
+                                {member.skills.slice(0, 2).map((skill, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs">
+                                    {skill}
+                                  </Badge>
+                                ))}
+                                {member.skills.length > 2 && (
+                                  <Badge variant="outline" className="text-xs">
+                                    +{member.skills.length - 2}
+                                  </Badge>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-50 text-green-700 ring-green-700/10">
+                                <UserCheck className="mr-1 h-3 w-3" />
+                                Available
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+
               {/* Recent Clients */}
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
@@ -514,64 +573,6 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Available Team Members */}
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold">Available Team Members</h2>
-                  <Button variant="ghost" size="sm" onClick={() => navigate("/team")}>
-                    View All
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="glass-card rounded-xl border shadow-sm">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Position</TableHead>
-                        <TableHead>Skills</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {availableTeamMembers.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                            No available team members found.
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        availableTeamMembers.map((member) => (
-                          <TableRow key={member.id}>
-                            <TableCell className="font-medium">{member.name}</TableCell>
-                            <TableCell>{member.position}</TableCell>
-                            <TableCell>
-                              <div className="flex flex-wrap gap-1">
-                                {member.skills.slice(0, 2).map((skill, index) => (
-                                  <Badge key={index} variant="outline" className="text-xs">
-                                    {skill}
-                                  </Badge>
-                                ))}
-                                {member.skills.length > 2 && (
-                                  <Badge variant="outline" className="text-xs">
-                                    +{member.skills.length - 2}
-                                  </Badge>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-50 text-green-700 ring-green-700/10">
-                                <UserCheck className="mr-1 h-3 w-3" />
-                                Available
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
             </>
           )}
         </main>
