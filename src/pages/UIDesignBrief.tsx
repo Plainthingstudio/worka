@@ -14,7 +14,7 @@ const UIDesignBrief = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const forUserId = searchParams.get("for");
+  const forUserId = searchParams.get("u");
   const [isValidUser, setIsValidUser] = useState<boolean | null>(null);
   
   useEffect(() => {

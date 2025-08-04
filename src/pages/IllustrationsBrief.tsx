@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 const IllustrationsBrief = () => {
   const [step, setStep] = useState(1);
   const [searchParams] = useSearchParams();
-  const forUserId = searchParams.get("for");
+  const forUserId = searchParams.get("u");
   const [isValidUser, setIsValidUser] = useState<boolean | null>(null);
   
   useEffect(() => {

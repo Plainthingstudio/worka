@@ -31,9 +31,9 @@ const BriefPersonalizedLinks = () => {
 
   const baseUrl = window.location.origin;
   const briefLinks = {
-    graphic: `${baseUrl}/brief/graphic?for=${userId}`,
-    ui: `${baseUrl}/brief/ui?for=${userId}`,
-    illustration: `${baseUrl}/brief/illustration?for=${userId}`
+    graphic: `${baseUrl}/brief/graphic?u=${userId}`,
+    ui: `${baseUrl}/brief/ui?u=${userId}`,
+    illustration: `${baseUrl}/brief/illustration?u=${userId}`
   };
 
   const handleCopyLink = (type: 'graphic' | 'ui' | 'illustration') => {
