@@ -153,7 +153,7 @@ export const BriefSelector = ({ taskId, currentBrief, onBriefChange }: BriefSele
                       <MoreHorizontal className="h-3 w-3" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuContent align="end" className="w-40 z-[100]">
                     <DropdownMenuItem onClick={handleDownloadBrief} disabled={isDownloading}>
                       <Download className="h-3 w-3 mr-2" />
                       {isDownloading ? 'Downloading...' : 'Download'}
