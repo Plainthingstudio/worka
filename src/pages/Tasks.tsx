@@ -485,14 +485,18 @@ export const Tasks = () => {
 
   // Show loading state while checking authentication
   if (!isAuthenticated) {
-    return <div className="flex items-center justify-center h-64">
+    return (
+      <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="text-lg">Loading...</div>
           <div className="text-sm text-muted-foreground">Verifying authentication</div>
         </div>
-      </div>;
+      </div>
+    );
   }
-  return <div className="p-6 py-0">
+
+  return (
+    <div className="p-6 py-0">
       <div className="flex flex-col h-full">
             {/* Header */}
             <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6 sm:py-6 -mx-6  py-[8px]">
@@ -516,7 +520,9 @@ export const Tasks = () => {
                 </div>
 
                 <div className="flex items-center gap-3 w-full sm:w-auto">
-                  
+                  <Button variant="outline" size="sm" className="sm:flex hidden">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
                   <Button onClick={() => handleAddTask()} className="flex-1 sm:flex-none">
                     <Plus className="h-4 w-4 mr-2" />
                     <span className="sm:inline">Add Task</span>
@@ -581,14 +587,14 @@ export const Tasks = () => {
             {/* Content */}
             <div className="flex-1 overflow-hidden">
               {activeView === 'list' && <ClickUpTaskList tasks={filteredTasks} isLoading={isLoading} onTaskClick={task => {
-          console.log('Task clicked:', task.title);
-          setSelectedTask(task);
-        }} onUpdateTask={updateTask} onAddTask={handleAddTask} />}
+              console.log('Task clicked:', task.title);
+              setSelectedTask(task);
+            }} onUpdateTask={updateTask} onAddTask={handleAddTask} />}
               
               {activeView === 'board' && <TaskBoardView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddTask={status => handleAddTask(status)} onTaskClick={task => {
-          console.log('Board task clicked:', task.title);
-          setSelectedTask(task);
-        }} />}
+              console.log('Board task clicked:', task.title);
+              setSelectedTask(task);
+            }} />}
               
               {activeView === 'calendar' && <TaskCalendarView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} />}
             </div>
@@ -601,6 +607,7 @@ export const Tasks = () => {
 
       {/* Create Subtask Dialog */}
       <SubtaskDialog isOpen={isSubtaskDialogOpen} onClose={() => setIsSubtaskDialogOpen(false)} onSubmit={handleCreateSubtask} parentTaskId={parentTaskId} title="Create New Subtask" />
-    </div>;
+    </div>
+  );
 };
 export default Tasks;
