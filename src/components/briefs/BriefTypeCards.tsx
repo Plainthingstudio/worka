@@ -9,7 +9,7 @@ const BriefTypeCards: React.FC = () => {
       title: "UI Design Brief",
       description: "Get detailed information about your UI design project needs",
       content: "Form for websites, web apps, and other digital interfaces design projects.",
-      route: "/ui-design-brief",
+      route: "/brief/ui",
       icon: LayoutDashboard,
       iconColor: "text-blue-500"
     },
@@ -17,7 +17,7 @@ const BriefTypeCards: React.FC = () => {
       title: "Graphic Design Brief",
       description: "Get detailed information about your graphic design project needs",
       content: "Form for logos, branding, print materials, and other graphic design projects.",
-      route: "/graphic-design-brief",
+      route: "/brief/graphic",
       icon: Palette,
       iconColor: "text-purple-500"
     },
@@ -25,7 +25,7 @@ const BriefTypeCards: React.FC = () => {
       title: "Illustrations Brief",
       description: "Get detailed information about your illustration project needs",
       content: "Form for custom illustrations, icons, infographics and other illustration projects.",
-      route: "/illustrations-brief",
+      route: "/brief/illustration",
       icon: PencilRuler,
       iconColor: "text-amber-500"
     }
