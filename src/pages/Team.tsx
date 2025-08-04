@@ -3,8 +3,6 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import Navbar from "@/components/Navbar";
-import Sidebar from "@/components/Sidebar";
 import TeamForm from "@/components/TeamForm";
 import { TeamMember, TeamPosition } from "@/types";
 import TeamFilter from "@/components/team/TeamFilter";
@@ -21,7 +19,6 @@ const Team = () => {
   const [positionFilter, setPositionFilter] = useState<string>("all");
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isInvitationDialogOpen, setIsInvitationDialogOpen] = useState(false);
   const [invitationRefreshTrigger, setInvitationRefreshTrigger] = useState(0);
@@ -90,24 +87,6 @@ const Team = () => {
     }
   };
 
-  useEffect(() => {
-    const handleSidebarChange = () => {
-      const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
-      setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
-    };
-
-    handleSidebarChange();
-
-    const observer = new MutationObserver(handleSidebarChange);
-    const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
-    if (sidebarElement) {
-      observer.observe(sidebarElement, {
-        attributes: true,
-        attributeFilter: ['class']
-      });
-    }
-    return () => observer.disconnect();
-  }, []);
 
   const filteredMembers = teamMembers.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(search.toLowerCase());
@@ -240,11 +219,8 @@ const Team = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-      <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
-        <Navbar title="Team" />
-        <main className="container mx-auto p-6 space-y-6">
+    <>
+      <main className="container mx-auto p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">
@@ -291,8 +267,7 @@ const Team = () => {
               />
             </div>
           </div>
-        </main>
-      </div>
+      </main>
 
       {/* Invitation Dialog - only for owners */}
       {userRole === 'owner' && (
@@ -319,7 +294,7 @@ const Team = () => {
           onConfirm={() => isDeleting && handleDeleteMember(isDeleting)} 
         />
       )}
-    </div>
+    </>
   );
 };
 

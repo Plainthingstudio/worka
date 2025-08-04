@@ -1,7 +1,5 @@
 
 import React, { useState, useEffect } from "react";
-import Navbar from "@/components/Navbar";
-import Sidebar from "@/components/Sidebar";
 import BriefsHeader from "@/components/briefs/BriefsHeader";
 import BriefStats from "@/components/briefs/BriefStats";
 import BriefsFilter from "@/components/briefs/BriefsFilter";
@@ -24,28 +22,10 @@ const Briefs = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
   const [briefDetails, setBriefDetails] = React.useState<any>(null);
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
-    const handleSidebarChange = () => {
-      const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
-      setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
-    };
-
-    handleSidebarChange();
-
-    const observer = new MutationObserver(handleSidebarChange);
-    const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
-    
-    if (sidebarElement) {
-      observer.observe(sidebarElement, { attributes: true, attributeFilter: ['class'] });
-    }
-
-    return () => observer.disconnect();
-  }, []);
 
   const refreshData = async () => {
     if (isRefreshing) return;
@@ -128,15 +108,8 @@ const Briefs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Sidebar />
-      <div 
-        className={`flex-1 w-full transition-all duration-300 ease-in-out ${
-          isSidebarExpanded ? "pl-56" : "pl-14"
-        }`}
-      >
-        <Navbar title="Briefs" />
-        <main className="container py-6">
+    <>
+      <main className="container py-6">
           <BriefsHeader />
           <BriefStats briefs={briefs} />
           
@@ -198,9 +171,8 @@ const Briefs = () => {
             </>
           )}
           
-          <BriefTypeCards />
-        </main>
-      </div>
+        <BriefTypeCards />
+      </main>
 
       <DeleteBriefDialog
         open={isDeleteDialogOpen}
@@ -215,7 +187,7 @@ const Briefs = () => {
         briefDetails={briefDetails}
         onDownload={generateBriefPDF}
       />
-    </div>
+    </>
   );
 };
 

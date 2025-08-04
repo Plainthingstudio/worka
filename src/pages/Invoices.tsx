@@ -3,18 +3,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import Sidebar from '@/components/Sidebar';
-import Navbar from '@/components/Navbar';
 import InvoicesTable from '@/components/invoices/InvoicesTable';
 import InvoicesFilter from '@/components/invoices/InvoicesFilter';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { useInvoices } from '@/hooks/useInvoices';
-import { useSidebarState } from '@/hooks/useSidebarState';
 import { useInvoiceStatus } from '@/hooks/useInvoiceStatus';
 
 const Invoices = () => {
   const navigate = useNavigate();
-  const { isSidebarExpanded } = useSidebarState();
   const [filterStatus, setFilterStatus] = useState('all');
   
   const {
@@ -46,15 +42,8 @@ const Invoices = () => {
     : invoices.filter(invoice => invoice.status.toLowerCase() === filterStatus.toLowerCase());
 
   return (
-    <div className="flex h-screen bg-muted/10">
-      <Sidebar />
-      <div 
-        className={`flex-1 w-full transition-all duration-300 ease-in-out ${
-          isSidebarExpanded ? "ml-56" : "ml-14"
-        }`}
-      >
-        <Navbar title="Invoices" />
-        <main className="p-6">
+    <>
+      <main className="p-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">Invoices</h1>
@@ -93,8 +82,7 @@ const Invoices = () => {
               onStatusChange={updateInvoiceStatus}
             />
           )}
-        </main>
-      </div>
+      </main>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
@@ -116,7 +104,7 @@ const Invoices = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 };
 

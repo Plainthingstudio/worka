@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import Sidebar from '@/components/Sidebar';
-import Navbar from '@/components/Navbar';
 import { ClickUpTaskList } from '@/components/tasks/ClickUpTaskList';
 import { TaskListView } from '@/components/tasks/TaskListView';
 import { TaskBoardView } from '@/components/tasks/TaskBoardView';
@@ -34,7 +32,6 @@ export const Tasks = () => {
   const [newTaskStatus, setNewTaskStatus] = useState<TaskStatus>('Planning');
   const [activeView, setActiveView] = useState<'list' | 'board' | 'calendar'>('list');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
   // Handle URL parameters on load
   useEffect(() => {
@@ -96,28 +93,6 @@ export const Tasks = () => {
     });
     return () => subscription.unsubscribe();
   }, [navigate]);
-
-  // Listen for sidebar state changes
-  useEffect(() => {
-    const handleSidebarChange = () => {
-      const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
-      setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
-    };
-
-    // Initial check
-    handleSidebarChange();
-
-    // Set up mutation observer to watch for class changes on the sidebar
-    const observer = new MutationObserver(handleSidebarChange);
-    const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
-    if (sidebarElement) {
-      observer.observe(sidebarElement, {
-        attributes: true,
-        attributeFilter: ['class']
-      });
-    }
-    return () => observer.disconnect();
-  }, []);
   const fetchProjects = async () => {
     try {
       const {
@@ -510,27 +485,19 @@ export const Tasks = () => {
 
   // Show loading state while checking authentication
   if (!isAuthenticated) {
-    return <div className="flex min-h-screen bg-background">
-        <Sidebar />
-        <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
-          <Navbar title="Tasks" />
-          <main className="p-6">
-            <div className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <div className="text-lg">Loading...</div>
-                <div className="text-sm text-muted-foreground">Verifying authentication</div>
-              </div>
-            </div>
-          </main>
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-lg">Loading...</div>
+          <div className="text-sm text-muted-foreground">Verifying authentication</div>
         </div>
-      </div>;
+      </div>
+    );
   }
-  return <div className="flex min-h-screen bg-background">
-      <Sidebar />
-      <div className={`flex-1 w-full transition-all duration-300 ease-in-out ${isSidebarExpanded ? "ml-56" : "ml-14"}`}>
-        <Navbar title="Tasks" />
-        <main className="p-6 py-0">
-          <div className="flex flex-col h-full">
+
+  return (
+    <div className="p-6 py-0">
+      <div className="flex flex-col h-full">
             {/* Header */}
             <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6 sm:py-6 -mx-6  py-[8px]">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -632,9 +599,6 @@ export const Tasks = () => {
               {activeView === 'calendar' && <TaskCalendarView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} />}
             </div>
           </div>
-        </main>
-      </div>
-
       {/* Task Detail Sidebar */}
       <TaskDetailSidebar task={selectedTask} isOpen={!!selectedTask} onClose={() => setSelectedTask(null)} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddSubtask={handleAddSubtask} allTasks={tasks} />
 
@@ -643,6 +607,7 @@ export const Tasks = () => {
 
       {/* Create Subtask Dialog */}
       <SubtaskDialog isOpen={isSubtaskDialogOpen} onClose={() => setIsSubtaskDialogOpen(false)} onSubmit={handleCreateSubtask} parentTaskId={parentTaskId} title="Create New Subtask" />
-    </div>;
+    </div>
+  );
 };
 export default Tasks;
