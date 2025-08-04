@@ -165,17 +165,24 @@ const Sidebar = () => {
             to={item.href}
             className={({ isActive }) =>
               cn(
-                "flex items-center rounded-md px-2 py-2 text-sm font-medium transition-all",
+                "flex items-center rounded-md px-2 py-2 text-sm font-medium transition-all duration-200",
                 isActive
                   ? "bg-sidebar-primary/20 text-sidebar-primary dark:bg-sidebar-primary/10 dark:text-sidebar-primary dark:shadow-md dark:shadow-sidebar-primary/5"
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               )
             }
+            onClick={(e) => {
+              // Prevent default to avoid any potential refresh behavior
+              if (window.location.pathname === item.href) {
+                e.preventDefault();
+              }
+            }}
+            style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <item.icon
-              className={cn("h-4 w-4", expanded ? "mr-3" : "mx-auto")}
+              className={cn("h-4 w-4 flex-shrink-0", expanded ? "mr-3" : "mx-auto")}
             />
-            {expanded && <span>{item.label}</span>}
+            {expanded && <span className="truncate">{item.label}</span>}
           </NavLink>
         ))}
       </nav>
