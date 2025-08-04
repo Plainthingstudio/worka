@@ -771,7 +771,7 @@ export const TaskDetailSidebar = ({
                                </AvatarFallback>
                              </Avatar>
                              
-                             <div className="flex-1 space-y-2">
+                             <div className="flex-1 space-y-2 min-w-0 overflow-hidden">
                                <div className="flex items-center justify-between">
                                  <div className="flex items-center gap-2">
                                    <div className="flex items-center gap-1 text-sm">
@@ -846,7 +846,7 @@ export const TaskDetailSidebar = ({
                                    </div>
                                  </div>
                                ) : (
-                                  <div className="text-sm whitespace-pre-wrap">
+                                  <div className="text-sm whitespace-pre-wrap break-words">
                                     {activity.activity_type === 'comment' ? activity.content : getActivityDescription(activity)}
                                   </div>
                                )}
