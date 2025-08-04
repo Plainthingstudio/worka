@@ -95,6 +95,9 @@ export const TaskActivityFeed = ({
   const handleSubmit = async () => {
     if (!newComment.trim() && selectedFiles.length === 0) return;
     
+    console.log('Submitting comment with content:', JSON.stringify(newComment));
+    console.log('Content includes line breaks:', newComment.includes('\n'));
+    
     setIsSubmitting(true);
     try {
       const success = await onAddActivity(newComment, selectedFiles);
@@ -379,13 +382,13 @@ export const TaskActivityFeed = ({
                         </div>
                       </div>
                     ) : (
-                      <div className="text-sm whitespace-pre-wrap">
+                      <div className="text-sm" style={{ whiteSpace: 'pre-wrap' }}>
                         {(() => {
                           console.log('Activity type:', activity.activity_type);
-                          console.log('Activity content:', JSON.stringify(activity.content));
-                          console.log('Content length:', activity.content?.length);
+                          console.log('Activity content (raw):', JSON.stringify(activity.content));
+                          console.log('Content includes \\n:', activity.content?.includes('\n'));
                           const displayContent = activity.activity_type === 'comment' ? activity.content : getActivityDescription(activity);
-                          console.log('Display content:', JSON.stringify(displayContent));
+                          console.log('Final display content:', JSON.stringify(displayContent));
                           return displayContent;
                         })()}
                       </div>
