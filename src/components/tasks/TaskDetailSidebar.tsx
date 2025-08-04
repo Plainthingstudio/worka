@@ -491,12 +491,14 @@ export const TaskDetailSidebar = ({
                             field.onChange(value);
                             form.handleSubmit(handleSubmit)();
                           }} value={field.value}>
-                            <SelectTrigger className="text-sm w-48 border-none shadow-none px-0 py-0 h-auto hover:bg-transparent focus:ring-0 group [&>svg]:hidden">
-                              <div className="flex items-center gap-2">
-                                <SelectValue />
-                                <ChevronDown className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </div>
-                            </SelectTrigger>
+                             <SelectTrigger className="text-sm w-48 border-none shadow-none px-0 py-0 h-auto hover:bg-transparent focus:ring-0 group [&>svg]:hidden">
+                               <div className="flex items-center gap-2">
+                                 <Badge variant={field.value.toLowerCase().replace(' ', '-') as any}>
+                                   {field.value}
+                                 </Badge>
+                                 <ChevronDown className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                               </div>
+                             </SelectTrigger>
                             <SelectContent className="bg-background border z-[80]">
                               <SelectItem value="Planning">Planning</SelectItem>
                               <SelectItem value="In progress">In Progress</SelectItem>
