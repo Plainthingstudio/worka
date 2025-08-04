@@ -382,15 +382,8 @@ export const TaskActivityFeed = ({
                         </div>
                       </div>
                     ) : (
-                      <div className="text-sm" style={{ whiteSpace: 'pre-wrap' }}>
-                        {(() => {
-                          console.log('Activity type:', activity.activity_type);
-                          console.log('Activity content (raw):', JSON.stringify(activity.content));
-                          console.log('Content includes \\n:', activity.content?.includes('\n'));
-                          const displayContent = activity.activity_type === 'comment' ? activity.content : getActivityDescription(activity);
-                          console.log('Final display content:', JSON.stringify(displayContent));
-                          return displayContent;
-                        })()}
+                      <div className="text-sm whitespace-pre-wrap">
+                        {activity.activity_type === 'comment' ? activity.content : getActivityDescription(activity)}
                       </div>
                     )}
                     
