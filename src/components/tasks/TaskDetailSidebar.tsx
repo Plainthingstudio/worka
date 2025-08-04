@@ -47,6 +47,7 @@ import {
   Plus,
   Download
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { TaskWithRelations } from '@/types/task';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { useTaskActivities } from '@/hooks/useTaskActivities';
@@ -102,11 +103,14 @@ export const TaskDetailSidebar = ({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userNames, setUserNames] = useState<Record<string, string>>({});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [editingActivityId, setEditingActivityId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState('');
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
   const navigate = useNavigate();
   const { project } = useTaskProject(task?.project_id || null);
   const { activities, isLoading: activitiesLoading, addActivity, updateActivity, deleteActivity } = useTaskActivities(task?.id || '');
   const { userRole, isLoading: roleLoading } = useUserRole();
+  const { toast } = useToast();
 
   // Get current user ID
   useEffect(() => {
@@ -277,6 +281,33 @@ export const TaskDetailSidebar = ({
         return 'Created this task';
       default:
         return 'Updated the task';
+    }
+  };
+
+  const handleEditStart = (activity: any) => {
+    setEditingActivityId(activity.id);
+    setEditingContent(activity.content || '');
+  };
+
+  const handleEditSave = async (activityId: string) => {
+    if (!editingContent.trim()) return;
+    
+    const success = await updateActivity(activityId, editingContent);
+    if (success) {
+      setEditingActivityId(null);
+      setEditingContent('');
+    }
+  };
+
+  const handleEditCancel = () => {
+    setEditingActivityId(null);
+    setEditingContent('');
+  };
+
+  const handleDelete = async (activityId: string) => {
+    const confirmed = window.confirm('Are you sure you want to delete this comment?');
+    if (confirmed) {
+      await deleteActivity(activityId);
     }
   };
 
@@ -728,51 +759,112 @@ export const TaskDetailSidebar = ({
                     ) : activities.length === 0 ? (
                       <div className="text-center text-muted-foreground py-8">No activities yet</div>
                     ) : (
-                      activities.map((activity) => (
-                        <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="text-xs">
-                              {userNames[activity.user_id]?.charAt(0)?.toUpperCase() || 'U'}
-                            </AvatarFallback>
-                          </Avatar>
-                          
-                          <div className="flex-1 space-y-2">
-                            <div className="flex items-center gap-2">
-                              <div className="flex items-center gap-1 text-sm">
-                                {getActivityIcon(activity.activity_type)}
-                                <span className="font-medium">{userNames[activity.user_id] || 'User'}</span>
-                              </div>
-                              <span className="text-xs text-muted-foreground">
-                                {format(new Date(activity.created_at), 'MMM dd, yyyy HH:mm')}
-                              </span>
-                            </div>
-                            
-                            <div className="text-sm">{getActivityDescription(activity)}</div>
-                            
-                            {/* Attachments */}
-                            {activity.attachments && activity.attachments.length > 0 && (
-                              <div className="space-y-2">
-                                {activity.attachments.map((attachment: any, index: number) => (
-                                  <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
-                                    <Paperclip className="h-4 w-4 text-muted-foreground" />
-                                    <span className="text-sm">{attachment.file_name}</span>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-6 w-6 p-0 ml-auto"
-                                      asChild
-                                    >
-                                      <a href={attachment.file_url} target="_blank" rel="noopener noreferrer">
-                                        <Download className="h-3 w-3" />
-                                      </a>
-                                    </Button>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))
+                       activities.map((activity) => {
+                         const isOwnComment = currentUserId === activity.user_id && activity.activity_type === 'comment';
+                         const isEditing = editingActivityId === activity.id;
+                         
+                         return (
+                           <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">
+                             <Avatar className="h-8 w-8">
+                               <AvatarFallback className="text-xs">
+                                 {userNames[activity.user_id]?.charAt(0)?.toUpperCase() || 'U'}
+                               </AvatarFallback>
+                             </Avatar>
+                             
+                             <div className="flex-1 space-y-2">
+                               <div className="flex items-center justify-between">
+                                 <div className="flex items-center gap-2">
+                                   <div className="flex items-center gap-1 text-sm">
+                                     {getActivityIcon(activity.activity_type)}
+                                     <span className="font-medium">{userNames[activity.user_id] || 'User'}</span>
+                                   </div>
+                                   <span className="text-xs text-muted-foreground">
+                                     {format(new Date(activity.created_at), 'MMM dd, yyyy HH:mm')}
+                                   </span>
+                                 </div>
+                                 
+                                 {/* Edit/Delete dropdown for own comments */}
+                                 {isOwnComment && (
+                                   <DropdownMenu>
+                                     <DropdownMenuTrigger asChild>
+                                       <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                         <MoreHorizontal className="h-3 w-3" />
+                                       </Button>
+                                     </DropdownMenuTrigger>
+                                     <DropdownMenuContent align="end" className="bg-background border z-[80]">
+                                       <DropdownMenuItem onClick={() => handleEditStart(activity)}>
+                                         <Edit className="h-3 w-3 mr-2" />
+                                         Edit
+                                       </DropdownMenuItem>
+                                       <DropdownMenuItem 
+                                         onClick={() => handleDelete(activity.id)}
+                                         className="text-destructive"
+                                       >
+                                         <Trash2 className="h-3 w-3 mr-2" />
+                                         Delete
+                                       </DropdownMenuItem>
+                                     </DropdownMenuContent>
+                                   </DropdownMenu>
+                                 )}
+                               </div>
+                               
+                               {/* Activity content - either editable or display */}
+                               {isEditing ? (
+                                 <div className="space-y-2">
+                                   <Input
+                                     value={editingContent}
+                                     onChange={(e) => setEditingContent(e.target.value)}
+                                     className="text-sm"
+                                     autoFocus
+                                   />
+                                   <div className="flex gap-2">
+                                     <Button 
+                                       size="sm" 
+                                       onClick={() => handleEditSave(activity.id)}
+                                       className="h-6 text-xs"
+                                     >
+                                       <CheckCircle className="h-3 w-3 mr-1" />
+                                       Save
+                                     </Button>
+                                     <Button 
+                                       variant="outline" 
+                                       size="sm" 
+                                       onClick={handleEditCancel}
+                                       className="h-6 text-xs"
+                                     >
+                                       Cancel
+                                     </Button>
+                                   </div>
+                                 </div>
+                               ) : (
+                                 <div className="text-sm">{getActivityDescription(activity)}</div>
+                               )}
+                               
+                               {/* Attachments */}
+                               {activity.attachments && activity.attachments.length > 0 && (
+                                 <div className="space-y-2">
+                                   {activity.attachments.map((attachment: any, index: number) => (
+                                     <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
+                                       <Paperclip className="h-4 w-4 text-muted-foreground" />
+                                       <span className="text-sm">{attachment.file_name}</span>
+                                       <Button
+                                         variant="ghost"
+                                         size="sm"
+                                         className="h-6 w-6 p-0 ml-auto"
+                                         asChild
+                                       >
+                                         <a href={attachment.file_url} target="_blank" rel="noopener noreferrer">
+                                           <Download className="h-3 w-3" />
+                                         </a>
+                                       </Button>
+                                     </div>
+                                   ))}
+                                 </div>
+                               )}
+                             </div>
+                           </div>
+                         );
+                       })
                     )}
                   </div>
                 </div>
