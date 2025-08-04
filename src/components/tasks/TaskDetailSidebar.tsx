@@ -461,13 +461,26 @@ export const TaskDetailSidebar = ({
                   />
                 )}
 
-                {/* Status and Priority Row */}
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Target className="h-4 w-4" />
-                      Status
-                    </div>
+                {/* Created Time */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Clock className="h-4 w-4" />
+                    <span>Created time</span>
+                  </div>
+                  <div className="ml-7">
+                    <span className="text-sm">
+                      {format(new Date(task.created_at), 'MMMM dd, yyyy')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Target className="h-4 w-4" />
+                    <span>Status</span>
+                  </div>
+                  <div className="ml-7">
                     {userRole === 'team' ? (
                       <Badge variant={form.watch('status').toLowerCase().replace(' ', '-') as any}>
                         {form.watch('status')}
@@ -481,7 +494,7 @@ export const TaskDetailSidebar = ({
                             field.onChange(value);
                             form.handleSubmit(handleSubmit)();
                           }} value={field.value}>
-                            <SelectTrigger className={`${getStatusSolidClass(field.value)} text-white border-none text-sm h-9`}>
+                            <SelectTrigger className={`w-48 ${getStatusSolidClass(field.value)} text-white border-none text-sm h-9`}>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent className="bg-background border z-[80]">
@@ -496,14 +509,17 @@ export const TaskDetailSidebar = ({
                       />
                     )}
                   </div>
+                </div>
 
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Flag className="h-4 w-4" />
-                      Priority
-                    </div>
+                {/* Priority */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Flag className="h-4 w-4" />
+                    <span>Priority</span>
+                  </div>
+                  <div className="ml-7">
                     {userRole === 'team' ? (
-                      <div className="flex items-center gap-2 p-2 border rounded text-sm h-9">
+                      <div className="flex items-center gap-2 p-2 border rounded text-sm h-9 w-48">
                         {getPriorityIcon(form.watch('priority'))}
                         {form.watch('priority')}
                       </div>
@@ -516,43 +532,114 @@ export const TaskDetailSidebar = ({
                             field.onChange(value);
                             form.handleSubmit(handleSubmit)();
                           }} value={field.value}>
-                            <SelectTrigger className="text-sm h-9">
+                            <SelectTrigger className="text-sm h-9 w-48">
                               <div className="flex items-center gap-2">
                                 {getPriorityIcon(field.value)}
                                 <SelectValue />
                               </div>
                             </SelectTrigger>
                             <SelectContent className="bg-background border z-[80]">
-                             <SelectItem value="Low">Low</SelectItem>
-                            <SelectItem value="Normal">Normal</SelectItem>
-                            <SelectItem value="High">High</SelectItem>
-                            <SelectItem value="Urgent">Urgent</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
+                              <SelectItem value="Low">Low</SelectItem>
+                              <SelectItem value="Normal">Normal</SelectItem>
+                              <SelectItem value="High">High</SelectItem>
+                              <SelectItem value="Urgent">Urgent</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
                     )}
                   </div>
                 </div>
 
-                {/* Assignees and Due Date Row */}
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Users className="h-4 w-4" />
-                      Assignees
-                    </div>
+                {/* Due Date */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Calendar className="h-4 w-4" />
+                    <span>Due date</span>
+                  </div>
+                  <div className="ml-7">
                     {userRole === 'team' ? (
-                      <div className="space-y-3">
+                      <div className="p-2 border rounded text-sm h-9 flex items-center w-48">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {task.due_date ? format(task.due_date, 'MMMM dd, yyyy') : 'No due date'}
+                      </div>
+                    ) : (
+                      <FormField
+                        control={form.control}
+                        name="due_date"
+                        render={({ field }) => (
+                          <div className="flex items-center gap-2">
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className="w-48 justify-start text-left font-normal text-sm h-9"
+                                >
+                                  <Calendar className="mr-2 h-4 w-4" />
+                                  {field.value ? format(field.value, 'MMMM dd, yyyy') : 'Set due date'}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0 bg-background border z-[80]" align="start">
+                                <CalendarComponent
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={(date) => {
+                                    field.onChange(date);
+                                    form.handleSubmit(handleSubmit)();
+                                  }}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            {field.value && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  field.onChange(undefined);
+                                  form.handleSubmit(handleSubmit)();
+                                }}
+                                className="h-8 w-8 p-0"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      />
+                    )}
+                  </div>
+                </div>
+
+                {/* Assignees */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Users className="h-4 w-4" />
+                    <span>Assignees</span>
+                  </div>
+                  <div className="ml-7">
+                    {userRole === 'team' ? (
+                      <div>
                         {task.assignees && task.assignees.length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex -space-x-2">
                             {task.assignees.map((assigneeId) => {
                               const member = teamMembers.find(m => m.user_id === assigneeId);
-                              return member ? (
-                                <Badge key={assigneeId} variant="secondary" className="text-sm">
-                                  {member.name}
-                                </Badge>
-                              ) : null;
+                              if (!member) return null;
+                              
+                              const initials = member.name
+                                .split(' ')
+                                .map(n => n[0])
+                                .join('')
+                                .toUpperCase()
+                                .slice(0, 2);
+                              
+                              return (
+                                <Avatar key={assigneeId} className="h-8 w-8 border-2 border-background">
+                                  <AvatarFallback className="text-xs font-medium">
+                                    {initials}
+                                  </AvatarFallback>
+                                </Avatar>
+                              );
                             })}
                           </div>
                         ) : (
@@ -564,94 +651,70 @@ export const TaskDetailSidebar = ({
                         control={form.control}
                         name="assignees"
                         render={({ field }) => (
-                          <div className="space-y-3">
-                            <Select
-                              onValueChange={(value) => {
-                                const currentAssignees = field.value || [];
-                                if (!currentAssignees.includes(value)) {
-                                  const newAssignees = [...currentAssignees, value];
-                                  field.onChange(newAssignees);
-                                  form.handleSubmit(handleSubmit)();
-                                }
-                              }}
-                            >
-                              <SelectTrigger className="text-sm h-9">
-                                <SelectValue placeholder="Add assignee" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-background border z-[80]">
-                                {teamMembers.map((member) => (
-                                  <SelectItem key={member.id} value={member.user_id}>
-                                    {member.name} ({member.position})
-                                  </SelectItem>
+                          <div className="flex items-center gap-2">
+                            {/* Avatar circles for assignees */}
+                            <div className="flex -space-x-2">
+                              {field.value?.map((assigneeId) => {
+                                const member = teamMembers.find(m => m.user_id === assigneeId);
+                                if (!member) return null;
+                                
+                                const initials = member.name
+                                  .split(' ')
+                                  .map(n => n[0])
+                                  .join('')
+                                  .toUpperCase()
+                                  .slice(0, 2);
+                                
+                                return (
+                                  <div key={assigneeId} className="relative group">
+                                    <Avatar className="h-8 w-8 border-2 border-background">
+                                      <AvatarFallback className="text-xs font-medium">
+                                        {initials}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newAssignees = field.value?.filter(id => id !== assigneeId) || [];
+                                        field.onChange(newAssignees);
+                                        form.handleSubmit(handleSubmit)();
+                                      }}
+                                      className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                    >
+                                      <X className="h-2 w-2" />
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            
+                            {/* Add assignee button */}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-full">
+                                  <Plus className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent className="z-[80]">
+                                {teamMembers.filter(member => 
+                                  !field.value?.includes(member.user_id)
+                                ).map(member => (
+                                  <DropdownMenuItem
+                                    key={member.id}
+                                    onClick={() => {
+                                      const currentAssignees = field.value || [];
+                                      const newAssignees = [...currentAssignees, member.user_id];
+                                      field.onChange(newAssignees);
+                                      form.handleSubmit(handleSubmit)();
+                                    }}
+                                  >
+                                    <User className="h-4 w-4 mr-2" />
+                                    {member.name}
+                                  </DropdownMenuItem>
                                 ))}
-                              </SelectContent>
-                            </Select>
-                            {field.value && field.value.length > 0 && (
-                              <div className="flex flex-wrap gap-2">
-                                {field.value.map((assigneeId) => {
-                                  const member = teamMembers.find(m => m.user_id === assigneeId);
-                                  return member ? (
-                                    <Badge key={assigneeId} variant="secondary" className="text-sm">
-                                      {member.name}
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          const newAssignees = field.value?.filter(id => id !== assigneeId) || [];
-                                          field.onChange(newAssignees);
-                                          form.handleSubmit(handleSubmit)();
-                                        }}
-                                        className="ml-2 hover:text-destructive"
-                                      >
-                                        ×
-                                      </button>
-                                    </Badge>
-                                  ) : null;
-                                })}
-                              </div>
-                            )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
-                        )}
-                      />
-                    )}
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
-                      Due Date
-                    </div>
-                    {userRole === 'team' ? (
-                      <div className="p-2 border rounded text-sm h-9 flex items-center">
-                        <Calendar className="mr-2 h-4 w-4" />
-                        {task.due_date ? format(task.due_date, 'MMM dd, yyyy') : 'No due date'}
-                      </div>
-                    ) : (
-                      <FormField
-                        control={form.control}
-                        name="due_date"
-                        render={({ field }) => (
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className="w-full justify-start text-left font-normal text-sm h-9"
-                              >
-                                <Calendar className="mr-2 h-4 w-4" />
-                                {field.value ? format(field.value, 'MMM dd, yyyy') : 'Set due date'}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 bg-background border z-[80]" align="start">
-                              <CalendarComponent
-                                mode="single"
-                                selected={field.value}
-                                onSelect={(date) => {
-                                  field.onChange(date);
-                                  form.handleSubmit(handleSubmit)();
-                                }}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
                         )}
                       />
                     )}
