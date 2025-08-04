@@ -200,13 +200,13 @@ export const TaskBoardView = ({
                     onClick={() => onTaskClick?.(task)}
                   >
                     <CardContent className="p-4">
-                      <div className="flex items-start gap-2 mb-3">
+                      <div className="flex items-start justify-between mb-3">
+                        {/* Task Title */}
+                        <h4 className="font-medium text-sm line-clamp-2 text-gray-900 flex-1">{task.title}</h4>
                         {/* Drag Handle */}
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing mt-0.5">
                           <GripVertical className="h-3 w-3 text-muted-foreground" />
                         </div>
-                        {/* Task Title */}
-                        <h4 className="font-medium text-sm line-clamp-2 text-gray-900 flex-1">{task.title}</h4>
                       </div>
                       
                       {/* Priority Badge */}
