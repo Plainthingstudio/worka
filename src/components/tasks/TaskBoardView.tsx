@@ -28,11 +28,11 @@ interface TaskBoardViewProps {
 }
 
 const statusColumns: { status: TaskStatus; title: string; color: string; bgColor: string; textColor: string }[] = [
-  { status: 'Planning', title: 'PLANNING', color: 'bg-purple-500', bgColor: 'bg-purple-50', textColor: 'text-purple-700' },
-  { status: 'In progress', title: 'IN PROGRESS', color: 'bg-yellow-500', bgColor: 'bg-yellow-50', textColor: 'text-yellow-700' },
-  { status: 'Paused', title: 'PAUSED', color: 'bg-gray-500', bgColor: 'bg-gray-50', textColor: 'text-gray-700' },
-  { status: 'Completed', title: 'COMPLETED', color: 'bg-green-500', bgColor: 'bg-green-50', textColor: 'text-green-700' },
-  { status: 'Cancelled', title: 'CANCELLED', color: 'bg-red-500', bgColor: 'bg-red-50', textColor: 'text-red-700' },
+  { status: 'Planning', title: 'To do', color: 'text-orange-600', bgColor: 'bg-gray-50', textColor: 'text-gray-700' },
+  { status: 'In progress', title: 'In Progress', color: 'text-blue-600', bgColor: 'bg-gray-50', textColor: 'text-gray-700' },
+  { status: 'Paused', title: 'Paused', color: 'text-gray-600', bgColor: 'bg-gray-50', textColor: 'text-gray-700' },
+  { status: 'Completed', title: 'Done', color: 'text-green-600', bgColor: 'bg-gray-50', textColor: 'text-gray-700' },
+  { status: 'Cancelled', title: 'Cancelled', color: 'text-red-600', bgColor: 'bg-gray-50', textColor: 'text-gray-700' },
 ];
 
 export const TaskBoardView = ({ 
@@ -115,20 +115,27 @@ export const TaskBoardView = ({
         return (
           <div key={column.status} className="min-w-[280px] flex-shrink-0 flex flex-col h-full">
             {/* Column Header */}
-            <div className={`${column.color} text-white px-4 py-3 rounded-t-lg flex items-center justify-between`}>
+            <div className="px-4 py-3 flex items-center justify-between bg-transparent">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span className="text-sm font-medium uppercase tracking-wide">{column.title}</span>
-                <span className="text-sm opacity-80">{columnTasks.length}</span>
+                <div className={`w-2 h-2 rounded-full ${column.color === 'text-orange-600' ? 'bg-orange-500' : column.color === 'text-blue-600' ? 'bg-blue-500' : column.color === 'text-gray-600' ? 'bg-gray-500' : column.color === 'text-green-600' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                <span className={`text-sm font-medium ${column.color}`}>{column.title}</span>
+                <div className="bg-gray-200 text-gray-700 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">
+                  {columnTasks.length}
+                </div>
               </div>
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/20">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-gray-600">
+                  <Plus className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-gray-600">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             
             {/* Column Content */}
             <div 
-              className={`${column.bgColor} flex-1 p-3 space-y-3 overflow-y-auto rounded-b-lg transition-all duration-300 relative ${
+              className={`${column.bgColor} flex-1 p-4 space-y-3 overflow-y-auto rounded-lg transition-all duration-300 relative ${
                 dragOverColumn === column.status && draggedTask ? 
                   'bg-primary/10 border-2 border-primary border-dashed shadow-lg transform scale-105' : 
                   ''
