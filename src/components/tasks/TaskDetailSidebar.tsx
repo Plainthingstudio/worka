@@ -811,12 +811,21 @@ export const TaskDetailSidebar = ({
                                {/* Activity content - either editable or display */}
                                {isEditing ? (
                                  <div className="space-y-2">
-                                   <Input
-                                     value={editingContent}
-                                     onChange={(e) => setEditingContent(e.target.value)}
-                                     className="text-sm"
-                                     autoFocus
-                                   />
+                                    <Textarea
+                                      value={editingContent}
+                                      onChange={(e) => setEditingContent(e.target.value)}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                                          e.preventDefault();
+                                          handleEditSave(activity.id);
+                                        }
+                                      }}
+                                      className="text-sm resize-none min-h-[80px]"
+                                      autoFocus
+                                      rows={3}
+                                      placeholder="Edit your comment... (Press Ctrl+Enter to save)"
+                                    />
+                                    <div className="text-xs text-muted-foreground">Press Enter for line breaks, Ctrl+Enter to save</div>
                                    <div className="flex gap-2">
                                      <Button 
                                        size="sm" 
@@ -837,7 +846,9 @@ export const TaskDetailSidebar = ({
                                    </div>
                                  </div>
                                ) : (
-                                 <div className="text-sm">{getActivityDescription(activity)}</div>
+                                  <div className="text-sm whitespace-pre-wrap">
+                                    {activity.activity_type === 'comment' ? activity.content : getActivityDescription(activity)}
+                                  </div>
                                )}
                                
                                {/* Attachments */}
