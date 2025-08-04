@@ -108,11 +108,14 @@ export const TaskActivityFeed = ({
   };
 
   const handleEditStart = (activity: TaskActivityFeedActivity) => {
+    console.log('Starting edit for activity:', activity.id);
+    console.log('Edit content:', JSON.stringify(activity.content));
     setEditingActivityId(activity.id);
     setEditingContent(activity.content || '');
   };
 
   const handleEditSave = async (activityId: string) => {
+    console.log('Saving edit with content:', JSON.stringify(editingContent));
     if (!onUpdateActivity || !editingContent.trim()) return;
     
     const success = await onUpdateActivity(activityId, editingContent);
@@ -377,7 +380,14 @@ export const TaskActivityFeed = ({
                       </div>
                     ) : (
                       <div className="text-sm whitespace-pre-wrap">
-                        {activity.activity_type === 'comment' ? activity.content : getActivityDescription(activity)}
+                        {(() => {
+                          console.log('Activity type:', activity.activity_type);
+                          console.log('Activity content:', JSON.stringify(activity.content));
+                          console.log('Content length:', activity.content?.length);
+                          const displayContent = activity.activity_type === 'comment' ? activity.content : getActivityDescription(activity);
+                          console.log('Display content:', JSON.stringify(displayContent));
+                          return displayContent;
+                        })()}
                       </div>
                     )}
                     
