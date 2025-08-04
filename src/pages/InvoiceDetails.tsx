@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import Sidebar from "@/components/Sidebar";
-import Navbar from "@/components/Navbar";
 import { Invoice } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { useSidebarState } from "@/hooks/useSidebarState";
 import { useClients } from "@/hooks/useClients";
 import { useInvoicePdf } from "@/hooks/useInvoicePdf";
 
@@ -21,7 +18,6 @@ const InvoiceDetails = () => {
   const { invoiceId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isSidebarExpanded } = useSidebarState();
   const { clients, isLoading: isClientsLoading } = useClients();
   const { generatePDF } = useInvoicePdf();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -201,62 +197,44 @@ const InvoiceDetails = () => {
   // If invoice is not loaded yet
   if (isLoading || !invoice || !client) {
     return (
-      <div className="flex h-screen bg-muted/10">
-        <Sidebar />
-        <div 
-          className={`flex-1 w-full transition-all duration-300 ease-in-out ${
-            isSidebarExpanded ? "ml-56" : "ml-14"
-          }`}
-        >
-          <Navbar title="Invoice Details" />
-          <main className="p-6">
-            <InvoiceLoading />
-          </main>
-        </div>
-      </div>
+      <main className="p-6">
+        <InvoiceLoading />
+      </main>
     );
   }
 
   return (
-    <div className="flex h-screen bg-muted/10">
-      <Sidebar />
-      <div 
-        className={`flex-1 w-full transition-all duration-300 ease-in-out ${
-          isSidebarExpanded ? "ml-56" : "ml-14"
-        }`}
-      >
-        <Navbar title="Invoice Details" />
-        <main className="p-6">
-          <InvoiceDetailsHeader 
-            invoice={invoice}
-            onDeleteClick={() => setDeleteConfirmOpen(true)}
-            onGeneratePDF={handleGeneratePDF}
-            onEditClick={handleEdit}
-          />
+    <>
+      <main className="p-6">
+        <InvoiceDetailsHeader 
+          invoice={invoice}
+          onDeleteClick={() => setDeleteConfirmOpen(true)}
+          onGeneratePDF={handleGeneratePDF}
+          onEditClick={handleEdit}
+        />
 
-          <div className="rounded-lg border bg-card shadow-sm">
-            <InvoiceInfo 
-              invoice={invoice} 
-              client={client} 
-              formatCurrency={formatCurrency} 
-            />
-            
-            <InvoiceItemsTable 
-              invoice={invoice} 
-              formatCurrency={formatCurrency} 
-            />
-            
-            <InvoiceNotesTerm invoice={invoice} />
-          </div>
-        </main>
-      </div>
+        <div className="rounded-lg border bg-card shadow-sm">
+          <InvoiceInfo 
+            invoice={invoice} 
+            client={client} 
+            formatCurrency={formatCurrency} 
+          />
+          
+          <InvoiceItemsTable 
+            invoice={invoice} 
+            formatCurrency={formatCurrency} 
+          />
+          
+          <InvoiceNotesTerm invoice={invoice} />
+        </div>
+      </main>
 
       <DeleteInvoiceDialog
         open={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}
         onConfirmDelete={handleDelete}
       />
-    </div>
+    </>
   );
 };
 
