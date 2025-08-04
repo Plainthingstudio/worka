@@ -449,7 +449,8 @@ export const TaskDetailSidebar = ({
           {/* Task Details - Scrollable Content */}
           <div className="flex-1 flex flex-col min-h-0">
             <ScrollArea className="flex-1">
-              <div className="p-6 space-y-8">\n                {/* Task Details Container */}
+              <div className="p-6 space-y-8">
+                {/* Task Details Container */}
                 <div className="space-y-3">
                 {/* Created Time */}
                 <div className="flex items-center gap-3">
