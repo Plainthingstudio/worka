@@ -45,7 +45,8 @@ import {
   Target,
   Clock,
   Plus,
-  Download
+  Download,
+  ChevronDown
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { TaskWithRelations } from '@/types/task';
@@ -478,9 +479,9 @@ export const TaskDetailSidebar = ({
                   <span className="text-sm text-muted-foreground w-24">Status</span>
                   <div>
                     {userRole === 'team' ? (
-                      <div className="flex items-center text-sm px-0 w-48">
+                      <Badge variant={form.watch('status').toLowerCase().replace(' ', '-') as any}>
                         {form.watch('status')}
-                      </div>
+                      </Badge>
                     ) : (
                       <FormField
                         control={form.control}
@@ -490,8 +491,11 @@ export const TaskDetailSidebar = ({
                             field.onChange(value);
                             form.handleSubmit(handleSubmit)();
                           }} value={field.value}>
-                            <SelectTrigger className="text-sm w-48 border-none shadow-none px-0 py-0 h-auto hover:bg-transparent focus:ring-0 [&>svg]:hidden">
-                              <SelectValue />
+                            <SelectTrigger className="text-sm w-48 border-none shadow-none px-0 py-0 h-auto hover:bg-transparent focus:ring-0 group">
+                              <div className="flex items-center gap-2">
+                                <SelectValue />
+                                <ChevronDown className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
                             </SelectTrigger>
                             <SelectContent className="bg-background border z-[80]">
                               <SelectItem value="Planning">Planning</SelectItem>
@@ -513,7 +517,8 @@ export const TaskDetailSidebar = ({
                   <span className="text-sm text-muted-foreground w-24">Priority</span>
                   <div>
                     {userRole === 'team' ? (
-                      <div className="flex items-center text-sm px-0 w-48">
+                      <div className="flex items-center gap-2 text-sm px-0 w-48">
+                        {getPriorityIcon(form.watch('priority'))}
                         {form.watch('priority')}
                       </div>
                     ) : (
@@ -525,8 +530,12 @@ export const TaskDetailSidebar = ({
                             field.onChange(value);
                             form.handleSubmit(handleSubmit)();
                           }} value={field.value}>
-                            <SelectTrigger className="text-sm w-48 border-none shadow-none px-0 py-0 h-auto hover:bg-transparent focus:ring-0 [&>svg]:hidden">
-                              <SelectValue />
+                            <SelectTrigger className="text-sm w-48 border-none shadow-none px-0 py-0 h-auto hover:bg-transparent focus:ring-0 group">
+                              <div className="flex items-center gap-2">
+                                {getPriorityIcon(field.value)}
+                                <SelectValue />
+                                <ChevronDown className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
                             </SelectTrigger>
                             <SelectContent className="bg-background border z-[80]">
                               <SelectItem value="Low">Low</SelectItem>
@@ -565,9 +574,10 @@ export const TaskDetailSidebar = ({
                             <PopoverTrigger asChild>
                               <Button
                                 variant="outline"
-                                className="w-48 justify-start text-left font-normal text-sm border-none shadow-none px-0 py-0 h-auto hover:bg-transparent focus:ring-0"
+                                className="w-48 justify-between text-left font-normal text-sm border-none shadow-none px-0 py-0 h-auto hover:bg-transparent focus:ring-0 group"
                               >
-                                {field.value ? format(field.value, 'MMMM dd, yyyy') : 'Set due date'}
+                                <span>{field.value ? format(field.value, 'MMMM dd, yyyy') : 'Set due date'}</span>
+                                <ChevronDown className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0 bg-background border z-[80]" align="start">
