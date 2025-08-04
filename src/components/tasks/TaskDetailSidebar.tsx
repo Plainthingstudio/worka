@@ -478,9 +478,10 @@ export const TaskDetailSidebar = ({
                   <span className="text-sm text-muted-foreground w-24">Status</span>
                   <div>
                     {userRole === 'team' ? (
-                      <Badge variant={form.watch('status').toLowerCase().replace(' ', '-') as any}>
+                      <div className="flex items-center gap-2 p-2 border rounded text-sm h-9 w-48">
+                        <Target className="h-4 w-4 text-muted-foreground" />
                         {form.watch('status')}
-                      </Badge>
+                      </div>
                     ) : (
                       <FormField
                         control={form.control}
@@ -490,8 +491,11 @@ export const TaskDetailSidebar = ({
                             field.onChange(value);
                             form.handleSubmit(handleSubmit)();
                           }} value={field.value}>
-                            <SelectTrigger className={`w-48 ${getStatusSolidClass(field.value)} text-white border-none text-sm h-9`}>
-                              <SelectValue />
+                            <SelectTrigger className="text-sm h-9 w-48">
+                              <div className="flex items-center gap-2">
+                                <Target className="h-4 w-4 text-muted-foreground" />
+                                <SelectValue />
+                              </div>
                             </SelectTrigger>
                             <SelectContent className="bg-background border z-[80]">
                               <SelectItem value="Planning">Planning</SelectItem>
@@ -552,59 +556,60 @@ export const TaskDetailSidebar = ({
                   <div>
                     {userRole === 'team' ? (
                       task.due_date ? (
-                        <div className="text-sm">
+                        <div className="flex items-center gap-2 p-2 border rounded text-sm h-9 w-48">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
                           {format(task.due_date, 'MMMM dd, yyyy')}
                         </div>
                       ) : (
-                        <span className="text-sm text-muted-foreground">No due date</span>
+                        <div className="flex items-center gap-2 p-2 border rounded text-sm h-9 w-48 text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          No due date
+                        </div>
                       )
                     ) : (
                       <FormField
                         control={form.control}
                         name="due_date"
                         render={({ field }) => (
-                          <div className="flex items-center gap-2">
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className="w-48 justify-start text-left font-normal text-sm h-9"
-                                >
-                                  <Calendar className="mr-2 h-4 w-4" />
-                                  {field.value ? format(field.value, 'MMMM dd, yyyy') : 'Set due date'}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0 bg-background border z-[80]" align="start">
-                                <CalendarComponent
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={(date) => {
-                                    field.onChange(date);
-                                    form.handleSubmit(handleSubmit)();
-                                  }}
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            {field.value && (
+                          <Popover>
+                            <PopoverTrigger asChild>
                               <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  field.onChange(undefined);
+                                variant="outline"
+                                className="w-48 justify-between text-left font-normal text-sm h-9"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                                  {field.value ? format(field.value, 'MMMM dd, yyyy') : 'Set due date'}
+                                </div>
+                                {field.value && (
+                                  <X 
+                                    className="h-3 w-3 text-muted-foreground hover:text-foreground" 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      field.onChange(undefined);
+                                      form.handleSubmit(handleSubmit)();
+                                    }}
+                                  />
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 bg-background border z-[80]" align="start">
+                              <CalendarComponent
+                                mode="single"
+                                selected={field.value}
+                                onSelect={(date) => {
+                                  field.onChange(date);
                                   form.handleSubmit(handleSubmit)();
                                 }}
-                                className="h-8 w-8 p-0"
-                              >
-                                <X className="h-3 w-3" />
-                              </Button>
-                            )}
-                          </div>
-                        )}
-                      />
-                    )}
-                  </div>
-                </div>
+                                initialFocus
+                              />
+                             </PopoverContent>
+                           </Popover>
+                         )}
+                       />
+                     )}
+                   </div>
+                 </div>
 
                 {/* Assignees */}
                 <div className="flex items-center gap-3">
