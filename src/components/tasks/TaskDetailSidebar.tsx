@@ -654,7 +654,7 @@ export const TaskDetailSidebar = ({
                                         field.onChange(newAssignees);
                                         form.handleSubmit(handleSubmit)();
                                       }}
-                                      className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                      className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10"
                                     >
                                       <X className="h-2 w-2" />
                                     </button>
