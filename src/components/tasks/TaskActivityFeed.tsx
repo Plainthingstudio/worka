@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -198,7 +199,7 @@ export const TaskActivityFeed = ({
     // Only render the comment input section
     return (
       <div className="space-y-4">
-        <Input
+        <Textarea
           placeholder="Add a comment..."
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
@@ -208,7 +209,8 @@ export const TaskActivityFeed = ({
               handleSubmit();
             }
           }}
-          className="border-none p-0 focus-visible:ring-0 text-sm"
+          className="border-none p-0 focus-visible:ring-0 text-sm resize-none min-h-[80px]"
+          rows={3}
         />
         
         {/* Selected Files Preview */}
@@ -337,11 +339,12 @@ export const TaskActivityFeed = ({
                     {/* Activity content - either editable or display */}
                     {isEditing ? (
                       <div className="space-y-2">
-                        <Input
+                        <Textarea
                           value={editingContent}
                           onChange={(e) => setEditingContent(e.target.value)}
-                          className="text-sm"
+                          className="text-sm resize-none min-h-[80px]"
                           autoFocus
+                          rows={3}
                         />
                         <div className="flex gap-2">
                           <Button 
@@ -400,7 +403,7 @@ export const TaskActivityFeed = ({
 
       {/* Fixed Comment Input at Bottom */}
       <div className="border rounded-lg p-4 space-y-4 bg-background">
-        <Input
+        <Textarea
           placeholder="Add a comment..."
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
@@ -410,7 +413,8 @@ export const TaskActivityFeed = ({
               handleSubmit();
             }
           }}
-          className="border-none p-0 focus-visible:ring-0 text-sm"
+          className="border-none p-0 focus-visible:ring-0 text-sm resize-none min-h-[80px]"
+          rows={3}
         />
         
         {/* Selected Files Preview */}
