@@ -472,100 +472,90 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Recent Clients */}
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold">Recent Clients</h2>
-                  <Button variant="ghost" size="sm" onClick={() => navigate("/clients")}>
-                    View All
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="glass-card rounded-xl border shadow-sm">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Source</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {recentClients.length === 0 ? (
+              {/* Recent Clients and Active Projects Side by Side */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                {/* Recent Clients */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold">Recent Clients</h2>
+                    <Button variant="ghost" size="sm" onClick={() => navigate("/clients")}>
+                      View All
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="glass-card rounded-xl border shadow-sm">
+                    <Table>
+                      <TableHeader>
                         <TableRow>
-                          <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                            No clients found. Add your first client to get started!
-                          </TableCell>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Source</TableHead>
                         </TableRow>
-                      ) : (
-                        recentClients.map((client) => (
-                          <TableRow key={client.id}>
-                            <TableCell className="font-medium">{client.name}</TableCell>
-                            <TableCell>{client.email}</TableCell>
-                            <TableCell>{client.phone}</TableCell>
-                            <TableCell>
-                              <Badge variant="secondary" className="text-xs">
-                                {client.leadSource}
-                              </Badge>
+                      </TableHeader>
+                      <TableBody>
+                        {recentClients.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                              No clients found. Add your first client to get started!
                             </TableCell>
                           </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
+                        ) : (
+                          recentClients.map((client) => (
+                            <TableRow key={client.id}>
+                              <TableCell className="font-medium">{client.name}</TableCell>
+                              <TableCell>{client.email}</TableCell>
+                              <TableCell>
+                                <Badge variant="secondary" className="text-xs">
+                                  {client.leadSource}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
-              </div>
 
-              {/* Active Projects */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold">Active Projects</h2>
-                  <Button variant="ghost" size="sm" onClick={() => navigate("/projects")}>
-                    View All
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="glass-card rounded-xl border shadow-sm">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Project Name</TableHead>
-                        <TableHead>Client</TableHead>
-                        <TableHead>Deadline</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Fee</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {activeProjects.length === 0 ? (
+                {/* Active Projects */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold">Active Projects</h2>
+                    <Button variant="ghost" size="sm" onClick={() => navigate("/projects")}>
+                      View All
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="glass-card rounded-xl border shadow-sm">
+                    <Table>
+                      <TableHeader>
                         <TableRow>
-                          <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                            No active projects found.
-                          </TableCell>
+                          <TableHead>Project Name</TableHead>
+                          <TableHead>Client</TableHead>
+                          <TableHead>Deadline</TableHead>
                         </TableRow>
-                      ) : (
-                        activeProjects.map((project) => (
-                          <TableRow key={project.id} onClick={() => navigate(`/projects/${project.id}`)} className="cursor-pointer hover:bg-accent/50">
-                            <TableCell className="font-medium">{project.name}</TableCell>
-                            <TableCell>{getClientById(project.clientId)}</TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {format(new Date(project.deadline), "MMM dd, yyyy")}
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${getProjectTypeBadgeClass(project.projectType)}`}>
-                                <Tag className="mr-1 h-3 w-3" />
-                                {project.projectType}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              {project.currency} {project.fee.toLocaleString()}
+                      </TableHeader>
+                      <TableBody>
+                        {activeProjects.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                              No active projects found.
                             </TableCell>
                           </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
+                        ) : (
+                          activeProjects.map((project) => (
+                            <TableRow key={project.id} onClick={() => navigate(`/projects/${project.id}`)} className="cursor-pointer hover:bg-accent/50">
+                              <TableCell className="font-medium">{project.name}</TableCell>
+                              <TableCell>{getClientById(project.clientId)}</TableCell>
+                              <TableCell className="text-muted-foreground">
+                                {format(new Date(project.deadline), "MMM dd, yyyy")}
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
               </div>
 
