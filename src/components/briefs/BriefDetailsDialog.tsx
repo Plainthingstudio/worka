@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { format, isValid, parseISO } from "date-fns";
 import { Download } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogOverlay, DialogPortal } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import UIDesignBriefDetails from "./UIDesignBriefDetails";
 import GraphicDesignBriefDetails from "./GraphicDesignBriefDetails";
@@ -317,7 +317,9 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto z-[100]" style={{ zIndex: 100 }}>
+      <DialogPortal>
+        <DialogOverlay className="z-[90] bg-black/80" />
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto z-[100]" style={{ zIndex: 100 }}>
         <DialogHeader>
           <DialogTitle>Brief Details</DialogTitle>
           <DialogDescription>
@@ -396,7 +398,8 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
             </div>
           </div>
         )}
-      </DialogContent>
+        </DialogContent>
+      </DialogPortal>
     </Dialog>
   );
 };
