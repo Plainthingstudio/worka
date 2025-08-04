@@ -181,10 +181,10 @@ export const TaskBoardView = ({
                 return (
                   <Card 
                     key={task.id} 
-                    className={`bg-white hover:shadow-lg transition-all duration-300 cursor-pointer border-l-4 group relative ${
+                    className={`bg-white hover:shadow-lg transition-all duration-300 cursor-pointer group relative ${
                       draggedTask === task.id ? 
-                        'opacity-50 transform rotate-2 scale-95 shadow-2xl z-50 border-l-primary' : 
-                        `hover:scale-[1.02] hover:shadow-md ${getPriorityBorderColor(task.priority)} hover:border-l-primary`
+                        'opacity-50 transform rotate-2 scale-95 shadow-2xl z-50' : 
+                        'hover:scale-[1.02] hover:shadow-md'
                     }`}
                     draggable
                     onDragStart={(e) => {
