@@ -29,6 +29,7 @@ import { TeamMember } from "@/types";
 import { TaskWithRelations } from "@/types/task";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
+import { getLeadSourceBadgeVariant } from "@/components/projects/utils/projectItemUtils";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -504,11 +505,11 @@ const Dashboard = () => {
                             <TableRow key={client.id}>
                               <TableCell className="font-medium">{client.name}</TableCell>
                               <TableCell>{client.email}</TableCell>
-                              <TableCell>
-                                <Badge variant="secondary" className="text-xs">
-                                  {client.leadSource}
-                                </Badge>
-                              </TableCell>
+                               <TableCell>
+                                 <Badge variant={getLeadSourceBadgeVariant(client.leadSource)} className="text-xs">
+                                   {client.leadSource}
+                                 </Badge>
+                               </TableCell>
                             </TableRow>
                           ))
                         )}
