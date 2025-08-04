@@ -40,10 +40,18 @@ export const Tasks = () => {
   useEffect(() => {
     const taskId = searchParams.get('taskId');
     const projectId = searchParams.get('projectId');
+    const newParam = searchParams.get('new');
 
     // Set project filter if provided
     if (projectId) {
       setSelectedProject(projectId);
+    }
+
+    // Auto-open create dialog if new=true parameter is present
+    if (newParam === 'true' && isAuthenticated && !isLoading) {
+      setIsCreateDialogOpen(true);
+      // Remove the query parameter from URL
+      setSearchParams({});
     }
 
     // Auto-select task if provided
@@ -53,7 +61,7 @@ export const Tasks = () => {
         setSelectedTask(task);
       }
     }
-  }, [searchParams, tasks]);
+  }, [searchParams, tasks, isAuthenticated, isLoading, setSearchParams]);
 
   // Check authentication on component mount
   useEffect(() => {
