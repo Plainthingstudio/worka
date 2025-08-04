@@ -63,7 +63,7 @@ const badgeVariants = cva(
         "dribbble":
           "bg-pink-50 text-pink-700 ring-pink-700/10",
         "website":
-          "bg-blue-50 text-blue-700 ring-blue-700/10",
+          "bg-cyan-50 text-cyan-700 ring-cyan-700/10",
         "linkedin":
           "bg-blue-600/10 text-blue-600 ring-blue-600/20",
         "behance":
