@@ -13,6 +13,8 @@ import { FileText, ExternalLink, Unlink, Download } from 'lucide-react';
 import { Brief } from '@/types/brief';
 import { useBriefConnection } from '@/hooks/useBriefConnection';
 import { useBriefDownload } from '@/hooks/useBriefDownload';
+import { useUserRole } from '@/hooks/useUserRole';
+import BriefDetailsDialog from '@/components/briefs/BriefDetailsDialog';
 
 interface BriefSelectorProps {
   taskId: string;
@@ -28,6 +30,7 @@ interface BriefSelectorProps {
 export const BriefSelector = ({ taskId, currentBrief, onBriefChange }: BriefSelectorProps) => {
   const [availableBriefs, setAvailableBriefs] = useState<Brief[]>([]);
   const [briefDetails, setBriefDetails] = useState<any>(null);
+  const [showBriefDialog, setShowBriefDialog] = useState(false);
   const { 
     isLoading, 
     fetchAvailableBriefs, 
@@ -37,6 +40,7 @@ export const BriefSelector = ({ taskId, currentBrief, onBriefChange }: BriefSele
   } = useBriefConnection();
   
   const { isDownloading, downloadBrief } = useBriefDownload();
+  const { userRole, isLoading: roleLoading } = useUserRole();
 
   useEffect(() => {
     loadAvailableBriefs();
@@ -82,14 +86,20 @@ export const BriefSelector = ({ taskId, currentBrief, onBriefChange }: BriefSele
   };
 
   const handleViewBrief = () => {
-    // This would open the brief details dialog
-    // For now, we'll just log it - can be enhanced later
-    console.log('View brief:', currentBrief);
+    if (briefDetails) {
+      setShowBriefDialog(true);
+    }
   };
 
   const handleDownloadBrief = async () => {
     if (currentBrief?.id && currentBrief?.type) {
       await downloadBrief(currentBrief.id, currentBrief.type);
+    }
+  };
+
+  const handleDownloadFromDialog = async (brief: any) => {
+    if (brief?.id && brief?.type) {
+      await downloadBrief(brief.id, brief.type);
     }
   };
 
@@ -136,16 +146,18 @@ export const BriefSelector = ({ taskId, currentBrief, onBriefChange }: BriefSele
                   <ExternalLink className="h-3 w-3 mr-1" />
                   View
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleDisconnect}
-                  className="h-6 text-xs text-destructive hover:text-destructive"
-                  disabled={isLoading}
-                >
-                  <Unlink className="h-3 w-3 mr-1" />
-                  Unlink
-                </Button>
+                {!roleLoading && userRole !== 'team' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleDisconnect}
+                    className="h-6 text-xs text-destructive hover:text-destructive"
+                    disabled={isLoading}
+                  >
+                    <Unlink className="h-3 w-3 mr-1" />
+                    Unlink
+                  </Button>
+                )}
               </div>
             </div>
             
@@ -189,6 +201,13 @@ export const BriefSelector = ({ taskId, currentBrief, onBriefChange }: BriefSele
           )}
         </div>
       )}
+
+      <BriefDetailsDialog
+        open={showBriefDialog}
+        onOpenChange={setShowBriefDialog}
+        briefDetails={briefDetails}
+        onDownload={handleDownloadFromDialog}
+      />
     </div>
   );
 };
