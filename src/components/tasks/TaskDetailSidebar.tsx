@@ -399,8 +399,8 @@ export const TaskDetailSidebar = ({
           <div className="flex-1 flex flex-col min-h-0">
             <ScrollArea className="flex-1">
               <div className="p-6 space-y-8">
-                {/* Brief Connection Section - Only for non-team users */}
-                {userRole !== 'team' && (
+                {/* Brief Connection Section - Always show if brief exists, or if user can connect briefs */}
+                {(userRole !== 'team' || (task.brief_id && task.brief_type)) && (
                   <BriefSelector
                     taskId={task.id}
                     currentBrief={task.brief_id ? {
