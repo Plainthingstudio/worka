@@ -14,7 +14,10 @@ import {
   Send,
   Upload,
   Download,
-  X
+  X,
+  Edit2,
+  Trash2,
+  Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +25,13 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { TaskWithRelations } from '@/types/task';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal } from 'lucide-react';
 
 interface TaskActivityFeedActivity {
   id: string;
@@ -41,6 +51,9 @@ interface TaskActivityFeedProps {
   activities: TaskActivityFeedActivity[];
   onAddActivity: (content: string, files?: File[]) => Promise<boolean>;
   onUploadAttachment: (taskId: string, file: File) => Promise<boolean>;
+  onUpdateActivity?: (activityId: string, content: string) => Promise<boolean>;
+  onDeleteActivity?: (activityId: string) => Promise<boolean>;
+  currentUserId?: string;
   isLoading?: boolean;
   showActivities?: boolean; // New prop to control whether to show activities
 }
@@ -50,12 +63,17 @@ export const TaskActivityFeed = ({
   activities, 
   onAddActivity, 
   onUploadAttachment,
+  onUpdateActivity,
+  onDeleteActivity,
+  currentUserId,
   isLoading = false,
   showActivities = true // Default to true for backward compatibility
 }: TaskActivityFeedProps) => {
   const [newComment, setNewComment] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingActivityId, setEditingActivityId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState('');
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -85,6 +103,35 @@ export const TaskActivityFeed = ({
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleEditStart = (activity: TaskActivityFeedActivity) => {
+    setEditingActivityId(activity.id);
+    setEditingContent(activity.content || '');
+  };
+
+  const handleEditSave = async (activityId: string) => {
+    if (!onUpdateActivity || !editingContent.trim()) return;
+    
+    const success = await onUpdateActivity(activityId, editingContent);
+    if (success) {
+      setEditingActivityId(null);
+      setEditingContent('');
+    }
+  };
+
+  const handleEditCancel = () => {
+    setEditingActivityId(null);
+    setEditingContent('');
+  };
+
+  const handleDelete = async (activityId: string) => {
+    if (!onDeleteActivity) return;
+    
+    const confirmed = window.confirm('Are you sure you want to delete this comment?');
+    if (confirmed) {
+      await onDeleteActivity(activityId);
     }
   };
 
@@ -235,6 +282,8 @@ export const TaskActivityFeed = ({
             sortedActivities.map((activity) => {
               const displayName = activity.user_name || 'Unknown User';
               const avatarInitial = displayName.charAt(0).toUpperCase();
+              const isOwnComment = currentUserId === activity.user_id && activity.activity_type === 'comment';
+              const isEditing = editingActivityId === activity.id;
               
               return (
                 <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">
@@ -245,17 +294,77 @@ export const TaskActivityFeed = ({
                   </Avatar>
                   
                   <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1 text-sm">
-                        {getActivityIcon(activity.activity_type)}
-                        <span className="font-medium">{displayName}</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 text-sm">
+                          {getActivityIcon(activity.activity_type)}
+                          <span className="font-medium">{displayName}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(activity.created_at), 'MMM dd, yyyy HH:mm')}
+                        </span>
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {format(new Date(activity.created_at), 'MMM dd, yyyy HH:mm')}
-                      </span>
+                      
+                      {/* Edit/Delete dropdown for own comments */}
+                      {isOwnComment && (onUpdateActivity || onDeleteActivity) && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                              <MoreHorizontal className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {onUpdateActivity && (
+                              <DropdownMenuItem onClick={() => handleEditStart(activity)}>
+                                <Edit2 className="h-3 w-3 mr-2" />
+                                Edit
+                              </DropdownMenuItem>
+                            )}
+                            {onDeleteActivity && (
+                              <DropdownMenuItem 
+                                onClick={() => handleDelete(activity.id)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="h-3 w-3 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
                     
-                    <div className="text-sm">{getActivityDescription(activity)}</div>
+                    {/* Activity content - either editable or display */}
+                    {isEditing ? (
+                      <div className="space-y-2">
+                        <Input
+                          value={editingContent}
+                          onChange={(e) => setEditingContent(e.target.value)}
+                          className="text-sm"
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleEditSave(activity.id)}
+                            className="h-6 text-xs"
+                          >
+                            <Check className="h-3 w-3 mr-1" />
+                            Save
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={handleEditCancel}
+                            className="h-6 text-xs"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-sm">{getActivityDescription(activity)}</div>
+                    )}
                     
                     {/* Attachments */}
                     {activity.attachments && activity.attachments.length > 0 && (

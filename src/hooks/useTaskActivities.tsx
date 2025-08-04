@@ -157,6 +157,77 @@ export const useTaskActivities = (taskId: string) => {
     }
   };
 
+  const updateActivity = async (activityId: string, content: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('task_activities')
+        .update({ 
+          content: content.trim(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', activityId);
+
+      if (error) {
+        console.error('Error updating activity:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update comment",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      await fetchActivities(); // Refresh activities
+      toast({
+        title: "Success",
+        description: "Comment updated successfully",
+      });
+      return true;
+    } catch (error) {
+      console.error('Error updating activity:', error);
+      toast({
+        title: "Error", 
+        description: "Failed to update comment",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const deleteActivity = async (activityId: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('task_activities')
+        .delete()
+        .eq('id', activityId);
+
+      if (error) {
+        console.error('Error deleting activity:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete comment",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      await fetchActivities(); // Refresh activities
+      toast({
+        title: "Success",
+        description: "Comment deleted successfully",
+      });
+      return true;
+    } catch (error) {
+      console.error('Error deleting activity:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete comment", 
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   useEffect(() => {
     fetchActivities();
   }, [taskId]);
@@ -166,5 +237,7 @@ export const useTaskActivities = (taskId: string) => {
     isLoading,
     fetchActivities,
     addActivity,
+    updateActivity,
+    deleteActivity,
   };
 };

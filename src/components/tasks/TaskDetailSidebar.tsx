@@ -101,11 +101,23 @@ export const TaskDetailSidebar = ({
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userNames, setUserNames] = useState<Record<string, string>>({});
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
   const navigate = useNavigate();
   const { project } = useTaskProject(task?.project_id || null);
-  const { activities, isLoading: activitiesLoading, addActivity } = useTaskActivities(task?.id || '');
+  const { activities, isLoading: activitiesLoading, addActivity, updateActivity, deleteActivity } = useTaskActivities(task?.id || '');
   const { userRole, isLoading: roleLoading } = useUserRole();
+
+  // Get current user ID
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+    getCurrentUser();
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -774,6 +786,9 @@ export const TaskDetailSidebar = ({
                 activities={[]}
                 onAddActivity={addActivity}
                 onUploadAttachment={onUploadAttachment}
+                onUpdateActivity={updateActivity}
+                onDeleteActivity={deleteActivity}
+                currentUserId={currentUserId}
                 isLoading={activitiesLoading}
                 showActivities={false}
               />
