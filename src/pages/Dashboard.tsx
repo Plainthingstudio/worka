@@ -35,7 +35,7 @@ const Dashboard = () => {
     totalProjects: 0,
     totalEarnings: 0,
     activeProjects: 0,
-    newProjectsThisMonth: 0,
+    newLeadsThisMonth: 0,
   });
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -190,11 +190,11 @@ const Dashboard = () => {
           return sum + project.payments.reduce((total, payment) => total + payment.amount, 0);
         }, 0);
         
-        // Calculate new projects this month
+        // Calculate new leads this month
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const newProjectsThisMonth = transformedProjects.filter(project => 
-          project.createdAt >= startOfMonth
+        const newLeadsThisMonth = transformedLeads.filter(lead => 
+          lead.createdAt >= startOfMonth
         ).length;
         
         setClients(transformedClients);
@@ -206,7 +206,7 @@ const Dashboard = () => {
           totalProjects: transformedProjects.length,
           totalEarnings,
           activeProjects,
-          newProjectsThisMonth,
+          newLeadsThisMonth,
         });
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -303,8 +303,8 @@ const Dashboard = () => {
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <StatCard
-                  title="New Projects"
-                  value={stats.newProjectsThisMonth}
+                  title="New Leads"
+                  value={stats.newLeadsThisMonth}
                   icon={Users}
                   className="bg-white shadow-sm border border-border"
                 />
