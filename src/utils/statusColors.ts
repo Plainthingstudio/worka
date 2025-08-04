@@ -3,28 +3,28 @@
 export const STATUS_COLORS = {
   // Status colors for badges and general use
   Planning: {
-    badge: 'bg-purple-50 text-purple-700 ring-purple-700/10',
-    background: 'bg-purple-50',
-    text: 'text-purple-700',
-    icon: 'text-purple-500',
-    solid: 'bg-purple-500',
-    hover: 'hover:bg-purple-600'
-  },
-  'In progress': {
-    badge: 'bg-yellow-50 text-yellow-800 ring-yellow-600/20',
-    background: 'bg-yellow-50',
-    text: 'text-yellow-700',
-    icon: 'text-yellow-500',
-    solid: 'bg-yellow-500',
-    hover: 'hover:bg-yellow-600'
-  },
-  Paused: {
     badge: 'bg-gray-50 text-gray-700 ring-gray-600/20',
     background: 'bg-gray-50',
     text: 'text-gray-700',
     icon: 'text-gray-500',
     solid: 'bg-gray-500',
     hover: 'hover:bg-gray-600'
+  },
+  'In progress': {
+    badge: 'bg-blue-50 text-blue-700 ring-blue-600/20',
+    background: 'bg-blue-50',
+    text: 'text-blue-700',
+    icon: 'text-blue-500',
+    solid: 'bg-blue-500',
+    hover: 'hover:bg-blue-600'
+  },
+  Paused: {
+    badge: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
+    background: 'bg-yellow-50',
+    text: 'text-yellow-700',
+    icon: 'text-yellow-500',
+    solid: 'bg-yellow-500',
+    hover: 'hover:bg-yellow-600'
   },
   Completed: {
     badge: 'bg-green-50 text-green-700 ring-green-600/20',
