@@ -20,6 +20,7 @@ export const useTeamDashboard = () => {
   });
   const [myTasks, setMyTasks] = useState<TaskWithRelations[]>([]);
   const [myProjects, setMyProjects] = useState<any[]>([]);
+  const [overdueTasks, setOverdueTasks] = useState<TaskWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -103,16 +104,19 @@ export const useTeamDashboard = () => {
           task.due_date && 
           task.due_date < new Date() &&
           task.status !== 'Completed'
-        ).length;
+        );
+
+        const overdueTasksCount = overdueTasks.length;
 
         setMyTasks(transformedTasks);
+        setOverdueTasks(overdueTasks);
         setMyProjects(projectsData || []);
         setStats({
           myActiveTasks: activeTasks.length,
           completedThisWeek,
           dueThisWeek,
           totalProjects: projectsData?.length || 0,
-          overdueTasks,
+          overdueTasks: overdueTasksCount,
         });
 
       } catch (error) {
@@ -129,6 +133,7 @@ export const useTeamDashboard = () => {
     stats,
     myTasks,
     myProjects,
-    isLoading
+    overdueTasks,
+    isLoading,
   };
 };
