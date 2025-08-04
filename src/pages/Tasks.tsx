@@ -541,9 +541,6 @@ export const Tasks = () => {
                 </div>
 
                 <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <Button variant="outline" size="sm" className="sm:flex hidden">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
                   <Button onClick={() => handleAddTask()} className="flex-1 sm:flex-none">
                     <Plus className="h-4 w-4 mr-2" />
                     <span className="sm:inline">Add Task</span>
