@@ -69,6 +69,16 @@ export const TaskBoardView = ({
     }
   };
 
+  const getPriorityBorderColor = (priority: string) => {
+    switch (priority) {
+      case 'Urgent': return 'border-l-red-500';
+      case 'High': return 'border-l-orange-500';
+      case 'Normal': return 'border-l-blue-500';
+      case 'Low': return 'border-l-green-500';
+      default: return 'border-l-gray-300';
+    }
+  };
+
   const getInitials = (name: string) => {
     if (!name || typeof name !== 'string') {
       return '?';
@@ -164,10 +174,10 @@ export const TaskBoardView = ({
                 return (
                   <Card 
                     key={task.id} 
-                    className={`bg-white hover:shadow-md transition-all duration-300 cursor-pointer border-l-4 border-l-transparent hover:border-l-primary group relative ${
+                    className={`bg-white hover:shadow-lg transition-all duration-300 cursor-pointer border-l-4 group relative ${
                       draggedTask === task.id ? 
-                        'opacity-50 transform rotate-2 scale-95 shadow-2xl z-50' : 
-                        'hover:scale-[1.02]'
+                        'opacity-50 transform rotate-2 scale-95 shadow-2xl z-50 border-l-primary' : 
+                        `hover:scale-[1.02] hover:shadow-md ${getPriorityBorderColor(task.priority)} hover:border-l-primary`
                     }`}
                     draggable
                     onDragStart={(e) => {
