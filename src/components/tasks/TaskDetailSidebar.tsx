@@ -462,25 +462,23 @@ export const TaskDetailSidebar = ({
                 )}
 
                 {/* Created Time */}
-                <div className="space-y-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Clock className="h-4 w-4" />
                     <span>Created time</span>
                   </div>
-                  <div className="ml-7">
-                    <span className="text-sm">
-                      {format(new Date(task.created_at), 'MMMM dd, yyyy')}
-                    </span>
-                  </div>
+                  <span className="text-sm">
+                    {format(new Date(task.created_at), 'MMMM dd, yyyy')}
+                  </span>
                 </div>
 
                 {/* Status */}
-                <div className="space-y-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Target className="h-4 w-4" />
                     <span>Status</span>
                   </div>
-                  <div className="ml-7">
+                  <div className="min-w-0 flex-1 ml-4 flex justify-end">
                     {userRole === 'team' ? (
                       <Badge variant={form.watch('status').toLowerCase().replace(' ', '-') as any}>
                         {form.watch('status')}
@@ -512,12 +510,12 @@ export const TaskDetailSidebar = ({
                 </div>
 
                 {/* Priority */}
-                <div className="space-y-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Flag className="h-4 w-4" />
                     <span>Priority</span>
                   </div>
-                  <div className="ml-7">
+                  <div className="min-w-0 flex-1 ml-4 flex justify-end">
                     {userRole === 'team' ? (
                       <div className="flex items-center gap-2 p-2 border rounded text-sm h-9 w-48">
                         {getPriorityIcon(form.watch('priority'))}
@@ -552,17 +550,20 @@ export const TaskDetailSidebar = ({
                 </div>
 
                 {/* Due Date */}
-                <div className="space-y-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Calendar className="h-4 w-4" />
                     <span>Due date</span>
                   </div>
-                  <div className="ml-7">
+                  <div className="min-w-0 flex-1 ml-4 flex justify-end">
                     {userRole === 'team' ? (
-                      <div className="p-2 border rounded text-sm h-9 flex items-center w-48">
-                        <Calendar className="mr-2 h-4 w-4" />
-                        {task.due_date ? format(task.due_date, 'MMMM dd, yyyy') : 'No due date'}
-                      </div>
+                      task.due_date ? (
+                        <div className="text-sm">
+                          {format(task.due_date, 'MMMM dd, yyyy')}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">No due date</span>
+                      )
                     ) : (
                       <FormField
                         control={form.control}
@@ -612,12 +613,12 @@ export const TaskDetailSidebar = ({
                 </div>
 
                 {/* Assignees */}
-                <div className="space-y-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Users className="h-4 w-4" />
                     <span>Assignees</span>
                   </div>
-                  <div className="ml-7">
+                  <div className="min-w-0 flex-1 ml-4 flex justify-end">
                     {userRole === 'team' ? (
                       <div>
                         {task.assignees && task.assignees.length > 0 ? (
