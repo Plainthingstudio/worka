@@ -417,7 +417,7 @@ export const TaskDetailSidebar = ({
                       Status
                     </div>
                     {userRole === 'team' ? (
-                      <Badge className={`${getStatusSolidClass(form.watch('status'))} text-white border-none text-sm h-9 justify-center`}>
+                      <Badge variant={form.watch('status').toLowerCase().replace(' ', '-') as any}>
                         {form.watch('status')}
                       </Badge>
                     ) : (
