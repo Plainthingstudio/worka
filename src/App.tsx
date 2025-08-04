@@ -54,9 +54,9 @@ function App() {
             <Route path="/briefs" element={<Layout title="Briefs"><Briefs /></Layout>} />
             <Route path="/team" element={<Layout title="Team"><Team /></Layout>} />
             <Route path="/settings" element={<Layout title="Settings"><Settings /></Layout>} />
-            <Route path="/graphic-design-brief" element={<Layout title="Graphic Design Brief"><GraphicDesignBrief /></Layout>} />
-            <Route path="/ui-design-brief" element={<Layout title="UI Design Brief"><UIDesignBrief /></Layout>} />
-            <Route path="/illustrations-brief" element={<Layout title="Illustrations Brief"><IllustrationsBrief /></Layout>} />
+            <Route path="/graphic-design-brief" element={<GraphicDesignBrief />} />
+            <Route path="/ui-design-brief" element={<UIDesignBrief />} />
+            <Route path="/illustrations-brief" element={<IllustrationsBrief />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/login" element={<Navigate to="/auth" replace />} />
             <Route path="*" element={<Navigate to="/404" />} />
