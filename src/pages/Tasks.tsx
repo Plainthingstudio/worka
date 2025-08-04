@@ -538,15 +538,15 @@ export const Tasks = () => {
                   <h1 className="text-xl sm:text-2xl font-semibold">Internal Tasks</h1>
                   <div className="flex items-center gap-0 border rounded-lg p-1">
                     <Button variant={activeView === 'list' ? 'default' : 'ghost'} size="sm" className="h-8 px-2 sm:px-3" onClick={() => setActiveView('list')}>
-                      <LayoutList className="h-4 w-4 sm:mr-2" />
+                      <LayoutList className="h-4 w-4 sm:mr-1" />
                       <span className="hidden sm:inline">List</span>
                     </Button>
                     <Button variant={activeView === 'board' ? 'default' : 'ghost'} size="sm" className="h-8 px-2 sm:px-3" onClick={() => setActiveView('board')}>
-                      <Kanban className="h-4 w-4 sm:mr-2" />
+                      <Kanban className="h-4 w-4 sm:mr-1" />
                       <span className="hidden sm:inline">Board</span>
                     </Button>
                     <Button variant={activeView === 'calendar' ? 'default' : 'ghost'} size="sm" className="h-8 px-2 sm:px-3" onClick={() => setActiveView('calendar')}>
-                      <Calendar className="h-4 w-4 sm:mr-2" />
+                      <Calendar className="h-4 w-4 sm:mr-1" />
                       <span className="hidden sm:inline">Calendar</span>
                     </Button>
                   </div>
