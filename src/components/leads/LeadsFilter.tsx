@@ -58,7 +58,7 @@ const LeadsFilter: React.FC<LeadsFilterProps> = ({
 }) => {
   return (
     <div className="glass-card mb-6 rounded-xl border shadow-sm animate-fade-in">
-      <div className="flex flex-col gap-4 p-4">
+      <div className="flex flex-row items-center gap-4 p-4 flex-wrap">
         {/* Search Row */}
         <div className="flex flex-col gap-4 sm:flex-row">
           <div className="relative flex-1">
