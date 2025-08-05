@@ -552,22 +552,76 @@ export const Tasks = () => {
                 </button>
               </div>
 
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm">
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filter
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <Group className="h-4 w-4 mr-2" />
-                    Group by
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <ArrowUpDown className="h-4 w-4 mr-2" />
-                    Sort
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      placeholder="Search task..." 
+                      value={searchQuery} 
+                      onChange={e => setSearchQuery(e.target.value)} 
+                      className="pl-10 h-9 rounded-lg border-border bg-background" 
+                    />
+                  </div>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-9 px-3 rounded-lg border-border">
+                        <Filter className="h-4 w-4 mr-2" />
+                        Filter
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-64 p-4 space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Project</label>
+                        <Select value={selectedProject} onValueChange={setSelectedProject}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="All Projects" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Projects</SelectItem>
+                            {projects.map(project => 
+                              <SelectItem key={project.id} value={project.id}>
+                                {project.name}
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Status</label>
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="All Status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="Planning">Planning</SelectItem>
+                            <SelectItem value="In progress">In Progress</SelectItem>
+                            <SelectItem value="Paused">Paused</SelectItem>
+                            <SelectItem value="Completed">Completed</SelectItem>
+                            <SelectItem value="Cancelled">Cancelled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Priority</label>
+                        <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="All Priority" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Priority</SelectItem>
+                            <SelectItem value="Low">Low</SelectItem>
+                            <SelectItem value="Normal">Normal</SelectItem>
+                            <SelectItem value="High">High</SelectItem>
+                            <SelectItem value="Urgent">Urgent</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </div>
