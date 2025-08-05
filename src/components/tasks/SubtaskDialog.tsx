@@ -136,7 +136,7 @@ export const SubtaskDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto z-[200]">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto z-[80]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
