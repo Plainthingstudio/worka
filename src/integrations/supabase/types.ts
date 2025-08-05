@@ -466,6 +466,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          message: string
+          read_at: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message: string
+          read_at?: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message?: string
+          read_at?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -1049,6 +1082,16 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "administrator" | "team"
+      notification_type:
+        | "task_assigned"
+        | "task_due_reminder"
+        | "task_overdue"
+        | "task_status_changed"
+        | "task_comment_added"
+        | "project_due_reminder"
+        | "project_overdue"
+        | "project_status_changed"
+        | "project_payment_added"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1177,6 +1220,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "administrator", "team"],
+      notification_type: [
+        "task_assigned",
+        "task_due_reminder",
+        "task_overdue",
+        "task_status_changed",
+        "task_comment_added",
+        "project_due_reminder",
+        "project_overdue",
+        "project_status_changed",
+        "project_payment_added",
+      ],
     },
   },
 } as const

@@ -90,11 +90,55 @@ export const logTaskCreated = (taskId: string) => {
   });
 };
 
-export const logComment = (taskId: string, content: string, attachments: any[] = []) => {
-  return logActivity({
+export const logComment = async (taskId: string, content: string, attachments: any[] = []) => {
+  // First log the activity
+  const activityLogged = await logActivity({
     taskId,
     activityType: 'comment',
     content,
     attachments
   });
+
+  if (activityLogged) {
+    // Also create notification for task assignees and creator
+    try {
+      const { data: task } = await supabase
+        .from('tasks')
+        .select('user_id, assignees, title')
+        .eq('id', taskId)
+        .single();
+
+      if (task) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return activityLogged;
+
+        // Get all users to notify (creator + assignees, excluding commenter)
+        const usersToNotify = [
+          task.user_id,
+          ...(task.assignees || [])
+        ].filter((userId, index, arr) => 
+          userId !== user.id && arr.indexOf(userId) === index
+        );
+
+        // Create notifications for each user
+        const notifications = usersToNotify.map(userId => ({
+          user_id: userId,
+          type: 'task_comment_added' as const,
+          title: 'New Comment',
+          message: `New comment on task: ${task.title}`,
+          data: { task_id: taskId, task_title: task.title }
+        }));
+
+        if (notifications.length > 0) {
+          await supabase
+            .from('notifications')
+            .insert(notifications);
+        }
+      }
+    } catch (error) {
+      console.error('Error creating comment notifications:', error);
+    }
+  }
+
+  return activityLogged;
 };

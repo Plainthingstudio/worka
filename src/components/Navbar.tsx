@@ -4,6 +4,7 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import InvitationNotifications from "@/components/notifications/InvitationNotifications";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 interface NavbarProps {
   title: string;
@@ -28,6 +29,7 @@ const Navbar = ({ title, onMenuClick }: NavbarProps) => {
           <h1 className="text-xl font-semibold">{title}</h1>
         </div>
         <div className="flex items-center gap-2">
+          <NotificationCenter />
           <InvitationNotifications />
           <ThemeToggle />
         </div>

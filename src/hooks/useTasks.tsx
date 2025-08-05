@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Task, TaskComment, TaskAttachment, TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/task';
 import { toast } from '@/hooks/use-toast';
-import { logStatusChange, logAssigneeChange, logPriorityChange, logDueDateChange, logTaskCreated } from '@/utils/activityLogger';
+import { logStatusChange, logAssigneeChange, logPriorityChange, logDueDateChange, logTaskCreated, logComment } from '@/utils/activityLogger';
 
 export const useTasks = (projectId: string) => {
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
@@ -347,6 +347,9 @@ export const useTasks = (projectId: string) => {
         });
         return false;
       }
+
+      // Log the comment activity and create notifications
+      await logComment(taskId, content);
 
       await fetchTasks();
       return true;
