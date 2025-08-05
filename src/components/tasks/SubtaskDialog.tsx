@@ -136,7 +136,7 @@ export const SubtaskDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto z-[100]">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto z-[200]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
@@ -188,7 +188,7 @@ export const SubtaskDialog = ({
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="z-[110]">
+                      <SelectContent className="z-[210]">
                         <SelectItem value="Planning">Planning</SelectItem>
                         <SelectItem value="In progress">In Progress</SelectItem>
                         <SelectItem value="Paused">Paused</SelectItem>
@@ -213,7 +213,7 @@ export const SubtaskDialog = ({
                           <SelectValue placeholder="Select priority" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="z-[110]">
+                      <SelectContent className="z-[210]">
                         <SelectItem value="Low">Low</SelectItem>
                         <SelectItem value="Normal">Normal</SelectItem>
                         <SelectItem value="High">High</SelectItem>
@@ -237,7 +237,7 @@ export const SubtaskDialog = ({
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="z-[110]">
+                      <SelectContent className="z-[210]">
                         <SelectItem value="Primary">Primary</SelectItem>
                         <SelectItem value="Secondary">Secondary</SelectItem>
                         <SelectItem value="Tertiary">Tertiary</SelectItem>
@@ -269,7 +269,7 @@ export const SubtaskDialog = ({
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 z-[110]" align="start">
+                  <PopoverContent className="w-auto p-0 z-[210]" align="start">
                     <Calendar
                       mode="single"
                       selected={form.watch('due_date')}
@@ -307,7 +307,7 @@ export const SubtaskDialog = ({
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-full p-0 z-[110]">
+                  <PopoverContent className="w-full p-0 z-[210]">
                     <Command>
                       <CommandInput placeholder="Search team members..." />
                       <CommandEmpty>No team member found.</CommandEmpty>
