@@ -42,7 +42,7 @@ function App() {
             <Route path="/404" element={<NotFound />} />
             <Route path="/dashboard" element={<Layout title="Dashboard"><Dashboard /></Layout>} />
             <Route path="/projects" element={<Layout title="Projects"><Projects /></Layout>} />
-            <Route path="/projects/:projectId" element={<Layout title="Project Details"><ProjectDetails /></Layout>} />
+            <Route path="/projects/:projectId" element={<ProjectDetails />} />
             <Route path="/tasks" element={<Layout title="Tasks"><Tasks /></Layout>} />
             <Route path="/clients" element={<Layout title="Clients"><Clients /></Layout>} />
             <Route path="/leads" element={<Layout title="Leads & Pipeline"><Leads /></Layout>} />
