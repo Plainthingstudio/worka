@@ -59,73 +59,70 @@ const LeadsFilter: React.FC<LeadsFilterProps> = ({
   return (
     <div className="glass-card mb-6 rounded-xl border shadow-sm animate-fade-in">
       <div className="flex flex-row items-center gap-4 p-4 flex-wrap">
-        {/* Search Row */}
-        <div className="flex flex-col gap-4 sm:flex-row">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search leads..."
-              className="pl-9"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+        {/* Search Input */}
+        <div className="relative flex-1 min-w-64">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search leads..."
+            className="pl-9"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
 
-        {/* Date Filters Row */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            <span>Filter by date:</span>
-          </div>
-          
-          <div className="flex flex-col gap-4 sm:flex-row sm:flex-1">
-            <div className="w-full sm:w-40">
-              <Select value={yearFilter} onValueChange={setYearFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Year" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Years</SelectItem>
-                  {availableYears.map((year) => (
-                    <SelectItem key={year} value={year}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        {/* Date Filter Label */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Calendar className="h-4 w-4" />
+          <span>Filter by date:</span>
+        </div>
+        
+        {/* Year Filter */}
+        <div className="w-32">
+          <Select value={yearFilter} onValueChange={setYearFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Year" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Years</SelectItem>
+              {availableYears.map((year) => (
+                <SelectItem key={year} value={year}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-            <div className="w-full sm:w-48">
-              <Select value={monthFilter} onValueChange={setMonthFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Month" />
-                </SelectTrigger>
-                <SelectContent>
-                  {MONTHS.map((month) => (
-                    <SelectItem key={month.value} value={month.value}>
-                      {month.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        {/* Month Filter */}
+        <div className="w-40">
+          <Select value={monthFilter} onValueChange={setMonthFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Month" />
+            </SelectTrigger>
+            <SelectContent>
+              {MONTHS.map((month) => (
+                <SelectItem key={month.value} value={month.value}>
+                  {month.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-            <div className="w-full sm:w-48">
-              <Select value={quarterFilter} onValueChange={setQuarterFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Quarter" />
-                </SelectTrigger>
-                <SelectContent>
-                  {QUARTERS.map((quarter) => (
-                    <SelectItem key={quarter.value} value={quarter.value}>
-                      {quarter.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+        {/* Quarter Filter */}
+        <div className="w-40">
+          <Select value={quarterFilter} onValueChange={setQuarterFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Quarter" />
+            </SelectTrigger>
+            <SelectContent>
+              {QUARTERS.map((quarter) => (
+                <SelectItem key={quarter.value} value={quarter.value}>
+                  {quarter.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>
