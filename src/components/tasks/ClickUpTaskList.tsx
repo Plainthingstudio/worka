@@ -237,23 +237,26 @@ export const ClickUpTaskList = ({
                           {/* Task Name */}
                           <div className="col-span-3 flex items-center gap-3 min-w-0">
                             <div className="flex items-center gap-2 flex-shrink-0">
-                              {subtasks.length > 0 && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-5 w-5 p-0 hover:bg-muted/50"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleSubtasks(task.id);
-                                  }}
-                                >
-                                  {collapsedSubtasks.has(task.id) ? (
-                                    <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                                  ) : (
-                                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                                  )}
-                                </Button>
-                              )}
+                              {/* Always present dropdown arrow, only visible on hover when subtasks exist */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className={cn(
+                                  "h-5 w-5 p-0 hover:bg-muted/50 transition-opacity",
+                                  subtasks.length > 0 ? "opacity-0 group-hover:opacity-100" : "opacity-0 pointer-events-none"
+                                )}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleSubtasks(task.id);
+                                }}
+                              >
+                                {collapsedSubtasks.has(task.id) ? (
+                                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                                ) : (
+                                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                                )}
+                              </Button>
+                              
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -268,22 +271,22 @@ export const ClickUpTaskList = ({
                               </Button>
                             </div>
                             
-                            <div className="min-w-0 flex-1">
+                            <div className="min-w-0 flex-1 flex items-center gap-2">
                               <span className={cn(
-                                "text-sm font-medium truncate block",
+                                "text-sm font-medium truncate block flex-1",
                                 task.status === 'Completed' && "line-through text-muted-foreground"
                               )}>
                                 {task.title}
                               </span>
-                            </div>
-                            
-                            {subtasks.length > 0 && (
-                              <div className="flex-shrink-0">
-                                <div className="h-5 px-2 bg-muted/60 rounded-md flex items-center">
-                                  <span className="text-xs font-medium text-muted-foreground">{subtasks.length}</span>
+                              
+                              {subtasks.length > 0 && (
+                                <div className="flex-shrink-0">
+                                  <div className="h-5 px-2 bg-muted/60 rounded-md flex items-center">
+                                    <span className="text-xs font-medium text-muted-foreground">{subtasks.length}</span>
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
+                            </div>
                           </div>
 
                           {/* Assignee */}
