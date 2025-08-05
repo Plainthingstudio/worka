@@ -29,9 +29,9 @@ interface ClickUpTaskListProps {
 
 const statusConfig = {
   'Planning': { label: 'PLANNING', color: 'bg-slate-500', icon: Circle },
-  'In progress': { label: 'IN PROGRESS', color: 'bg-amber-500', icon: Circle },
+  'In progress': { label: 'IN PROGRESS', color: 'bg-blue-500', icon: Circle },
   'Completed': { label: 'COMPLETED', color: 'bg-emerald-500', icon: CheckCircle },
-  'Paused': { label: 'PAUSED', color: 'bg-orange-500', icon: Circle },
+  'Paused': { label: 'PAUSED', color: 'bg-yellow-500', icon: Circle },
   'Cancelled': { label: 'CANCELLED', color: 'bg-red-500', icon: Circle }
 };
 
