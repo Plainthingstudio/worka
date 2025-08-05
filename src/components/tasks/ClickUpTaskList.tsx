@@ -122,7 +122,10 @@ export const ClickUpTaskList = ({
 
   // Helper function to get subtasks for a parent task
   const getSubtasks = (parentTaskId: string): TaskWithRelations[] => {
-    return tasks.filter(task => task.parent_task_id === parentTaskId);
+    const subtasks = tasks.filter(task => task.parent_task_id === parentTaskId);
+    console.log(`Checking subtasks for parent ${parentTaskId}:`, subtasks);
+    console.log('All tasks:', tasks.map(t => ({ id: t.id, title: t.title, parent_task_id: t.parent_task_id })));
+    return subtasks;
   };
 
   if (isLoading) {
