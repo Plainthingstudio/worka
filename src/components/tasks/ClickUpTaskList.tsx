@@ -381,48 +381,53 @@ export const ClickUpTaskList = ({
                             <div
                               key={subtask.id}
                               className={cn(
-                                "grid grid-cols-12 gap-6 pl-16 pr-6 py-3 hover:bg-muted/5 cursor-pointer group transition-colors border-b border-border/30 bg-muted/5",
+                                "grid grid-cols-12 gap-6 pl-16 pr-6 py-4 hover:bg-muted/5 cursor-pointer group transition-colors border-b border-border/30 bg-muted/5",
                                 subtask.status === 'Completed' && "opacity-60"
                               )}
                               onClick={() => onTaskClick(subtask)}
                             >
                               {/* Subtask Name */}
                               <div className="col-span-3 flex items-center gap-3 min-w-0">
-                                <div className="w-6 h-0.5 bg-border"></div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-4 w-4 p-0 hover:bg-muted/50 flex-shrink-0"
-                                  onClick={(e) => toggleTaskComplete(subtask, e)}
-                                >
-                                  {subtask.status === 'Completed' ? (
-                                    <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
-                                  ) : (
-                                    <Circle className="h-3.5 w-3.5 text-muted-foreground hover:text-primary transition-colors" />
-                                  )}
-                                </Button>
-                                <span className={cn(
-                                  "text-sm truncate",
-                                  subtask.status === 'Completed' && "line-through text-muted-foreground"
-                                )}>
-                                  {subtask.title}
-                                </span>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  <div className="w-6 h-0.5 bg-border"></div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-5 w-5 p-0 hover:bg-muted/50"
+                                    onClick={(e) => toggleTaskComplete(subtask, e)}
+                                  >
+                                    {subtask.status === 'Completed' ? (
+                                      <CheckCircle className="h-4 w-4 text-emerald-500" />
+                                    ) : (
+                                      <Circle className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                                    )}
+                                  </Button>
+                                </div>
+                                
+                                <div className="min-w-0 flex-1">
+                                  <span className={cn(
+                                    "text-sm font-medium truncate block",
+                                    subtask.status === 'Completed' && "line-through text-muted-foreground"
+                                  )}>
+                                    {subtask.title}
+                                  </span>
+                                </div>
                               </div>
 
                               {/* Subtask Assignee */}
                               <div className="col-span-2 flex items-center">
                                 {subtaskAssigneeNames.length > 0 ? (
                                   <div className="flex -space-x-1">
-                                    {subtaskAssigneeNames.slice(0, 2).map((name, index) => (
-                                      <Avatar key={index} className="h-5 w-5 border-2 border-background ring-1 ring-border">
+                                    {subtaskAssigneeNames.slice(0, 3).map((name, index) => (
+                                      <Avatar key={index} className="h-6 w-6 border-2 border-background ring-1 ring-border">
                                         <AvatarFallback className="text-xs bg-primary text-primary-foreground font-medium">
                                           {getInitials(name)}
                                         </AvatarFallback>
                                       </Avatar>
                                     ))}
-                                    {subtaskAssigneeNames.length > 2 && (
-                                      <div className="h-5 w-5 rounded-full bg-muted border-2 border-background ring-1 ring-border flex items-center justify-center">
-                                        <span className="text-xs font-medium text-muted-foreground">+{subtaskAssigneeNames.length - 2}</span>
+                                    {subtaskAssigneeNames.length > 3 && (
+                                      <div className="h-6 w-6 rounded-full bg-muted border-2 border-background ring-1 ring-border flex items-center justify-center">
+                                        <span className="text-xs font-medium text-muted-foreground">+{subtaskAssigneeNames.length - 3}</span>
                                       </div>
                                     )}
                                   </div>
@@ -435,7 +440,7 @@ export const ClickUpTaskList = ({
                               <div className="col-span-2 flex items-center">
                                 {subtask.due_date ? (
                                   <div className="flex items-center gap-2">
-                                    <Calendar className="h-3 w-3 text-muted-foreground" />
+                                    <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                                     <span className="text-sm text-muted-foreground">
                                       {format(subtask.due_date, 'MMM dd')}
                                     </span>
@@ -448,11 +453,11 @@ export const ClickUpTaskList = ({
                               {/* Subtask Priority */}
                               <div className="col-span-1 flex items-center">
                                 <div className={cn(
-                                  "flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium",
+                                  "flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium",
                                   subtaskPriorityStyle.color,
                                   subtaskPriorityStyle.bgColor
                                 )}>
-                                  <Flag className="h-2.5 w-2.5" />
+                                  <Flag className="h-3 w-3" />
                                   <span>{subtask.priority}</span>
                                 </div>
                               </div>
@@ -461,10 +466,10 @@ export const ClickUpTaskList = ({
                               <div className="col-span-2 flex items-center">
                                 {subtask.brief_type ? (
                                   <div className="flex items-center gap-2">
-                                    <FileText className="h-3 w-3 text-muted-foreground" />
+                                    <FileText className="h-3.5 w-3.5 text-muted-foreground" />
                                     <Badge 
                                       className={cn(
-                                        "h-4 px-1.5 text-xs font-medium rounded",
+                                        "h-5 px-2 text-xs font-medium rounded-md",
                                         getBriefTypeConfig(subtask.brief_type).color
                                       )}
                                     >
