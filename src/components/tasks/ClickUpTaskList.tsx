@@ -229,7 +229,8 @@ export const ClickUpTaskList = ({
                         {/* Parent Task */}
                         <div
                           className={cn(
-                            "grid grid-cols-12 gap-6 px-6 py-3 hover:bg-muted/10 cursor-pointer group transition-colors",
+                            "grid grid-cols-12 gap-6 px-6 py-4 hover:bg-muted/10 cursor-pointer group transition-colors border-l-2",
+                            priorityStyle.borderColor,
                             task.status === 'Completed' && "opacity-75"
                           )}
                           onClick={() => onTaskClick(task)}
@@ -275,34 +276,31 @@ export const ClickUpTaskList = ({
                               )}>
                                 {task.title}
                               </span>
-                              {subtasks.length > 0 && (
-                                <span className="text-xs text-muted-foreground">
-                                  {subtasks.length} subtask{subtasks.length !== 1 ? 's' : ''}
-                                </span>
-                              )}
                             </div>
+                            
+                            {subtasks.length > 0 && (
+                              <div className="flex-shrink-0">
+                                <div className="h-5 px-2 bg-muted/60 rounded-md flex items-center">
+                                  <span className="text-xs font-medium text-muted-foreground">{subtasks.length}</span>
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           {/* Assignee */}
                           <div className="col-span-2 flex items-center">
                             {assigneeNames.length > 0 ? (
                               <div className="flex -space-x-1">
-                                {assigneeNames.slice(0, 4).map((name, index) => (
-                                  <div 
-                                    key={index} 
-                                    className="h-6 w-6 rounded-full border-2 border-background flex items-center justify-center text-xs font-medium text-white"
-                                    style={{
-                                      backgroundColor: [
-                                        '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'
-                                      ][index % 5]
-                                    }}
-                                  >
-                                    {getInitials(name)}
-                                  </div>
+                                {assigneeNames.slice(0, 3).map((name, index) => (
+                                  <Avatar key={index} className="h-6 w-6 border-2 border-background ring-1 ring-border">
+                                    <AvatarFallback className="text-xs bg-primary text-primary-foreground font-medium">
+                                      {getInitials(name)}
+                                    </AvatarFallback>
+                                  </Avatar>
                                 ))}
-                                {assigneeNames.length > 4 && (
-                                  <div className="h-6 w-6 rounded-full bg-muted border-2 border-background flex items-center justify-center">
-                                    <span className="text-xs font-medium text-muted-foreground">+{assigneeNames.length - 4}</span>
+                                {assigneeNames.length > 3 && (
+                                  <div className="h-6 w-6 rounded-full bg-muted border-2 border-background ring-1 ring-border flex items-center justify-center">
+                                    <span className="text-xs font-medium text-muted-foreground">+{assigneeNames.length - 3}</span>
                                   </div>
                                 )}
                               </div>
@@ -314,9 +312,12 @@ export const ClickUpTaskList = ({
                           {/* Due Date */}
                           <div className="col-span-2 flex items-center">
                             {task.due_date ? (
-                              <span className="text-sm text-foreground">
-                                {format(task.due_date, 'MMM dd')}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                                <span className="text-sm text-muted-foreground">
+                                  {format(task.due_date, 'MMM dd')}
+                                </span>
+                              </div>
                             ) : (
                               <span className="text-sm text-muted-foreground">—</span>
                             )}
@@ -324,30 +325,30 @@ export const ClickUpTaskList = ({
 
                           {/* Priority */}
                           <div className="col-span-1 flex items-center">
-                            {task.priority !== 'Normal' ? (
-                              <div className={cn(
-                                "flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium",
-                                priorityStyle.color,
-                                priorityStyle.bgColor
-                              )}>
-                                <Flag className="h-3 w-3" />
-                              </div>
-                            ) : (
-                              <span className="text-sm text-muted-foreground">—</span>
-                            )}
+                            <div className={cn(
+                              "flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium",
+                              priorityStyle.color,
+                              priorityStyle.bgColor
+                            )}>
+                              <Flag className="h-3 w-3" />
+                              <span>{task.priority}</span>
+                            </div>
                           </div>
 
                           {/* Brief */}
                           <div className="col-span-2 flex items-center">
                             {task.brief_type ? (
-                              <Badge 
-                                className={cn(
-                                  "h-6 px-2 text-xs font-medium rounded-md",
-                                  getBriefTypeConfig(task.brief_type).color
-                                )}
-                              >
-                                {getBriefTypeConfig(task.brief_type).label}
-                              </Badge>
+                              <div className="flex items-center gap-2">
+                                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                                <Badge 
+                                  className={cn(
+                                    "h-5 px-2 text-xs font-medium rounded-md",
+                                    getBriefTypeConfig(task.brief_type).color
+                                  )}
+                                >
+                                  {getBriefTypeConfig(task.brief_type).label}
+                                </Badge>
+                              </div>
                             ) : (
                               <span className="text-sm text-muted-foreground">—</span>
                             )}
@@ -356,22 +357,18 @@ export const ClickUpTaskList = ({
                           {/* Status */}
                           <div className="col-span-2 flex items-center justify-between">
                             <Badge 
-                              className={cn(
-                                "h-6 px-3 text-xs font-medium rounded-md text-white",
-                                config.color
-                              )}
+                              variant={getStatusBadgeVariant(status)}
+                              className="text-xs font-medium"
                             >
-                              {config.label}
+                              {status}
                             </Badge>
                             
-                            {/* Actions Menu */}
                             <Button
                               variant="ghost"
                               size="sm"
                               className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={(e) => e.stopPropagation()}
                             >
-                              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                              <MoreHorizontal className="h-3.5 w-3.5" />
                             </Button>
                           </div>
                         </div>
