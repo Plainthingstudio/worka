@@ -212,9 +212,10 @@ export const ClickUpTaskList = ({
                     <div className="col-span-3">Task</div>
                     <div className="col-span-2">Assignee</div>
                     <div className="col-span-2">Due Date</div>
-                    <div className="col-span-1">Priority</div>
-                    <div className="col-span-2">Brief</div>
-                    <div className="col-span-2">Status</div>
+                    <div className="col-span-2">Priority</div>
+                    <div className="col-span-1"></div>
+                    <div className="col-span-1">Brief</div>
+                    <div className="col-span-1">Status</div>
                   </div>
                   
                   {/* Tasks */}
@@ -326,7 +327,7 @@ export const ClickUpTaskList = ({
                           </div>
 
                           {/* Priority */}
-                          <div className="col-span-1 flex items-center">
+                          <div className="col-span-2 flex items-center">
                             <div className={cn(
                               "flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium",
                               priorityStyle.color,
@@ -337,8 +338,11 @@ export const ClickUpTaskList = ({
                             </div>
                           </div>
 
+                          {/* Spacer */}
+                          <div className="col-span-1"></div>
+
                           {/* Brief */}
-                          <div className="col-span-2 flex items-center">
+                          <div className="col-span-1 flex items-center">
                             {task.brief_type ? (
                               <div className="flex items-center gap-2">
                                 <FileText className="h-3.5 w-3.5 text-muted-foreground" />
@@ -357,7 +361,7 @@ export const ClickUpTaskList = ({
                           </div>
 
                           {/* Status */}
-                          <div className="col-span-2 flex items-center justify-between">
+                          <div className="col-span-1 flex items-center justify-between">
                             <Badge 
                               variant={getStatusBadgeVariant(status)}
                               className="text-xs font-medium"
@@ -454,7 +458,7 @@ export const ClickUpTaskList = ({
                               </div>
 
                               {/* Subtask Priority */}
-                              <div className="col-span-1 flex items-center">
+                              <div className="col-span-2 flex items-center">
                                 <div className={cn(
                                   "flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium",
                                   subtaskPriorityStyle.color,
@@ -465,8 +469,11 @@ export const ClickUpTaskList = ({
                                 </div>
                               </div>
 
+                              {/* Spacer */}
+                              <div className="col-span-1"></div>
+
                               {/* Subtask Brief */}
-                              <div className="col-span-2 flex items-center">
+                              <div className="col-span-1 flex items-center">
                                 {subtask.brief_type ? (
                                   <div className="flex items-center gap-2">
                                     <FileText className="h-3.5 w-3.5 text-muted-foreground" />
@@ -485,7 +492,7 @@ export const ClickUpTaskList = ({
                               </div>
 
                               {/* Subtask Status */}
-                              <div className="col-span-2 flex items-center justify-between">
+                              <div className="col-span-1 flex items-center justify-between">
                                 <Badge 
                                   variant={getStatusBadgeVariant(subtask.status)}
                                   className="text-xs"
