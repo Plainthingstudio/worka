@@ -208,14 +208,13 @@ export const ClickUpTaskList = ({
               {!isCollapsed && (
                 <div>
                   {/* Table Header */}
-                  <div className="grid grid-cols-12 gap-12 pl-12 pr-6 py-2 text-xs font-semibold text-muted-foreground tracking-wider bg-muted/10 border-b border-border/50">
+                  <div className="grid grid-cols-12 gap-6 pl-12 pr-6 py-2 text-xs font-semibold text-muted-foreground tracking-wider bg-muted/10 border-b border-border/50">
                     <div className="col-span-3">Task</div>
                     <div className="col-span-2">Assignee</div>
                     <div className="col-span-2">Due Date</div>
-                    <div className="col-span-2">Priority</div>
-                    <div className="col-span-1"></div>
-                    <div className="col-span-1">Brief</div>
-                    <div className="col-span-1">Status</div>
+                    <div className="col-span-1">Priority</div>
+                    <div className="col-span-2">Brief</div>
+                    <div className="col-span-2">Status</div>
                   </div>
                   
                   {/* Tasks */}
@@ -230,7 +229,7 @@ export const ClickUpTaskList = ({
                         {/* Parent Task */}
                         <div
                           className={cn(
-                            "grid grid-cols-12 gap-12 pl-12 pr-6 py-4 hover:bg-muted/10 cursor-pointer group transition-colors border-b border-border/30",
+                            "grid grid-cols-12 gap-6 pl-12 pr-6 py-4 hover:bg-muted/10 cursor-pointer group transition-colors border-b border-border/30",
                             task.status === 'Completed' && "opacity-75"
                           )}
                           onClick={() => onTaskClick(task)}
@@ -327,7 +326,7 @@ export const ClickUpTaskList = ({
                           </div>
 
                           {/* Priority */}
-                          <div className="col-span-2 flex items-center">
+                          <div className="col-span-1 flex items-center">
                             <div className={cn(
                               "flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium",
                               priorityStyle.color,
@@ -338,11 +337,8 @@ export const ClickUpTaskList = ({
                             </div>
                           </div>
 
-                          {/* Spacer */}
-                          <div className="col-span-1"></div>
-
                           {/* Brief */}
-                          <div className="col-span-1 flex items-center">
+                          <div className="col-span-2 flex items-center">
                             {task.brief_type ? (
                               <div className="flex items-center gap-2">
                                 <FileText className="h-3.5 w-3.5 text-muted-foreground" />
@@ -361,7 +357,7 @@ export const ClickUpTaskList = ({
                           </div>
 
                           {/* Status */}
-                          <div className="col-span-1 flex items-center justify-between">
+                          <div className="col-span-2 flex items-center justify-between">
                             <Badge 
                               variant={getStatusBadgeVariant(status)}
                               className="text-xs font-medium"
@@ -388,7 +384,7 @@ export const ClickUpTaskList = ({
                             <div
                               key={subtask.id}
                               className={cn(
-                                "grid grid-cols-12 gap-12 pl-12 pr-6 py-4 hover:bg-muted/5 cursor-pointer group transition-colors border-b border-border/30 bg-muted/5",
+                                "grid grid-cols-12 gap-6 pl-12 pr-6 py-4 hover:bg-muted/5 cursor-pointer group transition-colors border-b border-border/30 bg-muted/5",
                                 subtask.status === 'Completed' && "opacity-60"
                               )}
                               onClick={() => onTaskClick(subtask)}
@@ -458,7 +454,7 @@ export const ClickUpTaskList = ({
                               </div>
 
                               {/* Subtask Priority */}
-                              <div className="col-span-2 flex items-center">
+                              <div className="col-span-1 flex items-center">
                                 <div className={cn(
                                   "flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium",
                                   subtaskPriorityStyle.color,
@@ -469,11 +465,8 @@ export const ClickUpTaskList = ({
                                 </div>
                               </div>
 
-                              {/* Spacer */}
-                              <div className="col-span-1"></div>
-
                               {/* Subtask Brief */}
-                              <div className="col-span-1 flex items-center">
+                              <div className="col-span-2 flex items-center">
                                 {subtask.brief_type ? (
                                   <div className="flex items-center gap-2">
                                     <FileText className="h-3.5 w-3.5 text-muted-foreground" />
@@ -492,7 +485,7 @@ export const ClickUpTaskList = ({
                               </div>
 
                               {/* Subtask Status */}
-                              <div className="col-span-1 flex items-center justify-between">
+                              <div className="col-span-2 flex items-center justify-between">
                                 <Badge 
                                   variant={getStatusBadgeVariant(subtask.status)}
                                   className="text-xs"
