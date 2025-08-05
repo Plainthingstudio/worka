@@ -516,12 +516,12 @@ export const Tasks = () => {
 
               {/* Navigation tabs and view controls */}
               <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
+              <div className="inline-flex items-center bg-muted rounded-lg p-1">
                 <button 
-                  className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     activeView === 'board' 
-                      ? 'border-primary text-primary font-medium' 
-                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                      ? 'bg-background text-foreground shadow-sm' 
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                   onClick={() => setActiveView('board')}
                 >
@@ -529,10 +529,10 @@ export const Tasks = () => {
                   <span>Board</span>
                 </button>
                 <button 
-                  className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     activeView === 'list' 
-                      ? 'border-primary text-primary font-medium' 
-                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                      ? 'bg-background text-foreground shadow-sm' 
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                   onClick={() => setActiveView('list')}
                 >
@@ -540,10 +540,10 @@ export const Tasks = () => {
                   <span>List</span>
                 </button>
                 <button 
-                  className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     activeView === 'calendar' 
-                      ? 'border-primary text-primary font-medium' 
-                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                      ? 'bg-background text-foreground shadow-sm' 
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                   onClick={() => setActiveView('calendar')}
                 >
