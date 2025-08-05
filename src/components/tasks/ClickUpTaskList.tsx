@@ -157,17 +157,6 @@ export const ClickUpTaskList = ({
 
   return (
     <div className="bg-background">
-      {/* Header */}
-      <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10">
-        <div className="grid grid-cols-12 gap-6 px-6 py-4 text-xs font-semibold text-muted-foreground tracking-wider">
-          <div className="col-span-3">Task</div>
-          <div className="col-span-2">Assignee</div>
-          <div className="col-span-2">Due Date</div>
-          <div className="col-span-1">Priority</div>
-          <div className="col-span-2">Brief</div>
-          <div className="col-span-2">Status</div>
-        </div>
-      </div>
 
       {/* Task Groups */}
       <div className="divide-y divide-border">
@@ -217,7 +206,19 @@ export const ClickUpTaskList = ({
 
               {/* Task List */}
               {!isCollapsed && (
-                <div className="divide-y divide-border/50">
+                <div>
+                  {/* Table Header */}
+                  <div className="grid grid-cols-12 gap-6 px-6 py-4 text-xs font-semibold text-muted-foreground tracking-wider bg-muted/10 border-b border-border/50">
+                    <div className="col-span-3">Task</div>
+                    <div className="col-span-2">Assignee</div>
+                    <div className="col-span-2">Due Date</div>
+                    <div className="col-span-1">Priority</div>
+                    <div className="col-span-2">Brief</div>
+                    <div className="col-span-2">Status</div>
+                  </div>
+                  
+                  {/* Tasks */}
+                  <div className="divide-y divide-border/50">
                   {statusTasks.map((task) => {
                     const assigneeNames = getAssigneeNames(task.assignees || []);
                     const subtasks = getSubtasks(task);
@@ -500,6 +501,7 @@ export const ClickUpTaskList = ({
                       </React.Fragment>
                     );
                   })}
+                  </div>
                 </div>
               )}
             </div>
