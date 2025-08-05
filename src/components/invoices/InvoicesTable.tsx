@@ -74,7 +74,7 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
                     defaultValue={invoice.paymentType || "Milestone Payment"} 
                     onValueChange={(value) => handlePaymentTypeChange(invoice.id, value)}
                   >
-                    <SelectTrigger className="w-[150px]">
+                    <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Type" />
                     </SelectTrigger>
                     <SelectContent>
