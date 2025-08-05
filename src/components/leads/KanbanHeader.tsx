@@ -35,7 +35,7 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
   availableYears
 }) => {
   return (
-    <div className="flex flex-col gap-4 mb-4 sm:mb-6">
+    <div className="flex flex-col gap-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-semibold">Leads & Pipeline</h1>
