@@ -339,9 +339,6 @@ export const TaskDetailSidebar = ({
           <div className="px-6 py-4 border-b">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center">
-                  <CheckCircle className="h-4 w-4 text-gray-600" />
-                </div>
                  {isEditing && userRole !== 'team' ? (
                   <FormField
                     control={form.control}
