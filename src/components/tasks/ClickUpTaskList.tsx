@@ -137,6 +137,12 @@ export const ClickUpTaskList = ({
     parent_task_id: t.parent_task_id 
   })));
 
+  // Check exact data types and values
+  console.log('Detailed task analysis:');
+  tasks.forEach(task => {
+    console.log(`Task: ${task.title}, ID: ${task.id} (${typeof task.id}), Parent: ${task.parent_task_id} (${typeof task.parent_task_id})`);
+  });
+
   // Helper function to get subtasks for a parent task
   const getSubtasks = (parentTaskId: string): TaskWithRelations[] => {
     const subtasks = tasks.filter(task => task.parent_task_id === parentTaskId);
