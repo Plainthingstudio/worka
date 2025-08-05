@@ -242,8 +242,8 @@ export const ClickUpTaskList = ({
                                 variant="ghost"
                                 size="sm"
                                 className={cn(
-                                  "h-5 w-5 p-0 hover:bg-muted/50 transition-opacity",
-                                  subtasks.length > 0 ? "opacity-0 group-hover:opacity-100" : "opacity-0 pointer-events-none"
+                                  "h-5 w-5 p-0 hover:bg-muted/50",
+                                  subtasks.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"
                                 )}
                                 onClick={(e) => {
                                   e.stopPropagation();
