@@ -69,6 +69,7 @@ export const ClickUpTaskList = ({
   onAddTask 
 }: ClickUpTaskListProps) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [collapsedSubtasks, setCollapsedSubtasks] = useState<Set<string>>(new Set());
   const { getAssigneeNames } = useAssigneeNames();
 
   const toggleGroup = (status: string) => {
@@ -79,6 +80,16 @@ export const ClickUpTaskList = ({
       newCollapsed.add(status);
     }
     setCollapsedGroups(newCollapsed);
+  };
+
+  const toggleSubtasks = (taskId: string) => {
+    const newCollapsed = new Set(collapsedSubtasks);
+    if (newCollapsed.has(taskId)) {
+      newCollapsed.delete(taskId);
+    } else {
+      newCollapsed.add(taskId);
+    }
+    setCollapsedSubtasks(newCollapsed);
   };
 
   const toggleTaskComplete = async (task: TaskWithRelations, e: React.MouseEvent) => {
@@ -207,6 +218,23 @@ export const ClickUpTaskList = ({
                       >
                         {/* Name */}
                         <div className="col-span-3 flex items-center gap-2">
+                          {subtasks.length > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-4 w-4 p-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleSubtasks(task.id);
+                              }}
+                            >
+                              {collapsedSubtasks.has(task.id) ? (
+                                <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                              ) : (
+                                <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                              )}
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"
@@ -312,7 +340,7 @@ export const ClickUpTaskList = ({
                       </div>
 
                       {/* Subtasks */}
-                      {subtasks.map((subtask) => {
+                      {!collapsedSubtasks.has(task.id) && subtasks.map((subtask) => {
                         const subtaskAssigneeNames = getAssigneeNames(subtask.assignees || []);
                         
                         return (
