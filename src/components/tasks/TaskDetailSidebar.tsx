@@ -393,9 +393,14 @@ export const TaskDetailSidebar = ({
                      {task.parent_task_id && allTasks.length > 0 && (() => {
                        const parentTask = allTasks.find(t => t.id === task.parent_task_id);
                        return parentTask ? (
-                         <p className="text-sm text-muted-foreground ml-2">
-                           Main task: {parentTask.title}
-                         </p>
+                          <p className="text-sm text-muted-foreground ml-2">
+                            <button 
+                              onClick={() => navigate('/tasks')} 
+                              className="hover:underline cursor-pointer text-left"
+                            >
+                              Main task:
+                            </button> {parentTask.title}
+                          </p>
                        ) : null;
                      })()}
                    </div>
