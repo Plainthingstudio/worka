@@ -508,36 +508,10 @@ export const Tasks = () => {
                   <p className="text-sm text-muted-foreground mt-1">Short description will be placed here</p>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                  {/* Team avatars */}
-                  <div className="flex items-center -space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-blue-500 border-2 border-background flex items-center justify-center text-xs font-medium text-white">
-                      JD
-                    </div>
-                    <div className="w-8 h-8 rounded-full bg-green-500 border-2 border-background flex items-center justify-center text-xs font-medium text-white">
-                      SM
-                    </div>
-                    <div className="w-8 h-8 rounded-full bg-purple-500 border-2 border-background flex items-center justify-center text-xs font-medium text-white">
-                      AB
-                    </div>
-                    <div className="w-8 h-8 rounded-full bg-orange-500 border-2 border-background flex items-center justify-center text-xs font-medium text-white">
-                      CD
-                    </div>
-                    <div className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center text-xs font-medium text-muted-foreground">
-                      +2
-                    </div>
-                  </div>
-                  
-                  {/* Action buttons */}
-                  <Button variant="outline" size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Invite Member
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Share className="h-4 w-4 mr-2" />
-                    Share
-                  </Button>
-                </div>
+                <Button onClick={() => handleAddTask()} className="w-fit">
+                  <Plus className="h-4 w-4 mr-2" />
+                  <span>Add Task</span>
+                </Button>
               </div>
 
               {/* Navigation tabs and view controls */}
@@ -598,88 +572,6 @@ export const Tasks = () => {
               </div>
             </div>
 
-            {/* Add Task and Filter section */}
-            <div className="py-4">
-              <div className="flex flex-col gap-3">
-                <Button onClick={() => handleAddTask()} className="w-fit">
-                  <Plus className="h-4 w-4 mr-2" />
-                  <span>Add Task</span>
-                </Button>
-                
-                {/* Filters below Add Task button */}
-                <div className="flex items-center gap-3">
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      placeholder="Search task..." 
-                      value={searchQuery} 
-                      onChange={e => setSearchQuery(e.target.value)} 
-                      className="pl-10 h-9 rounded-lg border-border bg-background" 
-                    />
-                  </div>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-9 px-3 rounded-lg border-border">
-                        <Filter className="h-4 w-4 mr-2" />
-                        Filter
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-64 p-4 space-y-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Project</label>
-                        <Select value={selectedProject} onValueChange={setSelectedProject}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="All Projects" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Projects</SelectItem>
-                            {projects.map(project => 
-                              <SelectItem key={project.id} value={project.id}>
-                                {project.name}
-                              </SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Status</label>
-                        <Select value={statusFilter} onValueChange={setStatusFilter}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="All Status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Status</SelectItem>
-                            <SelectItem value="Planning">Planning</SelectItem>
-                            <SelectItem value="In progress">In Progress</SelectItem>
-                            <SelectItem value="Paused">Paused</SelectItem>
-                            <SelectItem value="Completed">Completed</SelectItem>
-                            <SelectItem value="Cancelled">Cancelled</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Priority</label>
-                        <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="All Priority" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Priority</SelectItem>
-                            <SelectItem value="Low">Low</SelectItem>
-                            <SelectItem value="Normal">Normal</SelectItem>
-                            <SelectItem value="High">High</SelectItem>
-                            <SelectItem value="Urgent">Urgent</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            </div>
 
             {/* Content */}
             <div className="flex-1 overflow-hidden">
