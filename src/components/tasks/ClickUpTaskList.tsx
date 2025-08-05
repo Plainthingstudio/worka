@@ -381,14 +381,14 @@ export const ClickUpTaskList = ({
                             <div
                               key={subtask.id}
                               className={cn(
-                                "grid grid-cols-12 gap-6 pl-16 pr-6 py-4 hover:bg-muted/5 cursor-pointer group transition-colors border-b border-border/30 bg-muted/5",
+                                "grid grid-cols-12 gap-6 pl-12 pr-6 py-4 hover:bg-muted/5 cursor-pointer group transition-colors border-b border-border/30 bg-muted/5",
                                 subtask.status === 'Completed' && "opacity-60"
                               )}
                               onClick={() => onTaskClick(subtask)}
                             >
                               {/* Subtask Name */}
                               <div className="col-span-3 flex items-center gap-3 min-w-0">
-                                <div className="flex items-center gap-2 flex-shrink-0">
+                                <div className="flex items-center gap-2 flex-shrink-0 ml-4">
                                   <div className="w-6 h-0.5 bg-border"></div>
                                   <Button
                                     variant="ghost"
