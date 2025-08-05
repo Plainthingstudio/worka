@@ -107,15 +107,23 @@ export const ClickUpTaskList = ({
     return initials || '?';
   };
 
-  // Group tasks by status
+  // Group tasks by status, excluding subtasks from main list
   const groupedTasks = tasks.reduce((acc, task) => {
-    const status = task.status;
-    if (!acc[status]) {
-      acc[status] = [];
+    // Only include main tasks (not subtasks) in the main grouping
+    if (!task.parent_task_id) {
+      const status = task.status;
+      if (!acc[status]) {
+        acc[status] = [];
+      }
+      acc[status].push(task);
     }
-    acc[status].push(task);
     return acc;
   }, {} as Record<string, TaskWithRelations[]>);
+
+  // Helper function to get subtasks for a parent task
+  const getSubtasks = (parentTaskId: string): TaskWithRelations[] => {
+    return tasks.filter(task => task.parent_task_id === parentTaskId);
+  };
 
   if (isLoading) {
     return (
@@ -185,116 +193,241 @@ export const ClickUpTaskList = ({
               <div className="divide-y">
                 {statusTasks.map((task) => {
                   const assigneeNames = getAssigneeNames(task.assignees || []);
+                  const subtasks = getSubtasks(task.id);
                   
                   return (
-                    <div
-                      key={task.id}
-                      className={cn(
-                        "grid grid-cols-12 gap-4 px-4 py-3 hover:bg-muted/50 cursor-pointer group border-l-2",
-                        priorityColors[task.priority]
-                      )}
-                      onClick={() => onTaskClick(task)}
-                    >
-                      {/* Name */}
-                      <div className="col-span-3 flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5 p-0"
-                          onClick={(e) => toggleTaskComplete(task, e)}
-                        >
-                          {task.status === 'Completed' ? (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <Circle className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                          )}
-                        </Button>
-                        <span className={cn(
-                          "text-sm truncate",
-                          task.status === 'Completed' && "line-through text-muted-foreground"
-                        )}>
-                          {task.title}
-                        </span>
-                      </div>
-
-                      {/* Assignee */}
-                      <div className="col-span-2 flex items-center">
-                        {assigneeNames.length > 0 ? (
-                          <div className="flex items-center gap-2">
-                            <div className="flex -space-x-1">
-                              {assigneeNames.slice(0, 2).map((name, index) => (
-                                <Avatar key={index} className="h-5 w-5 border border-white">
-                                  <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                                    {getInitials(name)}
-                                  </AvatarFallback>
-                                </Avatar>
-                              ))}
-                              {assigneeNames.length > 2 && (
-                                <div className="h-5 w-5 rounded-full bg-gray-200 border border-white flex items-center justify-center">
-                                  <span className="text-xs text-gray-600">+{assigneeNames.length - 2}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">–</span>
+                    <React.Fragment key={task.id}>
+                      {/* Parent Task */}
+                      <div
+                        className={cn(
+                          "grid grid-cols-12 gap-4 px-4 py-3 hover:bg-muted/50 cursor-pointer group border-l-2",
+                          priorityColors[task.priority]
                         )}
-                      </div>
-
-                      {/* Due Date */}
-                      <div className="col-span-2 flex items-center">
-                        {task.due_date ? (
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-xs text-muted-foreground">
-                              {format(task.due_date, 'MMM dd')}
+                        onClick={() => onTaskClick(task)}
+                      >
+                        {/* Name */}
+                        <div className="col-span-3 flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 p-0"
+                            onClick={(e) => toggleTaskComplete(task, e)}
+                          >
+                            {task.status === 'Completed' ? (
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <Circle className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                            )}
+                          </Button>
+                          <span className={cn(
+                            "text-sm truncate",
+                            task.status === 'Completed' && "line-through text-muted-foreground"
+                          )}>
+                            {task.title}
+                          </span>
+                          {subtasks.length > 0 && (
+                            <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                              {subtasks.length}
                             </span>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">–</span>
-                        )}
-                      </div>
+                          )}
+                        </div>
 
-                      {/* Priority */}
-                      <div className="col-span-1 flex items-center">
-                        <div className={cn("flex items-center gap-1 text-xs", priorityTextColors[task.priority])}>
-                          <Flag className="h-3 w-3" />
-                          <span>{task.priority}</span>
+                        {/* Assignee */}
+                        <div className="col-span-2 flex items-center">
+                          {assigneeNames.length > 0 ? (
+                            <div className="flex items-center gap-2">
+                              <div className="flex -space-x-1">
+                                {assigneeNames.slice(0, 2).map((name, index) => (
+                                  <Avatar key={index} className="h-5 w-5 border border-white">
+                                    <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                                      {getInitials(name)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                ))}
+                                {assigneeNames.length > 2 && (
+                                  <div className="h-5 w-5 rounded-full bg-gray-200 border border-white flex items-center justify-center">
+                                    <span className="text-xs text-gray-600">+{assigneeNames.length - 2}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">–</span>
+                          )}
+                        </div>
+
+                        {/* Due Date */}
+                        <div className="col-span-2 flex items-center">
+                          {task.due_date ? (
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-xs text-muted-foreground">
+                                {format(task.due_date, 'MMM dd')}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">–</span>
+                          )}
+                        </div>
+
+                        {/* Priority */}
+                        <div className="col-span-1 flex items-center">
+                          <div className={cn("flex items-center gap-1 text-xs", priorityTextColors[task.priority])}>
+                            <Flag className="h-3 w-3" />
+                            <span>{task.priority}</span>
+                          </div>
+                        </div>
+
+                        {/* Brief */}
+                        <div className="col-span-2 flex items-center">
+                          {task.brief_type ? (
+                            <div className="flex items-center gap-1">
+                              <FileText className="h-3 w-3 text-muted-foreground" />
+                              <Badge className={`${getBriefTypeColor(task.brief_type)} text-white text-xs h-4`}>
+                                {task.brief_type.split(' ')[0]}
+                              </Badge>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">–</span>
+                          )}
+                        </div>
+
+                        {/* Status */}
+                        <div className="col-span-1 flex items-center">
+                          <Badge variant={getStatusBadgeVariant(status)}>
+                            {status}
+                          </Badge>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="col-span-1 flex items-center justify-end">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <MoreHorizontal className="h-3 w-3" />
+                          </Button>
                         </div>
                       </div>
 
-                      {/* Brief */}
-                      <div className="col-span-2 flex items-center">
-                        {task.brief_type ? (
-                          <div className="flex items-center gap-1">
-                            <FileText className="h-3 w-3 text-muted-foreground" />
-                            <Badge className={`${getBriefTypeColor(task.brief_type)} text-white text-xs h-4`}>
-                              {task.brief_type.split(' ')[0]}
-                            </Badge>
+                      {/* Subtasks */}
+                      {subtasks.map((subtask) => {
+                        const subtaskAssigneeNames = getAssigneeNames(subtask.assignees || []);
+                        
+                        return (
+                          <div
+                            key={subtask.id}
+                            className={cn(
+                              "grid grid-cols-12 gap-4 pl-8 pr-4 py-2 hover:bg-muted/30 cursor-pointer group border-l-2 bg-muted/10",
+                              priorityColors[subtask.priority]
+                            )}
+                            onClick={() => onTaskClick(subtask)}
+                          >
+                            {/* Name */}
+                            <div className="col-span-3 flex items-center gap-2">
+                              <div className="w-3 h-px bg-border"></div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-4 w-4 p-0"
+                                onClick={(e) => toggleTaskComplete(subtask, e)}
+                              >
+                                {subtask.status === 'Completed' ? (
+                                  <CheckCircle className="h-3 w-3 text-green-500" />
+                                ) : (
+                                  <Circle className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                                )}
+                              </Button>
+                              <span className={cn(
+                                "text-sm truncate",
+                                subtask.status === 'Completed' && "line-through text-muted-foreground"
+                              )}>
+                                {subtask.title}
+                              </span>
+                            </div>
+
+                            {/* Assignee */}
+                            <div className="col-span-2 flex items-center">
+                              {subtaskAssigneeNames.length > 0 ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="flex -space-x-1">
+                                    {subtaskAssigneeNames.slice(0, 2).map((name, index) => (
+                                      <Avatar key={index} className="h-4 w-4 border border-white">
+                                        <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                                          {getInitials(name)}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                    ))}
+                                    {subtaskAssigneeNames.length > 2 && (
+                                      <div className="h-4 w-4 rounded-full bg-gray-200 border border-white flex items-center justify-center">
+                                        <span className="text-xs text-gray-600">+{subtaskAssigneeNames.length - 2}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">–</span>
+                              )}
+                            </div>
+
+                            {/* Due Date */}
+                            <div className="col-span-2 flex items-center">
+                              {subtask.due_date ? (
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3 text-muted-foreground" />
+                                  <span className="text-xs text-muted-foreground">
+                                    {format(subtask.due_date, 'MMM dd')}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">–</span>
+                              )}
+                            </div>
+
+                            {/* Priority */}
+                            <div className="col-span-1 flex items-center">
+                              <div className={cn("flex items-center gap-1 text-xs", priorityTextColors[subtask.priority])}>
+                                <Flag className="h-3 w-3" />
+                                <span>{subtask.priority}</span>
+                              </div>
+                            </div>
+
+                            {/* Brief */}
+                            <div className="col-span-2 flex items-center">
+                              {subtask.brief_type ? (
+                                <div className="flex items-center gap-1">
+                                  <FileText className="h-3 w-3 text-muted-foreground" />
+                                  <Badge className={`${getBriefTypeColor(subtask.brief_type)} text-white text-xs h-4`}>
+                                    {subtask.brief_type.split(' ')[0]}
+                                  </Badge>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">–</span>
+                              )}
+                            </div>
+
+                            {/* Status */}
+                            <div className="col-span-1 flex items-center">
+                              <Badge variant={getStatusBadgeVariant(subtask.status)} className="text-xs h-4">
+                                {subtask.status}
+                              </Badge>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="col-span-1 flex items-center justify-end">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <MoreHorizontal className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">–</span>
-                        )}
-                      </div>
-
-                      {/* Status */}
-                      <div className="col-span-1 flex items-center">
-                        <Badge variant={getStatusBadgeVariant(status)}>
-                          {status}
-                        </Badge>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="col-span-1 flex items-center justify-end">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <MoreHorizontal className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
+                        );
+                      })}
+                    </React.Fragment>
                   );
                 })}
               </div>
