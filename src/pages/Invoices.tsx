@@ -8,6 +8,8 @@ import InvoicesFilter from '@/components/invoices/InvoicesFilter';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { useInvoices } from '@/hooks/useInvoices';
 import { useInvoiceStatus } from '@/hooks/useInvoiceStatus';
+import { PaymentType } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
 
 const Invoices = () => {
   const navigate = useNavigate();
@@ -27,6 +29,25 @@ const Invoices = () => {
   } = useInvoices();
 
   const { updateInvoiceStatus } = useInvoiceStatus(fetchInvoices);
+
+  // Update payment type function
+  const updatePaymentType = async (invoiceId: string, newType: PaymentType) => {
+    try {
+      const { error } = await supabase
+        .from('invoices')
+        .update({ payment_type: newType })
+        .eq('id', invoiceId);
+
+      if (error) {
+        throw error;
+      }
+
+      // Refresh the invoices list
+      fetchInvoices();
+    } catch (error) {
+      console.error('Error updating payment type:', error);
+    }
+  };
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -80,6 +101,7 @@ const Invoices = () => {
               onDeleteClick={confirmDelete}
               onEditClick={handleEditInvoice}
               onStatusChange={updateInvoiceStatus}
+              onPaymentTypeChange={updatePaymentType}
             />
           )}
       </main>

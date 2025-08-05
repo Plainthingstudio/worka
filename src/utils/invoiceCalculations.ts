@@ -1,5 +1,5 @@
 
-import { Invoice, InvoiceItem } from '@/types';
+import { Invoice, InvoiceItem, PaymentType } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
 export const calculateItemAmount = (quantity: number, rate: number): number => {
@@ -80,7 +80,8 @@ export const createNewInvoice = (): Invoice => {
     notes: "",
     termsAndConditions: "Payment is due within the specified term. Please make the payment to the specified account.",
     createdAt: new Date(),
-    status: "Draft" as "Draft" | "Sent" | "Paid" | "Overdue", // Fixed: explicitly typed as one of the allowed values
+    status: "Draft" as "Draft" | "Sent" | "Paid" | "Overdue",
+    paymentType: "Milestone Payment" as PaymentType
   };
   console.log("Created new invoice:", newInvoice);
   return newInvoice;

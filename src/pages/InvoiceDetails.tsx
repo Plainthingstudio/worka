@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { Invoice } from "@/types";
+import { Invoice, PaymentType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/hooks/useClients";
 import { useInvoicePdf } from "@/hooks/useInvoicePdf";
@@ -101,7 +101,8 @@ const InvoiceDetails = () => {
           notes: invoiceData.notes || "",
           termsAndConditions: invoiceData.terms_and_conditions || "",
           createdAt: new Date(invoiceData.created_at),
-          status: validateInvoiceStatus(invoiceData.status)
+          status: validateInvoiceStatus(invoiceData.status),
+          paymentType: (invoiceData.payment_type as PaymentType) || "Milestone Payment"
         };
         
         setInvoice(loadedInvoice);

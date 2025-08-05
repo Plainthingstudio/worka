@@ -2,7 +2,7 @@
 import { useCallback, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Invoice } from '@/types';
+import { Invoice, PaymentType } from '@/types';
 
 export const useInvoicesFetching = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -100,7 +100,8 @@ export const useInvoicesFetching = () => {
           notes: invoice.notes || "",
           termsAndConditions: invoice.terms_and_conditions || "",
           createdAt: new Date(invoice.created_at),
-          status: validateStatus(invoice.status)
+          status: validateStatus(invoice.status),
+          paymentType: (invoice.payment_type as PaymentType) || "Milestone Payment"
         };
       });
 

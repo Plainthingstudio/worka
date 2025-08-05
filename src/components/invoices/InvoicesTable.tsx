@@ -4,9 +4,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Eye, Download, Trash, Edit, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { Invoice } from "@/types";
+import { Invoice, PaymentType } from "@/types";
 import DateCell from "@/components/projects/cells/DateCell";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 interface InvoicesTableProps {
   invoices: Invoice[];
   onViewClick: (invoiceId: string) => void;
@@ -14,6 +15,7 @@ interface InvoicesTableProps {
   onDeleteClick: (invoiceId: string) => void;
   onEditClick: (invoiceId: string) => void;
   onStatusChange?: (invoiceId: string, newStatus: "Draft" | "Sent" | "Paid" | "Overdue") => void;
+  onPaymentTypeChange?: (invoiceId: string, newType: PaymentType) => void;
   formatCurrency: (amount: number) => string;
 }
 const InvoicesTable: React.FC<InvoicesTableProps> = ({
@@ -23,6 +25,7 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
   onDeleteClick,
   onEditClick,
   onStatusChange,
+  onPaymentTypeChange,
   formatCurrency
 }) => {
   if (!invoices || invoices.length === 0) {
@@ -35,6 +38,12 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
       onStatusChange(invoiceId, status as "Draft" | "Sent" | "Paid" | "Overdue");
     }
   };
+
+  const handlePaymentTypeChange = (invoiceId: string, paymentType: string) => {
+    if (onPaymentTypeChange) {
+      onPaymentTypeChange(invoiceId, paymentType as PaymentType);
+    }
+  };
   return <div className="rounded-md border bg-white border shadow-sm">
       <Table>
         <TableHeader>
@@ -43,6 +52,7 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
             <TableHead>Date</TableHead>
             <TableHead>Due Date</TableHead>
             <TableHead>Client</TableHead>
+            <TableHead>Type</TableHead>
             <TableHead className="text-right">Amount</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -58,6 +68,27 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
                 <DateCell date={invoice.dueDate} />
               </TableCell>
               <TableCell>{invoice.clientName || "Unknown Client"}</TableCell>
+              <TableCell>
+                {onPaymentTypeChange ? (
+                  <Select 
+                    defaultValue={invoice.paymentType || "Milestone Payment"} 
+                    onValueChange={(value) => handlePaymentTypeChange(invoice.id, value)}
+                  >
+                    <SelectTrigger className="w-[150px]">
+                      <SelectValue placeholder="Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Down Payment">Down Payment</SelectItem>
+                      <SelectItem value="Milestone Payment">Milestone Payment</SelectItem>
+                      <SelectItem value="Final Payment">Final Payment</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-gray-100 text-gray-800">
+                    {invoice.paymentType || "Milestone Payment"}
+                  </div>
+                )}
+              </TableCell>
               <TableCell className="text-right">${formatCurrency(invoice.total)}</TableCell>
               <TableCell>
                 {onStatusChange ? <Select defaultValue={invoice.status} onValueChange={value => handleStatusChange(invoice.id, value)}>

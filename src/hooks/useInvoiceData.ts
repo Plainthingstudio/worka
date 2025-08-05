@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { Invoice, InvoiceItem } from '@/types';
+import { Invoice, InvoiceItem, PaymentType } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { createNewInvoice } from '@/utils/invoiceCalculations';
 
@@ -109,7 +109,8 @@ export function useInvoiceData(invoiceId: string | undefined) {
         notes: invoiceData.notes || "",
         termsAndConditions: invoiceData.terms_and_conditions || "",
         createdAt: new Date(invoiceData.created_at),
-        status: validStatus
+        status: validStatus,
+        paymentType: (invoiceData.payment_type as PaymentType) || "Milestone Payment"
       };
 
       console.log("Loaded invoice with items:", loadedInvoice);

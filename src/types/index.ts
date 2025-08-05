@@ -117,6 +117,7 @@ export interface Invoice {
   termsAndConditions: string;
   createdAt: Date;
   status: "Draft" | "Sent" | "Paid" | "Overdue";
+  paymentType: PaymentType;
 }
 
 export interface DashboardStats {
