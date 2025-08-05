@@ -121,11 +121,8 @@ export const ClickUpTaskList = ({
   }, {} as Record<string, TaskWithRelations[]>);
 
   // Helper function to get subtasks for a parent task
-  const getSubtasks = (parentTaskId: string): TaskWithRelations[] => {
-    const subtasks = tasks.filter(task => task.parent_task_id === parentTaskId);
-    console.log(`Checking subtasks for parent ${parentTaskId}:`, subtasks);
-    console.log('All tasks:', tasks.map(t => ({ id: t.id, title: t.title, parent_task_id: t.parent_task_id })));
-    return subtasks;
+  const getSubtasks = (task: TaskWithRelations): TaskWithRelations[] => {
+    return task.subtasks || [];
   };
 
   if (isLoading) {
@@ -196,7 +193,7 @@ export const ClickUpTaskList = ({
               <div className="divide-y">
                 {statusTasks.map((task) => {
                   const assigneeNames = getAssigneeNames(task.assignees || []);
-                  const subtasks = getSubtasks(task.id);
+                  const subtasks = getSubtasks(task);
                   
                   return (
                     <React.Fragment key={task.id}>
