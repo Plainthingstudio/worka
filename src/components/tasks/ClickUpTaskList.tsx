@@ -159,7 +159,7 @@ export const ClickUpTaskList = ({
     <div className="bg-background">
       {/* Header */}
       <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10">
-        <div className="grid grid-cols-12 gap-6 px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        <div className="grid grid-cols-12 gap-6 px-6 py-4 text-xs font-semibold text-muted-foreground tracking-wider">
           <div className="col-span-3">Task</div>
           <div className="col-span-2">Assignee</div>
           <div className="col-span-2">Due Date</div>
