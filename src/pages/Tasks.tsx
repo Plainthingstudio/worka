@@ -486,18 +486,14 @@ export const Tasks = () => {
 
   // Show loading state while checking authentication
   if (!isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center h-64">
+    return <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="text-lg">Loading...</div>
           <div className="text-sm text-muted-foreground">Verifying authentication</div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="p-6 py-0">
+  return <div className="p-6 py-0">
       <div className="flex flex-col h-full">
             {/* Header */}
             <div className="border-b bg-background px-4 sm:px-6 py-6 -mx-6">
@@ -505,7 +501,7 @@ export const Tasks = () => {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h1 className="text-2xl font-semibold text-foreground">Tasks</h1>
-                  <p className="text-sm text-muted-foreground mt-1">Short description will be placed here</p>
+                  <p className="text-muted-foreground mt-1 text-base">List of task for all team members</p>
                 </div>
                 
                 <Button onClick={() => handleAddTask()} className="w-fit">
@@ -517,36 +513,15 @@ export const Tasks = () => {
               {/* Navigation tabs and view controls */}
               <div className="flex items-center justify-between">
               <div className="inline-flex items-center bg-muted rounded-lg p-1">
-                <button 
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    activeView === 'board' 
-                      ? 'bg-background text-foreground shadow-sm' 
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  onClick={() => setActiveView('board')}
-                >
+                <button className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${activeView === 'board' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`} onClick={() => setActiveView('board')}>
                   <Kanban className="h-4 w-4" />
                   <span>Board</span>
                 </button>
-                <button 
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    activeView === 'list' 
-                      ? 'bg-background text-foreground shadow-sm' 
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  onClick={() => setActiveView('list')}
-                >
+                <button className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${activeView === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`} onClick={() => setActiveView('list')}>
                   <LayoutList className="h-4 w-4" />
                   <span>List</span>
                 </button>
-                <button 
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    activeView === 'calendar' 
-                      ? 'bg-background text-foreground shadow-sm' 
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  onClick={() => setActiveView('calendar')}
-                >
+                <button className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${activeView === 'calendar' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`} onClick={() => setActiveView('calendar')}>
                   <Calendar className="h-4 w-4" />
                   <span>Timeline</span>
                 </button>
@@ -555,12 +530,7 @@ export const Tasks = () => {
                 <div className="flex items-center gap-3">
                   <div className="relative flex-1 max-w-md">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      placeholder="Search task..." 
-                      value={searchQuery} 
-                      onChange={e => setSearchQuery(e.target.value)} 
-                      className="pl-10 h-9 rounded-lg border-border bg-background" 
-                    />
+                    <Input placeholder="Search task..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10 h-9 rounded-lg border-border bg-background" />
                   </div>
 
                   <DropdownMenu>
@@ -579,11 +549,9 @@ export const Tasks = () => {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="all">All Projects</SelectItem>
-                            {projects.map(project => 
-                              <SelectItem key={project.id} value={project.id}>
+                            {projects.map(project => <SelectItem key={project.id} value={project.id}>
                                 {project.name}
-                              </SelectItem>
-                            )}
+                              </SelectItem>)}
                           </SelectContent>
                         </Select>
                       </div>
@@ -630,14 +598,14 @@ export const Tasks = () => {
             {/* Content */}
             <div className="flex-1 overflow-hidden">
               {activeView === 'list' && <ClickUpTaskList tasks={filteredTasks} isLoading={isLoading} onTaskClick={task => {
-              console.log('Task clicked:', task.title);
-              setSelectedTask(task);
-            }} onUpdateTask={updateTask} onAddTask={handleAddTask} />}
+          console.log('Task clicked:', task.title);
+          setSelectedTask(task);
+        }} onUpdateTask={updateTask} onAddTask={handleAddTask} />}
               
               {activeView === 'board' && <TaskBoardView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddTask={status => handleAddTask(status)} onTaskClick={task => {
-              console.log('Board task clicked:', task.title);
-              setSelectedTask(task);
-            }} />}
+          console.log('Board task clicked:', task.title);
+          setSelectedTask(task);
+        }} />}
               
               {activeView === 'calendar' && <TaskCalendarView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} />}
             </div>
@@ -650,7 +618,6 @@ export const Tasks = () => {
 
       {/* Create Subtask Dialog */}
       <SubtaskDialog isOpen={isSubtaskDialogOpen} onClose={() => setIsSubtaskDialogOpen(false)} onSubmit={handleCreateSubtask} parentTaskId={parentTaskId} title="Create New Subtask" />
-    </div>
-  );
+    </div>;
 };
 export default Tasks;
