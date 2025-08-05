@@ -153,7 +153,7 @@ export const ClickUpTaskList = ({
     );
   }
 
-  const statusOrder: TaskStatus[] = ['Planning', 'In progress', 'Completed', 'Paused', 'Cancelled'];
+  const statusOrder: TaskStatus[] = ['Planning', 'In progress', 'Paused', 'Completed', 'Cancelled'];
 
   return (
     <div className="bg-background">
