@@ -8,8 +8,9 @@ export const LEAD_STAGES: LeadStage[] = [
   'First Meeting',
   'Follow up 1',
   'Follow up 2',
-  'Provide Moodboard',
   'Follow up 3',
+  'Ghosting',
+  'Provide Moodboard/Stylescape',
   'Down Payment',
   'Kickoff',
   'Finish'

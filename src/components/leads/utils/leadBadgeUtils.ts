@@ -14,7 +14,9 @@ export const getStageBadgeVariant = (stage: string) => {
     case 'Follow up 2':
     case 'Follow up 3':
       return 'follow-up';
-    case 'Provide Moodboard':
+    case 'Ghosting':
+      return 'destructive';
+    case 'Provide Moodboard/Stylescape':
       return 'moodboard';
     case 'Down Payment':
       return 'down-payment';
