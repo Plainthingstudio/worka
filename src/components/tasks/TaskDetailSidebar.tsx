@@ -414,6 +414,15 @@ export const TaskDetailSidebar = ({
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem 
+                        onClick={() => {
+                          form.setValue('status', 'Completed');
+                          form.handleSubmit(handleSubmit)();
+                        }}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Mark as completed
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
                         onClick={() => setIsDeleteDialogOpen(true)}
                         className="text-destructive"
                       >
