@@ -181,7 +181,7 @@ export const ClickUpTaskList = ({
                   ) : (
                     <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform" />
                   )}
-                  <div className={cn("h-6 w-6 rounded-full flex items-center justify-center", config.color)}>
+                  <div className={cn("h-5 w-5 rounded-full flex items-center justify-center", config.color)}>
                     <StatusIcon className="h-3.5 w-3.5 text-white" />
                   </div>
                   <span className="font-semibold text-sm text-foreground">{config.label}</span>
