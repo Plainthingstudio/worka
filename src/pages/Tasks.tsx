@@ -31,7 +31,7 @@ export const Tasks = () => {
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [newTaskStatus, setNewTaskStatus] = useState<TaskStatus>('Planning');
-  const [activeView, setActiveView] = useState<'overview' | 'list' | 'board' | 'table' | 'calendar'>('list');
+  const [activeView, setActiveView] = useState<'list' | 'board' | 'calendar'>('list');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Handle URL parameters on load
@@ -542,62 +542,41 @@ export const Tasks = () => {
 
               {/* Navigation tabs and view controls */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                  <button 
-                    className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
-                      activeView === 'overview' 
-                        ? 'border-primary text-primary font-medium' 
-                        : 'border-transparent text-muted-foreground hover:text-foreground'
-                    }`}
-                    onClick={() => setActiveView('overview')}
-                  >
-                    <span>Overview</span>
-                  </button>
-                  <button 
-                    className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
-                      activeView === 'board' 
-                        ? 'border-primary text-primary font-medium' 
-                        : 'border-transparent text-muted-foreground hover:text-foreground'
-                    }`}
-                    onClick={() => setActiveView('board')}
-                  >
-                    <Kanban className="h-4 w-4" />
-                    <span>Board</span>
-                  </button>
-                  <button 
-                    className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
-                      activeView === 'list' 
-                        ? 'border-primary text-primary font-medium' 
-                        : 'border-transparent text-muted-foreground hover:text-foreground'
-                    }`}
-                    onClick={() => setActiveView('list')}
-                  >
-                    <LayoutList className="h-4 w-4" />
-                    <span>List</span>
-                  </button>
-                  <button 
-                    className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
-                      activeView === 'table' 
-                        ? 'border-primary text-primary font-medium' 
-                        : 'border-transparent text-muted-foreground hover:text-foreground'
-                    }`}
-                    onClick={() => setActiveView('table')}
-                  >
-                    <Table className="h-4 w-4" />
-                    <span>Table</span>
-                  </button>
-                  <button 
-                    className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
-                      activeView === 'calendar' 
-                        ? 'border-primary text-primary font-medium' 
-                        : 'border-transparent text-muted-foreground hover:text-foreground'
-                    }`}
-                    onClick={() => setActiveView('calendar')}
-                  >
-                    <Calendar className="h-4 w-4" />
-                    <span>Timeline</span>
-                  </button>
-                </div>
+              <div className="flex items-center gap-6">
+                <button 
+                  className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
+                    activeView === 'board' 
+                      ? 'border-primary text-primary font-medium' 
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                  onClick={() => setActiveView('board')}
+                >
+                  <Kanban className="h-4 w-4" />
+                  <span>Board</span>
+                </button>
+                <button 
+                  className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
+                    activeView === 'list' 
+                      ? 'border-primary text-primary font-medium' 
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                  onClick={() => setActiveView('list')}
+                >
+                  <LayoutList className="h-4 w-4" />
+                  <span>List</span>
+                </button>
+                <button 
+                  className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
+                    activeView === 'calendar' 
+                      ? 'border-primary text-primary font-medium' 
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                  onClick={() => setActiveView('calendar')}
+                >
+                  <Calendar className="h-4 w-4" />
+                  <span>Timeline</span>
+                </button>
+              </div>
 
                 <div className="flex items-center gap-2">
                   <Button variant="ghost" size="sm">
