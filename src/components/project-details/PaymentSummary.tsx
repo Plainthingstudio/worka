@@ -1,28 +1,20 @@
-
 import React from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Project } from "@/types";
-
 interface PaymentSummaryProps {
   project: Project;
   onAddPayment: () => void;
 }
-
-const PaymentSummary = ({ project, onAddPayment }: PaymentSummaryProps) => {
-  return (
-    <Card>
+const PaymentSummary = ({
+  project,
+  onAddPayment
+}: PaymentSummaryProps) => {
+  return <Card>
       <CardHeader>
-        <CardTitle>Payment Summary</CardTitle>
+        <CardTitle className="text-xl font-semibold">Payment Summary</CardTitle>
         <CardDescription>Track all payments for this project</CardDescription>
       </CardHeader>
       <CardContent>
@@ -34,22 +26,14 @@ const PaymentSummary = ({ project, onAddPayment }: PaymentSummaryProps) => {
           <div className="flex justify-between">
             <span className="text-sm font-medium">Paid Amount:</span>
             <span className="text-sm">
-              {project.payments
-                .reduce((sum, payment) => sum + payment.amount, 0)
-                .toLocaleString()}{" "}
+              {project.payments.reduce((sum, payment) => sum + payment.amount, 0).toLocaleString()}{" "}
               {project.currency}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm font-medium">Remaining:</span>
             <span className="text-sm">
-              {(
-                project.fee -
-                project.payments.reduce(
-                  (sum, payment) => sum + payment.amount,
-                  0
-                )
-              ).toLocaleString()}{" "}
+              {(project.fee - project.payments.reduce((sum, payment) => sum + payment.amount, 0)).toLocaleString()}{" "}
               {project.currency}
             </span>
           </div>
@@ -65,8 +49,6 @@ const PaymentSummary = ({ project, onAddPayment }: PaymentSummaryProps) => {
           <Plus className="h-4 w-4" /> Add Payment
         </Button>
       </CardFooter>
-    </Card>
-  );
+    </Card>;
 };
-
 export default PaymentSummary;

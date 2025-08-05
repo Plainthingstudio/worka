@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, DollarSign, UserCircle, Tag, Clock, Users, Phone, Mail, MapPin } from "lucide-react";
@@ -7,28 +6,26 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Client, Project, TeamMember } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { getStatusBadgeVariant, getProjectTypeBadgeVariant } from "@/components/projects/utils/projectItemUtils";
-
 interface ProjectInfoProps {
   project: Project;
   client: Client;
 }
-
-const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
+const ProjectInfo = ({
+  project,
+  client
+}: ProjectInfoProps) => {
   const [assignedTeamMembers, setAssignedTeamMembers] = useState<TeamMember[]>([]);
   const [isLoadingTeamMembers, setIsLoadingTeamMembers] = useState(false);
-  
   useEffect(() => {
     const loadTeamMembers = async () => {
       if (project.teamMembers && project.teamMembers.length > 0) {
         setIsLoadingTeamMembers(true);
         console.log("Loading team members for project:", project.id, "Team member IDs:", project.teamMembers);
-        
         try {
-          const { data: teamMembersData, error } = await supabase
-            .from('team_members')
-            .select('*')
-            .in('id', project.teamMembers);
-          
+          const {
+            data: teamMembersData,
+            error
+          } = await supabase.from('team_members').select('*').in('id', project.teamMembers);
           if (error) {
             console.error("Error fetching team members:", error);
           } else {
@@ -54,19 +51,15 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
         setAssignedTeamMembers([]);
       }
     };
-    
     loadTeamMembers();
   }, [project.teamMembers, project.id]);
-
-
-  return (
-    <div className="col-span-7 md:col-span-5">
+  return <div className="col-span-7 md:col-span-5">
       <Card className="border rounded-xl shadow-sm overflow-hidden">
         {/* Project Header */}
         <div className="p-6 border-b">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">{project.name}</h1>
+              <h1 className="tracking-tight text-xl font-semibold">{project.name}</h1>
               <div className="flex items-center gap-2 mt-2">
                 <Badge variant={getStatusBadgeVariant(project.status as any)}>
                   {project.status}
@@ -118,15 +111,13 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
                   </div>
                 </div>
 
-                {client.address && (
-                  <div className="flex items-start gap-2">
+                {client.address && <div className="flex items-start gap-2">
                     <MapPin className="h-4 w-4 mt-1 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Address</p>
                       <p className="text-sm text-muted-foreground">{client.address}</p>
                     </div>
-                  </div>
-                )}
+                  </div>}
               </div>
             </div>
 
@@ -169,11 +160,9 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
                   <div>
                     <p className="text-sm font-medium">Categories</p>
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {project.categories.map((category, index) => (
-                        <Badge key={index} variant="category">
+                      {project.categories.map((category, index) => <Badge key={index} variant="category">
                           {category}
-                        </Badge>
-                      ))}
+                        </Badge>)}
                     </div>
                   </div>
                 </div>
@@ -183,18 +172,10 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
                   <div>
                     <p className="text-sm font-medium">Team Members</p>
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {isLoadingTeamMembers ? (
-                        <p className="text-sm text-muted-foreground">Loading team members...</p>
-                      ) : assignedTeamMembers.length > 0 ? (
-                        assignedTeamMembers.map((member) => (
-                          <Badge key={member.id} variant="category" className="flex items-center gap-1 py-1 pl-2">
+                      {isLoadingTeamMembers ? <p className="text-sm text-muted-foreground">Loading team members...</p> : assignedTeamMembers.length > 0 ? assignedTeamMembers.map(member => <Badge key={member.id} variant="category" className="flex items-center gap-1 py-1 pl-2">
                             <Users className="h-3 w-3 text-muted-foreground mr-1" />
                             {member.name} - <span className="text-muted-foreground text-xs">{member.position}</span>
-                          </Badge>
-                        ))
-                      ) : (
-                        <p className="text-sm text-muted-foreground">No team members assigned</p>
-                      )}
+                          </Badge>) : <p className="text-sm text-muted-foreground">No team members assigned</p>}
                     </div>
                   </div>
                 </div>
@@ -203,8 +184,6 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
-
 export default ProjectInfo;
