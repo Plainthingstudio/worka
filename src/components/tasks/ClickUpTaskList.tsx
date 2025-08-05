@@ -172,7 +172,7 @@ export const ClickUpTaskList = ({
             <div key={status} className="bg-background">
               {/* Group Header */}
               <div 
-                className="flex items-center gap-3 px-6 py-4 bg-muted/20 hover:bg-muted/30 cursor-pointer transition-colors group border-l-4 border-l-transparent hover:border-l-primary/20"
+                className="flex items-center gap-3 pl-4 pr-6 py-4 bg-muted/20 hover:bg-muted/30 cursor-pointer transition-colors group border-l-4 border-l-transparent hover:border-l-primary/20"
                 onClick={() => toggleGroup(status)}
               >
                 <div className="flex items-center gap-2 min-w-0 flex-1">
