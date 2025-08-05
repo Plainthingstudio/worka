@@ -18,6 +18,16 @@ interface KanbanBoardProps {
   onDeleteLead: (id: string) => Promise<boolean>;
   viewMode: 'list' | 'kanban';
   onViewModeChange: (mode: 'list' | 'kanban') => void;
+  // Filter props
+  search: string;
+  setSearch: (value: string) => void;
+  monthFilter: string;
+  setMonthFilter: (value: string) => void;
+  quarterFilter: string;
+  setQuarterFilter: (value: string) => void;
+  yearFilter: string;
+  setYearFilter: (value: string) => void;
+  availableYears: string[];
 }
 
 const KanbanBoard: React.FC<KanbanBoardProps> = ({
@@ -27,7 +37,16 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   onUpdateLead,
   onDeleteLead,
   viewMode,
-  onViewModeChange
+  onViewModeChange,
+  search,
+  setSearch,
+  monthFilter,
+  setMonthFilter,
+  quarterFilter,
+  setQuarterFilter,
+  yearFilter,
+  setYearFilter,
+  availableYears
 }) => {
   // Get the client adding functionality from useClients hook
   const { addClient } = useClients();
@@ -126,6 +145,15 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
         onAddLead={handleAddLeadInStage}
         viewMode={viewMode}
         onViewModeChange={onViewModeChange}
+        search={search}
+        setSearch={setSearch}
+        monthFilter={monthFilter}
+        setMonthFilter={setMonthFilter}
+        quarterFilter={quarterFilter}
+        setQuarterFilter={setQuarterFilter}
+        yearFilter={yearFilter}
+        setYearFilter={setYearFilter}
+        availableYears={availableYears}
       />
       
       <div className="glass-card rounded-lg border shadow-sm animate-fade-in overflow-hidden">
