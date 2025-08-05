@@ -63,12 +63,19 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-semibold">Leads & Pipeline</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">Manage your leads through the sales pipeline.</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-semibold">Leads & Pipeline</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">Manage your leads through the sales pipeline.</p>
+          </div>
+          
+          <Button onClick={() => onAddLead('Leads')}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Lead
+          </Button>
         </div>
         
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex justify-between items-center">
           <Tabs value={viewMode} onValueChange={value => onViewModeChange(value as 'kanban' | 'list')}>
             <TabsList>
               <TabsTrigger value="kanban" className="flex items-center gap-2">
@@ -82,75 +89,72 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
             </TabsList>
           </Tabs>
 
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search leads..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Search leads..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10 w-64"
+              />
+            </div>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  Filter
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-4" align="end">
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Year</label>
+                    <Select value={yearFilter} onValueChange={setYearFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Years</SelectItem>
+                        {availableYears.map(year => (
+                          <SelectItem key={year} value={year}>{year}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Month</label>
+                    <Select value={monthFilter} onValueChange={setMonthFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select month" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MONTHS.map(month => (
+                          <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Quarter</label>
+                    <Select value={quarterFilter} onValueChange={setQuarterFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select quarter" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {QUARTERS.map(quarter => (
+                          <SelectItem key={quarter.value} value={quarter.value}>{quarter.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                <Filter className="h-4 w-4" />
-                Filter
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 p-4" align="end">
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Year</label>
-                  <Select value={yearFilter} onValueChange={setYearFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select year" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Years</SelectItem>
-                      {availableYears.map(year => (
-                        <SelectItem key={year} value={year}>{year}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Month</label>
-                  <Select value={monthFilter} onValueChange={setMonthFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select month" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {MONTHS.map(month => (
-                        <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Quarter</label>
-                  <Select value={quarterFilter} onValueChange={setQuarterFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select quarter" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {QUARTERS.map(quarter => (
-                        <SelectItem key={quarter.value} value={quarter.value}>{quarter.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-          
-          <Button onClick={() => onAddLead('Leads')}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Lead
-          </Button>
         </div>
       </div>
     </div>
