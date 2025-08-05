@@ -87,6 +87,7 @@ interface TaskDetailSidebarProps {
   onAddComment: (taskId: string, content: string) => Promise<boolean>;
   onUploadAttachment: (taskId: string, file: File) => Promise<boolean>;
   onAddSubtask?: (taskId: string) => void;
+  onTaskSelect?: (task: TaskWithRelations) => void;
   allTasks?: TaskWithRelations[];
 }
 
@@ -99,6 +100,7 @@ export const TaskDetailSidebar = ({
   onAddComment, 
   onUploadAttachment,
   onAddSubtask,
+  onTaskSelect,
   allTasks = []
 }: TaskDetailSidebarProps) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -392,16 +394,16 @@ export const TaskDetailSidebar = ({
                      </h2>
                      {task.parent_task_id && allTasks.length > 0 && (() => {
                        const parentTask = allTasks.find(t => t.id === task.parent_task_id);
-                       return parentTask ? (
-                          <p className="text-sm text-muted-foreground ml-2">
-                            Main task: <button 
-                              onClick={() => navigate('/tasks')} 
-                              className="hover:underline cursor-pointer text-left"
-                            >
-                              {parentTask.title}
-                            </button>
-                          </p>
-                       ) : null;
+                        return parentTask ? (
+                           <p className="text-sm text-muted-foreground ml-2">
+                             Main task: <button 
+                               onClick={() => onTaskSelect?.(parentTask)} 
+                               className="hover:underline cursor-pointer text-left"
+                             >
+                               {parentTask.title}
+                             </button>
+                           </p>
+                        ) : null;
                      })()}
                    </div>
                  )}

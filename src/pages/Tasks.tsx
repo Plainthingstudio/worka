@@ -611,7 +611,7 @@ export const Tasks = () => {
             </div>
           </div>
       {/* Task Detail Sidebar */}
-      <TaskDetailSidebar task={selectedTask} isOpen={!!selectedTask} onClose={() => setSelectedTask(null)} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddSubtask={handleAddSubtask} allTasks={tasks} />
+      <TaskDetailSidebar task={selectedTask} isOpen={!!selectedTask} onClose={() => setSelectedTask(null)} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddSubtask={handleAddSubtask} onTaskSelect={setSelectedTask} allTasks={tasks} />
 
       {/* Create Task Dialog */}
       <TaskDialog isOpen={isCreateDialogOpen} onClose={() => setIsCreateDialogOpen(false)} onSubmit={handleCreateTask} title="Create New Task" />
