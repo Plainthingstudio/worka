@@ -208,7 +208,7 @@ export const ClickUpTaskList = ({
               {!isCollapsed && (
                 <div>
                   {/* Table Header */}
-                  <div className="grid grid-cols-12 gap-6 px-6 py-4 text-xs font-semibold text-muted-foreground tracking-wider bg-muted/10 border-b border-border/50">
+                  <div className="grid grid-cols-12 gap-6 pl-12 pr-6 py-4 text-xs font-semibold text-muted-foreground tracking-wider bg-muted/10 border-b border-border/50">
                     <div className="col-span-3">Task</div>
                     <div className="col-span-2">Assignee</div>
                     <div className="col-span-2">Due Date</div>
@@ -229,7 +229,7 @@ export const ClickUpTaskList = ({
                         {/* Parent Task */}
                         <div
                           className={cn(
-                            "grid grid-cols-12 gap-6 px-6 py-4 hover:bg-muted/10 cursor-pointer group transition-colors border-l-2",
+                            "grid grid-cols-12 gap-6 pl-12 pr-6 py-4 hover:bg-muted/10 cursor-pointer group transition-colors border-l-2",
                             priorityStyle.borderColor,
                             task.status === 'Completed' && "opacity-75"
                           )}
@@ -382,7 +382,7 @@ export const ClickUpTaskList = ({
                             <div
                               key={subtask.id}
                               className={cn(
-                                "grid grid-cols-12 gap-6 pl-12 pr-6 py-3 hover:bg-muted/5 cursor-pointer group transition-colors border-l-2 bg-muted/5",
+                                "grid grid-cols-12 gap-6 pl-16 pr-6 py-3 hover:bg-muted/5 cursor-pointer group transition-colors border-l-2 bg-muted/5",
                                 subtaskPriorityStyle.borderColor,
                                 subtask.status === 'Completed' && "opacity-60"
                               )}
