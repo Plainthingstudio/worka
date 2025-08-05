@@ -374,4 +374,5 @@ export const SubtaskDialog = ({
         </DialogContent>
       </Dialog>
     </>
+  );
 };
