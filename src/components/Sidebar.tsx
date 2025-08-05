@@ -187,6 +187,17 @@ const Sidebar = () => {
         ))}
       </nav>
 
+      {expanded && (
+        <div className="p-2">
+          <div className="w-full h-48 p-4 bg-gradient-to-b from-blue-200 to-sky-500 rounded-[20px] flex flex-col justify-end items-start gap-2.5 overflow-hidden">
+            <div className="p-2 bg-white rounded-[30px] flex flex-col justify-start items-start gap-2.5">
+              <div className="text-black text-xl font-medium">😆</div>
+            </div>
+            <div className="w-40 text-white text-xl font-medium">Kurangi sambat, ayo semangat!</div>
+          </div>
+        </div>
+      )}
+
       <div className="border-t border-sidebar-border/50 p-2">
         <button
           onClick={handleLogout}
