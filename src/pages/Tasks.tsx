@@ -13,7 +13,7 @@ import { SubtaskDialog } from '@/components/tasks/SubtaskDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/task';
 import { Project } from '@/types';
-import { Plus, Search, Filter, LayoutList, Users, Calendar, MoreHorizontal, Kanban } from 'lucide-react';
+import { Plus, Search, Filter, LayoutList, Users, Calendar, MoreHorizontal, Kanban, Share, Table, Group, ArrowUpDown } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 export const Tasks = () => {
@@ -31,7 +31,7 @@ export const Tasks = () => {
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [newTaskStatus, setNewTaskStatus] = useState<TaskStatus>('Planning');
-  const [activeView, setActiveView] = useState<'list' | 'board' | 'calendar'>('list');
+  const [activeView, setActiveView] = useState<'overview' | 'list' | 'board' | 'table' | 'calendar'>('list');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Handle URL parameters on load
@@ -500,125 +500,204 @@ export const Tasks = () => {
     <div className="p-6 py-0">
       <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6 sm:pt-6 -mx-6  pt-[8px]">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex flex-col gap-4">
-                  <h1 className="text-xl sm:text-2xl font-semibold">Internal Tasks</h1>
-                  <div className="flex items-center gap-6 border-b">
-                    <button 
-                      className={`flex items-center gap-2 pb-3 px-1 border-b-2 transition-colors ${
-                        activeView === 'list' 
-                          ? 'border-primary text-primary font-medium' 
-                          : 'border-transparent text-muted-foreground hover:text-foreground'
-                      }`}
-                      onClick={() => setActiveView('list')}
-                    >
-                      <LayoutList className="h-4 w-4" />
-                      <span>List</span>
-                    </button>
-                    <button 
-                      className={`flex items-center gap-2 pb-3 px-1 border-b-2 transition-colors ${
-                        activeView === 'board' 
-                          ? 'border-primary text-primary font-medium' 
-                          : 'border-transparent text-muted-foreground hover:text-foreground'
-                      }`}
-                      onClick={() => setActiveView('board')}
-                    >
-                      <Kanban className="h-4 w-4" />
-                      <span>Board</span>
-                    </button>
-                    <button 
-                      className={`flex items-center gap-2 pb-3 px-1 border-b-2 transition-colors ${
-                        activeView === 'calendar' 
-                          ? 'border-primary text-primary font-medium' 
-                          : 'border-transparent text-muted-foreground hover:text-foreground'
-                      }`}
-                      onClick={() => setActiveView('calendar')}
-                    >
-                      <Calendar className="h-4 w-4" />
-                      <span>Calendar</span>
-                    </button>
+            <div className="border-b bg-background px-4 sm:px-6 py-6 -mx-6">
+              {/* Top section with title and actions */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h1 className="text-2xl font-semibold text-foreground">Tasks</h1>
+                  <p className="text-sm text-muted-foreground mt-1">Short description will be placed here</p>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  {/* Team avatars */}
+                  <div className="flex items-center -space-x-2">
+                    <div className="w-8 h-8 rounded-full bg-blue-500 border-2 border-background flex items-center justify-center text-xs font-medium text-white">
+                      JD
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-green-500 border-2 border-background flex items-center justify-center text-xs font-medium text-white">
+                      SM
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-purple-500 border-2 border-background flex items-center justify-center text-xs font-medium text-white">
+                      AB
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-orange-500 border-2 border-background flex items-center justify-center text-xs font-medium text-white">
+                      CD
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center text-xs font-medium text-muted-foreground">
+                      +2
+                    </div>
                   </div>
+                  
+                  {/* Action buttons */}
+                  <Button variant="outline" size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Invite Member
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Share className="h-4 w-4 mr-2" />
+                    Share
+                  </Button>
+                </div>
+              </div>
+
+              {/* Navigation tabs and view controls */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <button 
+                    className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
+                      activeView === 'overview' 
+                        ? 'border-primary text-primary font-medium' 
+                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                    }`}
+                    onClick={() => setActiveView('overview')}
+                  >
+                    <span>Overview</span>
+                  </button>
+                  <button 
+                    className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
+                      activeView === 'board' 
+                        ? 'border-primary text-primary font-medium' 
+                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                    }`}
+                    onClick={() => setActiveView('board')}
+                  >
+                    <Kanban className="h-4 w-4" />
+                    <span>Board</span>
+                  </button>
+                  <button 
+                    className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
+                      activeView === 'list' 
+                        ? 'border-primary text-primary font-medium' 
+                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                    }`}
+                    onClick={() => setActiveView('list')}
+                  >
+                    <LayoutList className="h-4 w-4" />
+                    <span>List</span>
+                  </button>
+                  <button 
+                    className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
+                      activeView === 'table' 
+                        ? 'border-primary text-primary font-medium' 
+                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                    }`}
+                    onClick={() => setActiveView('table')}
+                  >
+                    <Table className="h-4 w-4" />
+                    <span>Table</span>
+                  </button>
+                  <button 
+                    className={`flex items-center gap-2 pb-2 px-1 border-b-2 transition-colors ${
+                      activeView === 'calendar' 
+                        ? 'border-primary text-primary font-medium' 
+                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                    }`}
+                    onClick={() => setActiveView('calendar')}
+                  >
+                    <Calendar className="h-4 w-4" />
+                    <span>Timeline</span>
+                  </button>
                 </div>
 
-                <div className="flex flex-col gap-3 w-full sm:w-auto">
-                  <Button onClick={() => handleAddTask()} className="flex-1 sm:flex-none">
-                    <Plus className="h-4 w-4 mr-2" />
-                    <span className="sm:inline">Add Task</span>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="sm">
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filter
                   </Button>
-                  
-                  {/* Filters below Add Task button */}
-                  <div className="flex items-center gap-3">
-                    <div className="relative flex-1 max-w-md">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input 
-                        placeholder="Search task..." 
-                        value={searchQuery} 
-                        onChange={e => setSearchQuery(e.target.value)} 
-                        className="pl-10 h-9 rounded-lg border-border bg-background" 
-                      />
-                    </div>
+                  <Button variant="ghost" size="sm">
+                    <Group className="h-4 w-4 mr-2" />
+                    Group by
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <ArrowUpDown className="h-4 w-4 mr-2" />
+                    Sort
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="h-9 px-3 rounded-lg border-border">
-                          <Filter className="h-4 w-4 mr-2" />
-                          Filter
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-64 p-4 space-y-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Project</label>
-                          <Select value={selectedProject} onValueChange={setSelectedProject}>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="All Projects" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">All Projects</SelectItem>
-                              {projects.map(project => 
-                                <SelectItem key={project.id} value={project.id}>
-                                  {project.name}
-                                </SelectItem>
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Status</label>
-                          <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="All Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">All Status</SelectItem>
-                              <SelectItem value="Planning">Planning</SelectItem>
-                              <SelectItem value="In progress">In Progress</SelectItem>
-                              <SelectItem value="Paused">Paused</SelectItem>
-                              <SelectItem value="Completed">Completed</SelectItem>
-                              <SelectItem value="Cancelled">Cancelled</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Priority</label>
-                          <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="All Priority" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">All Priority</SelectItem>
-                              <SelectItem value="Low">Low</SelectItem>
-                              <SelectItem value="Normal">Normal</SelectItem>
-                              <SelectItem value="High">High</SelectItem>
-                              <SelectItem value="Urgent">Urgent</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+            {/* Add Task and Filter section */}
+            <div className="py-4">
+              <div className="flex flex-col gap-3">
+                <Button onClick={() => handleAddTask()} className="w-fit">
+                  <Plus className="h-4 w-4 mr-2" />
+                  <span>Add Task</span>
+                </Button>
+                
+                {/* Filters below Add Task button */}
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      placeholder="Search task..." 
+                      value={searchQuery} 
+                      onChange={e => setSearchQuery(e.target.value)} 
+                      className="pl-10 h-9 rounded-lg border-border bg-background" 
+                    />
                   </div>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-9 px-3 rounded-lg border-border">
+                        <Filter className="h-4 w-4 mr-2" />
+                        Filter
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-64 p-4 space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Project</label>
+                        <Select value={selectedProject} onValueChange={setSelectedProject}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="All Projects" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Projects</SelectItem>
+                            {projects.map(project => 
+                              <SelectItem key={project.id} value={project.id}>
+                                {project.name}
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Status</label>
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="All Status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="Planning">Planning</SelectItem>
+                            <SelectItem value="In progress">In Progress</SelectItem>
+                            <SelectItem value="Paused">Paused</SelectItem>
+                            <SelectItem value="Completed">Completed</SelectItem>
+                            <SelectItem value="Cancelled">Cancelled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Priority</label>
+                        <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="All Priority" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Priority</SelectItem>
+                            <SelectItem value="Low">Low</SelectItem>
+                            <SelectItem value="Normal">Normal</SelectItem>
+                            <SelectItem value="High">High</SelectItem>
+                            <SelectItem value="Urgent">Urgent</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </div>
