@@ -229,8 +229,7 @@ export const ClickUpTaskList = ({
                         {/* Parent Task */}
                         <div
                           className={cn(
-                            "grid grid-cols-12 gap-6 pl-12 pr-6 py-4 hover:bg-muted/10 cursor-pointer group transition-colors border-l-2",
-                            priorityStyle.borderColor,
+                            "grid grid-cols-12 gap-6 pl-12 pr-6 py-4 hover:bg-muted/10 cursor-pointer group transition-colors border-b border-border/30",
                             task.status === 'Completed' && "opacity-75"
                           )}
                           onClick={() => onTaskClick(task)}
@@ -382,8 +381,7 @@ export const ClickUpTaskList = ({
                             <div
                               key={subtask.id}
                               className={cn(
-                                "grid grid-cols-12 gap-6 pl-16 pr-6 py-3 hover:bg-muted/5 cursor-pointer group transition-colors border-l-2 bg-muted/5",
-                                subtaskPriorityStyle.borderColor,
+                                "grid grid-cols-12 gap-6 pl-16 pr-6 py-3 hover:bg-muted/5 cursor-pointer group transition-colors border-b border-border/30 bg-muted/5",
                                 subtask.status === 'Completed' && "opacity-60"
                               )}
                               onClick={() => onTaskClick(subtask)}
