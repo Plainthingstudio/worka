@@ -6,7 +6,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-
 interface KanbanHeaderProps {
   onAddLead: (stage: LeadStage) => void;
   viewMode: 'kanban' | 'list';
@@ -36,32 +35,63 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
   setYearFilter,
   availableYears
 }) => {
-  const MONTHS = [
-    { value: "all", label: "All Months" },
-    { value: "01", label: "January" },
-    { value: "02", label: "February" },
-    { value: "03", label: "March" },
-    { value: "04", label: "April" },
-    { value: "05", label: "May" },
-    { value: "06", label: "June" },
-    { value: "07", label: "July" },
-    { value: "08", label: "August" },
-    { value: "09", label: "September" },
-    { value: "10", label: "October" },
-    { value: "11", label: "November" },
-    { value: "12", label: "December" }
-  ];
-
-  const QUARTERS = [
-    { value: "all", label: "All Quarters" },
-    { value: "Q1", label: "Q1 (Jan-Mar)" },
-    { value: "Q2", label: "Q2 (Apr-Jun)" },
-    { value: "Q3", label: "Q3 (Jul-Sep)" },
-    { value: "Q4", label: "Q4 (Oct-Dec)" }
-  ];
-
-  return (
-    <div className="flex flex-col gap-4">
+  const MONTHS = [{
+    value: "all",
+    label: "All Months"
+  }, {
+    value: "01",
+    label: "January"
+  }, {
+    value: "02",
+    label: "February"
+  }, {
+    value: "03",
+    label: "March"
+  }, {
+    value: "04",
+    label: "April"
+  }, {
+    value: "05",
+    label: "May"
+  }, {
+    value: "06",
+    label: "June"
+  }, {
+    value: "07",
+    label: "July"
+  }, {
+    value: "08",
+    label: "August"
+  }, {
+    value: "09",
+    label: "September"
+  }, {
+    value: "10",
+    label: "October"
+  }, {
+    value: "11",
+    label: "November"
+  }, {
+    value: "12",
+    label: "December"
+  }];
+  const QUARTERS = [{
+    value: "all",
+    label: "All Quarters"
+  }, {
+    value: "Q1",
+    label: "Q1 (Jan-Mar)"
+  }, {
+    value: "Q2",
+    label: "Q2 (Apr-Jun)"
+  }, {
+    value: "Q3",
+    label: "Q3 (Jul-Sep)"
+  }, {
+    value: "Q4",
+    label: "Q4 (Oct-Dec)"
+  }];
+  return <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-4">
         <div className="flex justify-between items-start">
           <div>
@@ -75,7 +105,7 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
           </Button>
         </div>
         
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mb-6 ">
           <Tabs value={viewMode} onValueChange={value => onViewModeChange(value as 'kanban' | 'list')}>
             <TabsList>
               <TabsTrigger value="kanban" className="flex items-center gap-2">
@@ -92,12 +122,7 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
           <div className="flex items-center gap-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search leads..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 w-64"
-              />
+              <Input placeholder="Search leads..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10 w-64" />
             </div>
 
             <Popover>
@@ -117,9 +142,7 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Years</SelectItem>
-                        {availableYears.map(year => (
-                          <SelectItem key={year} value={year}>{year}</SelectItem>
-                        ))}
+                        {availableYears.map(year => <SelectItem key={year} value={year}>{year}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -131,9 +154,7 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
                         <SelectValue placeholder="Select month" />
                       </SelectTrigger>
                       <SelectContent>
-                        {MONTHS.map(month => (
-                          <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
-                        ))}
+                        {MONTHS.map(month => <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -145,9 +166,7 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
                         <SelectValue placeholder="Select quarter" />
                       </SelectTrigger>
                       <SelectContent>
-                        {QUARTERS.map(quarter => (
-                          <SelectItem key={quarter.value} value={quarter.value}>{quarter.label}</SelectItem>
-                        ))}
+                        {QUARTERS.map(quarter => <SelectItem key={quarter.value} value={quarter.value}>{quarter.label}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -157,7 +176,6 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
 export default KanbanHeader;
