@@ -58,6 +58,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTaskProject } from '@/hooks/useTaskProject';
 import DeleteConfirmationDialog from '@/components/projects/DeleteConfirmationDialog';
 import { Separator } from '@/components/ui/separator';
@@ -320,7 +321,7 @@ export const TaskDetailSidebar = ({
   };
 
   return (
-    <>
+    <TooltipProvider>
       {/* Backdrop */}
       {isOpen && (
         <div 
@@ -603,25 +604,32 @@ export const TaskDetailSidebar = ({
                       <div>
                         {task.assignees && task.assignees.length > 0 ? (
                           <div className="flex -space-x-2">
-                            {task.assignees.map((assigneeId) => {
-                              const member = teamMembers.find(m => m.user_id === assigneeId);
-                              if (!member) return null;
-                              
-                              const initials = member.name
-                                .split(' ')
-                                .map(n => n[0])
-                                .join('')
-                                .toUpperCase()
-                                .slice(0, 2);
-                              
-                              return (
-                                <Avatar key={assigneeId} className="h-8 w-8 border-2 border-background">
-                                  <AvatarFallback className="text-xs font-medium">
-                                    {initials}
-                                  </AvatarFallback>
-                                </Avatar>
-                              );
-                            })}
+                             {task.assignees.map((assigneeId) => {
+                               const member = teamMembers.find(m => m.user_id === assigneeId);
+                               if (!member) return null;
+                               
+                               const initials = member.name
+                                 .split(' ')
+                                 .map(n => n[0])
+                                 .join('')
+                                 .toUpperCase()
+                                 .slice(0, 2);
+                               
+                               return (
+                                 <Tooltip key={assigneeId}>
+                                   <TooltipTrigger asChild>
+                                     <Avatar className="h-8 w-8 border-2 border-background cursor-pointer">
+                                       <AvatarFallback className="text-xs font-medium">
+                                         {initials}
+                                       </AvatarFallback>
+                                     </Avatar>
+                                   </TooltipTrigger>
+                                   <TooltipContent>
+                                     <p>{member.name}</p>
+                                   </TooltipContent>
+                                 </Tooltip>
+                               );
+                             })}
                           </div>
                         ) : (
                           <div className="text-sm text-muted-foreground">No assignees</div>
@@ -646,26 +654,33 @@ export const TaskDetailSidebar = ({
                                   .toUpperCase()
                                   .slice(0, 2);
                                 
-                                return (
-                                  <div key={assigneeId} className="relative group">
-                                    <Avatar className="h-8 w-8 border-2 border-background">
-                                      <AvatarFallback className="text-xs font-medium">
-                                        {initials}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        const newAssignees = field.value?.filter(id => id !== assigneeId) || [];
-                                        field.onChange(newAssignees);
-                                        form.handleSubmit(handleSubmit)();
-                                      }}
-                                      className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10"
-                                    >
-                                      <X className="h-2 w-2" />
-                                    </button>
-                                  </div>
-                                );
+                                 return (
+                                   <Tooltip key={assigneeId}>
+                                     <TooltipTrigger asChild>
+                                       <div className="relative group">
+                                         <Avatar className="h-8 w-8 border-2 border-background cursor-pointer">
+                                           <AvatarFallback className="text-xs font-medium">
+                                             {initials}
+                                           </AvatarFallback>
+                                         </Avatar>
+                                         <button
+                                           type="button"
+                                           onClick={() => {
+                                             const newAssignees = field.value?.filter(id => id !== assigneeId) || [];
+                                             field.onChange(newAssignees);
+                                             form.handleSubmit(handleSubmit)();
+                                           }}
+                                           className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10"
+                                         >
+                                           <X className="h-2 w-2" />
+                                         </button>
+                                       </div>
+                                     </TooltipTrigger>
+                                     <TooltipContent>
+                                       <p>{member.name}</p>
+                                     </TooltipContent>
+                                   </Tooltip>
+                                 );
                               })}
                             </div>
                             
@@ -970,6 +985,6 @@ export const TaskDetailSidebar = ({
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleDeleteTask}
       />
-    </>
+    </TooltipProvider>
   );
 };
