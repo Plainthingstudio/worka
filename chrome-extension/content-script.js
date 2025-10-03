@@ -108,8 +108,9 @@ async function handleAddLead() {
   try {
     // Get settings from storage
     const settings = await chrome.storage.sync.get(['apiKey', 'userId']);
+    const apiKey = (settings.apiKey || '').trim();
     
-    if (!settings.apiKey || !settings.userId) {
+    if (!apiKey || !settings.userId) {
       showNotification('Please configure the extension settings first', 'error');
       button.classList.remove('loading');
       button.disabled = false;
@@ -132,13 +133,14 @@ async function handleAddLead() {
     leadData.user_id = settings.userId;
 
     console.log('Sending lead data:', leadData);
+    console.log('Extension API key length:', apiKey.length);
 
     // Send to API
     const response = await fetch('https://eqpsztxrnysaaoqvdqow.supabase.co/functions/v1/add-dribbble-lead', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': settings.apiKey
+        'x-api-key': apiKey
       },
       body: JSON.stringify(leadData)
     });
