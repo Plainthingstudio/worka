@@ -14,13 +14,28 @@ Deno.serve(async (req) => {
 
   try {
     // Validate API key from extension
-    const apiKey = req.headers.get('x-api-key');
-    const expectedApiKey = Deno.env.get('DRIBBBLE_EXTENSION_API_KEY');
-    
-    if (!apiKey || apiKey !== expectedApiKey) {
-      console.error('Invalid or missing API key');
+    const apiKey = (req.headers.get('x-api-key') || '').trim();
+    const expectedApiKey = (Deno.env.get('DRIBBBLE_EXTENSION_API_KEY') || '').trim();
+
+    if (!expectedApiKey) {
+      console.error('Missing DRIBBBLE_EXTENSION_API_KEY secret in environment');
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }), 
+        JSON.stringify({ error: 'Server not configured: missing API secret' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!apiKey) {
+      return new Response(
+        JSON.stringify({ error: 'Missing x-api-key header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (apiKey !== expectedApiKey) {
+      console.error('Invalid API key provided');
+      return new Response(
+        JSON.stringify({ error: 'Invalid API key' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
