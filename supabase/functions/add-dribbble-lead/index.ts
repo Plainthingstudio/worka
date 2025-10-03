@@ -16,6 +16,7 @@ Deno.serve(async (req) => {
     // Validate API key from extension
     const apiKey = (req.headers.get('x-api-key') || '').trim();
     const expectedApiKey = (Deno.env.get('DRIBBBLE_EXTENSION_API_KEY') || '').trim();
+    console.log('Auth check - provided len:', apiKey.length, 'expected len:', expectedApiKey.length);
 
     if (!expectedApiKey) {
       console.error('Missing DRIBBBLE_EXTENSION_API_KEY secret in environment');
