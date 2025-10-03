@@ -220,10 +220,18 @@ if (document.readyState === 'loading') {
 
 // Re-create button when navigating (for single-page app behavior)
 let lastUrl = location.href;
-new MutationObserver(() => {
-  const url = location.href;
-  if (url !== lastUrl) {
-    lastUrl = url;
-    setTimeout(createAddLeadButton, 1000);
+try {
+  const target = document.body || document.documentElement;
+  if (typeof MutationObserver !== 'undefined' && target) {
+    const observer = new MutationObserver(() => {
+      const url = location.href;
+      if (url !== lastUrl) {
+        lastUrl = url;
+        setTimeout(createAddLeadButton, 1000);
+      }
+    });
+    observer.observe(target, { subtree: true, childList: true });
   }
-}).observe(document, { subtree: true, childList: true });
+} catch (e) {
+  console.warn('Navigation observer setup failed:', e);
+}
