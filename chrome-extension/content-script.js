@@ -36,23 +36,40 @@ function extractLeadData() {
     message_preview: ''
   };
 
-  // Try to extract name from different page types
-  // Profile page
-  const profileName = document.querySelector('h1.profile-name, .profile-header h1, [class*="profile"] h1');
-  if (profileName) {
-    leadData.name = profileName.textContent.trim();
-  }
+  // Try to extract name from different page types with comprehensive selectors
+  const nameSelectors = [
+    'h1', // Most common heading
+    '[class*="profile"] h1',
+    '[class*="profile"] h2',
+    '.profile-name',
+    '.profile-header h1',
+    '[class*="ProfileHeader"] h1',
+    '[class*="UserInfo"] h1',
+    'header h1',
+    '[data-testid*="profile"] h1',
+    '[data-testid*="name"]',
+    '.author-name',
+    '.message-sender',
+    '[class*="message"] [class*="author"]',
+    '.shot-byline-user a',
+    '[class*="shot"] [class*="author"] a',
+    'main h1'
+  ];
 
-  // Message page - sender name
-  const messageSender = document.querySelector('.message-sender, .author-name, [class*="message"] [class*="author"]');
-  if (messageSender && !leadData.name) {
-    leadData.name = messageSender.textContent.trim();
-  }
-
-  // Shot page - author name
-  const shotAuthor = document.querySelector('.shot-byline-user a, [class*="shot"] [class*="author"] a');
-  if (shotAuthor && !leadData.name) {
-    leadData.name = shotAuthor.textContent.trim();
+  for (const selector of nameSelectors) {
+    try {
+      const element = document.querySelector(selector);
+      if (element && element.textContent.trim()) {
+        const text = element.textContent.trim();
+        // Filter out common non-name text
+        if (text && !text.toLowerCase().includes('dribbble') && text.length < 100) {
+          leadData.name = text;
+          break;
+        }
+      }
+    } catch (e) {
+      console.log('Selector failed:', selector, e);
+    }
   }
 
   // Try to find email (usually not publicly visible on Dribbble)
