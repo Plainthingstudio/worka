@@ -1,1 +1,4 @@
 project_id = "eqpsztxrnysaaoqvdqow"
+
+[functions.add-dribbble-lead]
+verify_jwt = false
