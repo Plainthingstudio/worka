@@ -143,28 +143,33 @@ async function handleAddLead() {
       body: JSON.stringify(leadData)
     });
 
-    const result = await response.json();
+  const result = await response.json();
 
-    if (response.ok && result.success) {
-      showNotification('Lead added successfully! ✓', 'success');
-      
-      // Success animation
-      button.classList.add('success');
-      button.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-        <span>Added!</span>
-      `;
-      
-      setTimeout(() => {
-        resetButton(button);
-        button.classList.remove('success', 'loading');
-        button.disabled = false;
-      }, 2000);
+  if (response.ok && result.success) {
+    showNotification('Lead added successfully! ✓', 'success');
+    
+    // Success animation
+    button.classList.add('success');
+    button.innerHTML = `
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      <span>Added!</span>
+    `;
+    
+    setTimeout(() => {
+      resetButton(button);
+      button.classList.remove('success', 'loading');
+      button.disabled = false;
+    }, 2000);
+  } else {
+    if (response.status === 401 || (result && result.error === 'Unauthorized')) {
+      showNotification('Unauthorized: Check your API key in the extension settings.', 'error');
     } else {
-      throw new Error(result.error || 'Failed to add lead');
+      showNotification('Failed to add lead: ' + (result.error || 'Unknown error'), 'error');
     }
+    throw new Error(result.error || 'Failed to add lead');
+  }
   } catch (error) {
     console.error('Error adding lead:', error);
     showNotification('Failed to add lead: ' + error.message, 'error');
