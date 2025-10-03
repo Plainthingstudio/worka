@@ -14,8 +14,11 @@ Deno.serve(async (req) => {
 
   try {
     // Validate API key from extension
-    const apiKey = (req.headers.get('x-api-key') || '').trim();
-    const expectedApiKey = (Deno.env.get('DRIBBBLE_EXTENSION_API_KEY') || '').trim();
+    const headerKey = (req.headers.get('x-api-key') || req.headers.get('X-Api-Key') || '').trim();
+    const expectedRaw = (Deno.env.get('DRIBBBLE_EXTENSION_API_KEY') || '').trim();
+    const normalize = (s: string) => s.replace(/\s+/g, '');
+    const apiKey = normalize(headerKey);
+    const expectedApiKey = normalize(expectedRaw);
     console.log('Auth check - provided len:', apiKey.length, 'expected len:', expectedApiKey.length);
 
     if (!expectedApiKey) {

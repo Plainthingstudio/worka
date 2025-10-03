@@ -108,7 +108,7 @@ async function handleAddLead() {
   try {
     // Get settings from storage
     const settings = await chrome.storage.sync.get(['apiKey', 'userId']);
-    const apiKey = (settings.apiKey || '').trim();
+    const apiKey = (settings.apiKey || '').toString().trim().replace(/\s+/g, '');
     
     if (!apiKey || !settings.userId) {
       showNotification('Please configure the extension settings first', 'error');
