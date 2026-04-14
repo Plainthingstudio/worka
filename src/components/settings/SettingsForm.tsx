@@ -7,7 +7,7 @@ import { PersonalInfoFields } from "./PersonalInfoFields";
 import { AddressFields } from "./AddressFields";
 import { FormActions } from "./FormActions";
 import { settingsFormSchema, SettingsFormValues } from "./settingsFormSchema";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, ID, Query } from "@/integrations/appwrite/client";
 import { toast } from "sonner";
 
 interface SettingsFormProps {
@@ -18,7 +18,7 @@ interface SettingsFormProps {
 export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
-  
+
   // Initialize form with empty values, will be populated after fetching
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsFormSchema),
@@ -34,37 +34,54 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
     }
   });
 
-  // Fetch user profile data from Supabase
+  // Fetch user profile data from Appwrite
   useEffect(() => {
     async function fetchUserProfile() {
       try {
         setLoading(true);
-        
-        // Get current user
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
+
+        // Get current session
+        let session;
+        try {
+          session = await account.getSession('current');
+        } catch {
+          setLoading(false);
           return;
         }
-        
-        // Get user profile from profiles table
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .maybeSingle();
-        
-        if (error) {
+
+        if (!session) {
+          setLoading(false);
+          return;
+        }
+
+        const userId = session.userId;
+
+        // Get user profile from profiles collection
+        let data = null;
+        try {
+          const response = await databases.listDocuments(DATABASE_ID, 'profiles', [
+            Query.equal('$id', userId)
+          ]);
+          data = response.documents[0] ?? null;
+        } catch (error) {
           console.error("Error fetching profile:", error);
           toast.error("Failed to load profile data");
           setLoading(false);
           return;
         }
-        
-        // Populate form with user data or use session data for new users
+
+        // Get user account info for fallback
+        let userAccount;
+        try {
+          userAccount = await account.get();
+        } catch {
+          userAccount = null;
+        }
+
+        // Populate form with user data or use account data for new users
         form.reset({
-          fullName: data?.full_name || session.user.user_metadata?.full_name || "",
-          email: data?.email || session.user.email || "",
+          fullName: data?.full_name || userAccount?.name || "",
+          email: data?.email || userAccount?.email || "",
           phoneNumber: data?.phone_number || "",
           streetAddress: data?.street_address || "",
           city: data?.city || "",
@@ -79,67 +96,69 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
         setLoading(false);
       }
     }
-    
+
     fetchUserProfile();
   }, [form]);
 
   async function onSubmit(data: SettingsFormValues) {
     try {
-      // Get current user
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      // Get current session
+      let session;
+      try {
+        session = await account.getSession('current');
+      } catch {
+        toast.error("You must be logged in to update your profile");
+        return;
+      }
+
       if (!session) {
         toast.error("You must be logged in to update your profile");
         return;
       }
-      
+
+      const userId = session.userId;
+
+      // Get user email for profile
+      let userEmail = data.email;
+      try {
+        const userAccount = await account.get();
+        userEmail = userAccount.email || data.email;
+      } catch {
+        // use form email
+      }
+
       // Check if profile exists
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', session.user.id)
-        .maybeSingle();
-      
+      let existingProfile = null;
+      try {
+        const response = await databases.listDocuments(DATABASE_ID, 'profiles', [
+          Query.equal('$id', userId)
+        ]);
+        existingProfile = response.documents[0] ?? null;
+      } catch {
+        // profile doesn't exist
+      }
+
+      const profileData = {
+        full_name: data.fullName,
+        phone_number: data.phoneNumber,
+        street_address: data.streetAddress,
+        city: data.city,
+        state: data.state,
+        zip_code: data.zipCode,
+        country: data.country,
+      };
+
       if (existingProfile) {
         // Update existing profile
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            full_name: data.fullName,
-            phone_number: data.phoneNumber,
-            street_address: data.streetAddress,
-            city: data.city,
-            state: data.state,
-            zip_code: data.zipCode,
-            country: data.country,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', session.user.id);
-        
-        if (error) {
-          throw error;
-        }
+        await databases.updateDocument(DATABASE_ID, 'profiles', userId, profileData);
       } else {
         // Insert new profile for new user
-        const { error } = await supabase
-          .from('profiles')
-          .insert({
-            id: session.user.id,
-            full_name: data.fullName,
-            email: session.user.email,
-            phone_number: data.phoneNumber,
-            street_address: data.streetAddress,
-            city: data.city,
-            state: data.state,
-            zip_code: data.zipCode,
-            country: data.country,
-          });
-        
-        if (error) {
-          throw error;
-        }
+        await databases.createDocument(DATABASE_ID, 'profiles', userId, {
+          ...profileData,
+          email: userEmail,
+        });
       }
-      
+
       // Call the parent's onSave function for any additional logic
       onSave(data);
       setIsEditing(false);
@@ -158,22 +177,22 @@ export function SettingsForm({ isSaving, onSave }: SettingsFormProps) {
             <h3 className="text-lg font-semibold tracking-tight text-foreground border-b pb-2">Personal Information</h3>
             <PersonalInfoFields form={form} isEditing={isEditing} />
           </div>
-          
+
           <div className="space-y-4">
             <h3 className="text-lg font-semibold tracking-tight text-foreground border-b pb-2">Address Information</h3>
             <AddressFields form={form} isEditing={isEditing} />
           </div>
         </div>
 
-        <FormActions 
-          isEditing={isEditing} 
-          isSaving={isSaving} 
-          onEdit={() => setIsEditing(true)} 
+        <FormActions
+          isEditing={isEditing}
+          isSaving={isSaving}
+          onEdit={() => setIsEditing(true)}
           onCancel={() => {
             // Reset form to server data
             form.reset();
             setIsEditing(false);
-          }} 
+          }}
         />
       </form>
     </Form>

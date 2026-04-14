@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { account } from "@/integrations/appwrite/client";
 
 interface DeleteBriefDialogProps {
   open: boolean;
@@ -25,8 +25,12 @@ const DeleteBriefDialog: React.FC<DeleteBriefDialogProps> = ({
   React.useEffect(() => {
     if (open) {
       const checkAuth = async () => {
-        const { data } = await supabase.auth.getUser();
-        setIsAuthenticated(!!data.user);
+        try {
+          await account.get();
+          setIsAuthenticated(true);
+        } catch {
+          setIsAuthenticated(false);
+        }
       };
       checkAuth();
     }
@@ -34,20 +38,21 @@ const DeleteBriefDialog: React.FC<DeleteBriefDialogProps> = ({
 
   const handleConfirm = async () => {
     if (isDeleting) return; // Prevent multiple clicks
-    
+
     // Double-check authentication
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) {
+    try {
+      await account.get();
+    } catch {
       setIsAuthenticated(false);
       return;
     }
-    
+
     setIsDeleting(true);
     try {
       console.log("Delete dialog: Initiating confirmation");
       // Call the parent component's confirmation handler
       await onConfirm();
-      
+
       // Dialog will be closed by the parent component on success
     } catch (error) {
       console.error("Error in DeleteBriefDialog:", error);

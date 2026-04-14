@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { account, databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
 import { useToast } from '@/hooks/use-toast';
+import { parseJsonField } from "@/utils/appwriteJson";
 
 interface Notification {
   id: string;
@@ -20,16 +21,37 @@ export const useNotifications = () => {
 
   const fetchNotifications = async () => {
     try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
+      let user;
+      try {
+        user = await account.get();
+      } catch {
+        setNotifications([]);
+        setUnreadCount(0);
+        return;
+      }
 
-      if (error) throw error;
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        'notifications',
+        [
+          Query.equal('user_id', user.$id),
+          Query.orderDesc('$createdAt'),
+          Query.limit(50),
+        ]
+      );
 
-      setNotifications(data || []);
-      setUnreadCount(data?.filter(n => !n.read_at).length || 0);
+      const data: Notification[] = response.documents.map((doc: any) => ({
+        id: doc.$id,
+        type: doc.type,
+        title: doc.title,
+        message: doc.message,
+        data: parseJsonField(doc.data, {}),
+        read_at: doc.read_at,
+        created_at: doc.$createdAt,
+      }));
+
+      setNotifications(data);
+      setUnreadCount(data.filter(n => !n.read_at).length);
     } catch (error) {
       console.error('Error fetching notifications:', error);
       toast({
@@ -44,12 +66,9 @@ export const useNotifications = () => {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read_at: new Date().toISOString() })
-        .eq('id', notificationId);
-
-      if (error) throw error;
+      await databases.updateDocument(DATABASE_ID, 'notifications', notificationId, {
+        read_at: new Date().toISOString()
+      });
 
       setNotifications(prev =>
         prev.map(n =>
@@ -66,18 +85,17 @@ export const useNotifications = () => {
 
   const markAllAsRead = async () => {
     try {
-      const unreadIds = notifications
-        .filter(n => !n.read_at)
-        .map(n => n.id);
+      const unreadNotifications = notifications.filter(n => !n.read_at);
 
-      if (unreadIds.length === 0) return;
+      if (unreadNotifications.length === 0) return;
 
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read_at: new Date().toISOString() })
-        .in('id', unreadIds);
-
-      if (error) throw error;
+      await Promise.all(
+        unreadNotifications.map(n =>
+          databases.updateDocument(DATABASE_ID, 'notifications', n.id, {
+            read_at: new Date().toISOString()
+          })
+        )
+      );
 
       setNotifications(prev =>
         prev.map(n => ({ ...n, read_at: new Date().toISOString() }))
@@ -90,34 +108,6 @@ export const useNotifications = () => {
 
   useEffect(() => {
     fetchNotifications();
-
-    // Set up real-time subscription
-    const channel = supabase
-      .channel('notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-        },
-        (payload) => {
-          const newNotification = payload.new as Notification;
-          setNotifications(prev => [newNotification, ...prev]);
-          setUnreadCount(prev => prev + 1);
-          
-          // Show toast for new notifications
-          toast({
-            title: newNotification.title,
-            description: newNotification.message,
-          });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   return {

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, Query, client } from "@/integrations/appwrite/client";
 
 export type UserRole = 'owner' | 'administrator' | 'team' | null;
 
@@ -11,35 +11,21 @@ export const useUserRole = () => {
   const fetchUserRole = async () => {
     try {
       setIsLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        console.log('No authenticated user found');
+      const user = await account.get();
+
+      console.log('Fetching role for user:', user.$id);
+
+      const response = await databases.listDocuments(DATABASE_ID, "user_roles", [
+        Query.equal("user_id", user.$id),
+      ]);
+
+      if (response.total === 0) {
+        console.log('No role found for user');
         setUserRole(null);
-        setIsLoading(false);
-        return;
-      }
-
-      console.log('Fetching role for user:', user.id);
-
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          // No role found - user might be new
-          console.log('No role found for user');
-          setUserRole(null);
-        } else {
-          console.error('Error fetching user role:', error);
-          setUserRole(null);
-        }
       } else {
-        console.log('User role fetched:', data.role);
-        setUserRole(data.role as UserRole);
+        const role = response.documents[0].role as UserRole;
+        console.log('User role fetched:', role);
+        setUserRole(role);
       }
     } catch (error) {
       console.error('Error in fetchUserRole:', error);
@@ -50,21 +36,19 @@ export const useUserRole = () => {
   };
 
   useEffect(() => {
-    // Initial fetch
     fetchUserRole();
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session);
-      if (session) {
+    const unsubscribe = client.subscribe("account", (response) => {
+      const events = response.events as string[];
+      if (events.some((e) => e.includes("sessions.create"))) {
         fetchUserRole();
-      } else {
+      } else if (events.some((e) => e.includes("sessions.delete"))) {
         setUserRole(null);
         setIsLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => unsubscribe();
   }, []);
 
   // Log current state for debugging

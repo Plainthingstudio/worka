@@ -7,7 +7,8 @@ import { Card } from "@/components/ui/card";
 import UIStepOne from "@/components/ui-brief-form/UIStepOne";
 import UIStepTwo from "@/components/ui-brief-form/UIStepTwo";
 import UIStepThree from "@/components/ui-brief-form/UIStepThree";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, ID } from "@/integrations/appwrite/client";
+import { stringifyJsonField } from "@/utils/appwriteJson";
 
 const UIDesignBrief = () => {
   const [step, setStep] = useState(1);
@@ -16,7 +17,7 @@ const UIDesignBrief = () => {
   const [searchParams] = useSearchParams();
   const forUserId = searchParams.get("u");
   const [isValidUser, setIsValidUser] = useState<boolean | null>(null);
-  
+
   useEffect(() => {
     const checkUserExists = async () => {
       if (!forUserId) {
@@ -26,7 +27,7 @@ const UIDesignBrief = () => {
 
       try {
         const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(forUserId);
-        
+
         if (isValidUUID) {
           setIsValidUser(true);
         } else {
@@ -83,9 +84,9 @@ const UIDesignBrief = () => {
   const handleNext = async () => {
     if (step === 1) {
       const isValid = await methods.trigger([
-        "name", 
-        "email", 
-        "companyName", 
+        "name",
+        "email",
+        "companyName",
         "projectDescription",
         "completionDeadline",
         "projectType",
@@ -93,7 +94,7 @@ const UIDesignBrief = () => {
         "websiteType",
         "websitePurpose"
       ]);
-      
+
       if (isValid) {
         setStep(2);
       } else {
@@ -101,8 +102,8 @@ const UIDesignBrief = () => {
       }
     } else if (step === 2) {
       const isValid = await methods.trigger([
-        "aboutCompany", 
-        "targetAudience", 
+        "aboutCompany",
+        "targetAudience",
         "competitor1",
         "industry",
         "generalStyle",
@@ -111,7 +112,7 @@ const UIDesignBrief = () => {
         "existingBrandAssets",
         "hasWireframe"
       ]);
-      
+
       if (isValid) {
         setStep(3);
       } else {
@@ -128,9 +129,9 @@ const UIDesignBrief = () => {
     setIsSubmitting(true);
     try {
       const formData = methods.getValues();
-      
+
       console.log("Submitting UI design brief for user ID:", forUserId);
-      
+
       const briefData: any = {
         name: formData.name,
         email: formData.email,
@@ -161,7 +162,7 @@ const UIDesignBrief = () => {
         has_wireframe: formData.hasWireframe,
         wireframe_details: formData.wireframeDetails,
         page_count: formData.pageCount,
-        page_details: formData.pageDetails,
+        page_details: stringifyJsonField(formData.pageDetails || [], "[]"),
         website_content: formData.websiteContent,
         development_service: formData.developmentService,
         submission_date: new Date().toISOString()
@@ -172,20 +173,20 @@ const UIDesignBrief = () => {
         briefData.submitted_for_id = forUserId;
         briefData.user_id = forUserId;
       } else {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          console.log("Setting user_id from current user:", user.id);
-          briefData.user_id = user.id;
+        try {
+          const user = await account.get();
+          if (user) {
+            console.log("Setting user_id from current user:", user.$id);
+            briefData.user_id = user.$id;
+          }
+        } catch {
+          // not authenticated, proceed without user_id
         }
       }
 
-      console.log("Final brief data being sent to Supabase:", briefData);
+      console.log("Final brief data being sent to Appwrite:", briefData);
 
-      const { error } = await supabase
-        .from('ui_design_briefs')
-        .insert(briefData);
-
-      if (error) throw error;
+      await databases.createDocument(DATABASE_ID, 'ui_design_briefs', ID.unique(), briefData);
 
       const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
       const localStorageBrief = {
@@ -198,11 +199,11 @@ const UIDesignBrief = () => {
         userId: briefData.user_id
       };
       localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
-      
+
       localStorage.setItem("lastSubmittedBriefType", "UI Design");
-      
+
       toast.success("UI design brief submitted successfully!");
-      
+
       navigate("/thank-you");
     } catch (error: any) {
       console.error("Error submitting brief:", error);
@@ -253,7 +254,7 @@ const UIDesignBrief = () => {
               ))}
             </div>
           </div>
-          
+
           <FormProvider {...methods}>
             {step === 1 && <UIStepOne onNext={handleNext} />}
             {step === 2 && <UIStepTwo onNext={handleNext} onPrevious={handlePrevious} />}

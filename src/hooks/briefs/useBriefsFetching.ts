@@ -1,36 +1,40 @@
 
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import { Brief } from "@/types/brief";
 import { toast } from "sonner";
 
 export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoading: (isLoading: boolean) => void) => {
   const [isFetching, setIsFetching] = useState(false);
-  
+
   const fetchBriefs = async (): Promise<void> => {
     // Prevent multiple simultaneous fetch operations
     if (isFetching) {
       console.log("Fetch operation already in progress, skipping...");
       return;
     }
-    
+
     setIsLoading(true);
     setIsFetching(true);
-    
+
     try {
       // Get the current user
-      const { data: { user } } = await supabase.auth.getUser();
-      const userId = user?.id || null; // Can be null for unauthenticated users
-      
+      let userId: string | null = null;
+      try {
+        const user = await account.get();
+        userId = user?.$id || null;
+      } catch {
+        // unauthenticated
+      }
+
       console.log("Starting to fetch briefs, user ID:", userId);
-      
-      // First, try to fetch briefs using the secure database function
-      const success = await fetchBriefsUsingFunction(userId);
-      
+
+      const success = await fetchBriefsFromDatabase(userId);
+
       if (!success) {
-        console.error("Failed to fetch briefs using database function");
-        
-        // Final fallback to localStorage
+        console.error("Failed to fetch briefs from database");
+
+        // Fallback to localStorage
         try {
           const storedBriefs = localStorage.getItem("briefs");
           if (storedBriefs) {
@@ -47,8 +51,8 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
     } catch (error) {
       console.error("Error fetching briefs:", error);
       toast.error("Failed to load briefs");
-      
-      // Final fallback to localStorage
+
+      // Fallback to localStorage
       try {
         const storedBriefs = localStorage.getItem("briefs");
         if (storedBriefs) {
@@ -67,40 +71,61 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
     }
   };
 
-  // Method to fetch briefs using the secure database function
-  const fetchBriefsUsingFunction = async (userId: string | null): Promise<boolean> => {
-    console.log("Fetching briefs using secure database function for user ID:", userId);
-    
+  const fetchBriefsFromDatabase = async (userId: string | null): Promise<boolean> => {
+    console.log("Fetching briefs from Appwrite for user ID:", userId);
+
     try {
       if (!userId) {
         console.log("No user ID available, returning empty briefs list");
         setBriefs([]);
         return true;
       }
-      
-      // Call the get_user_briefs function with the user's ID
-      const { data: briefsData, error } = await supabase
-        .rpc('get_user_briefs', { user_uuid: userId });
-      
-      if (error) {
-        console.error("Error calling get_user_briefs function:", error);
-        return false;
+
+      let allBriefs: Brief[] = [];
+
+      // Fetch graphic design briefs
+      try {
+        const gdResponse = await databases.listDocuments(
+          DATABASE_ID,
+          'graphic_design_briefs',
+          [Query.equal('user_id', userId)]
+        );
+        const gdBriefs: Brief[] = gdResponse.documents.map((brief: any) => ({
+          ...brief,
+          id: brief.$id,
+          type: 'Graphic Design',
+          submissionDate: brief.submission_date,
+          companyName: brief.company_name
+        }));
+        allBriefs = allBriefs.concat(gdBriefs);
+      } catch (e) {
+        console.error("Error fetching graphic design briefs:", e);
       }
-      
-      console.log(`Retrieved ${briefsData?.length || 0} briefs using database function`);
-      
-      // Transform the data if needed to match our Brief type
-      const transformedBriefs: Brief[] = (briefsData || []).map((brief: any) => ({
-        ...brief,
-        type: brief.type,
-        submissionDate: brief.submission_date,
-        companyName: brief.company_name
-      }));
-      
-      setBriefs(transformedBriefs);
-      return transformedBriefs.length > 0 || briefsData?.length === 0;
+
+      // Fetch illustration design briefs
+      try {
+        const illResponse = await databases.listDocuments(
+          DATABASE_ID,
+          'illustration_design_briefs',
+          [Query.equal('user_id', userId)]
+        );
+        const illBriefs: Brief[] = illResponse.documents.map((brief: any) => ({
+          ...brief,
+          id: brief.$id,
+          type: 'Illustration Design',
+          submissionDate: brief.submission_date,
+          companyName: brief.company_name
+        }));
+        allBriefs = allBriefs.concat(illBriefs);
+      } catch (e) {
+        console.error("Error fetching illustration design briefs:", e);
+      }
+
+      console.log(`Retrieved ${allBriefs.length} briefs from database`);
+      setBriefs(allBriefs);
+      return true;
     } catch (error) {
-      console.error("Error in fetchBriefsUsingFunction:", error);
+      console.error("Error in fetchBriefsFromDatabase:", error);
       return false;
     }
   };

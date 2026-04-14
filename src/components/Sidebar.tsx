@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "./ThemeProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { account } from "@/integrations/appwrite/client";
 import { toast } from "sonner";
 import { useUserRole } from "@/hooks/useUserRole";
 
@@ -36,17 +36,13 @@ const Sidebar = () => {
     try {
       // First clear localStorage to immediately update UI state
       localStorage.removeItem("isLoggedIn");
-      
-      // Then perform the actual sign out from Supabase
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        throw error;
-      }
-      
+
+      // Then perform the actual sign out from Appwrite
+      await account.deleteSession('current');
+
       // Navigate to auth page after successful logout
       navigate("/auth", { replace: true });
-      
+
       toast.success("Successfully logged out");
     } catch (error: any) {
       toast.error(error.message || "Failed to log out");

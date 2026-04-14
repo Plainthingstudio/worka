@@ -15,7 +15,7 @@ import { DialogTitle, DialogDescription, DialogHeader, DialogFooter } from "@/co
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 
 const formSchema = z.object({
   position: z.string({
@@ -52,9 +52,9 @@ const TeamForm = ({
 
   // Common skills for suggestion
   const skillSuggestions = [
-    "UI Design", 
-    "UX Design", 
-    "Web Design", 
+    "UI Design",
+    "UX Design",
+    "Web Design",
     "Mobile Design",
     "Branding",
     "Typography",
@@ -107,26 +107,24 @@ const TeamForm = ({
     const fetchMemberData = async () => {
       if (teamMember?.email) {
         try {
-          // Get the user by email from profiles table
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('id, full_name, email')
-            .eq('email', teamMember.email)
-            .single();
-          
+          // Get the user by email from profiles collection
+          const profileResponse = await databases.listDocuments(DATABASE_ID, 'profiles', [
+            Query.equal('email', teamMember.email)
+          ]);
+          const profile = profileResponse.documents[0] ?? null;
+
           if (profile) {
             setProfileData({
               name: profile.full_name || '',
               email: profile.email || ''
             });
-            
+
             // Then get their role
-            const { data: roleData } = await supabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', profile.id)
-              .single();
-            
+            const roleResponse = await databases.listDocuments(DATABASE_ID, 'user_roles', [
+              Query.equal('user_id', profile.$id)
+            ]);
+            const roleData = roleResponse.documents[0] ?? null;
+
             if (roleData) {
               setCurrentRole(roleData.role);
             }
@@ -202,8 +200,8 @@ const TeamForm = ({
           <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             Name
           </label>
-          <Input 
-            value={profileData?.name || teamMember?.name || ""} 
+          <Input
+            value={profileData?.name || teamMember?.name || ""}
             placeholder="Name will be loaded from user profile"
             disabled
             className="bg-muted"
@@ -218,8 +216,8 @@ const TeamForm = ({
           <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             Email
           </label>
-          <Input 
-            value={profileData?.email || teamMember?.email || ""} 
+          <Input
+            value={profileData?.email || teamMember?.email || ""}
             placeholder="Email will be loaded from user profile"
             disabled
             className="bg-muted"
@@ -229,9 +227,9 @@ const TeamForm = ({
           </p>
         </div>
 
-        <FormField 
-          control={form.control} 
-          name="position" 
+        <FormField
+          control={form.control}
+          name="position"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Position</FormLabel>
@@ -251,12 +249,12 @@ const TeamForm = ({
               </Select>
               <FormMessage />
             </FormItem>
-          )} 
+          )}
         />
 
-        <FormField 
-          control={form.control} 
-          name="role" 
+        <FormField
+          control={form.control}
+          name="role"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Role</FormLabel>
@@ -281,22 +279,22 @@ const TeamForm = ({
                 </p>
               )}
             </FormItem>
-          )} 
+          )}
         />
 
-        <FormField 
-          control={form.control} 
-          name="startDate" 
+        <FormField
+          control={form.control}
+          name="startDate"
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel>Start Date</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
-                    <Button 
-                      variant={"outline"} 
+                    <Button
+                      variant={"outline"}
                       className={cn(
-                        "w-full pl-3 text-left font-normal", 
+                        "w-full pl-3 text-left font-normal",
                         !field.value && "text-muted-foreground"
                       )}
                     >
@@ -306,30 +304,30 @@ const TeamForm = ({
                   </FormControl>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar 
-                    mode="single" 
-                    selected={field.value} 
-                    onSelect={field.onChange} 
-                    initialFocus 
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
                   />
                 </PopoverContent>
               </Popover>
               <FormMessage />
             </FormItem>
-          )} 
+          )}
         />
 
-        <FormField 
-          control={form.control} 
-          name="skills" 
+        <FormField
+          control={form.control}
+          name="skills"
           render={() => (
             <FormItem>
               <FormLabel>Skills</FormLabel>
               <div className="flex flex-col space-y-3">
                 <div className="flex">
                   <FormControl>
-                    <Input 
-                      placeholder="Add a skill..." 
+                    <Input
+                      placeholder="Add a skill..."
                       value={skillInput}
                       onChange={e => setSkillInput(e.target.value)}
                       onKeyDown={e => {
@@ -340,10 +338,10 @@ const TeamForm = ({
                       }}
                     />
                   </FormControl>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
                     className="ml-2"
                     onClick={() => addSkill(skillInput)}
                   >
@@ -354,8 +352,8 @@ const TeamForm = ({
                   {selectedSkills.map(skill => (
                     <Badge key={skill} variant="category" className="flex items-center gap-1">
                       {skill}
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => removeSkill(skill)}
                         className="rounded-full text-muted-foreground hover:text-foreground focus:outline-none"
                       >
@@ -372,9 +370,9 @@ const TeamForm = ({
                       .filter(skill => !selectedSkills.includes(skill))
                       .slice(0, 10)
                       .map(skill => (
-                        <Badge 
-                          key={skill} 
-                          variant="secondary" 
+                        <Badge
+                          key={skill}
+                          variant="secondary"
                           className="cursor-pointer hover:bg-secondary/80"
                           onClick={() => addSkill(skill)}
                         >
@@ -387,7 +385,7 @@ const TeamForm = ({
               </div>
               <FormMessage />
             </FormItem>
-          )} 
+          )}
         />
 
         <DialogFooter className="flex gap-2 pt-4">

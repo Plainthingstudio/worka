@@ -1,23 +1,23 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { account, databases, DATABASE_ID } from '@/integrations/appwrite/client';
 
 export const useInvoiceStatus = (fetchInvoices: () => Promise<void>) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
 
   const updateInvoiceStatus = async (
-    invoiceId: string, 
+    invoiceId: string,
     newStatus: "Draft" | "Sent" | "Paid" | "Overdue"
   ) => {
     try {
       setIsUpdating(true);
-      
+
       // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
+      try {
+        await account.getSession('current');
+      } catch {
         toast({
           title: "Authentication Error",
           description: "You must be logged in to update invoice status.",
@@ -25,23 +25,16 @@ export const useInvoiceStatus = (fetchInvoices: () => Promise<void>) => {
         });
         return false;
       }
-      
-      // Update the invoice status
-      const { error } = await supabase
-        .from('invoices')
-        .update({ status: newStatus })
-        .eq('id', invoiceId);
-      
-      if (error) {
-        throw error;
-      }
-      
+
+      await databases.updateDocument(DATABASE_ID, 'invoices', invoiceId, {
+        status: newStatus
+      });
+
       toast({
         title: "Status Updated",
         description: `Invoice status updated to ${newStatus}`
       });
-      
-      // Refresh the invoices list
+
       await fetchInvoices();
       return true;
     } catch (error) {

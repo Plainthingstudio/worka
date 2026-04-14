@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, ID } from "@/integrations/appwrite/client";
+import { stringifyJsonField } from "@/utils/appwriteJson";
 
 export interface GraphicDesignBriefFormValues {
   name: string;
@@ -13,11 +14,11 @@ export interface GraphicDesignBriefFormValues {
   slogan: string;
   logoFeelings: {
     style?: string;
-    pricing: string;  // Will be "Economical" or "Luxury"
-    era: string;      // Will be "Modern" or "Classic"
-    tone: string;     // Will be "Serious" or "Playful"
-    gender: string;   // Will be "Feminine" or "Masculine"
-    complexity: string; // Will be "Simple" or "Complex"
+    pricing: string;
+    era: string;
+    tone: string;
+    gender: string;
+    complexity: string;
   };
   tone: Record<string, boolean>;
   logoType: string;
@@ -51,7 +52,7 @@ export const useGraphicDesignBrief = (submittedForId?: string | null) => {
 
   const processCheckboxGroup = (group: Record<string, boolean>) => {
     if (!group) return [];
-    
+
     return Object.entries(group)
       .filter(([_, checked]) => checked === true)
       .map(([key]) => {
@@ -64,18 +65,16 @@ export const useGraphicDesignBrief = (submittedForId?: string | null) => {
 
   const onSubmit = async (data: GraphicDesignBriefFormValues) => {
     setIsSubmitting(true);
-    
+
     try {
       const services = processCheckboxGroup(data.services || {});
       const printMedia = processCheckboxGroup(data.printMedia || {});
       const digitalMedia = processCheckboxGroup(data.digitalMedia || {});
 
-      // Log the full form data before submission
       console.log("Submitting form data:", data);
       console.log("Logo feelings data:", data.logoFeelings);
       console.log("Submitted for user ID:", submittedForId);
 
-      // Prepare data for Supabase with correct column names
       const briefData: any = {
         name: data.name || "",
         email: data.email || "",
@@ -84,7 +83,7 @@ export const useGraphicDesignBrief = (submittedForId?: string | null) => {
         about_company: data.aboutCompany || "",
         vision_mission: data.visionMission || "",
         slogan: data.slogan || "",
-        logo_feelings: data.logoFeelings || {},
+        logo_feelings: stringifyJsonField(data.logoFeelings || {}, "{}"),
         logo_type: data.logoType || "",
         reference1: data.reference1 || "",
         reference2: data.reference2 || "",
@@ -111,30 +110,25 @@ export const useGraphicDesignBrief = (submittedForId?: string | null) => {
         submission_date: new Date().toISOString()
       };
 
-      // If form is being submitted for a specific user, add submitted_for_id
       if (submittedForId) {
         console.log("Setting submitted_for_id:", submittedForId);
         briefData.submitted_for_id = submittedForId;
-        
-        // For briefs submitted through a personalized link, use the submitted_for_id as the user_id
         briefData.user_id = submittedForId;
       } else {
-        // Try to get the current user - if logged in, attach user_id (optional)
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          console.log("Setting user_id from current user:", user.id);
-          briefData.user_id = user.id;
+        try {
+          const user = await account.get();
+          if (user) {
+            console.log("Setting user_id from current user:", user.$id);
+            briefData.user_id = user.$id;
+          }
+        } catch {
+          // user not logged in, that's ok for public form
         }
       }
 
-      console.log("Final brief data being sent to Supabase:", briefData);
+      console.log("Final brief data being sent to Appwrite:", briefData);
 
-      // Insert into Supabase - now using the specific table for graphic design briefs
-      const { error } = await supabase
-        .from('graphic_design_briefs')
-        .insert(briefData);
-
-      if (error) throw error;
+      await databases.createDocument(DATABASE_ID, 'graphic_design_briefs', ID.unique(), briefData);
 
       // Also save to localStorage for backward compatibility
       const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
@@ -148,7 +142,7 @@ export const useGraphicDesignBrief = (submittedForId?: string | null) => {
         printMedia: printMedia,
         digitalMedia: digitalMedia,
         submittedForId: submittedForId || null,
-        userId: briefData.user_id // Ensure we save the user_id in localStorage too
+        userId: briefData.user_id
       };
       localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
 

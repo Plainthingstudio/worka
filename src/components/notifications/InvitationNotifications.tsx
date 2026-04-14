@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, ID, Query } from "@/integrations/appwrite/client";
 import { useUserRole } from "@/hooks/useUserRole";
 
 interface Invitation {
@@ -27,27 +27,46 @@ const InvitationNotifications = () => {
 
   const fetchInvitations = async () => {
     try {
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session?.user?.email) return;
-
-      console.log("Fetching invitations for email:", session.session.user.email);
-
-      // Only fetch invitations that are not accepted and not expired
-      const { data, error } = await supabase
-        .from('invitations')
-        .select('*')
-        .eq('email', session.session.user.email)
-        .is('accepted_at', null) // Only non-accepted invitations
-        .gt('expires_at', new Date().toISOString()) // Only non-expired invitations
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching invitations:', error);
-        throw error;
+      let session;
+      try {
+        session = await account.getSession('current');
+      } catch {
+        return;
       }
 
+      // Get the user's email from account
+      let userAccount;
+      try {
+        userAccount = await account.get();
+      } catch {
+        return;
+      }
+
+      if (!userAccount?.email) return;
+
+      console.log("Fetching invitations for email:", userAccount.email);
+
+      // Only fetch invitations that are not accepted and not expired
+      const response = await databases.listDocuments(DATABASE_ID, 'invitations', [
+        Query.equal('email', userAccount.email),
+        Query.isNull('accepted_at'),
+        Query.greaterThan('expires_at', new Date().toISOString()),
+        Query.orderDesc('$createdAt')
+      ]);
+
+      const data = response.documents.map((doc: any) => ({
+        id: doc.$id,
+        email: doc.email,
+        role: doc.role,
+        invited_by: doc.invited_by,
+        created_at: doc.$createdAt,
+        expires_at: doc.expires_at,
+        accepted_at: doc.accepted_at ?? null,
+        token: doc.token,
+      }));
+
       console.log("Found invitations:", data);
-      setInvitations(data || []);
+      setInvitations(data);
     } catch (error) {
       console.error('Error fetching invitations:', error);
     }
@@ -65,90 +84,76 @@ const InvitationNotifications = () => {
 
   const handleAcceptInvitation = async (invitation: Invitation) => {
     try {
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session) {
+      let session;
+      try {
+        session = await account.getSession('current');
+      } catch {
         toast.error("You must be logged in to accept invitations");
         return;
       }
 
+      if (!session) {
+        toast.error("You must be logged in to accept invitations");
+        return;
+      }
+
+      const userId = session.userId;
+
       console.log("Accepting invitation:", invitation.id);
 
       // Mark invitation as accepted
-      const { error: invitationError } = await supabase
-        .from('invitations')
-        .update({ accepted_at: new Date().toISOString() })
-        .eq('id', invitation.id);
-
-      if (invitationError) {
-        console.error('Error accepting invitation:', invitationError);
-        throw invitationError;
-      }
+      await databases.updateDocument(DATABASE_ID, 'invitations', invitation.id, {
+        accepted_at: new Date().toISOString()
+      });
 
       // Check if user already has a role
-      const { data: existingRole } = await supabase
-        .from('user_roles')
-        .select('*')
-        .eq('user_id', session.session.user.id)
-        .single();
+      const existingRoleResponse = await databases.listDocuments(DATABASE_ID, 'user_roles', [
+        Query.equal('user_id', userId)
+      ]);
+      const existingRole = existingRoleResponse.documents[0] ?? null;
 
       if (!existingRole) {
         // Create user role
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: session.session.user.id,
-            role: invitation.role as "owner" | "administrator" | "team",
-            assigned_by: invitation.invited_by
-          });
-
-        if (roleError) {
-          console.error('Error creating user role:', roleError);
-          throw roleError;
-        }
+        await databases.createDocument(DATABASE_ID, 'user_roles', ID.unique(), {
+          user_id: userId,
+          role: invitation.role as "owner" | "administrator" | "team",
+          assigned_by: invitation.invited_by
+        });
       }
 
       // Check if user already has a team member record
-      const { data: existingTeamMember } = await supabase
-        .from('team_members')
-        .select('*')
-        .eq('user_id', session.session.user.id)
-        .single();
+      const existingTeamMemberResponse = await databases.listDocuments(DATABASE_ID, 'team_members', [
+        Query.equal('user_id', userId)
+      ]);
+      const existingTeamMember = existingTeamMemberResponse.documents[0] ?? null;
 
       if (!existingTeamMember) {
         // Get user profile for name
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name')
-          .eq('id', session.session.user.id)
-          .single();
+        const profileResponse = await databases.listDocuments(DATABASE_ID, 'profiles', [
+          Query.equal('$id', userId)
+        ]);
+        const profile = profileResponse.documents[0] ?? null;
 
         // Create team member record
-        const defaultPosition = invitation.role === 'administrator' 
-          ? 'Administrator' 
-          : invitation.role === 'owner' 
-          ? 'Owner' 
+        const defaultPosition = invitation.role === 'administrator'
+          ? 'Administrator'
+          : invitation.role === 'owner'
+          ? 'Owner'
           : 'Team Member';
 
-        const { error: teamMemberError } = await supabase
-          .from('team_members')
-          .insert({
-            user_id: session.session.user.id,
-            name: profile?.full_name || 'Unknown',
-            position: defaultPosition,
-            start_date: new Date().toISOString(),
-            skills: [],
-          });
-
-        if (teamMemberError) {
-          console.error('Error creating team member:', teamMemberError);
-          throw teamMemberError;
-        }
+        await databases.createDocument(DATABASE_ID, 'team_members', ID.unique(), {
+          user_id: userId,
+          name: profile?.full_name || 'Unknown',
+          position: defaultPosition,
+          start_date: new Date().toISOString(),
+          skills: [],
+        });
       }
 
       // Refresh invitations and user role
       await fetchInvitations();
       toast.success("Invitation accepted successfully!");
-      
+
       // Refresh the page to update user role throughout the app
       window.location.reload();
     } catch (error) {
@@ -159,12 +164,7 @@ const InvitationNotifications = () => {
 
   const handleDeclineInvitation = async (invitationId: string) => {
     try {
-      const { error } = await supabase
-        .from('invitations')
-        .delete()
-        .eq('id', invitationId);
-
-      if (error) throw error;
+      await databases.deleteDocument(DATABASE_ID, 'invitations', invitationId);
 
       await fetchInvitations();
       toast.success("Invitation declined");

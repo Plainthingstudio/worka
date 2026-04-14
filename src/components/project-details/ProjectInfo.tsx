@@ -4,43 +4,43 @@ import { CalendarIcon, DollarSign, UserCircle, Tag, Clock, Users, Phone, Mail, M
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Client, Project, TeamMember } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
+import { databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import { getStatusBadgeVariant, getProjectTypeBadgeVariant } from "@/components/projects/utils/projectItemUtils";
+
 interface ProjectInfoProps {
   project: Project;
   client: Client;
 }
+
 const ProjectInfo = ({
   project,
   client
 }: ProjectInfoProps) => {
   const [assignedTeamMembers, setAssignedTeamMembers] = useState<TeamMember[]>([]);
   const [isLoadingTeamMembers, setIsLoadingTeamMembers] = useState(false);
+
   useEffect(() => {
     const loadTeamMembers = async () => {
       if (project.teamMembers && project.teamMembers.length > 0) {
         setIsLoadingTeamMembers(true);
         console.log("Loading team members for project:", project.id, "Team member IDs:", project.teamMembers);
         try {
-          const {
-            data: teamMembersData,
-            error
-          } = await supabase.from('team_members').select('*').in('id', project.teamMembers);
-          if (error) {
-            console.error("Error fetching team members:", error);
-          } else {
-            console.log("Fetched team members data:", teamMembersData);
-            const transformedMembers: TeamMember[] = (teamMembersData || []).map((member): TeamMember => ({
-              id: member.id,
-              user_id: member.user_id,
-              name: member.name,
-              position: member.position as any,
-              skills: member.skills || [],
-              startDate: new Date(member.start_date),
-              createdAt: new Date(member.created_at)
-            }));
-            setAssignedTeamMembers(transformedMembers);
-          }
+          const response = await databases.listDocuments(DATABASE_ID, 'team_members', [
+            Query.equal('$id', project.teamMembers)
+          ]);
+          const teamMembersData = response.documents;
+
+          console.log("Fetched team members data:", teamMembersData);
+          const transformedMembers: TeamMember[] = (teamMembersData || []).map((member): TeamMember => ({
+            id: member.$id,
+            user_id: member.user_id,
+            name: member.name,
+            position: member.position as any,
+            skills: member.skills || [],
+            startDate: new Date(member.start_date),
+            createdAt: new Date(member.$createdAt)
+          }));
+          setAssignedTeamMembers(transformedMembers);
         } catch (error) {
           console.error("Error loading team members:", error);
         } finally {
@@ -53,6 +53,7 @@ const ProjectInfo = ({
     };
     loadTeamMembers();
   }, [project.teamMembers, project.id]);
+
   return <div className="col-span-7 md:col-span-5">
       <Card className="border rounded-xl shadow-sm overflow-hidden">
         {/* Project Header */}
@@ -186,4 +187,5 @@ const ProjectInfo = ({
       </Card>
     </div>;
 };
+
 export default ProjectInfo;

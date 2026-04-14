@@ -12,7 +12,7 @@ import { useBriefs } from "@/hooks/useBriefs";
 import { useBriefPdf } from "@/hooks/useBriefPdf";
 import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { supabase } from "@/integrations/supabase/client";
+import { account } from "@/integrations/appwrite/client";
 import { toast } from "sonner";
 
 const Briefs = () => {
@@ -29,18 +29,23 @@ const Briefs = () => {
 
   const refreshData = async () => {
     if (isRefreshing) return;
-    
+
     setIsRefreshing(true);
     try {
       console.log("Refreshing briefs data...");
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      
+
+      let user;
+      try {
+        user = await account.get();
+      } catch {
+        user = null;
+      }
+
       if (!user) {
         console.log("Non-authenticated user viewing briefs");
         toast.info("You're viewing briefs in read-only mode. Login to manage briefs.");
       }
-      
+
       await fetchBriefs();
       setIsInitialLoad(false);
     } catch (error) {
@@ -54,12 +59,12 @@ const Briefs = () => {
   useEffect(() => {
     console.log("Initial briefs fetch on component mount");
     refreshData();
-    
+
     const refreshInterval = setInterval(() => {
       console.log("Performing periodic refresh of briefs data");
       refreshData();
     }, 30000); // Refresh every 30 seconds
-    
+
     return () => clearInterval(refreshInterval);
   }, []);
 
@@ -75,29 +80,35 @@ const Briefs = () => {
 
   const confirmDelete = async () => {
     if (!selectedBrief || isDeleting) return;
-    
+
     try {
       setIsDeleting(true);
       console.log("Starting brief deletion process for ID:", selectedBrief.id);
-      
-      const { data: { user } } = await supabase.auth.getUser();
+
+      let user;
+      try {
+        user = await account.get();
+      } catch {
+        user = null;
+      }
+
       if (!user) {
         toast.error("You must be logged in to delete briefs");
         setIsDeleteDialogOpen(false);
         setIsDeleting(false);
         return;
       }
-      
+
       await deleteBrief(selectedBrief.id);
-      
+
       setSelectedBrief(null);
-      
+
       setIsDeleteDialogOpen(false);
-      
+
       setTimeout(() => {
         refreshData();
       }, 500);
-      
+
       toast.success("Brief permanently deleted");
     } catch (error) {
       console.error("Error during brief deletion:", error);
@@ -112,23 +123,23 @@ const Briefs = () => {
       <main className="container py-6">
           <BriefsHeader />
           <BriefStats briefs={briefs} />
-          
+
           <BriefPersonalizedLinks />
-          
-          <BriefsFilter 
+
+          <BriefsFilter
             filter={filter}
             setFilter={setFilter}
             search={search}
             setSearch={setSearch}
           />
-          
+
           {isLoading && isInitialLoad ? (
             <div className="space-y-4">
               <div className="flex justify-center items-center h-12 mb-4">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 <span className="ml-2 text-lg font-medium">Loading briefs...</span>
               </div>
-              
+
               <div className="rounded-md border">
                 <div className="p-4">
                   <div className="grid grid-cols-6 gap-4 mb-4">
@@ -156,8 +167,8 @@ const Briefs = () => {
             </div>
           ) : (
             <>
-              <BriefsTable 
-                briefs={filteredBriefs} 
+              <BriefsTable
+                briefs={filteredBriefs}
                 onView={viewBriefDetails}
                 onDownload={generateBriefPDF}
                 onDelete={handleDeleteBrief}
@@ -170,7 +181,7 @@ const Briefs = () => {
               )}
             </>
           )}
-          
+
         <BriefTypeCards />
       </main>
 

@@ -7,14 +7,13 @@ import IllustrationStepTwo from "@/components/illustrations-brief-form/Illustrat
 import IllustrationStepThree from "@/components/illustrations-brief-form/IllustrationStepThree";
 import { useIllustrationsBrief, IllustrationBriefFormValues } from "@/hooks/useIllustrationsBrief";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 const IllustrationsBrief = () => {
   const [step, setStep] = useState(1);
   const [searchParams] = useSearchParams();
   const forUserId = searchParams.get("u");
   const [isValidUser, setIsValidUser] = useState<boolean | null>(null);
-  
+
   useEffect(() => {
     const checkUserExists = async () => {
       if (!forUserId) {
@@ -25,7 +24,7 @@ const IllustrationsBrief = () => {
       try {
         // Just check if the user ID format is valid (UUID format)
         const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(forUserId);
-        
+
         if (isValidUUID) {
           setIsValidUser(true);
         } else {
@@ -78,13 +77,13 @@ const IllustrationsBrief = () => {
   const handleNext = async () => {
     if (step === 1) {
       const isValid = await methods.trigger([
-        "name", 
-        "email", 
-        "companyName", 
-        "aboutCompany", 
+        "name",
+        "email",
+        "companyName",
+        "aboutCompany",
         "illustrationsPurpose"
       ]);
-      
+
       if (isValid) {
         setStep(2);
       } else {
@@ -92,12 +91,12 @@ const IllustrationsBrief = () => {
       }
     } else if (step === 2) {
       const isValid = await methods.trigger([
-        "illustrationsFor", 
-        "illustrationsStyle", 
-        "targetAudience", 
+        "illustrationsFor",
+        "illustrationsStyle",
+        "targetAudience",
         "illustrationsCount"
       ]);
-      
+
       if (isValid) {
         setStep(3);
       } else {
@@ -153,7 +152,7 @@ const IllustrationsBrief = () => {
               ))}
             </div>
           </div>
-          
+
           <FormProvider {...methods}>
             {step === 1 && <IllustrationStepOne onNext={handleNext} />}
             {step === 2 && <IllustrationStepTwo onNext={handleNext} onPrevious={handlePrevious} />}

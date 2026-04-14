@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { TeamMember, TeamPosition } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 
 export const useTeamMembers = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -18,45 +18,49 @@ export const useTeamMembers = () => {
     try {
       hasFetched.current = true;
       setIsLoading(true);
-      const { data: session } = await supabase.auth.getSession();
-      
-      if (!session.session) {
+
+      let session;
+      try {
+        session = await account.getSession('current');
+      } catch {
         toast.error("You must be logged in to view team members");
         return [];
       }
 
-      // Fetch team members with profile data
-      const { data: teamData, error: teamError } = await supabase
-        .from('team_members')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (teamError) {
-        throw teamError;
+      if (!session) {
+        toast.error("You must be logged in to view team members");
+        return [];
       }
 
+      // Fetch team members
+      const teamResponse = await databases.listDocuments(
+        DATABASE_ID,
+        'team_members',
+        [Query.orderDesc('$createdAt')]
+      );
+
       // Get all user roles
-      const { data: rolesData } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
+      let rolesMap = new Map<string, string>();
+      try {
+        const rolesResponse = await databases.listDocuments(DATABASE_ID, 'user_roles');
+        rolesResponse.documents.forEach((role: any) => {
+          rolesMap.set(role.user_id, role.role);
+        });
+      } catch (e) {
+        // roles may not exist
+      }
 
-      // Create a map of user_id to role
-      const rolesMap = new Map<string, string>();
-      rolesData?.forEach((role: any) => {
-        rolesMap.set(role.user_id, role.role);
-      });
-
-      const transformedMembers: TeamMember[] = (teamData || []).map((member: any) => {
+      const transformedMembers: TeamMember[] = teamResponse.documents.map((member: any) => {
         const role = rolesMap.get(member.user_id);
-        
+
         return {
-          id: member.id,
+          id: member.$id,
           user_id: member.user_id,
           name: member.name,
           position: member.position as TeamPosition,
           startDate: new Date(member.start_date),
           skills: member.skills || [],
-          createdAt: new Date(member.created_at),
+          createdAt: new Date(member.$createdAt),
           role: role,
           email: null
         };

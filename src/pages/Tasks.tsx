@@ -10,12 +10,13 @@ import { TaskCalendarView } from '@/components/tasks/TaskCalendarView';
 import { TaskDetailSidebar } from '@/components/tasks/TaskDetailSidebar';
 import { TaskDialog } from '@/components/tasks/TaskDialog';
 import { SubtaskDialog } from '@/components/tasks/SubtaskDialog';
-import { supabase } from '@/integrations/supabase/client';
+import { account, databases, DATABASE_ID, ID, Query, storage } from '@/integrations/appwrite/client';
 import { TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/task';
 import { Project } from '@/types';
 import { Plus, Search, Filter, LayoutList, Users, Calendar, MoreHorizontal, Kanban, Share, Table, Group, ArrowUpDown } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+
 export const Tasks = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -64,50 +65,30 @@ export const Tasks = () => {
   // Check authentication on component mount
   useEffect(() => {
     const checkAuth = async () => {
-      const {
-        data: {
-          session
+      try {
+        const session = await account.getSession('current');
+        console.log('Session check:', session);
+        if (!session) {
+          console.log('No session found, redirecting to auth');
+          navigate('/auth');
+          return;
         }
-      } = await supabase.auth.getSession();
-      console.log('Session check:', session);
-      if (!session) {
+        setIsAuthenticated(true);
+      } catch {
         console.log('No session found, redirecting to auth');
         navigate('/auth');
-        return;
       }
-      setIsAuthenticated(true);
     };
     checkAuth();
-
-    // Listen for auth changes
-    const {
-      data: {
-        subscription
-      }
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session);
-      if (!session) {
-        navigate('/auth');
-      } else {
-        setIsAuthenticated(true);
-      }
-    });
-    return () => subscription.unsubscribe();
   }, [navigate]);
+
   const fetchProjects = async () => {
     try {
-      const {
-        data,
-        error
-      } = await supabase.from('projects').select('*').order('created_at', {
-        ascending: false
-      });
-      if (error) {
-        console.error('Error fetching projects:', error);
-        return;
-      }
-      const transformedProjects: Project[] = data.map(project => ({
-        id: project.id,
+      const response = await databases.listDocuments(DATABASE_ID, 'projects', [
+        Query.orderDesc('$createdAt')
+      ]);
+      const transformedProjects: Project[] = response.documents.map(project => ({
+        id: project.$id,
         name: project.name,
         clientId: project.client_id,
         status: project.status as any,
@@ -118,13 +99,14 @@ export const Tasks = () => {
         categories: project.categories as any,
         payments: [],
         teamMembers: project.team_members || [],
-        createdAt: new Date(project.created_at)
+        createdAt: new Date(project.$createdAt)
       }));
       setProjects(transformedProjects);
     } catch (error) {
       console.error('Error fetching projects:', error);
     }
   };
+
   const fetchAllTasks = async () => {
     if (!isAuthenticated) {
       console.log('Not authenticated, skipping task fetch');
@@ -132,18 +114,12 @@ export const Tasks = () => {
     }
     try {
       setIsLoading(true);
-      const {
-        data: tasksData,
-        error
-      } = await supabase.from('tasks').select(`
-          *,
-          task_comments(*),
-          task_attachments(*)
-        `).order('created_at', {
-        ascending: false
-      });
-      if (error) {
-        console.error('Error fetching tasks:', error);
+      const tasksResponse = await databases.listDocuments(DATABASE_ID, 'tasks', [
+        Query.orderDesc('$createdAt')
+      ]);
+      const tasksData = tasksResponse.documents;
+
+      if (!tasksData) {
         toast({
           title: "Error",
           description: "Failed to fetch tasks",
@@ -153,25 +129,44 @@ export const Tasks = () => {
       }
       console.log('Fetched tasks:', tasksData);
 
+      // Fetch task comments and attachments
+      const commentsResponse = await databases.listDocuments(DATABASE_ID, 'task_comments');
+      const attachmentsResponse = await databases.listDocuments(DATABASE_ID, 'task_attachments');
+
+      const commentsByTask = new Map<string, any[]>();
+      commentsResponse.documents.forEach((c: any) => {
+        if (!commentsByTask.has(c.task_id)) commentsByTask.set(c.task_id, []);
+        commentsByTask.get(c.task_id)!.push(c);
+      });
+
+      const attachmentsByTask = new Map<string, any[]>();
+      attachmentsResponse.documents.forEach((a: any) => {
+        if (!attachmentsByTask.has(a.task_id)) attachmentsByTask.set(a.task_id, []);
+        attachmentsByTask.get(a.task_id)!.push(a);
+      });
+
       // Transform tasks and organize subtasks
       const allTasks: TaskWithRelations[] = tasksData.map(task => ({
         ...task,
+        id: task.$id,
         status: task.status as TaskStatus,
         priority: task.priority as TaskPriority,
         task_type: task.task_type as TaskType,
         due_date: task.due_date ? new Date(task.due_date) : undefined,
         completed_at: task.completed_at ? new Date(task.completed_at) : undefined,
-        created_at: new Date(task.created_at),
-        updated_at: new Date(task.updated_at),
-        comments: task.task_comments?.map((comment: any) => ({
+        created_at: new Date(task.$createdAt),
+        updated_at: new Date(task.$updatedAt),
+        comments: (commentsByTask.get(task.$id) || []).map((comment: any) => ({
           ...comment,
-          created_at: new Date(comment.created_at),
-          updated_at: new Date(comment.updated_at)
-        })) || [],
-        attachments: task.task_attachments?.map((attachment: any) => ({
+          id: comment.$id,
+          created_at: new Date(comment.$createdAt),
+          updated_at: new Date(comment.$updatedAt)
+        })),
+        attachments: (attachmentsByTask.get(task.$id) || []).map((attachment: any) => ({
           ...attachment,
-          created_at: new Date(attachment.created_at)
-        })) || [],
+          id: attachment.$id,
+          created_at: new Date(attachment.$createdAt)
+        })),
         subtasks: []
       }));
 
@@ -200,8 +195,16 @@ export const Tasks = () => {
       setIsLoading(false);
     }
   };
+
   const createTask = async (taskData: any) => {
     try {
+      let user;
+      try {
+        user = await account.get();
+      } catch {
+        user = null;
+      }
+
       const insertData = {
         title: taskData.title || '',
         description: taskData.description,
@@ -211,21 +214,11 @@ export const Tasks = () => {
         assignees: taskData.assignees || [],
         due_date: taskData.due_date,
         project_id: selectedProject === 'all' ? null : selectedProject,
-        user_id: (await supabase.auth.getUser()).data.user?.id
+        user_id: user?.$id
       };
-      const {
-        data,
-        error
-      } = await supabase.from('tasks').insert([insertData]).select().single();
-      if (error) {
-        console.error('Error creating task:', error);
-        toast({
-          title: "Error",
-          description: "Failed to create task",
-          variant: "destructive"
-        });
-        return null;
-      }
+
+      const data = await databases.createDocument(DATABASE_ID, 'tasks', ID.unique(), insertData);
+
       toast({
         title: "Success",
         description: "Task created successfully"
@@ -242,6 +235,7 @@ export const Tasks = () => {
       return null;
     }
   };
+
   const updateTask = async (taskId: string, updates: any) => {
     try {
       const processedUpdates: any = {};
@@ -253,18 +247,9 @@ export const Tasks = () => {
       if (updates.assignees !== undefined) processedUpdates.assignees = updates.assignees;
       if (updates.due_date !== undefined) processedUpdates.due_date = updates.due_date;
       if (updates.completed_at !== undefined) processedUpdates.completed_at = updates.completed_at;
-      const {
-        error
-      } = await supabase.from('tasks').update(processedUpdates).eq('id', taskId);
-      if (error) {
-        console.error('Error updating task:', error);
-        toast({
-          title: "Error",
-          description: "Failed to update task",
-          variant: "destructive"
-        });
-        return false;
-      }
+
+      await databases.updateDocument(DATABASE_ID, 'tasks', taskId, processedUpdates);
+
       setTasks(prevTasks => prevTasks.map(task => task.id === taskId ? {
         ...task,
         ...processedUpdates
@@ -277,23 +262,19 @@ export const Tasks = () => {
       return true;
     } catch (error) {
       console.error('Error updating task:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update task",
+        variant: "destructive"
+      });
       return false;
     }
   };
+
   const deleteTask = async (taskId: string) => {
     try {
-      const {
-        error
-      } = await supabase.from('tasks').delete().eq('id', taskId);
-      if (error) {
-        console.error('Error deleting task:', error);
-        toast({
-          title: "Error",
-          description: "Failed to delete task",
-          variant: "destructive"
-        });
-        return false;
-      }
+      await databases.deleteDocument(DATABASE_ID, 'tasks', taskId);
+
       toast({
         title: "Success",
         description: "Task deleted successfully"
@@ -302,39 +283,43 @@ export const Tasks = () => {
       return true;
     } catch (error) {
       console.error('Error deleting task:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete task",
+        variant: "destructive"
+      });
       return false;
     }
   };
+
   const addComment = async (taskId: string, content: string) => {
     try {
-      const {
-        data: {
-          user
-        }
-      } = await supabase.auth.getUser();
+      let user;
+      try {
+        user = await account.get();
+      } catch {
+        console.error('No authenticated user found');
+        return false;
+      }
+
       if (!user) {
         console.error('No authenticated user found');
         return false;
       }
-      const {
-        data,
-        error
-      } = await supabase.from('task_comments').insert([{
+
+      const data = await databases.createDocument(DATABASE_ID, 'task_comments', ID.unique(), {
         task_id: taskId,
         content,
-        user_id: user.id
-      }]).select('*').single();
-      if (error) {
-        console.error('Error adding comment:', error);
-        return false;
-      }
+        user_id: user.$id
+      });
+
       setTasks(prevTasks => prevTasks.map(task => task.id === taskId ? {
         ...task,
         comments: [...(task.comments || []), {
-          id: data.id,
+          id: data.$id,
           content: data.content,
-          created_at: new Date(data.created_at),
-          updated_at: new Date(data.updated_at),
+          created_at: new Date(data.$createdAt),
+          updated_at: new Date(data.$updatedAt),
           user_id: data.user_id,
           task_id: data.task_id
         }]
@@ -345,37 +330,30 @@ export const Tasks = () => {
       return false;
     }
   };
+
   const uploadAttachment = async (taskId: string, file: File) => {
     try {
-      const userId = (await supabase.auth.getUser()).data.user?.id;
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/${taskId}/${Date.now()}.${fileExt}`;
-      const {
-        error: uploadError
-      } = await supabase.storage.from('task-attachments').upload(fileName, file);
-      if (uploadError) {
-        console.error('Error uploading file:', uploadError);
-        return false;
+      let userId: string | undefined;
+      try {
+        const user = await account.get();
+        userId = user.$id;
+      } catch {
+        userId = undefined;
       }
-      const {
-        data: {
-          publicUrl
-        }
-      } = supabase.storage.from('task-attachments').getPublicUrl(fileName);
-      const {
-        error: dbError
-      } = await supabase.from('task_attachments').insert([{
+
+      // Upload file to Appwrite storage
+      const uploadedFile = await storage.createFile('task-attachments', ID.unique(), file);
+      const fileUrl = storage.getFileView('task-attachments', uploadedFile.$id).toString();
+
+      await databases.createDocument(DATABASE_ID, 'task_attachments', ID.unique(), {
         task_id: taskId,
         user_id: userId,
         file_name: file.name,
-        file_url: publicUrl,
+        file_url: fileUrl,
         file_size: file.size,
         file_type: file.type
-      }]);
-      if (dbError) {
-        console.error('Error saving attachment record:', dbError);
-        return false;
-      }
+      });
+
       await fetchAllTasks();
       return true;
     } catch (error) {
@@ -383,26 +361,25 @@ export const Tasks = () => {
       return false;
     }
   };
+
   const handleCreateTask = async (taskData: any) => {
     const success = await createTask(taskData);
     if (success) {
       setIsCreateDialogOpen(false);
     }
   };
+
   const handleAddTask = (status: TaskStatus = 'Planning') => {
     setNewTaskStatus(status);
     setIsCreateDialogOpen(true);
   };
+
   const handleCreateSubtask = async (subtaskData: any) => {
     try {
-      // Get user first
-      const {
-        data: {
-          user
-        },
-        error: userError
-      } = await supabase.auth.getUser();
-      if (userError || !user) {
+      let user;
+      try {
+        user = await account.get();
+      } catch {
         toast({
           title: "Error",
           description: "You must be logged in to create subtasks",
@@ -410,6 +387,16 @@ export const Tasks = () => {
         });
         return;
       }
+
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to create subtasks",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const insertData = {
         title: subtaskData.title || '',
         description: subtaskData.description,
@@ -420,22 +407,13 @@ export const Tasks = () => {
         due_date: subtaskData.due_date,
         parent_task_id: subtaskData.parent_task_id,
         project_id: selectedProject === 'all' ? null : selectedProject,
-        user_id: user.id
+        user_id: user.$id
       };
+
       console.log('Creating subtask with data:', insertData);
-      const {
-        data,
-        error
-      } = await supabase.from('tasks').insert([insertData]).select().single();
-      if (error) {
-        console.error('Supabase error creating subtask:', error);
-        toast({
-          title: "Error",
-          description: `Failed to create subtask: ${error.message}`,
-          variant: "destructive"
-        });
-        return;
-      }
+
+      const data = await databases.createDocument(DATABASE_ID, 'tasks', ID.unique(), insertData);
+
       console.log('Subtask created successfully:', data);
       toast({
         title: "Success",
@@ -452,10 +430,12 @@ export const Tasks = () => {
       });
     }
   };
+
   const handleAddSubtask = (taskId: string) => {
     setParentTaskId(taskId);
     setIsSubtaskDialogOpen(true);
   };
+
   const filteredTasks = tasks.filter(task => {
     if (selectedProject !== 'all' && task.project_id !== selectedProject) return false;
     if (statusFilter !== 'all' && task.status !== statusFilter) return false;
@@ -463,6 +443,7 @@ export const Tasks = () => {
     if (searchQuery && !task.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchProjects();
@@ -493,6 +474,7 @@ export const Tasks = () => {
         </div>
       </div>;
   }
+
   return <div className="p-6 py-0">
       <div className="flex flex-col h-full">
             {/* Header */}
@@ -503,7 +485,7 @@ export const Tasks = () => {
                   <h1 className="text-2xl font-semibold text-foreground">Tasks</h1>
                   <p className="text-muted-foreground mt-1 text-base">List of task for all team members</p>
                 </div>
-                
+
                 <Button onClick={() => handleAddTask()} className="w-fit">
                   <Plus className="h-4 w-4 mr-2" />
                   <span>Add Task</span>
@@ -601,12 +583,12 @@ export const Tasks = () => {
           console.log('Task clicked:', task.title);
           setSelectedTask(task);
         }} onUpdateTask={updateTask} onAddTask={handleAddTask} />}
-              
+
               {activeView === 'board' && <TaskBoardView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddTask={status => handleAddTask(status)} onTaskClick={task => {
           console.log('Board task clicked:', task.title);
           setSelectedTask(task);
         }} />}
-              
+
               {activeView === 'calendar' && <TaskCalendarView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} />}
             </div>
           </div>
@@ -620,4 +602,5 @@ export const Tasks = () => {
       <SubtaskDialog isOpen={isSubtaskDialogOpen} onClose={() => setIsSubtaskDialogOpen(false)} onSubmit={handleCreateSubtask} parentTaskId={parentTaskId} title="Create New Subtask" />
     </div>;
 };
+
 export default Tasks;

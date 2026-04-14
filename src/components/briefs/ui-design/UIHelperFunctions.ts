@@ -1,5 +1,6 @@
 
 import { format, isValid, parseISO } from 'date-fns';
+import { parseJsonField } from "@/utils/appwriteJson";
 
 export const getValue = (
   briefData: any,
@@ -47,7 +48,12 @@ export const formatDate = (dateValue: any): string => {
 
 
 export const getPageDetails = (briefData: any) => {
-  const details = getValue(briefData, "pageDetails", "page_details", []);
+  const rawDetails = getValue(briefData, "pageDetails", "page_details", []);
+  const details =
+    typeof rawDetails === "string"
+      ? parseJsonField(rawDetails, [])
+      : rawDetails;
+
   return Array.isArray(details) ? details : 
          details && typeof details === 'object' ? [details] : [];
 };

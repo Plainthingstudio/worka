@@ -63,7 +63,7 @@ import { useTaskProject } from '@/hooks/useTaskProject';
 import DeleteConfirmationDialog from '@/components/projects/DeleteConfirmationDialog';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { supabase } from '@/integrations/supabase/client';
+import { account, databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
 import { getStatusSolidClass } from '@/utils/statusColors';
 
 const taskSchema = z.object({
@@ -119,9 +119,13 @@ export const TaskDetailSidebar = ({
   // Get current user ID
   useEffect(() => {
     const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setCurrentUserId(user.id);
+      try {
+        const user = await account.get();
+        if (user) {
+          setCurrentUserId(user.$id);
+        }
+      } catch {
+        // not authenticated
       }
     };
     getCurrentUser();
@@ -143,22 +147,20 @@ export const TaskDetailSidebar = ({
       for (const userId of userIds) {
         try {
           // First try to get from team_members
-          const { data: teamMember } = await supabase
-            .from('team_members')
-            .select('name')
-            .eq('user_id', userId)
-            .single();
-          
+          const teamMemberResponse = await databases.listDocuments(DATABASE_ID, 'team_members', [
+            Query.equal('user_id', userId)
+          ]);
+          const teamMember = teamMemberResponse.documents[0] ?? null;
+
           if (teamMember?.name) {
             names[userId] = teamMember.name;
           } else {
-            // Fallback to profiles table
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('full_name')
-              .eq('id', userId)
-              .single();
-            
+            // Fallback to profiles collection
+            const profileResponse = await databases.listDocuments(DATABASE_ID, 'profiles', [
+              Query.equal('$id', userId)
+            ]);
+            const profile = profileResponse.documents[0] ?? null;
+
             names[userId] = profile?.full_name || 'Demo User';
           }
         } catch (error) {

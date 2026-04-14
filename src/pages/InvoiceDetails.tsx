@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Invoice, PaymentType } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import { useClients } from "@/hooks/useClients";
 import { useInvoicePdf } from "@/hooks/useInvoicePdf";
 
@@ -38,13 +38,14 @@ const InvoiceDetails = () => {
   useEffect(() => {
     const fetchInvoiceDetails = async () => {
       if (!invoiceId) return;
-      
+
       try {
         setIsLoading(true);
-        
+
         // Check if user is authenticated
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
+        try {
+          await account.getSession('current');
+        } catch {
           toast({
             title: "Authentication Error",
             description: "You must be logged in to view invoice details.",
@@ -53,39 +54,39 @@ const InvoiceDetails = () => {
           navigate('/login');
           return;
         }
-        
+
         // Fetch the invoice
-        const { data: invoiceData, error: invoiceError } = await supabase
-          .from('invoices')
-          .select('*')
-          .eq('id', invoiceId)
-          .maybeSingle();
-        
-        if (invoiceError || !invoiceData) {
+        let invoiceData = null;
+        try {
+          const response = await databases.listDocuments(DATABASE_ID, 'invoices', [
+            Query.equal('$id', invoiceId)
+          ]);
+          invoiceData = response.documents[0] ?? null;
+        } catch (invoiceError: any) {
           throw new Error(invoiceError?.message || 'Invoice not found');
         }
-        
-        // Fetch the invoice items
-        const { data: itemsData, error: itemsError } = await supabase
-          .from('invoice_items')
-          .select('*')
-          .eq('invoice_id', invoiceId);
-        
-        if (itemsError) {
-          throw new Error(itemsError.message);
+
+        if (!invoiceData) {
+          throw new Error('Invoice not found');
         }
-        
+
+        // Fetch the invoice items
+        const itemsResponse = await databases.listDocuments(DATABASE_ID, 'invoice_items', [
+          Query.equal('invoice_id', invoiceId)
+        ]);
+        const itemsData = itemsResponse.documents;
+
         // Transform to our Invoice type
         const items = itemsData.map(item => ({
-          id: item.id,
+          id: item.$id,
           description: item.description,
           quantity: item.quantity,
           rate: item.rate,
           amount: item.amount
         }));
-        
+
         const loadedInvoice: Invoice = {
-          id: invoiceData.id,
+          id: invoiceData.$id,
           invoiceNumber: invoiceData.invoice_number,
           clientId: invoiceData.client_id,
           date: new Date(invoiceData.date),
@@ -100,14 +101,14 @@ const InvoiceDetails = () => {
           total: invoiceData.total,
           notes: invoiceData.notes || "",
           termsAndConditions: invoiceData.terms_and_conditions || "",
-          createdAt: new Date(invoiceData.created_at),
+          createdAt: new Date(invoiceData.$createdAt),
           status: validateInvoiceStatus(invoiceData.status),
           paymentType: (invoiceData.payment_type as PaymentType) || "Milestone Payment"
         };
-        
+
         setInvoice(loadedInvoice);
-        
-        // Find the client from our Supabase clients
+
+        // Find the client from our Appwrite clients
         if (clients && clients.length > 0) {
           const foundClient = clients.find((c) => c.id === loadedInvoice.clientId);
           setClient(foundClient);
@@ -124,7 +125,7 @@ const InvoiceDetails = () => {
         setIsLoading(false);
       }
     };
-    
+
     // Only fetch invoice after clients are loaded
     if (!isClientsLoading) {
       fetchInvoiceDetails();
@@ -133,35 +134,26 @@ const InvoiceDetails = () => {
 
   const handleDelete = async () => {
     if (!invoice) return;
-    
+
     try {
       setIsLoading(true);
-      
+
       // Delete invoice items first
-      const { error: itemsError } = await supabase
-        .from('invoice_items')
-        .delete()
-        .eq('invoice_id', invoice.id);
-      
-      if (itemsError) {
-        throw itemsError;
+      const itemsResponse = await databases.listDocuments(DATABASE_ID, 'invoice_items', [
+        Query.equal('invoice_id', invoice.id)
+      ]);
+      for (const item of itemsResponse.documents) {
+        await databases.deleteDocument(DATABASE_ID, 'invoice_items', item.$id);
       }
-      
+
       // Then delete the invoice
-      const { error: invoiceError } = await supabase
-        .from('invoices')
-        .delete()
-        .eq('id', invoice.id);
-      
-      if (invoiceError) {
-        throw invoiceError;
-      }
-      
+      await databases.deleteDocument(DATABASE_ID, 'invoices', invoice.id);
+
       toast({
         title: "Invoice deleted",
         description: "The invoice has been successfully deleted."
       });
-      
+
       navigate("/invoices");
     } catch (error) {
       console.error("Error deleting invoice:", error);
@@ -207,7 +199,7 @@ const InvoiceDetails = () => {
   return (
     <>
       <main className="p-6">
-        <InvoiceDetailsHeader 
+        <InvoiceDetailsHeader
           invoice={invoice}
           onDeleteClick={() => setDeleteConfirmOpen(true)}
           onGeneratePDF={handleGeneratePDF}
@@ -215,17 +207,17 @@ const InvoiceDetails = () => {
         />
 
         <div className="rounded-lg border bg-card shadow-sm">
-          <InvoiceInfo 
-            invoice={invoice} 
-            client={client} 
-            formatCurrency={formatCurrency} 
+          <InvoiceInfo
+            invoice={invoice}
+            client={client}
+            formatCurrency={formatCurrency}
           />
-          
-          <InvoiceItemsTable 
-            invoice={invoice} 
-            formatCurrency={formatCurrency} 
+
+          <InvoiceItemsTable
+            invoice={invoice}
+            formatCurrency={formatCurrency}
           />
-          
+
           <InvoiceNotesTerm invoice={invoice} />
         </div>
       </main>

@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { account } from "@/integrations/appwrite/client";
+import { appwriteConfigError, isAppwriteConfigured } from "@/integrations/appwrite/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -27,33 +28,21 @@ const SignupForm = ({ isLoading, onSubmit }: SignupFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!isAppwriteConfigured) {
+      toast.error(appwriteConfigError);
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Sign up with Supabase
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: name,
-          },
-        },
-      });
-
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-
-      toast.success("Account created successfully! You can now log in.");
-      
-      // Redirect to dashboard if auto-confirm is enabled, otherwise show a message
-      if (data.session) {
-        localStorage.setItem("isLoggedIn", "true");
-        navigate("/dashboard");
-      }
-      
+      await account.create("unique()", email, password, name);
+      // Immediately sign in after creating account
+      await account.createEmailPasswordSession(email, password);
+      toast.success("Account created successfully!");
+      localStorage.setItem("isLoggedIn", "true");
+      navigate("/dashboard");
     } catch (error: any) {
       toast.error(error.message || "An error occurred during signup");
     } finally {
@@ -112,9 +101,9 @@ const SignupForm = ({ isLoading, onSubmit }: SignupFormProps) => {
           </Button>
         </div>
       </div>
-      <Button 
-        type="submit" 
-        className="w-full" 
+      <Button
+        type="submit"
+        className="w-full"
         disabled={isLoading || loading}
       >
         {isLoading || loading ? "Creating account..." : "Create Account"}

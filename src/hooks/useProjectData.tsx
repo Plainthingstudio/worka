@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Project, Client, ProjectStatus, Currency, ProjectType, LeadSource } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
+import { databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 
 export const useProjectData = (projectId: string | undefined) => {
   const navigate = useNavigate();
@@ -13,32 +13,31 @@ export const useProjectData = (projectId: string | undefined) => {
 
   const fetchClientData = useCallback(async (clientId: string) => {
     try {
-      const { data: clientData, error: clientError } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('id', clientId)
-        .single();
-      
-      if (clientError) {
-        console.error("Error fetching client:", clientError);
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        'clients',
+        [Query.equal('$id', clientId), Query.limit(1)]
+      );
+      const clientData = response.documents[0] ?? null;
+
+      if (!clientData) {
         toast.error("Client information not available");
         return;
       }
-      
-      if (clientData) {
-        const transformedClient: Client = {
-          id: clientData.id,
-          name: clientData.name,
-          email: clientData.email,
-          phone: clientData.phone || "",
-          address: clientData.address || "",
-          leadSource: clientData.lead_source as LeadSource || "Website",
-          createdAt: new Date(clientData.created_at),
-        };
-        setClient(transformedClient);
-      }
+
+      const transformedClient: Client = {
+        id: clientData.$id,
+        name: clientData.name,
+        email: clientData.email,
+        phone: clientData.phone || "",
+        address: clientData.address || "",
+        leadSource: clientData.lead_source as LeadSource || "Website",
+        createdAt: new Date(clientData.$createdAt),
+      };
+      setClient(transformedClient);
     } catch (error) {
       console.error("Error fetching client details:", error);
+      toast.error("Client information not available");
     }
   }, []);
 
@@ -51,29 +50,46 @@ export const useProjectData = (projectId: string | undefined) => {
 
       try {
         setIsLoading(true);
-        
-        const { data: projectData, error: projectError } = await supabase
-          .from('projects')
-          .select('*, payments(*)')
-          .eq('id', projectId)
-          .single();
-        
-        if (projectError) {
-          console.error("Error fetching project:", projectError);
+
+        // Fetch project
+        let projectData: any = null;
+        try {
+          projectData = await databases.getDocument(DATABASE_ID, 'projects', projectId);
+        } catch (e) {
           toast.error("Project not found");
           navigate("/projects");
           return;
         }
-        
+
         if (!projectData) {
           toast.error("Project not found");
           navigate("/projects");
           return;
         }
-        
+
+        // Fetch payments for this project
+        let payments: any[] = [];
+        try {
+          const paymentsResponse = await databases.listDocuments(
+            DATABASE_ID,
+            'payments',
+            [Query.equal('project_id', projectId)]
+          );
+          payments = paymentsResponse.documents.map((payment: any) => ({
+            id: payment.$id,
+            projectId: payment.project_id,
+            amount: payment.amount,
+            date: new Date(payment.date),
+            paymentType: payment.payment_type,
+            notes: payment.notes || "",
+          }));
+        } catch (e) {
+          // no payments
+        }
+
         // Transform project data
         const transformedProject: Project = {
-          id: projectData.id,
+          id: projectData.$id,
           name: projectData.name,
           clientId: projectData.client_id,
           status: projectData.status as ProjectStatus,
@@ -83,19 +99,12 @@ export const useProjectData = (projectId: string | undefined) => {
           projectType: projectData.project_type as ProjectType,
           categories: projectData.categories || [],
           teamMembers: projectData.team_members || [],
-          createdAt: new Date(projectData.created_at),
-          payments: projectData.payments.map((payment: any) => ({
-            id: payment.id,
-            projectId: payment.project_id,
-            amount: payment.amount,
-            date: new Date(payment.date),
-            paymentType: payment.payment_type,
-            notes: payment.notes || "",
-          })),
+          createdAt: new Date(projectData.$createdAt),
+          payments: payments,
         };
-        
+
         setProject(transformedProject);
-        
+
         // Fetch client data
         if (projectData.client_id) {
           await fetchClientData(projectData.client_id);
@@ -112,11 +121,11 @@ export const useProjectData = (projectId: string | undefined) => {
     fetchProjectData();
   }, [projectId, navigate, fetchClientData]);
 
-  return { 
-    project, 
-    setProject, 
-    client, 
+  return {
+    project,
+    setProject,
+    client,
     isLoading,
-    refetchClient: () => project?.clientId ? fetchClientData(project.clientId) : null 
+    refetchClient: () => project?.clientId ? fetchClientData(project.clientId) : null
   };
 };

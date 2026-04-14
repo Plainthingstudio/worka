@@ -1,40 +1,36 @@
 
 import { toast } from "sonner";
 import { Project, Payment, PaymentType } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, ID } from "@/integrations/appwrite/client";
 
 export const usePaymentOperations = (
-  project: Project | null, 
+  project: Project | null,
   setProject: (project: Project) => void,
-  onSuccess?: () => void // Add optional callback for dialog closing
+  onSuccess?: () => void
 ) => {
   const handleAddPayment = async (data: any) => {
     if (!project) return;
 
     try {
-      // Insert the payment into Supabase
-      const { data: paymentData, error } = await supabase
-        .from('payments')
-        .insert({
-          project_id: project.id,
-          amount: data.amount,
-          date: data.date.toISOString(),
-          payment_type: data.paymentType,
-          notes: data.notes || null,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error adding payment:", error);
+      let user;
+      try {
+        user = await account.get();
+      } catch {
         toast.error("Failed to add payment");
         return;
       }
 
-      // Create a new payment object from the returned data
+      const paymentData = await databases.createDocument(DATABASE_ID, 'payments', ID.unique(), {
+        project_id: project.id,
+        amount: data.amount,
+        date: data.date.toISOString(),
+        payment_type: data.paymentType,
+        notes: data.notes || null,
+        user_id: user?.$id,
+      });
+
       const newPayment: Payment = {
-        id: paymentData.id,
+        id: paymentData.$id,
         projectId: paymentData.project_id,
         paymentType: paymentData.payment_type as PaymentType,
         amount: paymentData.amount,
@@ -42,16 +38,14 @@ export const usePaymentOperations = (
         notes: paymentData.notes || "",
       };
 
-      // Update the local project state with the new payment
-      const updatedProject = { 
-        ...project, 
+      const updatedProject = {
+        ...project,
         payments: [...project.payments, newPayment]
       };
-      
+
       setProject(updatedProject);
       toast.success("Payment added successfully");
-      
-      // Call the success callback if provided (to close the dialog)
+
       if (onSuccess) {
         onSuccess();
       }
@@ -65,24 +59,13 @@ export const usePaymentOperations = (
     if (!project || !currentPaymentId) return;
 
     try {
-      // Update the payment in Supabase
-      const { error } = await supabase
-        .from('payments')
-        .update({
-          amount: data.amount,
-          date: data.date.toISOString(),
-          payment_type: data.paymentType,
-          notes: data.notes || null,
-        })
-        .eq('id', currentPaymentId);
+      await databases.updateDocument(DATABASE_ID, 'payments', currentPaymentId, {
+        amount: data.amount,
+        date: data.date.toISOString(),
+        payment_type: data.paymentType,
+        notes: data.notes || null,
+      });
 
-      if (error) {
-        console.error("Error updating payment:", error);
-        toast.error("Failed to update payment");
-        return;
-      }
-
-      // Update the payment in the local state
       const paymentIndex = project.payments.findIndex((p) => p.id === currentPaymentId);
       if (paymentIndex !== -1) {
         const currentPayment = project.payments[paymentIndex];
@@ -96,12 +79,12 @@ export const usePaymentOperations = (
 
         const updatedPayments = [...project.payments];
         updatedPayments[paymentIndex] = updatedPayment;
-        
+
         const updatedProject = {
           ...project,
           payments: updatedPayments,
         };
-        
+
         setProject(updatedProject);
         toast.success("Payment updated successfully");
       }
@@ -115,28 +98,17 @@ export const usePaymentOperations = (
     if (!project || !currentPaymentId) return;
 
     try {
-      // Delete the payment from Supabase
-      const { error } = await supabase
-        .from('payments')
-        .delete()
-        .eq('id', currentPaymentId);
+      await databases.deleteDocument(DATABASE_ID, 'payments', currentPaymentId);
 
-      if (error) {
-        console.error("Error deleting payment:", error);
-        toast.error("Failed to delete payment");
-        return;
-      }
-
-      // Remove the payment from the local state
       const updatedPayments = project.payments.filter(
         (payment) => payment.id !== currentPaymentId
       );
-      
+
       const updatedProject = {
         ...project,
         payments: updatedPayments,
       };
-      
+
       setProject(updatedProject);
       toast.success("Payment deleted successfully");
     } catch (error) {

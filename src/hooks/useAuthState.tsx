@@ -2,7 +2,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  account,
+  appwriteConfigError,
+  client,
+  isAppwriteConfigured,
+} from "@/integrations/appwrite/client";
+import { AppwriteException } from "appwrite";
+import { isDemoLoginEnabled } from "@/config/runtime";
 
 export function useAuthState() {
   const navigate = useNavigate();
@@ -11,148 +18,122 @@ export function useAuthState() {
   const [password, setPassword] = useState("");
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
+
   useEffect(() => {
-    // One-time auth check on mount with reduced timeout
     const checkUser = async () => {
+      if (!isAppwriteConfigured) {
+        setIsAuthenticated(false);
+        localStorage.removeItem("isLoggedIn");
+        setIsCheckingAuth(false);
+        return;
+      }
+
       try {
-        const { data } = await supabase.auth.getSession();
-        
-        if (data.session) {
-          setIsAuthenticated(true);
-          localStorage.setItem("isLoggedIn", "true");
-          navigate("/dashboard", { replace: true });
-        } else {
-          setIsAuthenticated(false);
-          localStorage.removeItem("isLoggedIn");
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
+        await account.getSession("current");
+        setIsAuthenticated(true);
+        localStorage.setItem("isLoggedIn", "true");
+        navigate("/dashboard", { replace: true });
+      } catch {
         setIsAuthenticated(false);
         localStorage.removeItem("isLoggedIn");
       } finally {
-        // Reduced timeout for faster UI response
-        setTimeout(() => {
-          setIsCheckingAuth(false);
-        }, 100);
+        setTimeout(() => setIsCheckingAuth(false), 100);
       }
     };
-    
+
     checkUser();
-    
-    // Set up auth state listener with cleanup
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log("Auth state changed:", event);
-        
-        if (event === 'SIGNED_IN' && session) {
-          setIsAuthenticated(true);
-          localStorage.setItem("isLoggedIn", "true");
-          navigate("/dashboard", { replace: true });
-        } else if (event === 'SIGNED_OUT') {
-          setIsAuthenticated(false);
-          localStorage.removeItem("isLoggedIn");
-        }
+
+    if (!isAppwriteConfigured) {
+      return;
+    }
+
+    // Subscribe to auth events via Appwrite realtime
+    const unsubscribe = client.subscribe("account", (response) => {
+      const events = response.events as string[];
+      if (events.some((e) => e.includes("sessions.create"))) {
+        setIsAuthenticated(true);
+        localStorage.setItem("isLoggedIn", "true");
+        navigate("/dashboard", { replace: true });
+      } else if (events.some((e) => e.includes("sessions.delete"))) {
+        setIsAuthenticated(false);
+        localStorage.removeItem("isLoggedIn");
       }
-    );
-    
-    return () => {
-      // Proper cleanup to avoid memory leaks
-      if (authListener && authListener.subscription) {
-        authListener.subscription.unsubscribe();
-      }
-    };
+    });
+
+    return () => unsubscribe();
   }, [navigate]);
-  
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!isAppwriteConfigured) {
+      toast.error(appwriteConfigError);
+      return;
+    }
+
     setIsLoading(true);
-    
+    let isSuccessful = false;
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (error) throw error;
-      
-      // Set localStorage immediately for faster UI feedback
+      await account.createEmailPasswordSession(email, password);
       localStorage.setItem("isLoggedIn", "true");
-      
-      // Success is handled by the auth listener
       toast.success("Successfully logged in");
-      
-      // Navigate immediately for faster response
       navigate("/dashboard", { replace: true });
+      isSuccessful = true;
     } catch (error: any) {
-      toast.error(error.message || "Failed to login");
-      setIsLoading(false); // Only set loading to false on error
+      toast.error(error instanceof AppwriteException ? error.message : "Failed to login");
+    } finally {
+      if (!isSuccessful) {
+        setIsLoading(false);
+      }
     }
   };
-  
+
   const handleDummyLogin = async () => {
+    if (!isDemoLoginEnabled) {
+      toast.error("Demo login is disabled in this environment");
+      return;
+    }
+
+    if (!isAppwriteConfigured) {
+      toast.error(appwriteConfigError);
+      return;
+    }
+
     setIsLoading(true);
-    
+    const demoEmail = "demo@example.com";
+    const demoPassword = "password123";
+    let isSuccessful = false;
+
     try {
-      // For demo purposes, we'll use preset credentials
-      const demoEmail = "demo@example.com";
-      const demoPassword = "password123";
-      
-      const { error } = await supabase.auth.signInWithPassword({
-        email: demoEmail,
-        password: demoPassword,
-      });
-      
-      if (error) {
-        // If the demo account doesn't exist yet, create it
-        if (error.message.includes("Invalid login credentials")) {
-          const { error: signUpError } = await supabase.auth.signUp({
-            email: demoEmail,
-            password: demoPassword,
-            options: {
-              data: {
-                full_name: "Demo User",
-              },
-            },
-          });
-          
-          if (signUpError) {
-            throw signUpError;
-          }
-          
-          // Set localStorage immediately
+      await account.createEmailPasswordSession(demoEmail, demoPassword);
+      localStorage.setItem("isLoggedIn", "true");
+      toast.success("Successfully logged in with demo account");
+      navigate("/dashboard", { replace: true });
+      isSuccessful = true;
+    } catch (error: any) {
+      if (error instanceof AppwriteException && error.type === "user_invalid_credentials") {
+        // Demo account doesn't exist — create it
+        try {
+          await account.create("unique()", demoEmail, demoPassword, "Demo User");
+          await account.createEmailPasswordSession(demoEmail, demoPassword);
           localStorage.setItem("isLoggedIn", "true");
-          
           toast.success("Created and logged in with demo account");
-          
-          // Navigate immediately
           navigate("/dashboard", { replace: true });
-          
-          // Try to sign in again after creating the account
-          const { error: retryError } = await supabase.auth.signInWithPassword({
-            email: demoEmail,
-            password: demoPassword,
-          });
-          
-          if (retryError) throw retryError;
-        } else {
-          throw error;
+          isSuccessful = true;
+        } catch (signupError: any) {
+          toast.error(signupError.message || "Failed to create demo account");
         }
       } else {
-        // Set localStorage immediately
-        localStorage.setItem("isLoggedIn", "true");
-        
-        toast.success("Successfully logged in with demo account");
-        
-        // Navigate immediately
-        navigate("/dashboard", { replace: true });
+        toast.error(error.message || "Failed to login with demo account");
       }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to login with demo account");
-      setIsLoading(false); // Only set loading to false on error
+    } finally {
+      if (!isSuccessful) {
+        setIsLoading(false);
+      }
     }
   };
-  
+
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Authentication is handled in the SignupForm component
@@ -169,6 +150,6 @@ export function useAuthState() {
     isAuthenticated,
     handleLogin,
     handleDummyLogin,
-    handleSignup
+    handleSignup,
   };
 }

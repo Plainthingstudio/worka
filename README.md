@@ -62,7 +62,17 @@ This project is built with .
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/91e6639c-019e-4e75-97c2-2eaf6cdb3b9a) and click on Share -> Publish.
+You can publish from Lovable, or deploy it yourself as a static site.
+
+For VPS deployment with Nginx, see:
+
+- [docs/DEPLOY_VPS.md](/Users/macbookpro/Documents/Simplify Project/studio-simplify/docs/DEPLOY_VPS.md)
+
+This app builds to `dist/` with:
+
+```sh
+npm run build
+```
 
 ## I want to use a custom domain - is that possible?
 

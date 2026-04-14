@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Client, Project, TeamMember, TeamPosition } from '@/types';
-import { supabase } from '@/integrations/supabase/client';
+import { databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
 import { toast } from 'sonner';
 
 export const useStatisticsData = () => {
@@ -14,86 +14,80 @@ export const useStatisticsData = () => {
   const fetchData = async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       // Fetch clients
-      const { data: clientsData, error: clientsError } = await supabase
-        .from('clients')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (clientsError) {
-        throw new Error(`Error fetching clients: ${clientsError.message}`);
-      }
-      
-      // Transform client data to match our Client type
-      const transformedClients: Client[] = (clientsData || []).map(client => ({
-        id: client.id,
+      const clientsResponse = await databases.listDocuments(
+        DATABASE_ID,
+        'clients',
+        [Query.orderDesc('$createdAt')]
+      );
+
+      const transformedClients: Client[] = clientsResponse.documents.map((client: any) => ({
+        id: client.$id,
         name: client.name,
         email: client.email,
         phone: client.phone || '',
         address: client.address || '',
         leadSource: client.lead_source as any || 'Website',
-        createdAt: new Date(client.created_at)
+        createdAt: new Date(client.$createdAt)
       }));
-      
+
       // Fetch projects
-      const { data: projectsData, error: projectsError } = await supabase
-        .from('projects')
-        .select('*, payments(*)');
-      
-      if (projectsError) {
-        throw new Error(`Error fetching projects: ${projectsError.message}`);
-      }
-      
-      // Transform projects data to match our Project type
-      const transformedProjects: Project[] = (projectsData || []).map(project => {
-        // Transform payments
-        const payments = project.payments ? project.payments.map((payment: any) => ({
-          id: payment.id,
-          projectId: payment.project_id,
-          paymentType: payment.payment_type as any,
-          amount: payment.amount,
-          date: new Date(payment.date),
-          notes: payment.notes || ''
-        })) : [];
-        
-        return {
-          id: project.id,
-          name: project.name,
-          clientId: project.client_id,
-          status: project.status as any,
-          deadline: new Date(project.deadline),
-          fee: project.fee,
-          currency: project.currency as any,
-          projectType: project.project_type as any,
-          categories: project.categories || ['Other'],
-          teamMembers: project.team_members || [],
-          createdAt: new Date(project.created_at),
-          payments: payments
-        };
-      });
-      
+      const projectsResponse = await databases.listDocuments(DATABASE_ID, 'projects');
+
+      // For each project fetch its payments
+      const transformedProjects: Project[] = await Promise.all(
+        projectsResponse.documents.map(async (project: any) => {
+          let payments: any[] = [];
+          try {
+            const paymentsResponse = await databases.listDocuments(
+              DATABASE_ID,
+              'payments',
+              [Query.equal('project_id', project.$id)]
+            );
+            payments = paymentsResponse.documents.map((payment: any) => ({
+              id: payment.$id,
+              projectId: payment.project_id,
+              paymentType: payment.payment_type as any,
+              amount: payment.amount,
+              date: new Date(payment.date),
+              notes: payment.notes || ''
+            }));
+          } catch (e) {
+            // no payments
+          }
+
+          return {
+            id: project.$id,
+            name: project.name,
+            clientId: project.client_id,
+            status: project.status as any,
+            deadline: new Date(project.deadline),
+            fee: project.fee,
+            currency: project.currency as any,
+            projectType: project.project_type as any,
+            categories: project.categories || ['Other'],
+            teamMembers: project.team_members || [],
+            createdAt: new Date(project.$createdAt),
+            payments: payments
+          };
+        })
+      );
+
       // Fetch team members
-      const { data: teamMembersData, error: teamMembersError } = await supabase
-        .from('team_members')
-        .select('*');
-      
-      if (teamMembersError) {
-        throw new Error(`Error fetching team members: ${teamMembersError.message}`);
-      }
-      
-      // Transform team members data
-      const transformedTeamMembers: TeamMember[] = (teamMembersData || []).map(member => ({
-        id: member.id,
+      const teamResponse = await databases.listDocuments(DATABASE_ID, 'team_members');
+
+      const transformedTeamMembers: TeamMember[] = teamResponse.documents.map((member: any) => ({
+        id: member.$id,
         user_id: member.user_id,
         name: member.name,
         position: member.position as TeamPosition,
         skills: member.skills || [],
         startDate: new Date(member.start_date),
-        createdAt: new Date(member.created_at)
+        createdAt: new Date(member.$createdAt)
       }));
-      
+
       setClients(transformedClients);
       setProjects(transformedProjects);
       setTeamMembers(transformedTeamMembers);

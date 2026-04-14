@@ -1,6 +1,4 @@
 
-import { Json } from "@/integrations/supabase/types";
-
 export interface Brief {
   id: string;
   name: string;
@@ -11,13 +9,13 @@ export interface Brief {
   status: string;
   submissionDate?: string;
   submission_date?: string;
-  services?: Json | null;
-  print_media?: Json | null;
-  digital_media?: Json | null;
+  services?: any | null;
+  print_media?: any | null;
+  digital_media?: any | null;
   about_company?: string;
   vision_mission?: string;
   slogan?: string;
-  logo_feelings?: Json | null;
+  logo_feelings?: any | null;
   logo_type?: string;
   reference1?: string;
   reference2?: string;

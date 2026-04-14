@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 
 interface PendingInvitation {
   id: string;
@@ -28,35 +28,37 @@ const PendingInvitations = ({ refreshTrigger }: PendingInvitationsProps) => {
   const fetchInvitations = async () => {
     try {
       setIsLoading(true);
-      
-      // Get pending invitations (not accepted and not expired)
-      const { data: invitationsData, error: invitationsError } = await supabase
-        .from('invitations')
-        .select('*')
-        .is('accepted_at', null)
-        .gt('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false });
 
-      if (invitationsError) throw invitationsError;
+      // Get pending invitations (not accepted and not expired)
+      const invitationsResponse = await databases.listDocuments(DATABASE_ID, 'invitations', [
+        Query.isNull('accepted_at'),
+        Query.greaterThan('expires_at', new Date().toISOString()),
+        Query.orderDesc('$createdAt')
+      ]);
+      const invitationsData = invitationsResponse.documents;
 
       // Get all profiles with emails to check if invited users have already joined
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('email');
-
-      if (profilesError) throw profilesError;
+      const profilesResponse = await databases.listDocuments(DATABASE_ID, 'profiles');
+      const profilesData = profilesResponse.documents;
 
       // Create a set of existing emails (normalized to lowercase for case-insensitive comparison)
       const existingEmails = new Set(
         (profilesData || [])
-          .map(p => p.email?.toLowerCase())
-          .filter(Boolean) // Remove null/undefined emails
+          .map((p: any) => p.email?.toLowerCase())
+          .filter(Boolean)
       );
 
       // Filter out invitations where the user has already created a profile (joined)
-      const actualPendingInvitations = (invitationsData || []).filter(
-        invitation => !existingEmails.has(invitation.email.toLowerCase())
-      );
+      const actualPendingInvitations = (invitationsData || [])
+        .filter((invitation: any) => !existingEmails.has(invitation.email.toLowerCase()))
+        .map((invitation: any) => ({
+          id: invitation.$id,
+          email: invitation.email,
+          role: invitation.role,
+          created_at: invitation.$createdAt,
+          expires_at: invitation.expires_at,
+          invited_by: invitation.invited_by,
+        }));
 
       setInvitations(actualPendingInvitations);
     } catch (error) {
@@ -77,12 +79,9 @@ const PendingInvitations = ({ refreshTrigger }: PendingInvitationsProps) => {
       const newExpiryDate = new Date();
       newExpiryDate.setDate(newExpiryDate.getDate() + 7);
 
-      const { error } = await supabase
-        .from('invitations')
-        .update({ expires_at: newExpiryDate.toISOString() })
-        .eq('id', invitation.id);
-
-      if (error) throw error;
+      await databases.updateDocument(DATABASE_ID, 'invitations', invitation.id, {
+        expires_at: newExpiryDate.toISOString()
+      });
 
       toast.success("Invitation renewed successfully");
       fetchInvitations();
@@ -94,12 +93,7 @@ const PendingInvitations = ({ refreshTrigger }: PendingInvitationsProps) => {
 
   const handleCancelInvitation = async (invitationId: string) => {
     try {
-      const { error } = await supabase
-        .from('invitations')
-        .delete()
-        .eq('id', invitationId);
-
-      if (error) throw error;
+      await databases.deleteDocument(DATABASE_ID, 'invitations', invitationId);
 
       toast.success("Invitation cancelled");
       fetchInvitations();
@@ -168,7 +162,7 @@ const PendingInvitations = ({ refreshTrigger }: PendingInvitationsProps) => {
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Renew Invitation
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={() => handleCancelInvitation(invitation.id)}
                     className="text-destructive"
                   >

@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
 import { toast } from '@/hooks/use-toast';
 import { generateUIDesignBriefPDF } from '@/utils/uiDesignBriefPdf';
 import { generateGraphicDesignBriefPDF } from '@/utils/graphicDesignBriefPdf';
@@ -12,22 +12,31 @@ export const useBriefDownload = () => {
   const downloadBrief = async (briefId: string, briefType: string) => {
     try {
       setIsDownloading(true);
-      
-      // Fetch the brief details
-      const { data, error } = await supabase.rpc('get_brief_details', {
-        brief_id: briefId,
-        brief_type: briefType
-      });
 
-      if (error) {
-        console.error('Error fetching brief details:', error);
+      // Determine collection based on brief type
+      let collectionId = '';
+      if (briefType === 'Illustration Design') {
+        collectionId = 'illustration_design_briefs';
+      } else if (briefType === 'UI Design') {
+        collectionId = 'ui_design_briefs';
+      } else if (briefType === 'Graphic Design') {
+        collectionId = 'graphic_design_briefs';
+      }
+
+      if (!collectionId) {
         toast({
           title: "Error",
-          description: "Failed to fetch brief details",
+          description: "Unsupported brief type",
           variant: "destructive",
         });
         return;
       }
+
+      // Fetch the brief details
+      const response = await databases.listDocuments(DATABASE_ID, collectionId, [
+        Query.equal('$id', briefId)
+      ]);
+      const data = response.documents[0] ?? null;
 
       if (!data) {
         toast({
@@ -39,8 +48,6 @@ export const useBriefDownload = () => {
       }
 
       // Generate PDF based on brief type
-      let pdfBlob: Blob | null = null;
-      
       try {
         if (briefType === 'UI Design') {
           await generateUIDesignBriefPDF(data);
@@ -55,7 +62,7 @@ export const useBriefDownload = () => {
           if (result === true) {
             // The function handles the download internally
             toast({
-              title: "Success", 
+              title: "Success",
               description: "Brief downloaded successfully",
             });
             return;

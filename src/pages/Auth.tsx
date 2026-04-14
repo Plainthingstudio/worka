@@ -8,8 +8,15 @@ import AuthBackButton from "@/components/auth/AuthBackButton";
 import AuthFooter from "@/components/auth/AuthFooter";
 import AuthCardSuspense from "@/components/auth/AuthCardSuspense";
 import InvitationRegistration from "@/components/auth/InvitationRegistration";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  appwriteConfigError,
+  databases,
+  DATABASE_ID,
+  isAppwriteConfigured,
+  Query,
+} from "@/integrations/appwrite/client";
 import { toast } from "sonner";
+import { parseJsonField } from "@/utils/appwriteJson";
 
 // Use lazy loading to reduce initial load
 const AuthCard = lazy(() => import("@/components/auth/AuthCard"));
@@ -21,6 +28,10 @@ interface InvitationData {
   token: string;
   expires_at: string;
   invited_by: string;
+  metadata?: {
+    position?: string;
+    message?: string;
+  };
 }
 
 const Auth = () => {
@@ -28,7 +39,7 @@ const Auth = () => {
     isLoading,
     email,
     setEmail,
-    password, 
+    password,
     setPassword,
     isCheckingAuth,
     isAuthenticated,
@@ -46,23 +57,31 @@ const Auth = () => {
   useEffect(() => {
     const validateInvitation = async () => {
       if (!invitationToken) return;
+      if (!isAppwriteConfigured) return;
 
       setIsValidatingInvitation(true);
       try {
-        const { data, error } = await supabase
-          .from('invitations')
-          .select('*')
-          .eq('token', invitationToken)
-          .is('accepted_at', null)
-          .gt('expires_at', new Date().toISOString())
-          .single();
+        const response = await databases.listDocuments(DATABASE_ID, 'invitations', [
+          Query.equal('token', invitationToken),
+          Query.isNull('accepted_at'),
+          Query.greaterThan('expires_at', new Date().toISOString())
+        ]);
+        const data = response.documents[0] ?? null;
 
-        if (error || !data) {
+        if (!data) {
           toast.error("Invalid or expired invitation link");
           return;
         }
 
-        setInvitation(data as InvitationData);
+        setInvitation({
+          id: data.$id,
+          email: data.email,
+          role: data.role,
+          token: data.token,
+          expires_at: data.expires_at,
+          invited_by: data.invited_by,
+          metadata: parseJsonField(data.metadata, {}),
+        } as InvitationData);
       } catch (error) {
         console.error('Error validating invitation:', error);
         toast.error("Failed to validate invitation");
@@ -84,8 +103,24 @@ const Auth = () => {
     return <AuthRedirecting />;
   }
 
+  const configNotice = !isAppwriteConfigured ? (
+    <div className="mx-auto mb-6 w-full max-w-md rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+      {appwriteConfigError}
+    </div>
+  ) : null;
+
   // If there's an invitation token, show the invitation registration form
   if (invitationToken) {
+    if (!isAppwriteConfigured) {
+      return (
+        <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-white to-blue-50 p-6">
+          <AuthBackButton />
+          {configNotice}
+          <AuthFooter />
+        </div>
+      );
+    }
+
     if (!invitation) {
       return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-white to-blue-50 p-6">
@@ -112,7 +147,8 @@ const Auth = () => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-white to-blue-50 p-6">
       <AuthBackButton />
-      
+      {configNotice}
+
       <AuthCardSuspense>
         <AuthCard
           email={email}
@@ -125,7 +161,7 @@ const Auth = () => {
           handleSignup={handleSignup}
         />
       </AuthCardSuspense>
-      
+
       <AuthFooter />
     </div>
   );

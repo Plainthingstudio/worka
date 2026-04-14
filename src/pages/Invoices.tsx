@@ -9,12 +9,12 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { useInvoices } from '@/hooks/useInvoices';
 import { useInvoiceStatus } from '@/hooks/useInvoiceStatus';
 import { PaymentType } from '@/types';
-import { supabase } from '@/integrations/supabase/client';
+import { databases, DATABASE_ID } from '@/integrations/appwrite/client';
 
 const Invoices = () => {
   const navigate = useNavigate();
   const [filterStatus, setFilterStatus] = useState('all');
-  
+
   const {
     invoices,
     isLoading,
@@ -33,14 +33,9 @@ const Invoices = () => {
   // Update payment type function
   const updatePaymentType = async (invoiceId: string, newType: PaymentType) => {
     try {
-      const { error } = await supabase
-        .from('invoices')
-        .update({ payment_type: newType })
-        .eq('id', invoiceId);
-
-      if (error) {
-        throw error;
-      }
+      await databases.updateDocument(DATABASE_ID, 'invoices', invoiceId, {
+        payment_type: newType
+      });
 
       // Refresh the invoices list
       fetchInvoices();
@@ -81,7 +76,7 @@ const Invoices = () => {
           </div>
 
           <div className="mb-6">
-            <InvoicesFilter 
+            <InvoicesFilter
               onFilterChange={setFilterStatus}
               currentFilter={filterStatus}
             />
@@ -93,7 +88,7 @@ const Invoices = () => {
               <div className="h-64 bg-muted rounded"></div>
             </div>
           ) : (
-            <InvoicesTable 
+            <InvoicesTable
               invoices={filteredInvoices}
               formatCurrency={formatCurrency}
               onViewClick={handleViewInvoice}
@@ -117,7 +112,7 @@ const Invoices = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={deleteInvoice}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

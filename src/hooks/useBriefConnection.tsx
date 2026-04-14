@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { account, databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
 import { toast } from '@/hooks/use-toast';
 import { Brief } from '@/types/brief';
 
@@ -9,23 +9,47 @@ export const useBriefConnection = () => {
 
   const fetchAvailableBriefs = async (): Promise<Brief[]> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
-
-      console.log('Fetching briefs for user:', user.id);
-
-      // Fetch all briefs using the existing function
-      const { data, error } = await supabase.rpc('get_user_briefs', {
-        user_uuid: user.id
-      });
-
-      if (error) {
-        console.error('Error fetching briefs:', error);
+      let user;
+      try {
+        user = await account.get();
+      } catch {
         return [];
       }
+      if (!user) return [];
 
-      console.log('Briefs fetched successfully:', data?.length || 0);
-      return data || [];
+      console.log('Fetching briefs for user:', user.$id);
+
+      // Fetch briefs from both brief tables for the current user
+      let allBriefs: Brief[] = [];
+
+      try {
+        const gdResponse = await databases.listDocuments(
+          DATABASE_ID,
+          'graphic_design_briefs',
+          [Query.equal('user_id', user.$id)]
+        );
+        allBriefs = allBriefs.concat(
+          gdResponse.documents.map((b: any) => ({ ...b, id: b.$id, type: 'Graphic Design' }))
+        );
+      } catch (e) {
+        console.error('Error fetching graphic design briefs:', e);
+      }
+
+      try {
+        const illResponse = await databases.listDocuments(
+          DATABASE_ID,
+          'illustration_design_briefs',
+          [Query.equal('user_id', user.$id)]
+        );
+        allBriefs = allBriefs.concat(
+          illResponse.documents.map((b: any) => ({ ...b, id: b.$id, type: 'Illustration Design' }))
+        );
+      } catch (e) {
+        console.error('Error fetching illustration briefs:', e);
+      }
+
+      console.log('Briefs fetched successfully:', allBriefs.length);
+      return allBriefs;
     } catch (error) {
       console.error('Error fetching available briefs:', error);
       return [];
@@ -35,26 +59,13 @@ export const useBriefConnection = () => {
   const connectBriefToTask = async (taskId: string, briefId: string, briefType: string) => {
     try {
       setIsLoading(true);
-      
-      console.log('Connecting brief to task:', { taskId, briefId, briefType });
-      
-      const { error } = await supabase
-        .from('tasks')
-        .update({
-          brief_id: briefId,
-          brief_type: briefType,
-        })
-        .eq('id', taskId);
 
-      if (error) {
-        console.error('Error connecting brief to task:', error);
-        toast({
-          title: "Error",
-          description: `Failed to connect brief to task: ${error.message}`,
-          variant: "destructive",
-        });
-        return false;
-      }
+      console.log('Connecting brief to task:', { taskId, briefId, briefType });
+
+      await databases.updateDocument(DATABASE_ID, 'tasks', taskId, {
+        brief_id: briefId,
+        brief_type: briefType,
+      });
 
       console.log('Brief connected successfully');
       toast({
@@ -63,11 +74,11 @@ export const useBriefConnection = () => {
       });
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error connecting brief to task:', error);
       toast({
         title: "Error",
-        description: "Failed to connect brief to task",
+        description: `Failed to connect brief to task: ${error.message || ''}`,
         variant: "destructive",
       });
       return false;
@@ -79,24 +90,11 @@ export const useBriefConnection = () => {
   const disconnectBriefFromTask = async (taskId: string) => {
     try {
       setIsLoading(true);
-      
-      const { error } = await supabase
-        .from('tasks')
-        .update({
-          brief_id: null,
-          brief_type: null,
-        })
-        .eq('id', taskId);
 
-      if (error) {
-        console.error('Error disconnecting brief from task:', error);
-        toast({
-          title: "Error",
-          description: "Failed to disconnect brief from task",
-          variant: "destructive",
-        });
-        return false;
-      }
+      await databases.updateDocument(DATABASE_ID, 'tasks', taskId, {
+        brief_id: null,
+        brief_type: null,
+      });
 
       toast({
         title: "Success",
@@ -119,17 +117,9 @@ export const useBriefConnection = () => {
 
   const fetchBriefDetails = async (briefId: string, briefType: string) => {
     try {
-      const { data, error } = await supabase.rpc('get_brief_details', {
-        brief_id: briefId,
-        brief_type: briefType
-      });
-
-      if (error) {
-        console.error('Error fetching brief details:', error);
-        return null;
-      }
-
-      return data;
+      const tableName = briefType === 'Graphic Design' ? 'graphic_design_briefs' : 'illustration_design_briefs';
+      const doc = await databases.getDocument(DATABASE_ID, tableName, briefId);
+      return doc;
     } catch (error) {
       console.error('Error fetching brief details:', error);
       return null;

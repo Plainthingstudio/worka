@@ -25,7 +25,7 @@ import TeamDashboard from "@/components/dashboard/TeamDashboard";
 import { Client, Project, ProjectType, Lead } from "@/types";
 import { TeamMember } from "@/types";
 import { TaskWithRelations } from "@/types/task";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import { useUserRole } from "@/hooks/useUserRole";
 import { getLeadSourceBadgeVariant } from "@/components/projects/utils/projectItemUtils";
 
@@ -44,18 +44,24 @@ const Dashboard = () => {
     activeProjects: 0,
     newLeadsThisMonth: 0,
   });
-  
+
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Fetch data from Supabase - only for owners/administrators
+
+  // Fetch data from Appwrite - only for owners/administrators
   useEffect(() => {
     async function fetchData() {
       try {
         setIsLoading(true);
-        
+
         // Get current user session
-        const { data: { session } } = await supabase.auth.getSession();
-        
+        let session;
+        try {
+          session = await account.getSession('current');
+        } catch {
+          navigate("/login");
+          return;
+        }
+
         if (!session) {
           navigate("/login");
           return;
@@ -66,53 +72,48 @@ const Dashboard = () => {
           setIsLoading(false);
           return;
         }
-        
+
         // Fetch clients
-        const { data: clientsData, error: clientsError } = await supabase
-          .from('clients')
-          .select('*')
-          .order('created_at', { ascending: false });
-        
-        if (clientsError) {
-          console.error("Error fetching clients:", clientsError);
-          throw clientsError;
-        }
-        
+        const clientsResponse = await databases.listDocuments(DATABASE_ID, 'clients', [
+          Query.orderDesc('$createdAt')
+        ]);
+
         // Transform clients data
-        const transformedClients = clientsData.map((client: any) => ({
-          id: client.id,
+        const transformedClients = clientsResponse.documents.map((client: any) => ({
+          id: client.$id,
           name: client.name,
           email: client.email,
           phone: client.phone,
           address: client.address,
           leadSource: client.lead_source,
-          createdAt: new Date(client.created_at)
+          createdAt: new Date(client.$createdAt)
         }));
-        
+
         // Fetch projects
-        const { data: projectsData, error: projectsError } = await supabase
-          .from('projects')
-          .select('*, payments(*)');
-        
-        if (projectsError) {
-          console.error("Error fetching projects:", projectsError);
-          throw projectsError;
-        }
-        
+        const projectsResponse = await databases.listDocuments(DATABASE_ID, 'projects');
+
+        // Fetch payments for each project
+        const paymentsResponse = await databases.listDocuments(DATABASE_ID, 'payments');
+        const paymentsByProject = new Map<string, any[]>();
+        paymentsResponse.documents.forEach((payment: any) => {
+          const pid = payment.project_id;
+          if (!paymentsByProject.has(pid)) paymentsByProject.set(pid, []);
+          paymentsByProject.get(pid)!.push(payment);
+        });
+
         // Transform projects data
-        const transformedProjects = projectsData.map((project: any) => {
-          // Transform payments
-          const payments = project.payments.map((payment: any) => ({
-            id: payment.id,
+        const transformedProjects = projectsResponse.documents.map((project: any) => {
+          const payments = (paymentsByProject.get(project.$id) || []).map((payment: any) => ({
+            id: payment.$id,
             projectId: payment.project_id,
             paymentType: payment.payment_type,
             amount: payment.amount,
             date: new Date(payment.date),
             notes: payment.notes
           }));
-          
+
           return {
-            id: project.id,
+            id: project.$id,
             name: project.name,
             clientId: project.client_id,
             status: project.status,
@@ -122,30 +123,19 @@ const Dashboard = () => {
             projectType: project.project_type,
             categories: project.categories,
             teamMembers: project.team_members || [],
-            createdAt: new Date(project.created_at),
+            createdAt: new Date(project.$createdAt),
             payments: payments
           };
         });
-        
+
         // Fetch tasks
-        const { data: tasksData, error: tasksError } = await supabase
-          .from('tasks')
-          .select(`
-            *,
-            task_comments(*),
-            task_attachments(*),
-            task_activities(*)
-          `)
-          .order('created_at', { ascending: false });
-        
-        if (tasksError) {
-          console.error("Error fetching tasks:", tasksError);
-          throw tasksError;
-        }
-        
+        const tasksResponse = await databases.listDocuments(DATABASE_ID, 'tasks', [
+          Query.orderDesc('$createdAt')
+        ]);
+
         // Transform tasks data
-        const transformedTasks = tasksData.map((task: any) => ({
-          id: task.id,
+        const transformedTasks = tasksResponse.documents.map((task: any) => ({
+          id: task.$id,
           project_id: task.project_id,
           user_id: task.user_id,
           title: task.title,
@@ -157,29 +147,23 @@ const Dashboard = () => {
           assignees: task.assignees || [],
           parent_task_id: task.parent_task_id,
           completed_at: task.completed_at ? new Date(task.completed_at) : undefined,
-          created_at: new Date(task.created_at),
-          updated_at: new Date(task.updated_at),
+          created_at: new Date(task.$createdAt),
+          updated_at: new Date(task.$updatedAt),
           brief_id: task.brief_id,
           brief_type: task.brief_type,
-          comments: task.task_comments || [],
-          attachments: task.task_attachments || [],
-          activities: task.task_activities || []
+          comments: [],
+          attachments: [],
+          activities: []
         }));
-        
+
         // Fetch leads
-        const { data: leadsData, error: leadsError } = await supabase
-          .from('leads')
-          .select('*')
-          .order('created_at', { ascending: false });
-        
-        if (leadsError) {
-          console.error("Error fetching leads:", leadsError);
-          throw leadsError;
-        }
-        
+        const leadsResponse = await databases.listDocuments(DATABASE_ID, 'leads', [
+          Query.orderDesc('$createdAt')
+        ]);
+
         // Transform leads data
-        const transformedLeads = leadsData.map((lead: any) => ({
-          id: lead.id,
+        const transformedLeads = leadsResponse.documents.map((lead: any) => ({
+          id: lead.$id,
           name: lead.name,
           email: lead.email,
           phone: lead.phone,
@@ -187,54 +171,52 @@ const Dashboard = () => {
           stage: lead.stage,
           notes: lead.notes,
           address: lead.address,
-          createdAt: new Date(lead.created_at),
-          updatedAt: new Date(lead.updated_at)
+          createdAt: new Date(lead.$createdAt),
+          updatedAt: new Date(lead.$updatedAt)
         }));
-        
+
         // Fetch team members
-        const { data: teamData, error: teamError } = await supabase
-          .from('team_members')
-          .select(`
-            *,
-            profiles(email, full_name)
-          `)
-          .order('created_at', { ascending: false });
-        
-        if (teamError) {
-          console.error("Error fetching team members:", teamError);
-          throw teamError;
-        }
-        
+        const teamResponse = await databases.listDocuments(DATABASE_ID, 'team_members', [
+          Query.orderDesc('$createdAt')
+        ]);
+
+        // Fetch profiles for email lookup
+        const profilesResponse = await databases.listDocuments(DATABASE_ID, 'profiles');
+        const profilesMap = new Map<string, any>();
+        profilesResponse.documents.forEach((profile: any) => {
+          profilesMap.set(profile.$id, profile);
+        });
+
         // Transform team members data
-        const transformedTeamMembers = teamData.map((member: any) => ({
-          id: member.id,
+        const transformedTeamMembers = teamResponse.documents.map((member: any) => ({
+          id: member.$id,
           user_id: member.user_id,
           name: member.name,
           position: member.position,
           skills: member.skills || [],
           startDate: new Date(member.start_date),
-          createdAt: new Date(member.created_at),
-          email: member.profiles?.email || ''
+          createdAt: new Date(member.$createdAt),
+          email: profilesMap.get(member.user_id)?.email || ''
         }));
-        
+
         // Calculate stats
         const activeProjects = transformedProjects.filter(p => p.status === "In progress").length;
         const totalEarnings = transformedProjects.reduce((sum, project) => {
-          return sum + project.payments.reduce((total, payment) => total + payment.amount, 0);
+          return sum + project.payments.reduce((total: number, payment: any) => total + payment.amount, 0);
         }, 0);
-        
+
         // Calculate new leads this month
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const newLeadsThisMonth = transformedLeads.filter(lead => 
+        const newLeadsThisMonth = transformedLeads.filter(lead =>
           lead.createdAt >= startOfMonth
         ).length;
-        
+
         // Calculate new projects this month
-        const newProjectsThisMonth = transformedProjects.filter(project => 
+        const newProjectsThisMonth = transformedProjects.filter(project =>
           project.createdAt >= startOfMonth
         ).length;
-        
+
         setClients(transformedClients);
         setProjects(transformedProjects);
         setTasks(transformedTasks);
@@ -253,7 +235,7 @@ const Dashboard = () => {
         setIsLoading(false);
       }
     }
-    
+
     fetchData();
   }, [navigate, userRole]);
 
@@ -270,8 +252,8 @@ const Dashboard = () => {
   // Calculate available team members (those without active tasks)
   const availableTeamMembers = teamMembers.filter(member => {
     // Check if team member has any active tasks assigned
-    const hasActiveTasks = tasks.some(task => 
-      task.status !== 'Completed' && 
+    const hasActiveTasks = tasks.some(task =>
+      task.status !== 'Completed' &&
       task.assignees.includes(member.user_id)
     );
     return !hasActiveTasks;
@@ -322,21 +304,21 @@ const Dashboard = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 bg-background border shadow-lg">
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={() => navigate("/projects?new=true")}
                     className="cursor-pointer hover:bg-accent"
                   >
                     <ListChecks className="h-4 w-4 mr-2" />
                     Create Project
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={() => navigate("/tasks?new=true")}
                     className="cursor-pointer hover:bg-accent"
                   >
                     <CheckSquare className="h-4 w-4 mr-2" />
                     Create Task
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={() => navigate("/invoices/new")}
                     className="cursor-pointer hover:bg-accent"
                   >

@@ -9,7 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  account,
+  appwriteConfigError,
+  databases,
+  DATABASE_ID,
+  ID,
+  isAppwriteConfigured,
+  Query,
+} from "@/integrations/appwrite/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -57,113 +65,85 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
   });
 
   const handleSubmit = async (values: z.infer<typeof registrationSchema>) => {
+    if (!isAppwriteConfigured) {
+      toast.error(appwriteConfigError);
+      return;
+    }
+
     setIsLoading(true);
     console.log("Starting registration process for:", invitation.email);
 
     try {
-      // Sign up the user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: invitation.email,
-        password: values.password,
-        options: {
-          data: {
-            full_name: values.fullName,
-            phone: values.phone,
-          },
-        },
-      });
+      // Create the user account
+      const user = await account.create("unique()", invitation.email, values.password, values.fullName);
+      console.log("User created successfully:", user.$id);
 
-      if (authError) {
-        console.error('Auth signup error:', authError);
-        throw authError;
-      }
+      // Sign in immediately
+      await account.createEmailPasswordSession(invitation.email, values.password);
 
-      if (!authData.user) {
-        throw new Error("User creation failed");
-      }
-
-      console.log("User created successfully:", authData.user.id);
-
-      // Wait for user to be fully created
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
-      // First: Mark invitation as accepted to prevent conflicts
+      // Mark invitation as accepted
       console.log("Marking invitation as accepted...");
-      const { error: invitationError } = await supabase
-        .from('invitations')
-        .update({ accepted_at: new Date().toISOString() })
-        .eq('id', invitation.id);
-
-      if (invitationError) {
-        console.error('Invitation update error:', invitationError);
-      } else {
+      try {
+        await databases.updateDocument(DATABASE_ID, "invitations", invitation.id, {
+          accepted_at: new Date().toISOString(),
+        });
         console.log("Invitation marked as accepted successfully");
+      } catch (invitationError) {
+        console.error("Invitation update error:", invitationError);
       }
 
       // Create profile record
       console.log("Creating profile record...");
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authData.user.id,
+      try {
+        await databases.createDocument(DATABASE_ID, "profiles", user.$id, {
+          user_id: user.$id,
           full_name: values.fullName,
           email: invitation.email,
           phone_number: values.phone || null,
         });
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-      } else {
         console.log("Profile created successfully");
+      } catch (profileError) {
+        console.error("Profile creation error:", profileError);
       }
 
-      // Create user role - this is the most critical part
+      // Create user role
       console.log("Creating user role record with role:", invitation.role);
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: authData.user.id,
+      try {
+        await databases.createDocument(DATABASE_ID, "user_roles", ID.unique(), {
+          user_id: user.$id,
           role: invitation.role,
           assigned_by: invitation.invited_by,
         });
-
-      if (roleError) {
-        console.error('Role creation error:', roleError);
-        toast.error("Role assignment failed. Please contact an administrator.");
-        // Don't return here - continue with team member creation
-      } else {
         console.log("User role created successfully");
+      } catch (roleError) {
+        console.error("Role creation error:", roleError);
+        toast.error("Role assignment failed. Please contact an administrator.");
       }
 
       // Create team member record
-      const position = invitation.metadata?.position || 
-        (invitation.role === 'administrator' ? 'Administrator' : 
-         invitation.role === 'owner' ? 'Owner' : 'Team Member');
+      const position = invitation.metadata?.position ||
+        (invitation.role === "administrator" ? "Administrator" :
+         invitation.role === "owner" ? "Owner" : "Team Member");
 
       console.log("Creating team member record with position:", position);
-      const { error: teamMemberError } = await supabase
-        .from('team_members')
-        .insert({
-          user_id: authData.user.id,
+      try {
+        await databases.createDocument(DATABASE_ID, "team_members", ID.unique(), {
+          user_id: user.$id,
           name: values.fullName,
           position: position,
           start_date: new Date().toISOString(),
           skills: [],
         });
-
-      if (teamMemberError) {
-        console.error('Team member creation error:', teamMemberError);
-      } else {
         console.log("Team member created successfully");
+      } catch (teamMemberError) {
+        console.error("Team member creation error:", teamMemberError);
       }
 
       toast.success("Registration successful! Welcome to the team!");
-      
-      // Force a full page reload to ensure all auth state is properly updated
       window.location.href = "/dashboard";
-      
+
     } catch (error: any) {
-      console.error('Registration error:', error);
+      console.error("Registration error:", error);
       toast.error(error.message || "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);

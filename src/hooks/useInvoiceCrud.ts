@@ -1,7 +1,7 @@
 
 import { useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { account, databases, DATABASE_ID, ID, Query } from '@/integrations/appwrite/client';
 import { Invoice } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -15,8 +15,18 @@ export const useInvoiceCrud = (
   const saveInvoice = async (invoice: Invoice, isEditing: boolean): Promise<boolean> => {
     try {
       // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      let session;
+      try {
+        session = await account.getSession('current');
+      } catch {
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to save invoices.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
       if (!session) {
         toast({
           title: "Authentication Error",
@@ -27,8 +37,7 @@ export const useInvoiceCrud = (
       }
 
       // Format invoice for database insert/update
-      const invoiceData = {
-        id: invoice.id,
+      const invoiceData: any = {
         invoice_number: invoice.invoiceNumber,
         client_id: invoice.clientId,
         date: invoice.date instanceof Date ? invoice.date.toISOString() : invoice.date,
@@ -43,64 +52,50 @@ export const useInvoiceCrud = (
         notes: invoice.notes,
         terms_and_conditions: invoice.termsAndConditions,
         status: invoice.status,
-        user_id: session.user.id
+        user_id: session.userId
       };
 
       // Save invoice
-      let invoiceResult;
       if (isEditing) {
-        invoiceResult = await supabase
-          .from('invoices')
-          .update(invoiceData)
-          .eq('id', invoice.id);
+        await databases.updateDocument(DATABASE_ID, 'invoices', invoice.id, invoiceData);
       } else {
-        invoiceResult = await supabase
-          .from('invoices')
-          .insert(invoiceData);
-      }
-
-      if (invoiceResult.error) {
-        throw invoiceResult.error;
+        await databases.createDocument(DATABASE_ID, 'invoices', invoice.id || ID.unique(), invoiceData);
       }
 
       // Handle invoice items
       if (isEditing) {
         // Delete existing items for this invoice
-        const { error: deleteError } = await supabase
-          .from('invoice_items')
-          .delete()
-          .eq('invoice_id', invoice.id);
-        
-        if (deleteError) {
-          throw deleteError;
-        }
+        const existingItemsResponse = await databases.listDocuments(
+          DATABASE_ID,
+          'invoice_items',
+          [Query.equal('invoice_id', invoice.id)]
+        );
+        await Promise.all(
+          existingItemsResponse.documents.map((item: any) =>
+            databases.deleteDocument(DATABASE_ID, 'invoice_items', item.$id)
+          )
+        );
       }
 
       // Insert new items
-      const itemsToInsert = invoice.items.map(item => ({
-        id: item.id || uuidv4(),
-        invoice_id: invoice.id,
-        description: item.description,
-        quantity: item.quantity,
-        rate: item.rate,
-        amount: item.amount,
-        user_id: session.user.id
-      }));
-
-      const { error: insertError } = await supabase
-        .from('invoice_items')
-        .insert(itemsToInsert);
-      
-      if (insertError) {
-        throw insertError;
-      }
+      await Promise.all(
+        invoice.items.map(item =>
+          databases.createDocument(DATABASE_ID, 'invoice_items', item.id || ID.unique(), {
+            invoice_id: invoice.id,
+            description: item.description,
+            quantity: item.quantity,
+            rate: item.rate,
+            amount: item.amount,
+            user_id: session.userId
+          })
+        )
+      );
 
       toast({
         title: isEditing ? "Invoice Updated" : "Invoice Created",
         description: isEditing ? "Invoice has been updated successfully." : "Invoice has been created successfully."
       });
 
-      // Refresh the invoices list
       fetchInvoices();
       return true;
     } catch (error) {
@@ -119,11 +114,11 @@ export const useInvoiceCrud = (
 
     try {
       setIsLoading(true);
-      
+
       // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
+      try {
+        await account.getSession('current');
+      } catch {
         toast({
           title: "Authentication Error",
           description: "You must be logged in to delete invoices.",
@@ -131,30 +126,25 @@ export const useInvoiceCrud = (
         });
         return;
       }
-      
+
       // First delete related invoice items
-      const { error: itemsError } = await supabase
-        .from('invoice_items')
-        .delete()
-        .eq('invoice_id', invoiceId);
-      
-      if (itemsError) {
-        throw itemsError;
-      }
-      
+      const existingItemsResponse = await databases.listDocuments(
+        DATABASE_ID,
+        'invoice_items',
+        [Query.equal('invoice_id', invoiceId)]
+      );
+      await Promise.all(
+        existingItemsResponse.documents.map((item: any) =>
+          databases.deleteDocument(DATABASE_ID, 'invoice_items', item.$id)
+        )
+      );
+
       // Then delete the invoice
-      const { error: invoiceError } = await supabase
-        .from('invoices')
-        .delete()
-        .eq('id', invoiceId);
-      
-      if (invoiceError) {
-        throw invoiceError;
-      }
-      
+      await databases.deleteDocument(DATABASE_ID, 'invoices', invoiceId);
+
       // Update local state
       setInvoices(prev => prev.filter(i => i.id !== invoiceId));
-      
+
       toast({
         title: "Invoice deleted",
         description: "The invoice has been successfully deleted."

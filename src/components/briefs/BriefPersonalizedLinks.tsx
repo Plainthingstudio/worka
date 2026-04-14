@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link2, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { account } from "@/integrations/appwrite/client";
 
 const BriefPersonalizedLinks = () => {
   const [copied, setCopied] = useState<Record<string, boolean>>({
@@ -16,12 +16,16 @@ const BriefPersonalizedLinks = () => {
 
   React.useEffect(() => {
     const fetchUserId = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        setUserId(data.user.id);
+      try {
+        const user = await account.get();
+        if (user) {
+          setUserId(user.$id);
+        }
+      } catch {
+        // not authenticated
       }
     };
-    
+
     fetchUserId();
   }, []);
 
@@ -41,12 +45,12 @@ const BriefPersonalizedLinks = () => {
       .then(() => {
         // Set the copied state for this specific button
         setCopied(prev => ({ ...prev, [type]: true }));
-        
+
         // Reset the copied state after 2 seconds
         setTimeout(() => {
           setCopied(prev => ({ ...prev, [type]: false }));
         }, 2000);
-        
+
         toast.success("Link copied to clipboard");
       })
       .catch(err => {
@@ -62,11 +66,11 @@ const BriefPersonalizedLinks = () => {
           <Link2 className="h-5 w-5 text-primary" />
           <h3 className="text-lg font-semibold">Your Personalized Brief Links</h3>
         </div>
-        
+
         <p className="text-sm text-muted-foreground mb-4">
           Share these links with your clients to directly receive briefs assigned to you.
         </p>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Graphic Design Brief</label>
@@ -74,10 +78,10 @@ const BriefPersonalizedLinks = () => {
               <div className="truncate px-3 py-2 text-sm flex-1 bg-muted/50">
                 {briefLinks.graphic}
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-full rounded-l-none" 
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-full rounded-l-none"
                 onClick={() => handleCopyLink('graphic')}
                 title="Copy Graphic Design Brief Link"
               >
@@ -85,17 +89,17 @@ const BriefPersonalizedLinks = () => {
               </Button>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">UI Design Brief</label>
             <div className="flex items-center gap-2 border rounded-md">
               <div className="truncate px-3 py-2 text-sm flex-1 bg-muted/50">
                 {briefLinks.ui}
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-full rounded-l-none" 
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-full rounded-l-none"
                 onClick={() => handleCopyLink('ui')}
                 title="Copy UI Design Brief Link"
               >
@@ -103,17 +107,17 @@ const BriefPersonalizedLinks = () => {
               </Button>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Illustration Brief</label>
             <div className="flex items-center gap-2 border rounded-md">
               <div className="truncate px-3 py-2 text-sm flex-1 bg-muted/50">
                 {briefLinks.illustration}
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-full rounded-l-none" 
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-full rounded-l-none"
                 onClick={() => handleCopyLink('illustration')}
                 title="Copy Illustration Brief Link"
               >

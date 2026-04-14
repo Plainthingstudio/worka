@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { databases, DATABASE_ID } from '@/integrations/appwrite/client';
 
 interface ProjectData {
   id: string;
@@ -21,18 +21,12 @@ export const useTaskProject = (projectId: string | null) => {
     const fetchProject = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('projects')
-          .select('id, name, status')
-          .eq('id', projectId)
-          .single();
-
-        if (error) {
-          console.error('Error fetching project:', error);
-          return;
-        }
-
-        setProject(data);
+        const doc = await databases.getDocument(DATABASE_ID, 'projects', projectId);
+        setProject({
+          id: doc.$id,
+          name: doc.name,
+          status: doc.status,
+        });
       } catch (error) {
         console.error('Error fetching project:', error);
       } finally {

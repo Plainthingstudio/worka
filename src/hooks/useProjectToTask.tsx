@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Project, ProjectStatus } from "@/types";
 import { TaskStatus, TaskPriority, TaskType } from "@/types/task";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, ID, Query } from "@/integrations/appwrite/client";
 
 export const useProjectToTask = () => {
   const [isCreating, setIsCreating] = useState(false);
@@ -26,33 +26,40 @@ export const useProjectToTask = () => {
     try {
       setIsCreating(true);
       console.log('Creating task from project:', project);
-      
-      const { data: { user } } = await supabase.auth.getUser();
+
+      let user;
+      try {
+        user = await account.get();
+      } catch {
+        toast.error("You must be logged in to create tasks");
+        return null;
+      }
+
       if (!user) {
         toast.error("You must be logged in to create tasks");
         return null;
       }
 
-      console.log('Current user:', user.id);
+      console.log('Current user:', user.$id);
 
       // Get team member user_ids from project.teamMembers
       let assignees: string[] = [];
       if (project.teamMembers && project.teamMembers.length > 0) {
         console.log('Fetching team members for IDs:', project.teamMembers);
-        const { data: teamMembersData, error: teamError } = await supabase
-          .from('team_members')
-          .select('user_id')
-          .in('id', project.teamMembers);
-
-        if (teamError) {
-          console.error('Error fetching team members:', teamError);
-        } else {
-          assignees = teamMembersData?.map(tm => tm.user_id) || [];
+        try {
+          const teamResponse = await databases.listDocuments(
+            DATABASE_ID,
+            'team_members',
+            [Query.equal('$id', project.teamMembers)]
+          );
+          assignees = teamResponse.documents.map((tm: any) => tm.user_id);
           console.log('Team member user IDs:', assignees);
+        } catch (teamError) {
+          console.error('Error fetching team members:', teamError);
         }
       }
 
-      const taskData = {
+      const taskData: any = {
         title: project.name,
         description: `Task created from project: ${project.name}`,
         status: mapProjectStatusToTaskStatus(project.status),
@@ -61,29 +68,19 @@ export const useProjectToTask = () => {
         due_date: project.deadline.toISOString(),
         assignees: assignees,
         project_id: project.id,
-        user_id: user.id,
+        user_id: user.$id,
       };
 
       console.log('Inserting task with data:', taskData);
 
-      const { data, error } = await supabase
-        .from('tasks')
-        .insert([taskData])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error creating task:', error);
-        toast.error("Failed to create task: " + (error.message || "Unknown error"));
-        return null;
-      }
+      const data = await databases.createDocument(DATABASE_ID, 'tasks', ID.unique(), taskData);
 
       console.log('Task created successfully:', data);
       toast.success("Task created successfully from project");
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating task from project:', error);
-      toast.error("Failed to create task");
+      toast.error("Failed to create task: " + (error.message || "Unknown error"));
       return null;
     } finally {
       setIsCreating(false);

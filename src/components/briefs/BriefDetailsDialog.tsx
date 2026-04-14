@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import UIDesignBriefDetails from "./UIDesignBriefDetails";
 import GraphicDesignBriefDetails from "./GraphicDesignBriefDetails";
 import IllustrationBriefDetails from "./IllustrationBriefDetails";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import { toast } from "sonner";
 
 interface BriefDetailsDialogProps {
@@ -31,64 +31,69 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
   useEffect(() => {
     const fetchFullBriefDetails = async () => {
       if (!open || !briefDetails) return;
-      
+
       setIsLoading(true);
       setFetchError(null);
       console.log("Dialog opened with brief details:", briefDetails);
-      
+
       try {
         // Prepare the basic brief details we already have
         const preparedDetails = prepareDetailsForDisplay(briefDetails);
-        
+
         // Check if we have authentication
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
+        let user;
+        try {
+          user = await account.get();
+        } catch {
           console.warn("No authenticated user found");
           setFullBriefDetails(preparedDetails);
           setIsLoading(false);
           setFetchError("Authentication required to load full details. Showing limited information.");
           return;
         }
-        
-        // Use the secure database function to fetch full brief details
+
+        // Fetch full brief details from the appropriate collection
         try {
-          const { data, error } = await supabase.rpc(
-            'get_brief_details',
-            { 
-              brief_id: briefDetails.id,
-              brief_type: briefDetails.type
-            }
-          );
-          
-          if (error) {
-            console.error("Error calling get_brief_details function:", error);
-            throw error;
+          const briefType = briefDetails.type;
+          let collectionId = '';
+          if (briefType === 'Illustration Design' || briefType === 'Illustrations') {
+            collectionId = 'illustration_design_briefs';
+          } else if (briefType === 'UI Design') {
+            collectionId = 'ui_design_briefs';
+          } else if (briefType === 'Graphic Design') {
+            collectionId = 'graphic_design_briefs';
           }
-          
-          if (data) {
-            console.log("Retrieved full brief details using database function:", data);
-            
-            // Transform any snake_case to camelCase if needed
-            const transformedData: any = data;
-            const briefData = {
-              ...transformedData,
-              type: briefDetails.type,
-              companyName: transformedData.company_name,
-              submissionDate: transformedData.submission_date
-            };
-            
-            setFullBriefDetails(prepareDetailsForDisplay(briefData));
+
+          if (collectionId) {
+            const response = await databases.listDocuments(DATABASE_ID, collectionId, [
+              Query.equal('$id', briefDetails.id)
+            ]);
+            const data = response.documents[0] ?? null;
+
+            if (data) {
+              console.log("Retrieved full brief details:", data);
+
+              const briefData = {
+                ...data,
+                type: briefDetails.type,
+                companyName: data.company_name,
+                submissionDate: data.submission_date
+              };
+
+              setFullBriefDetails(prepareDetailsForDisplay(briefData));
+            } else {
+              console.warn("No brief details returned");
+              setFullBriefDetails(preparedDetails);
+            }
           } else {
-            console.warn("No brief details returned from database function");
             setFullBriefDetails(preparedDetails);
           }
         } catch (fetchError: any) {
           console.error(`Error fetching ${briefDetails.type} brief details:`, fetchError);
-          
+
           // Set fullBriefDetails to use what we already have
           setFullBriefDetails(preparedDetails);
-          
+
           // Set a user-friendly error message
           if (fetchError.message && typeof fetchError.message === 'string') {
             if (fetchError.message.includes("permission denied") || (fetchError.code && fetchError.code === '42501')) {
@@ -111,29 +116,29 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
         setIsLoading(false);
       }
     };
-    
+
     fetchFullBriefDetails();
   }, [open, briefDetails]);
 
   // Prepare basic brief details with proper parsing of any JSON fields
   const prepareDetailsForDisplay = (details: any) => {
     if (!details) return null;
-    
+
     // Create a deep copy to avoid modifying the original
     let processedDetails = JSON.parse(JSON.stringify(details));
-    
+
     // Normalize property names
     processedDetails = {
       ...processedDetails,
       companyName: processedDetails.companyName || processedDetails.company_name || "",
       submissionDate: processedDetails.submissionDate || processedDetails.submission_date || "",
     };
-    
+
     // Special handling for logoFeelings in Graphic Design briefs
     if (details.type === "Graphic Design") {
       try {
         let logoFeelings = details.logoFeelings || details.logo_feelings;
-        
+
         // If it's a string, try to parse it
         if (typeof logoFeelings === 'string') {
           try {
@@ -143,13 +148,13 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
             console.error("Failed to parse logoFeelings string in dialog preparation:", e);
             logoFeelings = {};
           }
-        } 
-        
+        }
+
         // Ensure logoFeelings is an object, not null or undefined
         if (!logoFeelings || typeof logoFeelings !== 'object') {
           logoFeelings = {};
         }
-        
+
         processedDetails.logoFeelings = logoFeelings;
         processedDetails.logo_feelings = logoFeelings; // Set both versions
         console.log("Prepared logoFeelings for display:", processedDetails.logoFeelings);
@@ -159,25 +164,22 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
         processedDetails.logo_feelings = {};
       }
     }
-    
+
     return processedDetails;
   };
 
-  // The old individual fetch methods are no longer used since we're using the database function,
+  // The old individual fetch methods are no longer used since we're using direct collection queries,
   // but we'll keep them for reference/backup if needed
   const fetchIllustrationDetails = async (briefDetails: any) => {
     try {
-      console.log("NOTE: This method is deprecated. Using get_brief_details function instead.");
-      
-      const { data, error } = await supabase
-        .from('illustration_design_briefs')
-        .select('*')
-        .eq('id', briefDetails.id)
-        .maybeSingle();
-      
-      if (error) {
-        throw error;
-      } else if (data) {
+      console.log("NOTE: This method is deprecated. Using direct collection query instead.");
+
+      const response = await databases.listDocuments(DATABASE_ID, 'illustration_design_briefs', [
+        Query.equal('$id', briefDetails.id)
+      ]);
+      const data = response.documents[0] ?? null;
+
+      if (data) {
         console.log("Full illustration brief fetched:", data);
         const preparedData = prepareDetailsForDisplay({
           ...data,
@@ -199,17 +201,14 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
 
   const fetchUIDesignDetails = async (briefDetails: any) => {
     try {
-      console.log("NOTE: This method is deprecated. Using get_brief_details function instead.");
-      
-      const { data, error } = await supabase
-        .from('ui_design_briefs')
-        .select('*')
-        .eq('id', briefDetails.id)
-        .maybeSingle();
-      
-      if (error) {
-        throw error;
-      } else if (data) {
+      console.log("NOTE: This method is deprecated. Using direct collection query instead.");
+
+      const response = await databases.listDocuments(DATABASE_ID, 'ui_design_briefs', [
+        Query.equal('$id', briefDetails.id)
+      ]);
+      const data = response.documents[0] ?? null;
+
+      if (data) {
         console.log("Full UI brief fetched:", data);
         const preparedData = prepareDetailsForDisplay({
           ...data,
@@ -231,19 +230,16 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
 
   const fetchGraphicDesignDetails = async (briefDetails: any) => {
     try {
-      console.log("NOTE: This method is deprecated. Using get_brief_details function instead.");
-      
-      const { data, error } = await supabase
-        .from('graphic_design_briefs')
-        .select('*')
-        .eq('id', briefDetails.id)
-        .maybeSingle();
-      
-      if (error) {
-        throw error;
-      } else if (data) {
+      console.log("NOTE: This method is deprecated. Using direct collection query instead.");
+
+      const response = await databases.listDocuments(DATABASE_ID, 'graphic_design_briefs', [
+        Query.equal('$id', briefDetails.id)
+      ]);
+      const data = response.documents[0] ?? null;
+
+      if (data) {
         console.log("Full graphic brief fetched:", data);
-        
+
         // Parse the logo_feelings JSON if it's a string
         let logoFeelings = data.logo_feelings;
         if (typeof logoFeelings === 'string') {
@@ -257,7 +253,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
         } else if (!logoFeelings || typeof logoFeelings !== 'object') {
           logoFeelings = {};
         }
-        
+
         const preparedData = prepareDetailsForDisplay({
           ...data,
           logoFeelings: logoFeelings,
@@ -286,13 +282,13 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
   // Safely format date function
   const formatDate = (dateValue: any): string => {
     if (!dateValue) return "Not available";
-    
+
     try {
       // If it's a string, try to parse it
-      const dateObj = typeof dateValue === 'string' 
-        ? parseISO(dateValue) 
+      const dateObj = typeof dateValue === 'string'
+        ? parseISO(dateValue)
         : new Date(dateValue);
-      
+
       // Check if date is valid before formatting
       if (isValid(dateObj)) {
         return format(dateObj, "MMMM d, yyyy");
@@ -307,10 +303,10 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
   // Helper function to get value that might be in camelCase or snake_case
   const getValue = (camelCaseKey: string, snakeCaseKey: string, defaultValue = "Not available") => {
     const details = fullBriefDetails || briefDetails;
-    const value = details[camelCaseKey] !== undefined 
-      ? details[camelCaseKey] 
-      : details[snakeCaseKey] !== undefined 
-        ? details[snakeCaseKey] 
+    const value = details[camelCaseKey] !== undefined
+      ? details[camelCaseKey]
+      : details[snakeCaseKey] !== undefined
+        ? details[snakeCaseKey]
         : defaultValue;
     return value || defaultValue; // Return defaultValue if value is null/undefined
   };
@@ -326,7 +322,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
             View detailed information about the client brief
           </DialogDescription>
         </DialogHeader>
-        
+
         {isLoading ? (
           <div className="flex justify-center items-center h-40">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -343,7 +339,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
                 </div>
               </div>
             )}
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-2">Client Information</h3>
@@ -375,7 +371,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
 
             <div className="border-t pt-4">
               <h3 className="text-sm font-medium text-muted-foreground mb-3">Project Details</h3>
-              
+
               {(getValue("type", "type") === "Illustration Design" || getValue("type", "type") === "Illustrations") ? (
                 <IllustrationBriefDetails briefDetails={fullBriefDetails || briefDetails} />
               ) : getValue("type", "type") === "Graphic Design" ? (

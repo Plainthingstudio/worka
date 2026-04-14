@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, ID } from "@/integrations/appwrite/client";
 
 export interface IllustrationBriefFormValues {
   type: string;
@@ -34,8 +34,8 @@ export interface IllustrationBriefFormValues {
   deliverables: Record<string, boolean>;
 }
 
-// Define interface for the data sent to Supabase
-interface BriefDataForSupabase {
+// Define interface for the data sent to Appwrite
+interface BriefDataForAppwrite {
   name: string;
   email: string;
   company_name: string;
@@ -75,7 +75,6 @@ export const useIllustrationsBrief = (submittedForId?: string | null) => {
   const handleSubmit = async (formData: IllustrationBriefFormValues) => {
     setIsSubmitting(true);
     try {
-      // Convert the deliverables object to an array of selected items
       const selectedDeliverables = Object.entries(formData.deliverables || {})
         .filter(([_, isSelected]) => isSelected)
         .map(([key, _]) => {
@@ -92,15 +91,13 @@ export const useIllustrationsBrief = (submittedForId?: string | null) => {
             .replace(/webm/i, '.WebM');
         });
 
-      // Handle the brand guidelines based on the radio selection
-      const brandGuidelinesValue = formData.hasBrandGuidelines === "Yes" 
-        ? formData.brandGuidelines 
+      const brandGuidelinesValue = formData.hasBrandGuidelines === "Yes"
+        ? formData.brandGuidelines
         : "No brand guidelines available";
 
       console.log("Submitting illustration brief for user ID:", submittedForId);
 
-      // Prepare data for Supabase with correct column names
-      const briefData: BriefDataForSupabase = {
+      const briefData: BriefDataForAppwrite = {
         name: formData.name,
         email: formData.email,
         company_name: formData.companyName,
@@ -129,34 +126,29 @@ export const useIllustrationsBrief = (submittedForId?: string | null) => {
         submission_date: new Date().toISOString()
       };
 
-      // Add phone if provided
       if (formData.phone) {
         briefData.phone = formData.phone;
       }
 
-      // If form is being submitted for a specific user through a personalized link
       if (submittedForId) {
         console.log("Setting submitted_for_id and user_id to:", submittedForId);
         briefData.submitted_for_id = submittedForId;
-        // For briefs submitted through a personalized link, use the submitted_for_id as the user_id
         briefData.user_id = submittedForId;
       } else {
-        // Check if user is logged in - optional for public form
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          console.log("Setting user_id from current user:", user.id);
-          briefData.user_id = user.id;
+        try {
+          const user = await account.get();
+          if (user) {
+            console.log("Setting user_id from current user:", user.$id);
+            briefData.user_id = user.$id;
+          }
+        } catch {
+          // user not logged in, that's ok for public form
         }
       }
 
-      console.log("Final brief data being sent to Supabase:", briefData);
+      console.log("Final brief data being sent to Appwrite:", briefData);
 
-      // Insert into Supabase - now using the specific table for illustration design briefs
-      const { error } = await supabase
-        .from('illustration_design_briefs')
-        .insert(briefData);
-
-      if (error) throw error;
+      await databases.createDocument(DATABASE_ID, 'illustration_design_briefs', ID.unique(), briefData);
 
       // Save to localStorage for backward compatibility
       const existingBriefs = JSON.parse(localStorage.getItem("briefs") || "[]");
@@ -167,17 +159,14 @@ export const useIllustrationsBrief = (submittedForId?: string | null) => {
         status: "New",
         deliverables: selectedDeliverables,
         submittedForId: submittedForId || null,
-        userId: briefData.user_id // Ensure we save the user_id in localStorage too
+        userId: briefData.user_id
       };
       localStorage.setItem("briefs", JSON.stringify([...existingBriefs, localStorageBrief]));
-    
-      // Save the brief type for the thank you page
+
       localStorage.setItem("lastSubmittedBriefType", "Illustration Design");
-    
-      // Show success message
+
       toast.success("Illustration design brief submitted successfully!");
-    
-      // Navigate to the thank you page
+
       navigate("/thank-you");
     } catch (error: any) {
       console.error("Error submitting brief:", error);

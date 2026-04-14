@@ -10,7 +10,7 @@ import {
 import ProjectForm from "@/components/ProjectForm";
 import { Client, Project, TeamMember, TeamPosition, LeadSource } from "@/types";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { databases, DATABASE_ID } from "@/integrations/appwrite/client";
 
 interface EditProjectDialogProps {
   isOpen: boolean;
@@ -32,23 +32,16 @@ const EditProjectDialog = ({
   const { data: allClients = [], isLoading: isLoadingClients } = useQuery({
     queryKey: ['clients'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clients')
-        .select('*');
-      
-      if (error) {
-        console.error("Error fetching clients:", error);
-        return [];
-      }
-      
-      return data.map((client): Client => ({
-        id: client.id,
+      const response = await databases.listDocuments(DATABASE_ID, 'clients');
+
+      return response.documents.map((client): Client => ({
+        id: client.$id,
         name: client.name,
         email: client.email,
         phone: client.phone || "",
         address: client.address || "",
         leadSource: (client.lead_source as LeadSource) || "Website",
-        createdAt: new Date(client.created_at)
+        createdAt: new Date(client.$createdAt)
       }));
     },
     enabled: isOpen,
@@ -58,24 +51,17 @@ const EditProjectDialog = ({
     queryKey: ['teamMembers'],
     queryFn: async () => {
       if (providedTeamMembers) return providedTeamMembers;
-      
-      const { data, error } = await supabase
-        .from('team_members')
-        .select('*');
-      
-      if (error) {
-        console.error("Error fetching team members:", error);
-        return [];
-      }
-      
-      return data.map((member): TeamMember => ({
-        id: member.id,
+
+      const response = await databases.listDocuments(DATABASE_ID, 'team_members');
+
+      return response.documents.map((member): TeamMember => ({
+        id: member.$id,
         user_id: member.user_id,
         name: member.name,
         position: member.position as TeamPosition,
         skills: member.skills || [],
         startDate: new Date(member.start_date),
-        createdAt: new Date(member.created_at)
+        createdAt: new Date(member.$createdAt)
       }));
     },
     enabled: isOpen && !providedTeamMembers,

@@ -1,7 +1,7 @@
 
 import { useCallback, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { account, databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
 import { Invoice, PaymentType } from '@/types';
 
 export const useInvoicesFetching = () => {
@@ -12,11 +12,11 @@ export const useInvoicesFetching = () => {
   const fetchInvoices = useCallback(async () => {
     try {
       setIsLoading(true);
-      
+
       // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
+      try {
+        await account.getSession('current');
+      } catch {
         toast({
           title: "Authentication Error",
           description: "You must be logged in to view invoices.",
@@ -24,54 +24,40 @@ export const useInvoicesFetching = () => {
         });
         return;
       }
-      
-      // Fetch invoices from Supabase
-      const { data: invoicesData, error: invoicesError } = await supabase
-        .from('invoices')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (invoicesError) {
-        throw invoicesError;
-      }
-      
+
+      // Fetch invoices
+      const invoicesResponse = await databases.listDocuments(
+        DATABASE_ID,
+        'invoices',
+        [Query.orderDesc('$createdAt')]
+      );
+      const invoicesData = invoicesResponse.documents;
+
       // Fetch all invoice items
-      const { data: invoiceItemsData, error: itemsError } = await supabase
-        .from('invoice_items')
-        .select('*');
-      
-      if (itemsError) {
-        throw itemsError;
-      }
+      const invoiceItemsResponse = await databases.listDocuments(DATABASE_ID, 'invoice_items');
+      const invoiceItemsData = invoiceItemsResponse.documents;
 
       // Fetch clients data
-      const { data: clientsData, error: clientsError } = await supabase
-        .from('clients')
-        .select('id, name');
-      
-      if (clientsError) {
-        throw clientsError;
-      }
+      const clientsResponse = await databases.listDocuments(DATABASE_ID, 'clients');
+      const clientsData = clientsResponse.documents;
 
       console.log("Fetched invoice items from DB:", invoiceItemsData);
       console.log("Fetched clients from DB:", clientsData);
 
-      // Helper function to validate status
       const validateStatus = (status: string): "Draft" | "Sent" | "Paid" | "Overdue" => {
         const validStatuses = ["Draft", "Sent", "Paid", "Overdue"];
         if (validStatuses.includes(status)) {
           return status as "Draft" | "Sent" | "Paid" | "Overdue";
         }
-        return "Draft"; // Default fallback
+        return "Draft";
       };
 
-      // Transform the data to match our expected format
-      const transformedInvoices: Invoice[] = invoicesData.map(invoice => {
+      const transformedInvoices: Invoice[] = invoicesData.map((invoice: any) => {
         // Find items for this invoice
         const items = invoiceItemsData
-          .filter(item => item.invoice_id === invoice.id)
-          .map(item => ({
-            id: item.id,
+          .filter((item: any) => item.invoice_id === invoice.$id)
+          .map((item: any) => ({
+            id: item.$id,
             description: item.description || "",
             quantity: Number(item.quantity) || 1,
             rate: Number(item.rate) || 0,
@@ -79,11 +65,11 @@ export const useInvoicesFetching = () => {
           }));
 
         // Find client name
-        const client = clientsData.find(client => client.id === invoice.client_id);
+        const client = clientsData.find((c: any) => c.$id === invoice.client_id);
         const clientName = client ? client.name : "Unknown Client";
 
         return {
-          id: invoice.id,
+          id: invoice.$id,
           invoiceNumber: invoice.invoice_number,
           clientId: invoice.client_id,
           clientName: clientName,
@@ -99,7 +85,7 @@ export const useInvoicesFetching = () => {
           total: invoice.total,
           notes: invoice.notes || "",
           termsAndConditions: invoice.terms_and_conditions || "",
-          createdAt: new Date(invoice.created_at),
+          createdAt: new Date(invoice.$createdAt),
           status: validateStatus(invoice.status),
           paymentType: (invoice.payment_type as PaymentType) || "Milestone Payment"
         };

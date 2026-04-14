@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Invoice, InvoiceItem, PaymentType } from '@/types';
-import { supabase } from '@/integrations/supabase/client';
+import { account, databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
 import { createNewInvoice } from '@/utils/invoiceCalculations';
 
 // Helper function to validate invoice status
@@ -12,7 +12,6 @@ const validateInvoiceStatus = (status: string): "Draft" | "Sent" | "Paid" | "Ove
   if (validStatuses.includes(status)) {
     return status as "Draft" | "Sent" | "Paid" | "Overdue";
   }
-  // Default to "Draft" if the status is not valid
   return "Draft";
 };
 
@@ -20,11 +19,10 @@ export function useInvoiceData(invoiceId: string | undefined) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const isEditing = Boolean(invoiceId);
-  
+
   const [invoice, setInvoice] = useState<Invoice>(createNewInvoice());
   const [isLoading, setIsLoading] = useState(isEditing);
-  
-  // Fetch invoice data function
+
   const fetchInvoice = useCallback(async () => {
     if (!isEditing || !invoiceId) {
       setIsLoading(false);
@@ -34,8 +32,9 @@ export function useInvoiceData(invoiceId: string | undefined) {
     setIsLoading(true);
     try {
       // Check if user is authenticated
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      try {
+        await account.getSession('current');
+      } catch {
         toast({
           title: "Authentication Error",
           description: "You must be logged in to edit invoices.",
@@ -46,56 +45,52 @@ export function useInvoiceData(invoiceId: string | undefined) {
       }
 
       // Fetch the invoice
-      const { data: invoiceData, error: invoiceError } = await supabase
-        .from('invoices')
-        .select('*')
-        .eq('id', invoiceId)
-        .maybeSingle();
-      
-      if (invoiceError || !invoiceData) {
-        throw new Error(invoiceError?.message || 'Invoice not found');
+      let invoiceData: any = null;
+      try {
+        invoiceData = await databases.getDocument(DATABASE_ID, 'invoices', invoiceId);
+      } catch {
+        throw new Error('Invoice not found');
+      }
+
+      if (!invoiceData) {
+        throw new Error('Invoice not found');
       }
 
       // Fetch the invoice items
-      const { data: itemsData, error: itemsError } = await supabase
-        .from('invoice_items')
-        .select('*')
-        .eq('invoice_id', invoiceId);
-      
-      if (itemsError) {
-        throw new Error(itemsError.message);
-      }
+      const itemsResponse = await databases.listDocuments(
+        DATABASE_ID,
+        'invoice_items',
+        [Query.equal('invoice_id', invoiceId)]
+      );
+      const itemsData = itemsResponse.documents;
 
       // Fetch client data
-      const { data: clientData, error: clientError } = await supabase
-        .from('clients')
-        .select('name')
-        .eq('id', invoiceData.client_id)
-        .maybeSingle();
-      
-      if (clientError) {
+      let clientName = "Unknown Client";
+      try {
+        const clientDoc = await databases.getDocument(DATABASE_ID, 'clients', invoiceData.client_id);
+        clientName = clientDoc?.name || "Unknown Client";
+      } catch (clientError) {
         console.error("Error fetching client:", clientError);
       }
 
       console.log("Fetched invoice items from DB in useInvoiceData:", itemsData);
-      
+
       // Transform to our Invoice type
-      const processedItems: InvoiceItem[] = itemsData.map(item => ({
-        id: item.id,
+      const processedItems: InvoiceItem[] = itemsData.map((item: any) => ({
+        id: item.$id,
         description: item.description || "",
         quantity: Number(item.quantity) || 1,
         rate: Number(item.rate) || 0,
         amount: Number(item.amount) || 0
       }));
 
-      // Ensure that the status is one of the allowed values
       const validStatus = validateInvoiceStatus(invoiceData.status);
 
       const loadedInvoice: Invoice = {
-        id: invoiceData.id,
+        id: invoiceData.$id,
         invoiceNumber: invoiceData.invoice_number,
         clientId: invoiceData.client_id,
-        clientName: clientData?.name || "Unknown Client",
+        clientName: clientName,
         date: new Date(invoiceData.date),
         dueDate: new Date(invoiceData.due_date),
         paymentTerms: invoiceData.payment_terms,
@@ -108,13 +103,13 @@ export function useInvoiceData(invoiceId: string | undefined) {
         total: invoiceData.total,
         notes: invoiceData.notes || "",
         termsAndConditions: invoiceData.terms_and_conditions || "",
-        createdAt: new Date(invoiceData.created_at),
+        createdAt: new Date(invoiceData.$createdAt),
         status: validStatus,
         paymentType: (invoiceData.payment_type as PaymentType) || "Milestone Payment"
       };
 
       console.log("Loaded invoice with items:", loadedInvoice);
-      
+
       setInvoice(loadedInvoice);
       return { invoice: loadedInvoice, items: processedItems };
     } catch (error) {
@@ -131,7 +126,6 @@ export function useInvoiceData(invoiceId: string | undefined) {
     }
   }, [invoiceId, isEditing, navigate, toast]);
 
-  // Automatically fetch invoice data on mount
   useEffect(() => {
     fetchInvoice();
   }, [fetchInvoice]);

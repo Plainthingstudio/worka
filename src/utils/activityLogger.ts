@@ -1,5 +1,6 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { account, databases, DATABASE_ID, ID, Query } from '@/integrations/appwrite/client';
+import { stringifyJsonField } from "@/utils/appwriteJson";
 
 export type ActivityType = 'comment' | 'status_change' | 'assignee_change' | 'priority_change' | 'attachment' | 'task_created' | 'due_date_change' | 'task_updated';
 
@@ -19,27 +20,20 @@ export const logActivity = async ({
   attachments = []
 }: LogActivityParams): Promise<boolean> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await account.get();
     if (!user) {
       console.error('No authenticated user found');
       return false;
     }
 
-    const { error } = await supabase
-      .from('task_activities')
-      .insert([{
-        task_id: taskId,
-        user_id: user.id,
-        activity_type: activityType,
-        content,
-        metadata,
-        attachments
-      }]);
-
-    if (error) {
-      console.error('Error logging activity:', error);
-      return false;
-    }
+    await databases.createDocument(DATABASE_ID, 'task_activities', ID.unique(), {
+      task_id: taskId,
+      user_id: user.$id,
+      activity_type: activityType,
+      content: content ?? null,
+      metadata: stringifyJsonField(metadata, "{}"),
+      attachments: stringifyJsonField(attachments, "[]")
+    });
 
     return true;
   } catch (error) {
@@ -76,9 +70,9 @@ export const logDueDateChange = (taskId: string, oldDate?: Date, newDate?: Date)
   return logActivity({
     taskId,
     activityType: 'due_date_change',
-    metadata: { 
-      old_value: oldDate?.toISOString(), 
-      new_value: newDate?.toISOString() 
+    metadata: {
+      old_value: oldDate?.toISOString(),
+      new_value: newDate?.toISOString()
     }
   });
 };
@@ -91,7 +85,6 @@ export const logTaskCreated = (taskId: string) => {
 };
 
 export const logComment = async (taskId: string, content: string, attachments: any[] = []) => {
-  // First log the activity
   const activityLogged = await logActivity({
     taskId,
     activityType: 'comment',
@@ -100,39 +93,31 @@ export const logComment = async (taskId: string, content: string, attachments: a
   });
 
   if (activityLogged) {
-    // Also create notification for task assignees and creator
     try {
-      const { data: task } = await supabase
-        .from('tasks')
-        .select('user_id, assignees, title')
-        .eq('id', taskId)
-        .single();
+      const response = await databases.listDocuments(DATABASE_ID, 'tasks', [
+        Query.equal('$id', taskId),
+      ]);
+      const task = response.documents[0];
 
       if (task) {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await account.get();
         if (!user) return activityLogged;
 
-        // Get all users to notify (creator + assignees, excluding commenter)
         const usersToNotify = [
           task.user_id,
           ...(task.assignees || [])
-        ].filter((userId, index, arr) => 
-          userId !== user.id && arr.indexOf(userId) === index
+        ].filter((userId, index, arr) =>
+          userId !== user.$id && arr.indexOf(userId) === index
         );
 
-        // Create notifications for each user
-        const notifications = usersToNotify.map(userId => ({
-          user_id: userId,
-          type: 'task_comment_added' as const,
-          title: 'New Comment',
-          message: `New comment on task: ${task.title}`,
-          data: { task_id: taskId, task_title: task.title }
-        }));
-
-        if (notifications.length > 0) {
-          await supabase
-            .from('notifications')
-            .insert(notifications);
+        for (const userId of usersToNotify) {
+          await databases.createDocument(DATABASE_ID, 'notifications', ID.unique(), {
+            user_id: userId,
+            type: 'task_comment_added',
+            title: 'New Comment',
+            message: `New comment on task: ${task.title}`,
+            data: stringifyJsonField({ task_id: taskId, task_title: task.title }, "{}")
+          });
         }
       }
     } catch (error) {

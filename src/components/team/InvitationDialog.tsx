@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, ID, Query } from "@/integrations/appwrite/client";
+import { stringifyJsonField } from "@/utils/appwriteJson";
 
 const invitationSchema = z.object({
   email: z.string().email({
@@ -43,7 +44,7 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
 
   const positions = [
     "Project Manager",
-    "Account Executive", 
+    "Account Executive",
     "UI Designer",
     "Senior UI Designer",
     "Design Director",
@@ -73,26 +74,34 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
   const handleSubmit = async (values: z.infer<typeof invitationSchema>) => {
     try {
       setIsLoading(true);
-      const { data: session } = await supabase.auth.getSession();
-      
-      if (!session.session) {
+
+      let session;
+      try {
+        session = await account.getSession('current');
+      } catch {
+        toast.error("You must be logged in to send invitations");
+        return;
+      }
+
+      if (!session) {
         toast.error("You must be logged in to send invitations");
         return;
       }
 
       console.log("Creating invitation for:", values.email, "with position:", values.position);
 
-      // Check if user already exists
-      const { data: existingUsers } = await supabase.auth.admin.listUsers();
-      const existingUser = existingUsers?.users.find((user: any) => user.email === values.email);
-      
-      if (existingUser) {
+      // Check if user already exists by checking profiles by email
+      const existingProfilesResponse = await databases.listDocuments(DATABASE_ID, 'profiles', [
+        Query.equal('email', values.email)
+      ]);
+      const existingProfile = existingProfilesResponse.documents[0] ?? null;
+
+      if (existingProfile) {
         // Check if they already have a role
-        const { data: existingRole } = await supabase
-          .from('user_roles')
-          .select('*')
-          .eq('user_id', existingUser.id)
-          .single();
+        const existingRoleResponse = await databases.listDocuments(DATABASE_ID, 'user_roles', [
+          Query.equal('user_id', existingProfile.$id)
+        ]);
+        const existingRole = existingRoleResponse.documents[0] ?? null;
 
         if (existingRole) {
           toast.error("This user is already a team member");
@@ -101,13 +110,12 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
       }
 
       // Check for existing pending invitation
-      const { data: existingInvitation } = await supabase
-        .from('invitations')
-        .select('*')
-        .eq('email', values.email)
-        .is('accepted_at', null)
-        .gt('expires_at', new Date().toISOString())
-        .single();
+      const existingInvitationResponse = await databases.listDocuments(DATABASE_ID, 'invitations', [
+        Query.equal('email', values.email),
+        Query.isNull('accepted_at'),
+        Query.greaterThan('expires_at', new Date().toISOString())
+      ]);
+      const existingInvitation = existingInvitationResponse.documents[0] ?? null;
 
       if (existingInvitation) {
         toast.error("There's already a pending invitation for this email");
@@ -119,27 +127,19 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
       expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
       const token = generateToken();
 
-      // Store the position and message in metadata
       const invitationData = {
         email: values.email,
         role: values.role as "administrator" | "team",
-        invited_by: session.session.user.id,
+        invited_by: session.userId,
         expires_at: expiresAt.toISOString(),
         token: token,
-        metadata: {
+        metadata: stringifyJsonField({
           position: values.position,
           message: values.message
-        }
+        }),
       };
 
-      const { error } = await supabase
-        .from('invitations')
-        .insert(invitationData);
-
-      if (error) {
-        console.error('Invitation creation error:', error);
-        throw error;
-      }
+      await databases.createDocument(DATABASE_ID, 'invitations', ID.unique(), invitationData);
 
       console.log("Invitation created successfully");
 
@@ -195,9 +195,9 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
                 <span className="font-medium">Invitation Link</span>
               </div>
               <div className="flex items-center gap-2">
-                <Input 
-                  value={invitationLink} 
-                  readOnly 
+                <Input
+                  value={invitationLink}
+                  readOnly
                   className="text-sm"
                 />
                 <Button onClick={copyInvitationLink} variant="outline" size="icon">
@@ -306,7 +306,7 @@ const InvitationDialog = ({ isOpen, onClose, onInvitationSent }: InvitationDialo
                 <FormItem>
                   <FormLabel>Message (Optional)</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="Add a personal message..."
                       rows={3}
                       {...field}

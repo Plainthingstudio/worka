@@ -10,7 +10,7 @@ import TeamTable from "@/components/team/TeamTable";
 import DeleteTeamMemberDialog from "@/components/team/DeleteTeamMemberDialog";
 import InvitationDialog from "@/components/team/InvitationDialog";
 import PendingInvitations from "@/components/team/PendingInvitations";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import { useUserRole } from "@/hooks/useUserRole";
 
 const Team = () => {
@@ -31,50 +31,57 @@ const Team = () => {
   const fetchTeamMembers = async () => {
     try {
       setIsLoading(true);
-      const { data: session } = await supabase.auth.getSession();
-      
-      if (!session.session) {
+
+      let session;
+      try {
+        session = await account.getSession('current');
+      } catch {
         toast.error("You must be logged in to view team members");
         return;
       }
 
-      // Fetch team members with profile data
-      const { data: teamData, error: teamError } = await supabase
-        .from('team_members')
-        .select(`
-          *,
-          profiles(email, full_name)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (teamError) {
-        throw teamError;
+      if (!session) {
+        toast.error("You must be logged in to view team members");
+        return;
       }
-      
+
+      // Fetch team members
+      const teamResponse = await databases.listDocuments(DATABASE_ID, 'team_members', [
+        Query.orderDesc('$createdAt')
+      ]);
+      const teamData = teamResponse.documents;
+
       // Get all user roles
-      const { data: rolesData } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
+      const rolesResponse = await databases.listDocuments(DATABASE_ID, 'user_roles');
+      const rolesData = rolesResponse.documents;
 
       // Create a map of user_id to role
       const rolesMap = new Map<string, string>();
-      rolesData?.forEach((role: any) => {
+      rolesData.forEach((role: any) => {
         rolesMap.set(role.user_id, role.role);
+      });
+
+      // Fetch profiles to get emails
+      const profilesResponse = await databases.listDocuments(DATABASE_ID, 'profiles');
+      const profilesMap = new Map<string, any>();
+      profilesResponse.documents.forEach((profile: any) => {
+        profilesMap.set(profile.$id, profile);
       });
 
       const transformedMembers: TeamMember[] = (teamData || []).map((member: any) => {
         const role = rolesMap.get(member.user_id);
-        
+        const profile = profilesMap.get(member.user_id);
+
         return {
-          id: member.id,
+          id: member.$id,
           user_id: member.user_id,
           name: member.name,
           position: member.position as TeamPosition,
           startDate: new Date(member.start_date),
           skills: member.skills || [],
-          createdAt: new Date(member.created_at),
+          createdAt: new Date(member.$createdAt),
           role: role,
-          email: member.profiles?.email || null
+          email: profile?.email || null
         };
       });
 
@@ -98,54 +105,48 @@ const Team = () => {
     if (!editingMember) return;
 
     try {
-      const { data: session } = await supabase.auth.getSession();
-      
-      if (!session.session) {
+      let session;
+      try {
+        session = await account.getSession('current');
+      } catch {
+        toast.error("You must be logged in to edit team members");
+        return;
+      }
+
+      if (!session) {
         toast.error("You must be logged in to edit team members");
         return;
       }
 
       // Update the team member record (name and email are handled separately since they come from profiles)
-      const { error: teamError } = await supabase
-        .from('team_members')
-        .update({
-          position: data.position as TeamPosition,
-          start_date: data.startDate.toISOString(),
-          skills: data.skills || []
-        })
-        .eq('id', editingMember.id);
-
-      if (teamError) {
-        throw teamError;
-      }
+      await databases.updateDocument(DATABASE_ID, 'team_members', editingMember.id, {
+        position: data.position as TeamPosition,
+        start_date: data.startDate.toISOString(),
+        skills: data.skills || []
+      });
 
       // Handle role update if specified and user has a profile
       if (data.role && editingMember.user_id) {
         // Check if the target user already has a role
-        const { data: existingRole } = await supabase
-          .from('user_roles')
-          .select('*')
-          .eq('user_id', editingMember.user_id)
-          .single();
+        const existingRoleResponse = await databases.listDocuments(DATABASE_ID, 'user_roles', [
+          Query.equal('user_id', editingMember.user_id)
+        ]);
+        const existingRole = existingRoleResponse.documents[0] ?? null;
 
         if (existingRole) {
           // Update existing role
-          await supabase
-            .from('user_roles')
-            .update({ 
-              role: data.role,
-              assigned_by: session.session.user.id
-            })
-            .eq('user_id', editingMember.user_id);
+          await databases.updateDocument(DATABASE_ID, 'user_roles', existingRole.$id, {
+            role: data.role,
+            assigned_by: session.userId
+          });
         } else {
           // Insert new role
-          await supabase
-            .from('user_roles')
-            .insert({
-              user_id: editingMember.user_id,
-              role: data.role,
-              assigned_by: session.session.user.id
-            });
+          const { ID } = await import('@/integrations/appwrite/client');
+          await databases.createDocument(DATABASE_ID, 'user_roles', ID.unique(), {
+            user_id: editingMember.user_id,
+            role: data.role,
+            assigned_by: session.userId
+          });
         }
       }
 
@@ -161,39 +162,40 @@ const Team = () => {
 
   const handleDeleteMember = async (id: string) => {
     try {
-      const { data: session } = await supabase.auth.getSession();
-      
-      if (!session.session) {
+      let session;
+      try {
+        session = await account.getSession('current');
+      } catch {
+        toast.error("You must be logged in to delete team members");
+        return;
+      }
+
+      if (!session) {
         toast.error("You must be logged in to delete team members");
         return;
       }
 
       // Find the member to delete
       const memberToDelete = teamMembers.find(m => m.id === id);
-      
-      // Delete from team_members table
-      const { error: teamError } = await supabase
-        .from('team_members')
-        .delete()
-        .eq('id', id);
 
-      if (teamError) {
-        throw teamError;
-      }
+      // Delete from team_members collection
+      await databases.deleteDocument(DATABASE_ID, 'team_members', id);
 
       // Optionally remove their role if they were linked to a user account
       if (memberToDelete?.email) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('email', memberToDelete.email)
-          .single();
-        
+        const profileResponse = await databases.listDocuments(DATABASE_ID, 'profiles', [
+          Query.equal('email', memberToDelete.email)
+        ]);
+        const profileData = profileResponse.documents[0] ?? null;
+
         if (profileData) {
-          await supabase
-            .from('user_roles')
-            .delete()
-            .eq('user_id', profileData.id);
+          const roleResponse = await databases.listDocuments(DATABASE_ID, 'user_roles', [
+            Query.equal('user_id', profileData.$id)
+          ]);
+          const roleDoc = roleResponse.documents[0] ?? null;
+          if (roleDoc) {
+            await databases.deleteDocument(DATABASE_ID, 'user_roles', roleDoc.$id);
+          }
         }
       }
 
@@ -251,19 +253,19 @@ const Team = () => {
             <PendingInvitations refreshTrigger={invitationRefreshTrigger} />
           )}
 
-          <TeamFilter 
-            search={search} 
-            setSearch={setSearch} 
-            positionFilter={positionFilter} 
-            setPositionFilter={setPositionFilter} 
+          <TeamFilter
+            search={search}
+            setSearch={setSearch}
+            positionFilter={positionFilter}
+            setPositionFilter={setPositionFilter}
           />
 
           <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
             <div className="overflow-x-auto p-4 py-[8px] px-[8px]">
-              <TeamTable 
-                members={filteredMembers} 
-                onEdit={canManageTeam() ? openEditMemberDialog : undefined} 
-                onDelete={canManageTeam() ? openDeleteDialog : undefined} 
+              <TeamTable
+                members={filteredMembers}
+                onEdit={canManageTeam() ? openEditMemberDialog : undefined}
+                onDelete={canManageTeam() ? openDeleteDialog : undefined}
               />
             </div>
           </div>
@@ -271,7 +273,7 @@ const Team = () => {
 
       {/* Invitation Dialog - only for owners */}
       {userRole === 'owner' && (
-        <InvitationDialog 
+        <InvitationDialog
           isOpen={isInvitationDialogOpen}
           onClose={closeInvitationDialog}
           onInvitationSent={handleInvitationSent}
@@ -288,10 +290,10 @@ const Team = () => {
       )}
 
       {canManageTeam() && isDeleting && (
-        <DeleteTeamMemberDialog 
-          isOpen={!!isDeleting} 
-          onClose={closeDeleteDialog} 
-          onConfirm={() => isDeleting && handleDeleteMember(isDeleting)} 
+        <DeleteTeamMemberDialog
+          isOpen={!!isDeleting}
+          onClose={closeDeleteDialog}
+          onConfirm={() => isDeleting && handleDeleteMember(isDeleting)}
         />
       )}
     </>

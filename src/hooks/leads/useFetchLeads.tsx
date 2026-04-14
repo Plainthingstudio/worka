@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { account, databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
 import { Lead, LeadStage } from '@/types';
 
 export const useFetchLeads = () => {
@@ -11,32 +11,26 @@ export const useFetchLeads = () => {
   const fetchLeads = async () => {
     try {
       setIsLoading(true);
-      
+
       // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
+      try {
+        await account.getSession('current');
+      } catch {
         toast.error("You must be logged in to view leads");
         setIsLoading(false);
         return;
       }
-      
-      // Fetch leads from Supabase ordered by creation date (newest first)
-      const { data, error } = await supabase
-        .from('leads')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error("Error fetching leads:", error);
-        toast.error("Failed to load leads");
-        setIsLoading(false);
-        return;
-      }
-      
-      // Transform Supabase data to match Lead type
-      const transformedLeads = data.map((lead: any) => ({
-        id: lead.id,
+
+      // Fetch leads ordered by creation date (newest first)
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        'leads',
+        [Query.orderDesc('$createdAt')]
+      );
+
+      // Transform data to match Lead type
+      const transformedLeads = response.documents.map((lead: any) => ({
+        id: lead.$id,
         name: lead.name,
         email: lead.email,
         phone: lead.phone,
@@ -44,10 +38,10 @@ export const useFetchLeads = () => {
         stage: lead.stage as LeadStage,
         notes: lead.notes,
         address: lead.address,
-        createdAt: new Date(lead.created_at),
-        updatedAt: new Date(lead.updated_at)
+        createdAt: new Date(lead.$createdAt),
+        updatedAt: new Date(lead.$updatedAt)
       }));
-      
+
       setLeads(transformedLeads);
     } catch (error) {
       console.error("Error fetching leads:", error);

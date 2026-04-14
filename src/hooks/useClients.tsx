@@ -2,50 +2,30 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Client, LeadSource } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
+import { account, databases, DATABASE_ID, ID, Query } from "@/integrations/appwrite/client";
 
 export const useClients = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch clients from Supabase
   const fetchClients = async () => {
     try {
       setIsLoading(true);
-      
-      // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast.error("You must be logged in to view clients");
-        setIsLoading(false);
-        return;
-      }
-      
-      // Fetch clients from Supabase
-      const { data, error } = await supabase
-        .from('clients')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error("Error fetching clients:", error);
-        toast.error("Failed to load clients");
-        setIsLoading(false);
-        return;
-      }
-      
-      // Transform Supabase data to match Client type
-      const transformedClients = data.map((client: any) => ({
-        id: client.id,
+
+      const response = await databases.listDocuments(DATABASE_ID, "clients", [
+        Query.orderDesc("$createdAt"),
+      ]);
+
+      const transformedClients = response.documents.map((client: any) => ({
+        id: client.$id,
         name: client.name,
         email: client.email,
         phone: client.phone,
         address: client.address,
         leadSource: client.lead_source as LeadSource,
-        createdAt: new Date(client.created_at)
+        createdAt: new Date(client.$createdAt),
       }));
-      
+
       setClients(transformedClients);
     } catch (error) {
       console.error("Error fetching clients:", error);
@@ -55,50 +35,30 @@ export const useClients = () => {
     }
   };
 
-  // Add a new client
   const addClient = async (data: any) => {
     try {
-      // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast.error("You must be logged in to create a client");
-        return;
-      }
-      
-      // Validate leadSource to ensure it's one of the allowed values
+      const user = await account.get();
       const leadSource = data.leadSource as LeadSource;
-      
-      // Insert new client to Supabase
-      const { data: clientData, error } = await supabase
-        .from('clients')
-        .insert({
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          address: data.address,
-          lead_source: leadSource,
-          user_id: session.user.id
-        })
-        .select()
-        .single();
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Transform Supabase data to match Client type
+
+      const clientData = await databases.createDocument(DATABASE_ID, "clients", ID.unique(), {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        lead_source: leadSource,
+        user_id: user.$id,
+      });
+
       const newClient: Client = {
-        id: clientData.id,
+        id: clientData.$id,
         name: clientData.name,
         email: clientData.email,
         phone: clientData.phone,
         address: clientData.address,
         leadSource: clientData.lead_source as LeadSource,
-        createdAt: new Date(clientData.created_at)
+        createdAt: new Date(clientData.$createdAt),
       };
-      
-      // Update local state
+
       setClients([newClient, ...clients]);
       toast.success("Client created successfully");
       return true;
@@ -109,49 +69,31 @@ export const useClients = () => {
     }
   };
 
-  // Update an existing client
   const updateClient = async (clientId: string, data: any) => {
     try {
-      // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast.error("You must be logged in to update a client");
-        return false;
-      }
-      
-      // Validate leadSource to ensure it's one of the allowed values
       const leadSource = data.leadSource as LeadSource;
-      
-      // Update client in Supabase
-      const { error } = await supabase
-        .from('clients')
-        .update({
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          address: data.address,
-          lead_source: leadSource
-        })
-        .eq('id', clientId)
-        .eq('user_id', session.user.id);
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Update local state
-      const updatedClients = clients.map(client => 
-        client.id === clientId ? {
-          ...client,
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          address: data.address,
-          leadSource: data.leadSource as LeadSource
-        } : client
+
+      await databases.updateDocument(DATABASE_ID, "clients", clientId, {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        lead_source: leadSource,
+      });
+
+      const updatedClients = clients.map((client) =>
+        client.id === clientId
+          ? {
+              ...client,
+              name: data.name,
+              email: data.email,
+              phone: data.phone,
+              address: data.address,
+              leadSource: data.leadSource as LeadSource,
+            }
+          : client
       );
-      
+
       setClients(updatedClients);
       toast.success("Client updated successfully");
       return true;
@@ -162,31 +104,10 @@ export const useClients = () => {
     }
   };
 
-  // Delete a client
   const deleteClient = async (id: string) => {
     try {
-      // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast.error("You must be logged in to delete a client");
-        return false;
-      }
-      
-      // Delete client from Supabase
-      const { error } = await supabase
-        .from('clients')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', session.user.id);
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Update local state
-      const updatedClients = clients.filter(client => client.id !== id);
-      setClients(updatedClients);
+      await databases.deleteDocument(DATABASE_ID, "clients", id);
+      setClients(clients.filter((client) => client.id !== id));
       toast.success("Client deleted successfully");
       return true;
     } catch (error: any) {
