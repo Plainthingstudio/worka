@@ -52,12 +52,15 @@ Set di Appwrite Function `google-calendar`:
 
 ```env
 APPWRITE_DATABASE_ID="your_database_id"
+APPWRITE_API_KEY="your_appwrite_server_api_key"
 GOOGLE_CLIENT_ID="your_google_oauth_client_id"
 GOOGLE_CLIENT_SECRET="your_google_oauth_client_secret"
 GOOGLE_REDIRECT_URI="https://google-calendar.functions.your-domain.com/oauth/callback"
 GOOGLE_CALENDAR_APP_URL="https://app.your-domain.com"
 GOOGLE_STATE_SECRET="a_long_random_secret"
 ```
+
+`APPWRITE_API_KEY` dipakai sebagai fallback saat callback OAuth datang langsung dari Google melalui custom domain HTTP dan request tersebut tidak membawa header internal Appwrite.
 
 Appwrite Function juga perlu scopes database read/write agar bisa menyimpan token.
 

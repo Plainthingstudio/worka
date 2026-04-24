@@ -31,16 +31,21 @@ const Settings = () => {
 
   useEffect(() => {
     const googleCalendarStatus = searchParams.get("googleCalendar");
+    const googleCalendarMessage = searchParams.get("googleCalendarMessage");
     if (!googleCalendarStatus) return;
 
     if (googleCalendarStatus === "connected") {
       toast.success("Google Calendar connected successfully.");
     } else if (googleCalendarStatus === "error") {
-      toast.error("Google Calendar connection failed. Check Appwrite Function logs and Google OAuth settings.");
+      toast.error(
+        googleCalendarMessage ||
+          "Google Calendar connection failed. Check Appwrite Function logs and Google OAuth settings."
+      );
     }
 
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete("googleCalendar");
+    nextParams.delete("googleCalendarMessage");
     setSearchParams(nextParams, { replace: true });
   }, [searchParams, setSearchParams]);
 

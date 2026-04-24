@@ -183,9 +183,8 @@ export const CommentInput: React.FC<CommentInputProps> = ({
 
   return (
     <div
-      className="relative bg-white"
+      className="relative bg-card border border-border-soft"
       style={{
-        border: "1px solid #E2E8F0",
         borderRadius: 12,
         padding: 12,
       }}
@@ -197,12 +196,11 @@ export const CommentInput: React.FC<CommentInputProps> = ({
         onKeyDown={handleKeyDown}
         placeholder="Add a comment..."
         rows={3}
-        className="w-full resize-none outline-none bg-transparent"
+        className="w-full resize-none outline-none bg-transparent text-foreground placeholder:text-muted-foreground"
         style={{
           fontFamily: "Inter, sans-serif",
           fontSize: 14,
           lineHeight: "20px",
-          color: "#020817",
           minHeight: 60,
         }}
       />
@@ -210,8 +208,8 @@ export const CommentInput: React.FC<CommentInputProps> = ({
       {/* Mention dropdown */}
       {mentionQuery !== null && filteredCandidates.length > 0 && (
         <div
-          className="absolute bottom-full mb-1 left-0 bg-white border shadow-lg z-10 py-1 min-w-[220px]"
-          style={{ borderRadius: 8, borderColor: "#E2E8F0" }}
+          className="absolute bottom-full mb-1 left-0 bg-popover border border-border-soft shadow-lg z-10 py-1 min-w-[220px]"
+          style={{ borderRadius: 8 }}
         >
           {filteredCandidates.map((c, i) => (
             <button
@@ -219,23 +217,20 @@ export const CommentInput: React.FC<CommentInputProps> = ({
               key={c.user_id}
               onClick={() => insertMention(c)}
               onMouseEnter={() => setHighlightIndex(i)}
-              className="w-full text-left flex items-center gap-2"
+              className="w-full text-left flex items-center gap-2 text-foreground"
               style={{
                 padding: "6px 10px",
-                background: i === highlightIndex ? "#F1F5F9" : "transparent",
+                background: i === highlightIndex ? "hsl(var(--surface-hover))" : "transparent",
                 fontFamily: "Inter, sans-serif",
                 fontSize: 14,
-                color: "#020817",
               }}
             >
               <span
-                className="inline-flex items-center justify-center shrink-0"
+                className="inline-flex items-center justify-center shrink-0 bg-brand-accent text-brand-foreground"
                 style={{
                   width: 22,
                   height: 22,
                   borderRadius: 9999,
-                  background: "#0080FF",
-                  color: "#FFFFFF",
                   fontSize: 10,
                   fontWeight: 600,
                 }}
@@ -252,14 +247,14 @@ export const CommentInput: React.FC<CommentInputProps> = ({
       {files.length > 0 && (
         <div className="mt-2 space-y-1">
           {files.map((f, i) => (
-            <div key={i} className="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded text-xs">
-              <Paperclip style={{ width: 12, height: 12, color: "#64748B" }} strokeWidth={1.67} />
-              <span className="truncate flex-1 text-[#020817]">{f.name}</span>
-              <span className="text-[#64748B]">{formatFileSize(f.size)}</span>
+            <div key={i} className="flex items-center gap-2 bg-surface-2 px-2 py-1 rounded text-xs">
+              <Paperclip className="text-muted-foreground" style={{ width: 12, height: 12 }} strokeWidth={1.67} />
+              <span className="truncate flex-1 text-foreground">{f.name}</span>
+              <span className="text-muted-foreground">{formatFileSize(f.size)}</span>
               <button
                 type="button"
                 onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
-                className="hover:bg-slate-200 rounded p-0.5"
+                className="hover:bg-accent text-foreground rounded p-0.5"
               >
                 <X style={{ width: 12, height: 12 }} strokeWidth={1.67} />
               </button>
@@ -282,22 +277,22 @@ export const CommentInput: React.FC<CommentInputProps> = ({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center justify-center transition-colors hover:bg-slate-100"
+            className="inline-flex items-center justify-center transition-colors hover:bg-accent"
             style={{ width: 28, height: 28, borderRadius: 6 }}
             aria-label="Attach file"
             title="Attach file"
           >
-            <Paperclip style={{ width: 16, height: 16, color: "#64748B" }} strokeWidth={1.67} />
+            <Paperclip className="text-muted-foreground" style={{ width: 16, height: 16 }} strokeWidth={1.67} />
           </button>
           <button
             type="button"
             onClick={handleTriggerMention}
-            className="inline-flex items-center justify-center transition-colors hover:bg-slate-100"
+            className="inline-flex items-center justify-center transition-colors hover:bg-accent"
             style={{ width: 28, height: 28, borderRadius: 6 }}
             aria-label="Mention user"
             title="Mention user"
           >
-            <AtSign style={{ width: 16, height: 16, color: "#64748B" }} strokeWidth={1.67} />
+            <AtSign className="text-muted-foreground" style={{ width: 16, height: 16 }} strokeWidth={1.67} />
           </button>
         </div>
         <button

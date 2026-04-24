@@ -113,7 +113,7 @@ const SortIndicator = ({ active, dir }: { active: boolean; dir: SortDir }) => {
 
 const ColumnHeaders = ({ sortKey, sortDir, onToggleSort }: ColumnHeadersProps) => (
   <div
-    className="flex items-center bg-surface-3/10"
+    className="flex items-center bg-card"
     style={{
       height: 33,
       padding: '8px 48px 8px 0',
@@ -336,8 +336,7 @@ export const ClickUpTaskList = ({
         key={isSubtask ? `sub-${task.id}` : task.id}
         onClick={() => onTaskClick(task)}
         className={cn(
-          "flex items-center hover:bg-surface-hover/60 cursor-pointer group transition-colors",
-          showRowBg && "bg-surface-3/5",
+          "flex items-center bg-card hover:bg-surface-hover cursor-pointer group transition-colors",
           showBorderTop && "border-t border-border-subtle",
           showBorderBottom && "border-b border-border-subtle"
         )}
@@ -350,7 +349,9 @@ export const ClickUpTaskList = ({
       >
         {/* Task column */}
         <div
-          className="flex items-center shrink-0 bg-card transition-colors group-hover:bg-surface-hover"
+          className={cn(
+            'flex items-center shrink-0 transition-colors bg-card group-hover:bg-surface-hover'
+          )}
           style={{
             width: colWidths.task,
             gap: 12,

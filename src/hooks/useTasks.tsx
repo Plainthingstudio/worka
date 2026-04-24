@@ -7,6 +7,19 @@ import { logStatusChange, logAssigneeChange, logPriorityChange, logDueDateChange
 
 const TASK_ATTACHMENTS_BUCKET = 'task-attachments';
 
+type DateFieldInput = Date | string | null | undefined;
+
+const serializeDateField = (value: DateFieldInput) => {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  return value instanceof Date ? value.toISOString() : value;
+};
+
+const parseDateField = (value: DateFieldInput) => {
+  if (!value) return undefined;
+  return value instanceof Date ? value : new Date(value);
+};
+
 export const useTasks = (projectId: string) => {
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -184,8 +197,8 @@ export const useTasks = (projectId: string) => {
         status: taskData.status,
         priority: taskData.priority,
         task_type: taskData.task_type,
-        due_date: taskData.due_date?.toISOString(),
-        completed_at: taskData.completed_at?.toISOString(),
+        due_date: serializeDateField(taskData.due_date as DateFieldInput),
+        completed_at: serializeDateField(taskData.completed_at as DateFieldInput),
         assignees: taskData.assignees,
         project_id: projectId,
         user_id: user.$id,
@@ -230,8 +243,8 @@ export const useTasks = (projectId: string) => {
       if (updates.priority !== undefined) processedUpdates.priority = updates.priority;
       if (updates.task_type !== undefined) processedUpdates.task_type = updates.task_type;
       if (updates.assignees !== undefined) processedUpdates.assignees = updates.assignees;
-      if (updates.due_date !== undefined) processedUpdates.due_date = updates.due_date?.toISOString();
-      if (updates.completed_at !== undefined) processedUpdates.completed_at = updates.completed_at?.toISOString();
+      if (updates.due_date !== undefined) processedUpdates.due_date = serializeDateField(updates.due_date as DateFieldInput);
+      if (updates.completed_at !== undefined) processedUpdates.completed_at = serializeDateField(updates.completed_at as DateFieldInput);
       if (updates.brief_id !== undefined) processedUpdates.brief_id = updates.brief_id;
       if (updates.brief_type !== undefined) processedUpdates.brief_type = updates.brief_type;
 
@@ -248,8 +261,8 @@ export const useTasks = (projectId: string) => {
         }
 
         if (updates.due_date !== undefined) {
-          const oldDate = currentTask.due_date;
-          const newDate = updates.due_date;
+          const oldDate = parseDateField(currentTask.due_date as DateFieldInput);
+          const newDate = parseDateField(updates.due_date as DateFieldInput);
           if (oldDate?.getTime() !== newDate?.getTime()) {
             await logDueDateChange(taskId, oldDate, newDate);
           }

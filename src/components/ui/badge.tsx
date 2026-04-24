@@ -27,17 +27,17 @@ const badgeVariants = cva(
         
         // Status variants
         "planning":
-          "bg-gray-50 text-gray-700 ring-gray-600/20",
+          "bg-gray-50 text-gray-700 ring-gray-600/20 dark:bg-gray-500/15 dark:text-gray-300 dark:ring-gray-400/30",
         "in-progress":
-          "bg-blue-50 text-blue-700 ring-blue-600/20",
+          "bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-500/15 dark:text-blue-300 dark:ring-blue-400/30",
         "awaiting-feedback":
-          "bg-violet-50 text-violet-700 ring-violet-600/20",
+          "bg-violet-50 text-violet-700 ring-violet-600/20 dark:bg-violet-500/15 dark:text-violet-300 dark:ring-violet-400/30",
         "completed":
-          "bg-green-50 text-green-700 ring-green-600/20",
+          "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-500/15 dark:text-green-300 dark:ring-green-400/30",
         "paused":
-          "bg-yellow-50 text-yellow-700 ring-yellow-600/20",
+          "bg-yellow-50 text-yellow-700 ring-yellow-600/20 dark:bg-yellow-500/15 dark:text-yellow-300 dark:ring-yellow-400/30",
         "cancelled":
-          "bg-red-50 text-red-700 ring-red-600/20",
+          "bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-500/15 dark:text-red-300 dark:ring-red-400/30",
         
         // Brief status variants
         "new":

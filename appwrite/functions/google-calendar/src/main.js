@@ -4,8 +4,9 @@ import fetch from "node-fetch";
 const GOOGLE_CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_EVENTS_URL = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
-const APPWRITE_ENDPOINT = process.env.APPWRITE_FUNCTION_API_ENDPOINT;
+const APPWRITE_ENDPOINT = process.env.APPWRITE_ENDPOINT || process.env.APPWRITE_FUNCTION_API_ENDPOINT;
 const APPWRITE_PROJECT_ID = process.env.APPWRITE_FUNCTION_PROJECT_ID;
+const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY;
 const DATABASE_ID = process.env.APPWRITE_DATABASE_ID;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
@@ -43,7 +44,40 @@ const ensureConfigured = () => {
   }
 };
 
-const buildAppwriteUrl = (path) => `${APPWRITE_ENDPOINT.replace(/\/$/, "")}${path}`;
+const getApiKey = (req) => {
+  const apiKey = APPWRITE_API_KEY || req.headers["x-appwrite-key"];
+
+  if (!apiKey) {
+    const err = new Error(
+      "Missing Appwrite API key. Set APPWRITE_API_KEY for HTTP callback executions or invoke the function through Appwrite client execution."
+    );
+    err.status = 500;
+    throw err;
+  }
+
+  return apiKey;
+};
+
+const buildAppwriteUrl = (path) => {
+  const endpoint = APPWRITE_ENDPOINT.replace(/\/$/, "");
+  const normalizedPath =
+    endpoint.endsWith("/v1") && path.startsWith("/v1/") ? path.slice(3) : path;
+
+  return `${endpoint}${normalizedPath}`;
+};
+
+const getRequestUrl = (req) => {
+  const rawPath = typeof req.path === "string" ? req.path : "/";
+  const queryString =
+    typeof req.queryString === "string"
+      ? req.queryString
+      : typeof req.querystring === "string"
+        ? req.querystring
+        : "";
+  const pathWithQuery = rawPath.includes("?") || !queryString ? rawPath : `${rawPath}?${queryString}`;
+
+  return new URL(`https://function.local${pathWithQuery}`);
+};
 
 const appwriteRequest = async (apiKey, method, path, body) => {
   const response = await fetch(buildAppwriteUrl(path), {
@@ -68,12 +102,38 @@ const appwriteRequest = async (apiKey, method, path, body) => {
   return payload;
 };
 
+const withLegacyFallback = async (runModern, runLegacy) => {
+  try {
+    return await runModern();
+  } catch (error) {
+    const message = String(error?.message || "").toLowerCase();
+    const shouldRetryAsLegacy =
+      error?.status === 404 &&
+      (message.includes("route not found") || message.includes("api route is valid"));
+
+    if (!shouldRetryAsLegacy) {
+      throw error;
+    }
+
+    return await runLegacy();
+  }
+};
+
 const getDocument = async (apiKey, collectionId, documentId) => {
   try {
-    return await appwriteRequest(
-      apiKey,
-      "GET",
-      `/v1/databases/${DATABASE_ID}/collections/${collectionId}/documents/${documentId}`
+    return await withLegacyFallback(
+      () =>
+        appwriteRequest(
+          apiKey,
+          "GET",
+          `/v1/tablesdb/${DATABASE_ID}/tables/${collectionId}/rows/${documentId}`
+        ),
+      () =>
+        appwriteRequest(
+          apiKey,
+          "GET",
+          `/v1/databases/${DATABASE_ID}/collections/${collectionId}/documents/${documentId}`
+        )
     );
   } catch (error) {
     if (error.status === 404) return null;
@@ -82,27 +142,56 @@ const getDocument = async (apiKey, collectionId, documentId) => {
 };
 
 const updateDocument = async (apiKey, collectionId, documentId, data) =>
-  appwriteRequest(
-    apiKey,
-    "PATCH",
-    `/v1/databases/${DATABASE_ID}/collections/${collectionId}/documents/${documentId}`,
-    { data }
+  withLegacyFallback(
+    () =>
+      appwriteRequest(
+        apiKey,
+        "PATCH",
+        `/v1/tablesdb/${DATABASE_ID}/tables/${collectionId}/rows/${documentId}`,
+        { data }
+      ),
+    () =>
+      appwriteRequest(
+        apiKey,
+        "PATCH",
+        `/v1/databases/${DATABASE_ID}/collections/${collectionId}/documents/${documentId}`,
+        { data }
+      )
   );
 
 const createDocument = async (apiKey, collectionId, documentId, data, permissions = []) =>
-  appwriteRequest(
-    apiKey,
-    "POST",
-    `/v1/databases/${DATABASE_ID}/collections/${collectionId}/documents`,
-    { documentId, data, permissions }
+  withLegacyFallback(
+    () =>
+      appwriteRequest(
+        apiKey,
+        "POST",
+        `/v1/tablesdb/${DATABASE_ID}/tables/${collectionId}/rows`,
+        { rowId: documentId, data, permissions }
+      ),
+    () =>
+      appwriteRequest(
+        apiKey,
+        "POST",
+        `/v1/databases/${DATABASE_ID}/collections/${collectionId}/documents`,
+        { documentId, data, permissions }
+      )
   );
 
 const deleteDocument = async (apiKey, collectionId, documentId) => {
   try {
-    await appwriteRequest(
-      apiKey,
-      "DELETE",
-      `/v1/databases/${DATABASE_ID}/collections/${collectionId}/documents/${documentId}`
+    await withLegacyFallback(
+      () =>
+        appwriteRequest(
+          apiKey,
+          "DELETE",
+          `/v1/tablesdb/${DATABASE_ID}/tables/${collectionId}/rows/${documentId}`
+        ),
+      () =>
+        appwriteRequest(
+          apiKey,
+          "DELETE",
+          `/v1/databases/${DATABASE_ID}/collections/${collectionId}/documents/${documentId}`
+        )
     );
   } catch (error) {
     if (error.status === 404) return;
@@ -161,10 +250,13 @@ const verifyState = (state) => {
   return payload;
 };
 
-const buildRedirectUrl = (status) => {
+const buildRedirectUrl = (status, message) => {
   const target = new URL("/settings", GOOGLE_CALENDAR_APP_URL);
   target.searchParams.set("tab", "integrations");
   target.searchParams.set("googleCalendar", status);
+  if (message) {
+    target.searchParams.set("googleCalendarMessage", String(message).slice(0, 180));
+  }
   return target.toString();
 };
 
@@ -313,19 +405,20 @@ const fetchEventsForDate = async (accessToken, date) => {
 const handleStatus = async (req, res) => {
   ensureConfigured();
 
-  const apiKey = req.headers["x-appwrite-key"];
+  const apiKey = getApiKey(req);
   const userId = ensureUserId(req);
   const profile = await getDocument(apiKey, PROFILE_COLLECTION_ID, userId);
   const connection = await getDocument(apiKey, CONNECTION_COLLECTION_ID, userId);
+  const isConnected = Boolean(connection?.refresh_token);
 
   return res.json(
     {
       isConfigured: true,
-      connected: Boolean(profile?.google_calendar_connected && connection?.refresh_token),
-      email: profile?.google_calendar_email || profile?.email || undefined,
-      syncSource: profile?.google_calendar_sync_source || undefined,
-      connectedAt: profile?.google_calendar_connected_at || undefined,
-      needsReconnect: Boolean(profile?.google_calendar_connected && !connection?.refresh_token),
+      connected: isConnected,
+      email: connection?.provider_email || profile?.google_calendar_email || profile?.email || undefined,
+      syncSource: connection?.sync_source || profile?.google_calendar_sync_source || undefined,
+      connectedAt: connection?.connected_at || profile?.google_calendar_connected_at || undefined,
+      needsReconnect: Boolean(!isConnected && profile?.google_calendar_connected),
     },
     200
   );
@@ -352,18 +445,24 @@ const handleConnectStart = async (req, res) => {
 const handleCallback = async (req, res, log, error) => {
   ensureConfigured();
 
-  const apiKey = req.headers["x-appwrite-key"];
-  const requestUrl = new URL(`https://function.local${req.path}`);
+  const requestUrl = getRequestUrl(req);
   const code = requestUrl.searchParams.get("code");
   const state = requestUrl.searchParams.get("state");
 
   if (!code || !state) {
-    return res.redirect(buildRedirectUrl("error"));
+    return res.redirect(buildRedirectUrl("error", "Missing Google OAuth code or state."));
   }
 
   try {
+    const apiKey = getApiKey(req);
     const { userId } = verifyState(state);
+    log(`google-calendar callback start userId=${userId}`);
     const tokenPayload = await exchangeAuthorizationCode(code);
+    log(
+      `google-calendar token exchange success userId=${userId} hasRefreshToken=${Boolean(
+        tokenPayload.refresh_token
+      )}`
+    );
     const profile = await getDocument(apiKey, PROFILE_COLLECTION_ID, userId);
     const connectedAt = new Date().toISOString();
     const existingConnection = await getDocument(apiKey, CONNECTION_COLLECTION_ID, userId);
@@ -384,8 +483,10 @@ const handleCallback = async (req, res, log, error) => {
     };
 
     if (existingConnection) {
+      log(`google-calendar updating existing connection userId=${userId}`);
       await updateDocument(apiKey, CONNECTION_COLLECTION_ID, userId, connectionData);
     } else {
+      log(`google-calendar creating new connection userId=${userId}`);
       await createDocument(apiKey, CONNECTION_COLLECTION_ID, userId, connectionData);
     }
 
@@ -395,19 +496,26 @@ const handleCallback = async (req, res, log, error) => {
       syncSource: "primary",
       connectedAt,
     });
+    log(`google-calendar callback success userId=${userId}`);
 
     return res.redirect(buildRedirectUrl("connected"));
   } catch (err) {
     error(err?.message || "Google Calendar callback failed.");
-    log(JSON.stringify({ path: req.path }));
-    return res.redirect(buildRedirectUrl("error"));
+    log(
+      JSON.stringify({
+        path: req.path,
+        message: err?.message || "Google Calendar callback failed.",
+        status: err?.status || 500,
+      })
+    );
+    return res.redirect(buildRedirectUrl("error", err?.message || "Google Calendar callback failed."));
   }
 };
 
 const handleDisconnect = async (req, res) => {
   ensureConfigured();
 
-  const apiKey = req.headers["x-appwrite-key"];
+  const apiKey = getApiKey(req);
   const userId = ensureUserId(req);
 
   await deleteDocument(apiKey, CONNECTION_COLLECTION_ID, userId);
@@ -419,9 +527,9 @@ const handleDisconnect = async (req, res) => {
 const handleEvents = async (req, res) => {
   ensureConfigured();
 
-  const apiKey = req.headers["x-appwrite-key"];
+  const apiKey = getApiKey(req);
   const userId = ensureUserId(req);
-  const requestUrl = new URL(`https://function.local${req.path}`);
+  const requestUrl = getRequestUrl(req);
   const date = requestUrl.searchParams.get("date");
   const start = requestUrl.searchParams.get("start");
   const end = requestUrl.searchParams.get("end");
