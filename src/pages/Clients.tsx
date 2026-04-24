@@ -15,7 +15,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 
 const Clients = () => {
   // Custom hooks for data and state management
-  const { clients, isLoading, addClient, updateClient, deleteClient } = useClients();
+  const { clients, isLoading, addClient, updateClient, deleteClient, inlineUpdateClient } = useClients();
   const { 
     isAddingClient, 
     editingClient, 
@@ -51,7 +51,7 @@ const Clients = () => {
 
   return (
     <>
-      <main className="container mx-auto p-6">
+      <main className="w-full p-6">
         <ClientsHeader 
           onCreateClient={canManageProjects() ? openAddClientDialog : undefined}
           userRole={userRole}
@@ -65,15 +65,15 @@ const Clients = () => {
           leadSources={leadSources} 
         />
 
-        <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
-          <div className="overflow-x-auto p-4 py-[8px] px-[8px]">
+        <div className="rounded-xl animate-fade-in">
+          <div className="overflow-x-auto p-0">
             {isLoading ? (
               <ClientsLoading />
             ) : (
-              <ClientsTable 
-                clients={filteredClients} 
-                onEdit={canManageProjects() ? openEditClientDialog : undefined} 
-                onDelete={canManageProjects() ? openDeleteDialog : undefined} 
+              <ClientsTable
+                clients={filteredClients}
+                onDelete={canManageProjects() ? openDeleteDialog : undefined}
+                onInlineUpdate={canManageProjects() ? inlineUpdateClient : undefined}
               />
             )}
           </div>

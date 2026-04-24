@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { account, databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
 import { toast } from '@/hooks/use-toast';
 import { Brief } from '@/types/brief';
+import { mergeBriefPayload } from '@/utils/briefPayload';
 
 export const useBriefConnection = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,10 +30,23 @@ export const useBriefConnection = () => {
           [Query.equal('user_id', user.$id)]
         );
         allBriefs = allBriefs.concat(
-          gdResponse.documents.map((b: any) => ({ ...b, id: b.$id, type: 'Graphic Design' }))
+          gdResponse.documents.map((b: any) => ({ ...mergeBriefPayload(b), id: b.$id, type: 'Graphic Design' }))
         );
       } catch (e) {
         console.error('Error fetching graphic design briefs:', e);
+      }
+
+      try {
+        const uiResponse = await databases.listDocuments(
+          DATABASE_ID,
+          'ui_design_briefs',
+          [Query.equal('user_id', user.$id)]
+        );
+        allBriefs = allBriefs.concat(
+          uiResponse.documents.map((b: any) => ({ ...mergeBriefPayload(b), id: b.$id, type: 'UI Design' }))
+        );
+      } catch (e) {
+        console.error('Error fetching UI design briefs:', e);
       }
 
       try {
@@ -42,7 +56,7 @@ export const useBriefConnection = () => {
           [Query.equal('user_id', user.$id)]
         );
         allBriefs = allBriefs.concat(
-          illResponse.documents.map((b: any) => ({ ...b, id: b.$id, type: 'Illustration Design' }))
+          illResponse.documents.map((b: any) => ({ ...mergeBriefPayload(b), id: b.$id, type: 'Illustration Design' }))
         );
       } catch (e) {
         console.error('Error fetching illustration briefs:', e);
@@ -117,9 +131,22 @@ export const useBriefConnection = () => {
 
   const fetchBriefDetails = async (briefId: string, briefType: string) => {
     try {
-      const tableName = briefType === 'Graphic Design' ? 'graphic_design_briefs' : 'illustration_design_briefs';
+      if (!briefId || !briefType) {
+        console.warn('Cannot fetch brief details without both brief ID and type:', { briefId, briefType });
+        return null;
+      }
+
+      const tableName = briefType === 'Graphic Design'
+        ? 'graphic_design_briefs'
+        : briefType === 'UI Design'
+          ? 'ui_design_briefs'
+          : 'illustration_design_briefs';
       const doc = await databases.getDocument(DATABASE_ID, tableName, briefId);
-      return doc;
+      return {
+        ...mergeBriefPayload(doc),
+        id: doc.$id,
+        type: briefType,
+      };
     } catch (error) {
       console.error('Error fetching brief details:', error);
       return null;

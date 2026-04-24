@@ -42,7 +42,7 @@ const Statistics = () => {
         {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-96 rounded-md" />)}
       </div>
     </div>;
-  return <div className="container py-6 px-[24px]">
+  return <div className="w-full px-6 py-6">
       <StatisticsHeader timeFilter={timeFilter} dateRange={dateRange} setTimeFilter={setTimeFilter} setDateRange={setDateRange} />
       
       {isLoading ? renderLoadingState() : error ? <div className="flex justify-center items-center h-64">

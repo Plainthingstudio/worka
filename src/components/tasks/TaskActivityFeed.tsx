@@ -79,8 +79,8 @@ export const TaskActivityFeed = ({
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     const validFiles = files.filter(file => {
-      if (file.size > 5 * 1024 * 1024) {
-        alert(`File "${file.name}" is too large. Maximum size is 5MB.`);
+      if (file.size > 50 * 1024 * 1024) {
+        alert(`File "${file.name}" is too large. Maximum size is 50MB.`);
         return false;
       }
       return true;

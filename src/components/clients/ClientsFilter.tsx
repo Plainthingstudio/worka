@@ -27,8 +27,8 @@ const ClientsFilter = ({
   leadSources,
 }: ClientsFilterProps) => {
   return (
-    <div className="glass-card mb-6 rounded-xl border shadow-sm animate-fade-in">
-      <div className="flex flex-col gap-4 p-4 sm:flex-row">
+    <div className="mb-6 rounded-xl animate-fade-in">
+      <div className="flex flex-col gap-4 p-0 sm:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input

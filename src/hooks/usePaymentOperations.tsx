@@ -3,6 +3,11 @@ import { toast } from "sonner";
 import { Project, Payment, PaymentType } from "@/types";
 import { account, databases, DATABASE_ID, ID } from "@/integrations/appwrite/client";
 
+const isUnknownUserIdAttributeError = (error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error || "");
+  return message.includes('Unknown attribute: "user_id"');
+};
+
 export const usePaymentOperations = (
   project: Project | null,
   setProject: (project: Project) => void,
@@ -20,14 +25,26 @@ export const usePaymentOperations = (
         return;
       }
 
-      const paymentData = await databases.createDocument(DATABASE_ID, 'payments', ID.unique(), {
+      const paymentPayload = {
         project_id: project.id,
         amount: data.amount,
         date: data.date.toISOString(),
         payment_type: data.paymentType,
         notes: data.notes || null,
         user_id: user?.$id,
-      });
+      };
+
+      let paymentData;
+      try {
+        paymentData = await databases.createDocument(DATABASE_ID, 'payments', ID.unique(), paymentPayload);
+      } catch (error) {
+        if (!isUnknownUserIdAttributeError(error)) {
+          throw error;
+        }
+
+        const { user_id, ...payloadWithoutUserId } = paymentPayload;
+        paymentData = await databases.createDocument(DATABASE_ID, 'payments', ID.unique(), payloadWithoutUserId);
+      }
 
       const newPayment: Payment = {
         id: paymentData.$id,

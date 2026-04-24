@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ArrowRight } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 
 const ThankYou = () => {
   const navigate = useNavigate();
@@ -31,13 +31,6 @@ const ThankYou = () => {
               className="gap-2"
             >
               Create Another Brief
-            </Button>
-            <Button 
-              onClick={() => navigate("/")}
-              className="gap-2"
-            >
-              Go to Dashboard
-              <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
         </Card>

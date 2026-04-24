@@ -28,12 +28,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Calendar as CalendarIcon, Check, ChevronsUpDown } from 'lucide-react';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Calendar as CalendarIcon, Check, ChevronsUpDown, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { TaskPriority, TaskType, TaskStatus } from '@/types/task';
+import { TaskPriority, TaskType, TaskStatus, TASK_STATUS_OPTIONS, TASK_STATUSES } from '@/types/task';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { BriefSelector } from './BriefSelector';
 
@@ -42,7 +41,7 @@ const subtaskSchema = z.object({
   description: z.string().optional(),
   priority: z.enum(['Low', 'Normal', 'High', 'Urgent']),
   task_type: z.enum(['Primary', 'Secondary', 'Tertiary']),
-  status: z.enum(['Planning', 'In progress', 'Paused', 'Completed', 'Cancelled']),
+  status: z.enum(TASK_STATUSES),
   assignees: z.array(z.string()).optional(),
   due_date: z.date().optional(),
 });
@@ -68,6 +67,7 @@ export const SubtaskDialog = ({
 }: SubtaskDialogProps) => {
   const [dateOpen, setDateOpen] = useState(false);
   const [assigneesOpen, setAssigneesOpen] = useState(false);
+  const [assigneeSearch, setAssigneeSearch] = useState('');
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
 
@@ -91,11 +91,25 @@ export const SubtaskDialog = ({
       if (teamMembers.length === 0) {
         fetchTeamMembers();
       }
-      const assignees = initialData?.assignees || [];
-      setSelectedAssignees(assignees);
-      form.setValue('assignees', assignees);
     }
-  }, [isOpen, initialData, form, teamMembers.length, fetchTeamMembers]);
+  }, [isOpen, teamMembers.length]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const assignees = initialData?.assignees || [];
+    setSelectedAssignees(assignees);
+    setAssigneeSearch('');
+    form.reset({
+      title: initialData?.title || '',
+      description: initialData?.description || '',
+      priority: initialData?.priority || 'Normal',
+      task_type: initialData?.task_type || 'Primary',
+      status: initialData?.status || 'Planning',
+      assignees,
+      due_date: initialData?.due_date,
+    });
+  }, [isOpen, initialData]);
 
   const handleSubmit = async (data: SubtaskFormData) => {
     try {
@@ -115,24 +129,35 @@ export const SubtaskDialog = ({
   const handleClose = () => {
     form.reset();
     setSelectedAssignees([]);
+    setAssigneeSearch('');
+    setAssigneesOpen(false);
     onClose();
   };
 
   const toggleAssignee = (memberId: string) => {
-    const newAssignees = selectedAssignees.includes(memberId) 
-      ? selectedAssignees.filter(id => id !== memberId)
-      : [...selectedAssignees, memberId];
-    
-    setSelectedAssignees(newAssignees);
-    form.setValue('assignees', newAssignees);
+    setSelectedAssignees((currentAssignees) => {
+      const newAssignees = currentAssignees.includes(memberId) 
+        ? currentAssignees.filter(id => id !== memberId)
+        : [...currentAssignees, memberId];
+      
+      form.setValue('assignees', newAssignees, { shouldDirty: true });
+      return newAssignees;
+    });
   };
 
   const getSelectedAssigneeNames = () => {
     return selectedAssignees
-      .map(id => teamMembers.find(member => member.id === id)?.name)
+      .map(id => teamMembers.find(member => member.user_id === id || member.id === id)?.name)
       .filter(Boolean)
       .join(', ');
   };
+
+  const filteredTeamMembers = teamMembers.filter((member) => {
+    const query = assigneeSearch.trim().toLowerCase();
+    if (!query) return true;
+
+    return `${member.name} ${member.position}`.toLowerCase().includes(query);
+  });
 
   return (
     <>
@@ -194,11 +219,11 @@ export const SubtaskDialog = ({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="z-[130]">
-                          <SelectItem value="Planning">Planning</SelectItem>
-                          <SelectItem value="In progress">In Progress</SelectItem>
-                          <SelectItem value="Paused">Paused</SelectItem>
-                          <SelectItem value="Completed">Completed</SelectItem>
-                          <SelectItem value="Cancelled">Cancelled</SelectItem>
+                          {TASK_STATUS_OPTIONS.map((status) => (
+                            <SelectItem key={status.value} value={status.value}>
+                              {status.label}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -289,65 +314,96 @@ export const SubtaskDialog = ({
                   </Popover>
                 </div>
 
-                <div className="space-y-2">
+                <div className="relative space-y-2">
                   <FormLabel>Assignees</FormLabel>
-                  <Popover open={assigneesOpen} onOpenChange={setAssigneesOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={assigneesOpen}
-                        className="w-full justify-between"
-                      >
-                        {selectedAssignees.length > 0 ? (
-                          <span className="truncate">
-                            {selectedAssignees.length === 1 
-                              ? getSelectedAssigneeNames()
-                              : `${selectedAssignees.length} selected`
-                            }
-                          </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={assigneesOpen}
+                    className="w-full justify-between"
+                    onClick={() => {
+                      setAssigneesOpen((open) => !open);
+                      setAssigneeSearch('');
+                    }}
+                  >
+                    {selectedAssignees.length > 0 ? (
+                      <span className="truncate">
+                        {selectedAssignees.length === 1 
+                          ? getSelectedAssigneeNames()
+                          : `${selectedAssignees.length} assignees selected`
+                        }
+                      </span>
+                    ) : (
+                      "Select assignees..."
+                    )}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+
+                  {assigneesOpen && (
+                    <div className="absolute left-0 right-0 top-full z-[160] mt-2 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg">
+                      <div className="flex items-center border-b px-3">
+                        <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                        <input
+                          value={assigneeSearch}
+                          onChange={(event) => setAssigneeSearch(event.target.value)}
+                          placeholder="Search team members..."
+                          className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="max-h-72 overflow-y-auto p-1">
+                        {filteredTeamMembers.length === 0 ? (
+                          <div className="px-3 py-2 text-sm text-muted-foreground">
+                            No team members found.
+                          </div>
                         ) : (
-                          "Select assignees..."
-                        )}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0 z-[130]">
-                      <Command>
-                        <CommandInput placeholder="Search team members..." />
-                        <CommandEmpty>No team member found.</CommandEmpty>
-                        <CommandList>
-                          <CommandGroup>
-                            {teamMembers.map((member) => (
-                              <CommandItem
+                          filteredTeamMembers.map((member) => {
+                            const assigneeId = member.user_id || member.id;
+                            const isSelected = selectedAssignees.includes(assigneeId);
+
+                            return (
+                              <button
                                 key={member.id}
-                                onSelect={() => toggleAssignee(member.id)}
-                                className="cursor-pointer"
+                                type="button"
+                                onClick={() => toggleAssignee(assigneeId)}
+                                className="flex w-full cursor-pointer items-center rounded-sm px-2 py-2 text-left text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                               >
                                 <Check
                                   className={cn(
                                     "mr-2 h-4 w-4",
-                                    selectedAssignees.includes(member.id) ? "opacity-100" : "opacity-0"
+                                    isSelected ? "opacity-100" : "opacity-0"
                                   )}
                                 />
                                 <div className="flex flex-col">
                                   <span>{member.name}</span>
                                   <span className="text-xs text-muted-foreground">{member.position}</span>
                                 </div>
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+                      <div className="border-t px-3 py-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-full justify-center text-xs"
+                          onClick={() => setAssigneesOpen(false)}
+                        >
+                          {selectedAssignees.length > 1 ? "Done selecting assignees" : "Done selecting"}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {selectedAssignees.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {selectedAssignees.map((assigneeId) => {
-                    const member = teamMembers.find(m => m.id === assigneeId);
+                    const member = teamMembers.find(m => m.user_id === assigneeId || m.id === assigneeId);
                     return member ? (
                       <Badge 
                         key={assigneeId} 

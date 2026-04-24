@@ -10,7 +10,7 @@ const Table = React.forwardRef<
   <div className="relative w-full overflow-auto">
     <table
       ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
+      className={cn("w-full caption-bottom text-sm border-separate border-spacing-0", className)}
       {...props}
     />
   </div>
@@ -59,7 +59,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted dark:border-border/50 dark:hover:bg-muted/20",
+      "transition-colors hover:bg-slate-50/60 data-[state=selected]:bg-muted dark:hover:bg-muted/20",
       className
     )}
     {...props}
@@ -70,14 +70,25 @@ TableRow.displayName = "TableRow"
 const TableHead = React.forwardRef<
   HTMLTableCellElement,
   React.ThHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+>(({ className, style, ...props }, ref) => (
   <th
     ref={ref}
     className={cn(
-      "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 dark:text-muted-foreground/80",
+      "h-9 text-left align-middle [&:has([role=checkbox])]:pr-0",
+      "first:rounded-l-lg last:rounded-r-lg",
       className
     )}
     {...props}
+    style={{
+      padding: "12px 16px",
+      fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+      fontWeight: 500,
+      fontSize: 14,
+      lineHeight: "20px",
+      color: "#64748B",
+      background: "#F8FAFC",
+      ...style,
+    }}
   />
 ))
 TableHead.displayName = "TableHead"
@@ -85,11 +96,20 @@ TableHead.displayName = "TableHead"
 const TableCell = React.forwardRef<
   HTMLTableCellElement,
   React.TdHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+>(({ className, style, ...props }, ref) => (
   <td
     ref={ref}
-    className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
+    className={cn("align-middle [&:has([role=checkbox])]:pr-0", className)}
     {...props}
+    style={{
+      padding: "18px 16px",
+      fontFamily: "Inter, sans-serif",
+      fontSize: 14,
+      lineHeight: "20px",
+      color: "#020817",
+      borderBottom: "1px solid #E2E8F0",
+      ...style,
+    }}
   />
 ))
 TableCell.displayName = "TableCell"

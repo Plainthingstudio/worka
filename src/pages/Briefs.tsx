@@ -120,7 +120,7 @@ const Briefs = () => {
 
   return (
     <>
-      <main className="container py-6">
+      <main className="w-full px-6 py-6">
           <BriefsHeader />
           <BriefStats briefs={briefs} />
 

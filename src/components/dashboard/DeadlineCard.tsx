@@ -1,127 +1,203 @@
-
 import React from "react";
 import { format } from "date-fns";
-import { Calendar, Clock, AlertTriangle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Project, ProjectType } from "@/types";
+import { Project } from "@/types";
+import { TeamMember } from "@/types";
 import { TaskWithRelations } from "@/types/task";
-import { getProjectTypeBadgeVariant } from "@/components/projects/utils/projectItemUtils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface DeadlineCardProps {
   projects: Project[];
   tasks: TaskWithRelations[];
+  teamMembers: TeamMember[];
   getClientById: (clientId: string) => string;
 }
 
-const DeadlineCard: React.FC<DeadlineCardProps> = ({ projects, tasks, getClientById }) => {
-  // Get current date
-  const now = new Date();
-  const threeDaysFromNow = new Date();
-  threeDaysFromNow.setDate(now.getDate() + 3);
+const AssigneeList = ({ names }: { names: string[] }) => {
+  if (names.length === 0) {
+    return <span className="text-muted-foreground">—</span>;
+  }
 
-  // Filter projects with deadlines in next 3 days
-  const upcomingProjectDeadlines = projects.filter(project => {
-    const deadline = new Date(project.deadline);
-    return deadline >= now && deadline <= threeDaysFromNow;
-  }).map(project => ({
-    ...project,
-    type: 'project' as const,
-    deadline: new Date(project.deadline)
-  }));
-
-  // Filter tasks with due dates in next 3 days
-  const upcomingTaskDeadlines = tasks.filter(task => {
-    if (!task.due_date) return false;
-    const dueDate = new Date(task.due_date);
-    return dueDate >= now && dueDate <= threeDaysFromNow;
-  }).map(task => ({
-    ...task,
-    type: 'task' as const,
-    deadline: new Date(task.due_date!)
-  }));
-
-  // Combine and sort all deadlines
-  const upcomingDeadlines = [...upcomingProjectDeadlines, ...upcomingTaskDeadlines]
-    .sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
-
-
-  const getDaysUntilDeadline = (deadline: Date) => {
-    const days = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return days;
-  };
-
-  const getUrgencyColor = (days: number) => {
-    if (days === 0) return "text-red-600";
-    if (days === 1) return "text-orange-600";
-    return "text-yellow-600";
-  };
+  const visible = names.slice(0, 2);
+  const remaining = names.length - visible.length;
 
   return (
-    <Card className="bg-white shadow-sm border border-border">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5 text-orange-600" />
-          Upcoming Deadlines
-        </CardTitle>
-        <Calendar className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        {upcomingDeadlines.length === 0 ? (
-          <div className="text-center py-6 text-muted-foreground">
-            <Clock className="h-8 w-8 mx-auto mb-2 text-green-500" />
-            <p>No urgent deadlines in the next 3 days</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {upcomingDeadlines.map((item) => {
-              const deadline = item.deadline;
-              const daysUntil = getDaysUntilDeadline(deadline);
-              
-              return (
-                <div 
-                  key={`${item.type}-${item.id}`} 
-                  className="flex items-center justify-between p-3 rounded-lg border border-border bg-gray-50/50 hover:bg-gray-100/50 transition-colors"
-                >
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium text-sm">
-                        {item.type === 'project' ? item.name : item.title}
-                      </h4>
-                      {item.type === 'project' ? (
-                        <Badge variant={getProjectTypeBadgeVariant(item.projectType)}>
-                          {item.projectType}
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-xs">
-                          Task
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {item.type === 'project' 
-                        ? `Client: ${getClientById(item.clientId)}`
-                        : `Priority: ${item.priority}`
-                      }
-                    </p>
-                  </div>
-                  <div className="text-right space-y-1">
-                    <p className="text-xs text-muted-foreground">
-                      {format(deadline, "MMM dd, yyyy")}
-                    </p>
-                    <p className={`text-xs font-medium ${getUrgencyColor(daysUntil)}`}>
-                      {daysUntil === 0 ? "Due Today" : 
-                       daysUntil === 1 ? "Due Tomorrow" : 
-                       `${daysUntil} days left`}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+    <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-center shrink-0">
+        {visible.map((name, idx) => {
+          const initials = name
+            .split(" ")
+            .map((w) => w[0])
+            .filter(Boolean)
+            .slice(0, 2)
+            .join("")
+            .toUpperCase();
+          return (
+            <div
+              key={idx}
+              className="flex items-center justify-center"
+              title={name}
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: 9999,
+                background: "#EFF6FF",
+                border: "1.5px solid #FFFFFF",
+                marginLeft: idx === 0 ? 0 : -6,
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 600,
+                fontSize: 10,
+                color: "#1D4ED8",
+                flexShrink: 0,
+              }}
+            >
+              {initials || "?"}
+            </div>
+          );
+        })}
+      </div>
+      <span className="truncate text-foreground" style={{ fontSize: 14 }}>
+        {visible.join(", ")}
+        {remaining > 0 && (
+          <span className="text-muted-foreground"> +{remaining}</span>
         )}
-      </CardContent>
-    </Card>
+      </span>
+    </div>
+  );
+};
+
+const DeadlineCard: React.FC<DeadlineCardProps> = ({
+  projects,
+  tasks,
+  teamMembers,
+  getClientById,
+}) => {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const endOfThirdDay = new Date(startOfToday);
+  endOfThirdDay.setDate(startOfToday.getDate() + 3);
+  endOfThirdDay.setHours(23, 59, 59, 999);
+
+  const resolveNames = (ids: string[] | undefined): string[] => {
+    if (!ids || ids.length === 0) return [];
+    return ids
+      .map((id) => {
+        const match = teamMembers.find(
+          (m) => m.id === id || m.user_id === id
+        );
+        return match?.name || "";
+      })
+      .filter(Boolean);
+  };
+
+  type Row = {
+    key: string;
+    name: string;
+    client: string;
+    deadline: Date;
+    assignees: string[];
+  };
+
+  const projectRows: Row[] = projects
+    .filter((p) => {
+      const d = new Date(p.deadline);
+      return d >= startOfToday && d <= endOfThirdDay;
+    })
+    .map((p) => ({
+      key: `project-${p.id}`,
+      name: p.name,
+      client: getClientById(p.clientId),
+      deadline: new Date(p.deadline),
+      assignees: resolveNames(p.teamMembers),
+    }));
+
+  const taskRows: Row[] = tasks
+    .filter((t) => {
+      if (!t.due_date) return false;
+      const d = new Date(t.due_date);
+      return d >= startOfToday && d <= endOfThirdDay;
+    })
+    .map((t) => {
+      const project = projects.find((p) => p.id === t.project_id);
+      const client = project ? getClientById(project.clientId) : "—";
+      return {
+        key: `task-${t.id}`,
+        name: t.title,
+        client,
+        deadline: new Date(t.due_date!),
+        assignees: resolveNames(t.assignees),
+      };
+    });
+
+  const rows = [...projectRows, ...taskRows].sort(
+    (a, b) => a.deadline.getTime() - b.deadline.getTime()
+  );
+
+  return (
+    <div
+      className="bg-white overflow-hidden flex flex-col"
+      style={{
+        padding: 12,
+        gap: 12,
+        border: "1px solid #E2E8F0",
+        boxShadow: "0px 1px 2px rgba(0,0,0,0.05)",
+        borderRadius: 12,
+      }}
+    >
+      <div className="flex items-center">
+        <h2
+          style={{
+            fontFamily: "Inter, sans-serif",
+            fontWeight: 600,
+            fontSize: 14,
+            lineHeight: "120%",
+            letterSpacing: "-0.03em",
+            color: "#020817",
+          }}
+        >
+          Upcoming Deadlines
+        </h2>
+      </div>
+
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead>Project Name</TableHead>
+            <TableHead>Client</TableHead>
+            <TableHead>Deadline</TableHead>
+            <TableHead>Assignees</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={4} className="text-center" style={{ color: "#64748B" }}>
+                No upcoming deadlines in the next 3 days
+              </TableCell>
+            </TableRow>
+          ) : (
+            rows.map((row) => (
+              <TableRow key={row.key}>
+                <TableCell className="font-medium text-foreground">{row.name}</TableCell>
+                <TableCell className="text-muted-foreground">{row.client}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {format(row.deadline, "MMM dd, yyyy")}
+                </TableCell>
+                <TableCell>
+                  <AssigneeList names={row.assignees} />
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 

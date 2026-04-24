@@ -130,10 +130,10 @@ sudo systemctl reload nginx
 
 ## 9. Backups
 
-Use the included backup script:
+Use the included backup script for manual backups:
 
 ```bash
-sudo bash deployment/backup-appwrite.sh
+APPWRITE_DIR="$HOME/appwrite" APP_DIR="$HOME/worka" BACKUP_DIR="$HOME/backups/worka" bash deployment/backup-appwrite.sh
 ```
 
 Restore from an archive with:
@@ -141,6 +141,10 @@ Restore from an archive with:
 ```bash
 sudo bash deployment/restore-appwrite.sh /path/to/appwrite-backup.tar.gz
 ```
+
+For the current Worka VPS setup and MacBook download flow, follow:
+
+- [docs/MANUAL_BACKUP.md](/Users/macbookpro/Documents/Simplify Project/studio-simplify/docs/MANUAL_BACKUP.md)
 
 ## Troubleshooting
 

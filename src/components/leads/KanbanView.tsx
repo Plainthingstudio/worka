@@ -38,7 +38,7 @@ const KanbanView: React.FC<KanbanViewProps> = ({
   }
 
   return (
-    <div className="relative h-full w-full pb-2">
+    <div className="relative h-full w-full pb-0">
       <ScrollArea 
         className="h-full w-full kanban-scroll-container rounded-md border border-border/30"
         onScroll={onScroll}

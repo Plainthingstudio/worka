@@ -13,8 +13,11 @@ interface NavbarProps {
 
 const Navbar = ({ title, onMenuClick }: NavbarProps) => {
   return (
-    <header className="border-b bg-background">
-      <div className="flex h-16 items-center justify-between px-6">
+    <header
+      className="bg-card border-b border-border-soft"
+      style={{ height: 53 }}
+    >
+      <div className="flex h-full items-center justify-between" style={{ padding: "0 24px" }}>
         <div className="flex items-center gap-4">
           {onMenuClick && (
             <Button
@@ -26,9 +29,20 @@ const Navbar = ({ title, onMenuClick }: NavbarProps) => {
               <Menu className="h-5 w-5" />
             </Button>
           )}
-          <h1 className="text-xl font-semibold">{title}</h1>
+          <h1
+            className="text-foreground"
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 500,
+              fontSize: 18,
+              lineHeight: "135%",
+              letterSpacing: "-0.03em",
+            }}
+          >
+            {title}
+          </h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <NotificationCenter />
           <InvitationNotifications />
           <ThemeToggle />

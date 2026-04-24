@@ -16,14 +16,14 @@ const GraphicDesignBrief = () => {
       }
 
       try {
-        // Check if the user ID format is valid (UUID format)
-        const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(forUserId);
+        const normalizedUserId = forUserId.trim();
+        const isValidAppwriteId = normalizedUserId.length > 0 && normalizedUserId.length <= 36;
 
-        if (isValidUUID) {
-          console.log("Valid UUID format for user:", forUserId);
+        if (isValidAppwriteId) {
+          console.log("Accepted submitted-for user ID:", normalizedUserId);
           setIsValidUser(true);
         } else {
-          console.error("Invalid UUID format for user ID");
+          console.error("Invalid Appwrite user ID");
           setIsValidUser(false);
         }
       } catch (err) {

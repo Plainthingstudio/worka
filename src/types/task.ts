@@ -1,7 +1,36 @@
 
-export type TaskPriority = 'Low' | 'Normal' | 'High' | 'Urgent';
-export type TaskType = 'Primary' | 'Secondary' | 'Tertiary';
-export type TaskStatus = 'Planning' | 'In progress' | 'Completed' | 'Paused' | 'Cancelled';
+export const TASK_PRIORITIES = ['Low', 'Normal', 'High', 'Urgent'] as const;
+export const TASK_TYPES = ['Primary', 'Secondary', 'Tertiary'] as const;
+export const TASK_STATUSES = [
+  'Planning',
+  'In progress',
+  'Awaiting Feedback',
+  'Paused',
+  'Completed',
+  'Cancelled',
+] as const;
+
+export type TaskPriority = (typeof TASK_PRIORITIES)[number];
+export type TaskType = (typeof TASK_TYPES)[number];
+export type TaskStatus = (typeof TASK_STATUSES)[number];
+
+export const TASK_STATUS_OPTIONS: Array<{ value: TaskStatus; label: string }> = [
+  { value: 'Planning', label: 'Planning' },
+  { value: 'In progress', label: 'In Progress' },
+  { value: 'Awaiting Feedback', label: 'Awaiting Feedback' },
+  { value: 'Paused', label: 'Paused' },
+  { value: 'Completed', label: 'Completed' },
+  { value: 'Cancelled', label: 'Cancelled' },
+];
+
+export const CLOSED_TASK_STATUSES: TaskStatus[] = ['Completed', 'Cancelled'];
+export const WORKING_TASK_STATUSES: TaskStatus[] = ['Planning', 'In progress', 'Paused'];
+
+export const isTaskClosedStatus = (status: string): status is TaskStatus =>
+  CLOSED_TASK_STATUSES.includes(status as TaskStatus);
+
+export const isTaskWorkingStatus = (status: string): status is TaskStatus =>
+  WORKING_TASK_STATUSES.includes(status as TaskStatus);
 
 export interface Task {
   id: string;

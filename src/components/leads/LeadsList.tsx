@@ -11,38 +11,31 @@ interface LeadsListProps {
   onEdit: (lead: Lead) => void;
   onDelete: (id: string) => void;
   onStageChange: (id: string, stage: LeadStage) => void;
+  onInlineUpdate: (id: string, fields: Partial<Lead>) => void;
   stages: LeadStage[];
 }
 
 const LeadsList: React.FC<LeadsListProps> = ({
   leads,
   isLoading,
-  onEdit,
   onDelete,
   onStageChange,
-  stages
+  onInlineUpdate,
+  stages,
 }) => {
-  // Handle delete with direct callback to prevent event propagation issues
-  const handleDelete = (id: string) => {
-    // Call the delete handler directly without any additional processing
-    onDelete(id);
-  };
-
   return (
-    <div className="w-full h-full overflow-auto rounded-md px-2">
-      {/* Processor component for Kickoff leads */}
+    <div className="w-full h-full overflow-auto rounded-md px-0">
       <KickoffLeadProcessor leads={leads} />
-      
-      {/* Show empty state if no leads or loading */}
+
       {(leads.length === 0 || isLoading) ? (
         <EmptyLeadsState isLoading={isLoading} />
       ) : (
-        <LeadsTable 
+        <LeadsTable
           leads={leads}
           stages={stages}
-          onEdit={onEdit}
-          onDelete={handleDelete}
+          onDelete={onDelete}
           onStageChange={onStageChange}
+          onInlineUpdate={onInlineUpdate}
         />
       )}
     </div>

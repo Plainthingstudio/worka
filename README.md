@@ -1,79 +1,71 @@
-# Welcome to your Lovable project
+# Studio Simplify
 
-## Project info
+Studio Simplify adalah aplikasi React + Vite untuk workflow studio, project tracking, dan dashboard operasional.
 
-**URL**: https://lovable.dev/projects/91e6639c-019e-4e75-97c2-2eaf6cdb3b9a
+## Local development
 
-## How can I edit this code?
+Kebutuhan dasar:
 
-There are several ways of editing your application.
+- Node.js
+- npm
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/91e6639c-019e-4e75-97c2-2eaf6cdb3b9a) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Jalankan project:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
 npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Default local dev port di repo ini adalah `5174`, jadi origin lokal yang dipakai untuk integrasi browser adalah `http://localhost:5174`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Environment
 
-**Use GitHub Codespaces**
+Environment minimum untuk app:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```env
+VITE_APPWRITE_ENDPOINT="https://appwrite.your-domain.com/v1"
+VITE_APPWRITE_PROJECT_ID="your_project_id"
+VITE_APPWRITE_DATABASE_ID="your_database_id"
+VITE_ENABLE_DEMO_LOGIN="false"
+VITE_DEV_PORT="5174"
+```
 
-## What technologies are used for this project?
+Untuk Google Calendar persistent backend flow, tambahkan juga:
 
-This project is built with .
+```env
+VITE_GOOGLE_CALENDAR_FUNCTION_ID="google-calendar"
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Lihat template:
 
-## How can I deploy this project?
+- [.env.local.example](/Users/macbookpro/Documents/Simplify Project/studio-simplify/.env.local.example)
+- [.env.production.example](/Users/macbookpro/Documents/Simplify Project/studio-simplify/.env.production.example)
 
-You can publish from Lovable, or deploy it yourself as a static site.
+## Google Calendar integration
 
-For VPS deployment with Nginx, see:
+Widget `Meetings Scheduled` di dashboard menggunakan Google Calendar read-only dari `primary` calendar user lewat Appwrite Function server-side OAuth.
 
-- [docs/DEPLOY_VPS.md](/Users/macbookpro/Documents/Simplify Project/studio-simplify/docs/DEPLOY_VPS.md)
+Setup lengkap ada di:
 
-This app builds to `dist/` with:
+- [docs/GOOGLE_CALENDAR_SETUP.md](/Users/macbookpro/Documents/Simplify Project/studio-simplify/docs/GOOGLE_CALENDAR_SETUP.md)
+
+Ringkasan penting:
+
+- Enable `Google Calendar API`
+- Buat `OAuth Client ID` tipe `Web application`
+- Deploy Appwrite Function `google-calendar`
+- Tambahkan Appwrite Function callback URL ke Google OAuth redirect URIs
+- Isi env function Google OAuth dan `VITE_GOOGLE_CALENDAR_FUNCTION_ID` di frontend
+- Refresh token disimpan di backend, jadi user tidak perlu reconnect per browser session
+
+## Build and deploy
+
+Build production:
 
 ```sh
 npm run build
 ```
 
-## I want to use a custom domain - is that possible?
+Panduan deploy VPS:
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+- [docs/DEPLOY_VPS.md](/Users/macbookpro/Documents/Simplify Project/studio-simplify/docs/DEPLOY_VPS.md)

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { account, databases, DATABASE_ID, ID } from "@/integrations/appwrite/client";
+import { stringifyBriefPayload } from "@/utils/briefPayload";
 
 export interface IllustrationBriefFormValues {
   type: string;
@@ -97,38 +98,24 @@ export const useIllustrationsBrief = (submittedForId?: string | null) => {
 
       console.log("Submitting illustration brief for user ID:", submittedForId);
 
-      const briefData: BriefDataForAppwrite = {
+      const submissionDate = new Date().toISOString();
+      const briefPayload = {
+        ...formData,
+        type: "Illustration Design",
+        status: "New",
+        brandGuidelines: brandGuidelinesValue,
+        deliverables: selectedDeliverables,
+        submissionDate,
+      };
+
+      const briefData: BriefDataForAppwrite & { brief_payload: string } = {
         name: formData.name,
         email: formData.email,
         company_name: formData.companyName,
         status: "New",
-        about_company: formData.aboutCompany,
-        target_audience: formData.targetAudience,
-        competitor1: formData.competitor1,
-        competitor2: formData.competitor2,
-        competitor3: formData.competitor3,
-        competitor4: formData.competitor4,
-        reference1: formData.reference1,
-        reference2: formData.reference2,
-        reference3: formData.reference3,
-        reference4: formData.reference4,
-        general_style: formData.generalStyle,
-        color_preferences: formData.colorPreferences,
-        brand_guidelines: brandGuidelinesValue,
-        completion_deadline: formData.completionDeadline,
-        illustrations_purpose: formData.illustrationsPurpose,
-        illustrations_for: formData.illustrationsFor,
-        illustrations_style: formData.illustrationsStyle,
-        illustrations_count: formData.illustrationsCount,
-        illustration_details: formData.illustrationDetails,
-        like_dislike_design: formData.likeDislikeDesign,
-        deliverables: selectedDeliverables,
-        submission_date: new Date().toISOString()
+        brief_payload: stringifyBriefPayload(briefPayload),
+        submission_date: submissionDate
       };
-
-      if (formData.phone) {
-        briefData.phone = formData.phone;
-      }
 
       if (submittedForId) {
         console.log("Setting submitted_for_id and user_id to:", submittedForId);
@@ -155,7 +142,7 @@ export const useIllustrationsBrief = (submittedForId?: string | null) => {
       const localStorageBrief = {
         ...formData,
         id: Date.now(),
-        submissionDate: new Date().toISOString(),
+        submissionDate,
         status: "New",
         deliverables: selectedDeliverables,
         submittedForId: submittedForId || null,

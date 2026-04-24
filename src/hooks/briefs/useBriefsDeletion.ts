@@ -35,6 +35,15 @@ export const useBriefsDeletion = (
 
       if (!deleted) {
         try {
+          await databases.deleteDocument(DATABASE_ID, 'ui_design_briefs', id);
+          deleted = true;
+        } catch (e) {
+          // Not in ui_design_briefs, continue
+        }
+      }
+
+      if (!deleted) {
+        try {
           await databases.deleteDocument(DATABASE_ID, 'illustration_design_briefs', id);
           deleted = true;
         } catch (e) {

@@ -1,109 +1,166 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Client, Project, TeamMember } from "@/types";
-import { databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
 
-// Import all the cell components
 import CategoryCell from "./cells/CategoryCell";
 import StatusCell from "./cells/StatusCell";
 import DateCell from "./cells/DateCell";
 import FeeCell from "./cells/FeeCell";
 import ProjectTypeCell from "./cells/ProjectTypeCell";
 import TeamMembersCell from "./cells/TeamMembersCell";
-import ActionsCell from "./cells/ActionsCell";
 
 interface ProjectItemProps {
   project: Project;
   client: Client | undefined;
-  onEdit: (project: Project) => void;
+  allClients: Client[];
+  allTeamMembers: TeamMember[];
   onDelete: (id: string) => void;
+  onInlineUpdate: (projectId: string, fields: Partial<Project>) => void;
 }
 
-const ProjectItem = ({ project, client, onEdit, onDelete }: ProjectItemProps) => {
-  const [assignedTeamMembers, setAssignedTeamMembers] = useState<TeamMember[]>([]);
-  const [isLoadingTeamMembers, setIsLoadingTeamMembers] = useState(false);
+const ProjectItem = ({
+  project,
+  client,
+  allClients,
+  allTeamMembers,
+  onDelete,
+  onInlineUpdate,
+}: ProjectItemProps) => {
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const loadTeamMembers = async () => {
-      if (project.teamMembers && project.teamMembers.length > 0) {
-        setIsLoadingTeamMembers(true);
-        console.log("Loading team members for project list:", project.id, "Team member IDs:", project.teamMembers);
+  // ── Name inline edit ───────────────────────────────────────────────
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState(project.name);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
-        try {
-          const response = await databases.listDocuments(DATABASE_ID, 'team_members', [
-            Query.equal('$id', project.teamMembers)
-          ]);
-          const teamMembersData = response.documents;
+  useEffect(() => { setNameValue(project.name); }, [project.name]);
 
-          console.log("Fetched team members data for project list:", teamMembersData);
-          const transformedMembers: TeamMember[] = (teamMembersData || []).map((member): TeamMember => ({
-            id: member.$id,
-            user_id: member.user_id,
-            name: member.name,
-            position: member.position as any,
-            skills: member.skills || [],
-            startDate: new Date(member.start_date),
-            createdAt: new Date(member.$createdAt)
-          }));
-          setAssignedTeamMembers(transformedMembers);
-        } catch (error) {
-          console.error("Error loading team members for project list:", error);
-        } finally {
-          setIsLoadingTeamMembers(false);
-        }
-      } else {
-        console.log("No team members assigned to project in list:", project.id);
-        setAssignedTeamMembers([]);
-      }
-    };
+  const commitName = () => {
+    const trimmed = nameValue.trim();
+    if (trimmed && trimmed !== project.name) {
+      onInlineUpdate(project.id, { name: trimmed });
+    } else {
+      setNameValue(project.name);
+    }
+    setIsEditingName(false);
+  };
 
-    loadTeamMembers();
-  }, [project.teamMembers, project.id]);
+  // ── Client inline edit ─────────────────────────────────────────────
+  const [clientOpen, setClientOpen] = useState(false);
 
   return (
-    <TableRow key={project.id}>
+    <TableRow
+      className="cursor-pointer group"
+      onClick={() => navigate(`/projects/${project.id}`)}
+    >
+      {/* Project Name */}
       <TableCell className="font-medium">
-        {project.name}
-      </TableCell>
-
-      <TableCell>
-        <CategoryCell categories={project.categories} />
-      </TableCell>
-
-      <TableCell>
-        {client?.name || "Unknown Client"}
-      </TableCell>
-
-      <TableCell>
-        <StatusCell status={project.status} />
-      </TableCell>
-
-      <TableCell>
-        <DateCell date={project.deadline} />
-      </TableCell>
-
-      <TableCell>
-        <FeeCell fee={project.fee} currency={project.currency} />
-      </TableCell>
-
-      <TableCell>
-        <ProjectTypeCell type={project.projectType} />
-      </TableCell>
-
-      <TableCell>
-        {isLoadingTeamMembers ? (
-          <span className="text-muted-foreground text-xs">Loading...</span>
+        {isEditingName ? (
+          <input
+            ref={nameInputRef}
+            autoFocus
+            value={nameValue}
+            className="w-full rounded border border-[#3762FB] px-2 py-1 text-sm font-medium outline-none focus:ring-1 focus:ring-[#3762FB]"
+            onChange={e => setNameValue(e.target.value)}
+            onClick={e => e.stopPropagation()}
+            onBlur={commitName}
+            onKeyDown={e => {
+              if (e.key === "Enter") e.currentTarget.blur();
+              if (e.key === "Escape") { setNameValue(project.name); setIsEditingName(false); }
+            }}
+          />
         ) : (
-          <TeamMembersCell teamMembers={assignedTeamMembers} />
+          <span
+            className="cursor-text rounded px-1 py-0.5 hover:bg-[#F1F5F9] transition-colors"
+            onClick={e => { e.stopPropagation(); setIsEditingName(true); }}
+          >
+            {nameValue}
+          </span>
         )}
       </TableCell>
 
-      <TableCell className="text-right">
-        <ActionsCell
-          project={project}
-          onEdit={onEdit}
-          onDelete={onDelete}
+      {/* Categories */}
+      <TableCell>
+        <CategoryCell
+          categories={project.categories}
+          onSave={cats => onInlineUpdate(project.id, { categories: cats })}
+        />
+      </TableCell>
+
+      {/* Client */}
+      <TableCell>
+        <DropdownMenu open={clientOpen} onOpenChange={setClientOpen}>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="flex items-center gap-1 rounded px-1 py-0.5 text-sm hover:bg-[#F1F5F9] transition-colors"
+              onClick={e => { e.stopPropagation(); setClientOpen(true); }}
+            >
+              {client?.name || "Unknown Client"}
+              <ChevronDown className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent onClick={e => e.stopPropagation()} className="w-48">
+            {allClients.map(c => (
+              <DropdownMenuItem
+                key={c.id}
+                className={c.id === project.clientId ? "font-medium text-[#3762FB]" : ""}
+                onClick={() => { onInlineUpdate(project.id, { clientId: c.id }); setClientOpen(false); }}
+              >
+                {c.name}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </TableCell>
+
+      {/* Status */}
+      <TableCell>
+        <StatusCell
+          status={project.status}
+          onSave={s => onInlineUpdate(project.id, { status: s })}
+        />
+      </TableCell>
+
+      {/* Deadline */}
+      <TableCell>
+        <DateCell
+          date={project.deadline}
+          onSave={d => onInlineUpdate(project.id, { deadline: d })}
+        />
+      </TableCell>
+
+      {/* Fee */}
+      <TableCell>
+        <FeeCell
+          fee={project.fee}
+          currency={project.currency}
+          onSave={(fee, currency) => onInlineUpdate(project.id, { fee, currency })}
+        />
+      </TableCell>
+
+      {/* Type */}
+      <TableCell>
+        <ProjectTypeCell
+          type={project.projectType}
+          onSave={t => onInlineUpdate(project.id, { projectType: t })}
+        />
+      </TableCell>
+
+      {/* Team */}
+      <TableCell>
+        <TeamMembersCell
+          selectedIds={project.teamMembers || []}
+          allTeamMembers={allTeamMembers}
+          onSave={ids => onInlineUpdate(project.id, { teamMembers: ids })}
         />
       </TableCell>
     </TableRow>

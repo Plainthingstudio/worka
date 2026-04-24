@@ -14,32 +14,40 @@ interface IllustrationStepTwoProps {
 
 const IllustrationStepTwo: React.FC<IllustrationStepTwoProps> = ({ onNext, onPrevious }) => {
   const { register, watch, setValue, formState: { errors } } = useFormContext();
-  const illustrationsCount = watch("illustrationsCount") || 1;
+  const illustrationsCount = Number(watch("illustrationsCount") || 1);
   const illustrationDetails = watch("illustrationDetails") || [""];
   const hasBrandGuidelines = watch("hasBrandGuidelines") || "No";
 
-  const handleIllustrationCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const count = parseInt(e.target.value) || 1;
-    setValue("illustrationsCount", count);
-    
-    // Update the illustrationDetails array to match the new count
+  const syncIllustrationDetails = (count: number) => {
     const details = [...illustrationDetails];
     if (count > details.length) {
-      // Add empty strings to the array
       for (let i = details.length; i < count; i++) {
         details.push("");
       }
     } else if (count < details.length) {
-      // Remove elements from the array
       details.splice(count);
     }
     setValue("illustrationDetails", details);
   };
 
+  const handleIncreaseIllustrations = () => {
+    const newCount = illustrationsCount + 1;
+    setValue("illustrationsCount", newCount, { shouldValidate: true });
+    syncIllustrationDetails(newCount);
+  };
+
+  const handleDecreaseIllustrations = () => {
+    if (illustrationsCount <= 1) return;
+
+    const newCount = illustrationsCount - 1;
+    setValue("illustrationsCount", newCount, { shouldValidate: true });
+    syncIllustrationDetails(newCount);
+  };
+
   const updateIllustrationDetail = (index: number, value: string) => {
     const details = [...illustrationDetails];
     details[index] = value;
-    setValue("illustrationDetails", details);
+    setValue("illustrationDetails", details, { shouldValidate: true });
   };
 
   return (
@@ -147,32 +155,52 @@ const IllustrationStepTwo: React.FC<IllustrationStepTwoProps> = ({ onNext, onPre
 
         <div className="space-y-2">
           <Label htmlFor="illustrationsCount">Number of Illustrations <span className="text-red-500">*</span></Label>
-          <Input
-            id="illustrationsCount"
-            type="number"
-            min="1"
-            {...register("illustrationsCount", { 
+          <input
+            type="hidden"
+            {...register("illustrationsCount", {
               required: "Number of illustrations is required",
               min: { value: 1, message: "Must be at least 1" }
             })}
-            onChange={handleIllustrationCountChange}
-            className={errors.illustrationsCount ? "border-red-500" : ""}
           />
+          <div className="flex items-center space-x-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleDecreaseIllustrations}
+              disabled={illustrationsCount <= 1}
+            >
+              -
+            </Button>
+            <span className="w-12 text-center font-medium">{illustrationsCount}</span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleIncreaseIllustrations}
+            >
+              +
+            </Button>
+          </div>
           {errors.illustrationsCount && (
             <p className="text-red-500 text-sm">{String(errors.illustrationsCount.message)}</p>
           )}
         </div>
 
         {Array.from({ length: illustrationsCount }).map((_, index) => (
-          <div key={index} className="space-y-2 border p-4 rounded-md">
-            <Label htmlFor={`illustrationDetail-${index}`}>Illustration {index + 1} Details</Label>
-            <Textarea
-              id={`illustrationDetail-${index}`}
-              placeholder="Describe what this illustration should show"
-              value={illustrationDetails[index] || ""}
-              onChange={(e) => updateIllustrationDetail(index, e.target.value)}
-              className="min-h-[80px]"
-            />
+          <div key={index} className="space-y-3 rounded-lg border bg-muted/50 p-4">
+            <h3 className="font-medium">Illustration {index + 1}</h3>
+
+            <div className="space-y-2">
+              <Label htmlFor={`illustrationDetail-${index}`}>Illustration Details*</Label>
+              <Textarea
+                id={`illustrationDetail-${index}`}
+                placeholder="Describe what this illustration should show"
+                value={illustrationDetails[index] || ""}
+                onChange={(e) => updateIllustrationDetail(index, e.target.value)}
+                className="min-h-[80px]"
+              />
+            </div>
           </div>
         ))}
       </div>

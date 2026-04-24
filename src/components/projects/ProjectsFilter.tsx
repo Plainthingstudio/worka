@@ -24,13 +24,13 @@ const ProjectsFilter = ({
   setStatusFilter,
 }: ProjectsFilterProps) => {
   return (
-    <div className="glass-card mb-6 rounded-xl border shadow-sm animate-fade-in">
-      <div className="flex flex-col gap-4 p-4 sm:flex-row">
-        <div className="relative flex-1">
+    <div className="rounded-xl animate-fade-in">
+      <div className="flex w-full flex-col gap-4 pt-0 px-0 pb-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full max-w-[250px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search projects..."
-            className="pl-9"
+            className="w-full pl-9"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />

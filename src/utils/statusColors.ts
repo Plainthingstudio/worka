@@ -18,6 +18,14 @@ export const STATUS_COLORS = {
     solid: 'bg-blue-500',
     hover: 'hover:bg-blue-600'
   },
+  'Awaiting Feedback': {
+    badge: 'bg-violet-50 text-violet-700 ring-violet-600/20',
+    background: 'bg-violet-50',
+    text: 'text-violet-700',
+    icon: 'text-violet-500',
+    solid: 'bg-violet-500',
+    hover: 'hover:bg-violet-600'
+  },
   Paused: {
     badge: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
     background: 'bg-yellow-50',

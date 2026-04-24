@@ -1,6 +1,6 @@
 export type LeadSource = 'Dribbble' | 'Website' | 'LinkedIn' | 'Behance' | 'Direct Email' | 'Other';
 
-export type ProjectStatus = 'Planning' | 'In progress' | 'Completed' | 'Paused' | 'Cancelled';
+export type ProjectStatus = 'Planning' | 'In progress' | 'Awaiting Feedback' | 'Completed' | 'Paused' | 'Cancelled';
 
 export type ProjectType = 'Project Based' | 'Monthly Retainer' | 'Monthly Pay as you go';
 
@@ -51,6 +51,7 @@ export interface Client {
   address?: string;
   leadSource: LeadSource;
   createdAt: Date;
+  createdBy?: string; // Appwrite user_id
 }
 
 export interface Payment {
@@ -148,7 +149,8 @@ export interface Lead {
   source?: string;
   stage: LeadStage;
   notes?: string;
-  address?: string; // Adding address property to fix TypeScript errors
+  address?: string;
   createdAt: Date;
   updatedAt: Date;
+  createdBy?: string; // Appwrite user_id
 }

@@ -30,6 +30,8 @@ const badgeVariants = cva(
           "bg-gray-50 text-gray-700 ring-gray-600/20",
         "in-progress":
           "bg-blue-50 text-blue-700 ring-blue-600/20",
+        "awaiting-feedback":
+          "bg-violet-50 text-violet-700 ring-violet-600/20",
         "completed":
           "bg-green-50 text-green-700 ring-green-600/20",
         "paused":

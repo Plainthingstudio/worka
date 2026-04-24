@@ -8,7 +8,7 @@ import UIStepOne from "@/components/ui-brief-form/UIStepOne";
 import UIStepTwo from "@/components/ui-brief-form/UIStepTwo";
 import UIStepThree from "@/components/ui-brief-form/UIStepThree";
 import { account, databases, DATABASE_ID, ID } from "@/integrations/appwrite/client";
-import { stringifyJsonField } from "@/utils/appwriteJson";
+import { stringifyBriefPayload } from "@/utils/briefPayload";
 
 const UIDesignBrief = () => {
   const [step, setStep] = useState(1);
@@ -26,12 +26,13 @@ const UIDesignBrief = () => {
       }
 
       try {
-        const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(forUserId);
+        const normalizedUserId = forUserId.trim();
+        const isValidAppwriteId = normalizedUserId.length > 0 && normalizedUserId.length <= 36;
 
-        if (isValidUUID) {
+        if (isValidAppwriteId) {
           setIsValidUser(true);
         } else {
-          console.error("Invalid UUID format for user ID");
+          console.error("Invalid Appwrite user ID");
           setIsValidUser(false);
         }
       } catch (err) {
@@ -129,6 +130,13 @@ const UIDesignBrief = () => {
     setIsSubmitting(true);
     try {
       const formData = methods.getValues();
+      const submissionDate = new Date().toISOString();
+      const briefPayload = {
+        ...formData,
+        type: "UI Design",
+        status: "New",
+        submissionDate,
+      };
 
       console.log("Submitting UI design brief for user ID:", forUserId);
 
@@ -137,35 +145,8 @@ const UIDesignBrief = () => {
         email: formData.email,
         company_name: formData.companyName,
         status: "New",
-        project_description: formData.projectDescription,
-        completion_deadline: formData.completionDeadline,
-        project_type: formData.projectType,
-        project_size: formData.projectSize,
-        website_type_interest: formData.websiteType,
-        current_website: formData.currentWebsite,
-        website_purpose: formData.websitePurpose,
-        about_company: formData.aboutCompany,
-        target_audience: formData.targetAudience,
-        competitor1: formData.competitor1,
-        competitor2: formData.competitor2,
-        competitor3: formData.competitor3,
-        competitor4: formData.competitor4,
-        industry: formData.industry,
-        general_style: formData.generalStyle,
-        color_preferences: formData.colorPreferences,
-        reference1: formData.reference1,
-        reference2: formData.reference2,
-        reference3: formData.reference3,
-        reference4: formData.reference4,
-        existing_brand_assets: formData.existingBrandAssets,
-        brand_guidelines_details: formData.brandAssetsDetails,
-        has_wireframe: formData.hasWireframe,
-        wireframe_details: formData.wireframeDetails,
-        page_count: formData.pageCount,
-        page_details: stringifyJsonField(formData.pageDetails || [], "[]"),
-        website_content: formData.websiteContent,
-        development_service: formData.developmentService,
-        submission_date: new Date().toISOString()
+        brief_payload: stringifyBriefPayload(briefPayload),
+        submission_date: submissionDate,
       };
 
       if (forUserId) {

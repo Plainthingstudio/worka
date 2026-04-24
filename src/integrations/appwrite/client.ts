@@ -1,4 +1,4 @@
-import { Client, Account, Databases, Storage, ID, Query } from 'appwrite';
+import { Client, Account, Databases, Storage, Functions, ID, Query } from 'appwrite';
 
 const APPWRITE_ENDPOINT = import.meta.env.VITE_APPWRITE_ENDPOINT as string;
 const APPWRITE_PROJECT_ID = import.meta.env.VITE_APPWRITE_PROJECT_ID as string;
@@ -23,4 +23,5 @@ const client = new Client()
 export const account = new Account(client);
 export const databases = new Databases(client);
 export const storage = new Storage(client);
+export const functions = new Functions(client);
 export { ID, Query, client };

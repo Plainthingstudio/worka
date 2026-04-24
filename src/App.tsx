@@ -27,6 +27,7 @@ import Settings from '@/pages/Settings';
 import NotFound from '@/pages/NotFound';
 import Leads from '@/pages/Leads';
 import Tasks from '@/pages/Tasks';
+import DesignSystem from '@/pages/DesignSystem';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -57,6 +58,7 @@ function App() {
             <Route path="/brief/graphic" element={<GraphicDesignBrief />} />
             <Route path="/brief/ui" element={<UIDesignBrief />} />
             <Route path="/brief/illustration" element={<IllustrationsBrief />} />
+            <Route path="/design-system" element={<DesignSystem />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/login" element={<Navigate to="/auth" replace />} />
             <Route path="*" element={<Navigate to="/404" />} />

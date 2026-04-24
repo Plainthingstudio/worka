@@ -43,9 +43,10 @@ import {
   Users,
   CheckCircle
 } from 'lucide-react';
-import { TaskWithRelations } from '@/types/task';
+import { TaskWithRelations, TASK_STATUS_OPTIONS, TASK_STATUSES } from '@/types/task';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { format } from 'date-fns';
+import { MentionText } from '@/components/tasks/MentionText';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 
@@ -54,7 +55,7 @@ const taskSchema = z.object({
   description: z.string().optional(),
   priority: z.enum(['Low', 'Normal', 'High', 'Urgent']),
   task_type: z.enum(['Primary', 'Secondary', 'Tertiary']),
-  status: z.enum(['Planning', 'In progress', 'Paused', 'Completed', 'Cancelled']),
+  status: z.enum(TASK_STATUSES),
   assignees: z.array(z.string()).optional(),
   due_date: z.date().optional(),
 });
@@ -134,8 +135,8 @@ export const ClickUpTaskDetail = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
+    if (file.size > 50 * 1024 * 1024) {
+      alert('File size must be less than 50MB');
       return;
     }
 
@@ -232,11 +233,11 @@ export const ClickUpTaskDetail = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Planning">Planning</SelectItem>
-                            <SelectItem value="In progress">In Progress</SelectItem>
-                            <SelectItem value="Paused">Paused</SelectItem>
-                            <SelectItem value="Completed">Completed</SelectItem>
-                            <SelectItem value="Cancelled">Cancelled</SelectItem>
+                            {TASK_STATUS_OPTIONS.map((status) => (
+                              <SelectItem key={status.value} value={status.value}>
+                                {status.label}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       )}
@@ -435,7 +436,9 @@ export const ClickUpTaskDetail = ({
                               {format(new Date(comment.created_at), 'MMM dd, yyyy HH:mm')}
                             </span>
                           </div>
-                          <p className="text-sm">{comment.content}</p>
+                          <div className="text-sm">
+                            <MentionText content={comment.content || ''} candidates={[]} />
+                          </div>
                         </div>
                       ))}
                       {(!task.comments || task.comments.length === 0) && (

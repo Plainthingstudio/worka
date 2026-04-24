@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
-import { TaskWithRelations } from "@/types/task";
+import { TaskWithRelations, isTaskClosedStatus, isTaskWorkingStatus } from "@/types/task";
 
 export interface TeamDashboardStats {
   myActiveTasks: number;
@@ -137,9 +137,7 @@ export const useTeamDashboard = () => {
         const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
         const endOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 6));
 
-        const activeTasks = transformedTasks.filter(task =>
-          task.status !== 'Completed' && task.status !== 'Canceled'
-        );
+        const activeTasks = transformedTasks.filter((task) => isTaskWorkingStatus(task.status));
 
         const completedThisWeek = transformedTasks.filter(task =>
           task.completed_at &&
@@ -151,13 +149,13 @@ export const useTeamDashboard = () => {
           task.due_date &&
           task.due_date >= startOfWeek &&
           task.due_date <= endOfWeek &&
-          task.status !== 'Completed'
+          !isTaskClosedStatus(task.status)
         ).length;
 
         const overdueTasksList = transformedTasks.filter(task =>
           task.due_date &&
           task.due_date < new Date() &&
-          task.status !== 'Completed'
+          !isTaskClosedStatus(task.status)
         );
 
         const overdueTasksCount = overdueTasksList.length;

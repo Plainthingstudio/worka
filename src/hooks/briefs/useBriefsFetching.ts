@@ -3,6 +3,7 @@ import { useState } from "react";
 import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import { Brief } from "@/types/brief";
 import { toast } from "sonner";
+import { mergeBriefPayload } from "@/utils/briefPayload";
 
 export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoading: (isLoading: boolean) => void) => {
   const [isFetching, setIsFetching] = useState(false);
@@ -91,7 +92,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
           [Query.equal('user_id', userId)]
         );
         const gdBriefs: Brief[] = gdResponse.documents.map((brief: any) => ({
-          ...brief,
+          ...mergeBriefPayload(brief),
           id: brief.$id,
           type: 'Graphic Design',
           submissionDate: brief.submission_date,
@@ -102,6 +103,25 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
         console.error("Error fetching graphic design briefs:", e);
       }
 
+      // Fetch UI design briefs
+      try {
+        const uiResponse = await databases.listDocuments(
+          DATABASE_ID,
+          'ui_design_briefs',
+          [Query.equal('user_id', userId)]
+        );
+        const uiBriefs: Brief[] = uiResponse.documents.map((brief: any) => ({
+          ...mergeBriefPayload(brief),
+          id: brief.$id,
+          type: 'UI Design',
+          submissionDate: brief.submission_date,
+          companyName: brief.company_name
+        }));
+        allBriefs = allBriefs.concat(uiBriefs);
+      } catch (e) {
+        console.error("Error fetching UI design briefs:", e);
+      }
+
       // Fetch illustration design briefs
       try {
         const illResponse = await databases.listDocuments(
@@ -110,7 +130,7 @@ export const useBriefsFetching = (setBriefs: (briefs: Brief[]) => void, setIsLoa
           [Query.equal('user_id', userId)]
         );
         const illBriefs: Brief[] = illResponse.documents.map((brief: any) => ({
-          ...brief,
+          ...mergeBriefPayload(brief),
           id: brief.$id,
           type: 'Illustration Design',
           submissionDate: brief.submission_date,

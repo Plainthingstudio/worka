@@ -27,12 +27,13 @@ interface TaskBoardViewProps {
   onTaskClick?: (task: TaskWithRelations) => void;
 }
 
-const statusColumns: { status: TaskStatus; title: string; color: string; bgColor: string; textColor: string }[] = [
-  { status: 'Planning', title: 'Planning', color: 'text-gray-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
-  { status: 'In progress', title: 'In Progress', color: 'text-blue-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
-  { status: 'Paused', title: 'Paused', color: 'text-yellow-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
-  { status: 'Completed', title: 'Completed', color: 'text-green-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
-  { status: 'Cancelled', title: 'Cancelled', color: 'text-red-600', bgColor: 'bg-slate-100', textColor: 'text-gray-700' },
+const statusColumns: { status: TaskStatus; title: string; color: string; bgColor: string; textColor: string; dotClass: string }[] = [
+  { status: 'Planning',          title: 'Planning',          color: 'text-muted-foreground',     bgColor: 'bg-surface-3', textColor: 'text-muted-foreground', dotClass: 'bg-slate-400 dark:bg-slate-500' },
+  { status: 'In progress',       title: 'In Progress',       color: 'text-blue-600 dark:text-blue-300',     bgColor: 'bg-surface-3', textColor: 'text-muted-foreground', dotClass: 'bg-blue-500' },
+  { status: 'Awaiting Feedback', title: 'Awaiting Feedback', color: 'text-violet-600 dark:text-violet-300', bgColor: 'bg-surface-3', textColor: 'text-muted-foreground', dotClass: 'bg-violet-500' },
+  { status: 'Paused',            title: 'Paused',            color: 'text-yellow-600 dark:text-yellow-300', bgColor: 'bg-surface-3', textColor: 'text-muted-foreground', dotClass: 'bg-yellow-500' },
+  { status: 'Completed',         title: 'Completed',         color: 'text-green-600 dark:text-green-300',   bgColor: 'bg-surface-3', textColor: 'text-muted-foreground', dotClass: 'bg-green-500' },
+  { status: 'Cancelled',         title: 'Cancelled',         color: 'text-red-600 dark:text-red-300',       bgColor: 'bg-surface-3', textColor: 'text-muted-foreground', dotClass: 'bg-red-500' },
 ];
 
 export const TaskBoardView = ({ 
@@ -61,11 +62,11 @@ export const TaskBoardView = ({
 
   const getPriorityTextColor = (priority: string) => {
     switch (priority) {
-      case 'Urgent': return 'text-red-500';
-      case 'High': return 'text-orange-500';
-      case 'Normal': return 'text-blue-500';
-      case 'Low': return 'text-gray-400';
-      default: return 'text-gray-400';
+      case 'Urgent': return 'text-red-500 dark:text-red-400';
+      case 'High': return 'text-orange-500 dark:text-orange-400';
+      case 'Normal': return 'text-blue-500 dark:text-blue-400';
+      case 'Low': return 'text-muted-foreground';
+      default: return 'text-muted-foreground';
     }
   };
 
@@ -75,7 +76,7 @@ export const TaskBoardView = ({
       case 'High': return 'border-l-orange-500';
       case 'Normal': return 'border-l-blue-500';
       case 'Low': return 'border-l-green-500';
-      default: return 'border-l-gray-300';
+      default: return 'border-l-border-soft';
     }
   };
 
@@ -117,17 +118,17 @@ export const TaskBoardView = ({
             {/* Column Header */}
             <div className="px-4 py-3 flex items-center justify-between bg-transparent">
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${column.color === 'text-gray-600' ? 'bg-gray-500' : column.color === 'text-blue-600' ? 'bg-blue-500' : column.color === 'text-yellow-600' ? 'bg-yellow-500' : column.color === 'text-green-600' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${column.dotClass}`}></div>
                 <span className={`text-sm font-medium ${column.color}`}>{column.title}</span>
-                <div className="bg-gray-200 text-gray-700 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">
+                <div className="bg-muted text-muted-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">
                   {columnTasks.length}
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-6 w-6 text-gray-400 hover:text-gray-600"
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-muted-foreground hover:text-foreground"
                   onClick={() => onAddTask?.(column.status)}
                 >
                   <Plus className="h-4 w-4" />
@@ -181,11 +182,11 @@ export const TaskBoardView = ({
                 console.log('Board task assignees for', task.title, ':', task.assignees, 'converted to names:', assigneeNames);
                 
                 return (
-                  <Card 
-                    key={task.id} 
-                    className={`bg-white hover:shadow-lg transition-all duration-300 cursor-pointer group relative ${
-                      draggedTask === task.id ? 
-                        'opacity-50 transform rotate-2 scale-95 shadow-2xl z-50' : 
+                  <Card
+                    key={task.id}
+                    className={`bg-card hover:shadow-lg transition-all duration-300 cursor-pointer group relative ${
+                      draggedTask === task.id ?
+                        'opacity-50 transform rotate-2 scale-95 shadow-2xl z-50' :
                         'hover:scale-[1.02] hover:shadow-md'
                     }`}
                     draggable
@@ -204,7 +205,7 @@ export const TaskBoardView = ({
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-3">
                         {/* Task Title */}
-                        <h4 className="font-medium text-sm line-clamp-2 text-gray-900 flex-1">{task.title}</h4>
+                        <h4 className="font-medium text-sm line-clamp-2 text-foreground flex-1">{task.title}</h4>
                         {/* Drag Handle */}
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing mt-0.5">
                           <GripVertical className="h-3 w-3 text-muted-foreground" />
@@ -226,21 +227,21 @@ export const TaskBoardView = ({
                           {assigneeNames.length > 0 ? (
                             <div className="flex -space-x-1">
                               {assigneeNames.slice(0, 3).map((name, index) => (
-                                <Avatar key={index} className="h-6 w-6 border-2 border-white">
+                                <Avatar key={index} className="h-6 w-6 border-2 border-card">
                                   <AvatarFallback className="text-xs bg-primary text-primary-foreground">
                                     {getInitials(name)}
                                   </AvatarFallback>
                                 </Avatar>
                               ))}
                               {assigneeNames.length > 3 && (
-                                <div className="h-6 w-6 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center">
-                                  <span className="text-xs text-gray-600">+{assigneeNames.length - 3}</span>
+                                <div className="h-6 w-6 rounded-full bg-muted border-2 border-card flex items-center justify-center">
+                                  <span className="text-xs text-muted-foreground">+{assigneeNames.length - 3}</span>
                                 </div>
                               )}
                             </div>
                           ) : (
                             <Avatar className="h-6 w-6">
-                              <AvatarFallback className="text-xs bg-gray-200">
+                              <AvatarFallback className="text-xs bg-muted">
                                 <User className="h-3 w-3" />
                               </AvatarFallback>
                             </Avatar>
@@ -250,7 +251,7 @@ export const TaskBoardView = ({
                         {/* Right side - Due Date & Actions */}
                         <div className="flex items-center gap-2">
                           {task.due_date && (
-                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Calendar className="h-3 w-3" />
                               {format(task.due_date, 'MMM d')}
                             </div>
@@ -259,12 +260,12 @@ export const TaskBoardView = ({
                           {/* Attachment/Comment indicators */}
                           <div className="flex items-center gap-1">
                             {task.comments && task.comments.length > 0 && (
-                              <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <MessageSquare className="h-3 w-3" />
                               </div>
                             )}
                             {task.attachments && task.attachments.length > 0 && (
-                              <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Paperclip className="h-3 w-3" />
                               </div>
                             )}
@@ -307,9 +308,9 @@ export const TaskBoardView = ({
               })}
 
               {/* Add Task Button */}
-              <Button 
-                variant="ghost" 
-                className={`w-full h-10 border-2 border-dashed border-gray-300 ${column.textColor} hover:bg-white/50 justify-start gap-2`}
+              <Button
+                variant="ghost"
+                className={`w-full h-10 border-2 border-dashed border-border ${column.textColor} hover:bg-card/50 justify-start gap-2`}
                 onClick={() => onAddTask?.(column.status)}
               >
                 <Plus className="h-4 w-4" />
@@ -317,7 +318,7 @@ export const TaskBoardView = ({
               </Button>
 
               {columnTasks.length === 0 && (
-                <div className="text-center text-gray-400 text-sm py-8">
+                <div className="text-center text-muted-foreground text-sm py-8">
                   No tasks
                 </div>
               )}

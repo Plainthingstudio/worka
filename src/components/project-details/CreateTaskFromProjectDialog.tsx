@@ -35,7 +35,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { TaskPriority, TaskType, TaskStatus } from '@/types/task';
+import { TaskPriority, TaskType, TaskStatus, TASK_STATUS_OPTIONS, TASK_STATUSES } from '@/types/task';
 import { Project, ProjectStatus } from '@/types';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { cn } from '@/lib/utils';
@@ -45,7 +45,7 @@ const taskSchema = z.object({
   description: z.string().optional(),
   priority: z.enum(['Low', 'Normal', 'High', 'Urgent']),
   task_type: z.enum(['Primary', 'Secondary', 'Tertiary']),
-  status: z.enum(['Planning', 'In progress', 'Completed', 'Paused', 'Cancelled']),
+  status: z.enum(TASK_STATUSES),
   due_date: z.date().optional(),
   assignees: z.array(z.string()).optional(),
 });
@@ -65,6 +65,8 @@ const mapProjectStatusToTaskStatus = (projectStatus: ProjectStatus): TaskStatus 
       return "Planning";
     case "In progress":
       return "In progress";
+    case "Awaiting Feedback":
+      return "Awaiting Feedback";
     case "Completed":
     case "Paused":
     case "Cancelled":
@@ -221,11 +223,11 @@ export const CreateTaskFromProjectDialog = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Planning">Planning</SelectItem>
-                      <SelectItem value="In progress">In progress</SelectItem>
-                      <SelectItem value="Paused">Paused</SelectItem>
-                      <SelectItem value="Completed">Completed</SelectItem>
-                      <SelectItem value="Cancelled">Cancelled</SelectItem>
+                      {TASK_STATUS_OPTIONS.map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          {status.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

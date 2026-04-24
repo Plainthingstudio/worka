@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ClickUpTaskList } from '@/components/tasks/ClickUpTaskList';
-import { TaskListView } from '@/components/tasks/TaskListView';
 import { TaskBoardView } from '@/components/tasks/TaskBoardView';
 import { TaskCalendarView } from '@/components/tasks/TaskCalendarView';
 import { TaskDetailSidebar } from '@/components/tasks/TaskDetailSidebar';
 import { TaskDialog } from '@/components/tasks/TaskDialog';
 import { SubtaskDialog } from '@/components/tasks/SubtaskDialog';
 import { account, databases, DATABASE_ID, ID, Query, storage } from '@/integrations/appwrite/client';
-import { TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/task';
+import { TaskWithRelations, TaskStatus, TaskPriority, TaskType, TASK_STATUS_OPTIONS } from '@/types/task';
 import { Project } from '@/types';
-import { Plus, Search, Filter, LayoutList, Users, Calendar, MoreHorizontal, Kanban, Share, Table, Group, ArrowUpDown } from 'lucide-react';
+import { Plus, Search, Filter, LayoutList, Calendar, Kanban } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 export const Tasks = () => {
   const navigate = useNavigate();
@@ -205,6 +204,18 @@ export const Tasks = () => {
         user = null;
       }
 
+      const resolvedProjectId =
+        taskData.project_id || (selectedProject === 'all' ? null : selectedProject);
+
+      if (!resolvedProjectId) {
+        toast({
+          title: "Project required",
+          description: "Please select a project before creating a task.",
+          variant: "destructive"
+        });
+        return null;
+      }
+
       const insertData = {
         title: taskData.title || '',
         description: taskData.description,
@@ -213,7 +224,7 @@ export const Tasks = () => {
         task_type: taskData.task_type,
         assignees: taskData.assignees || [],
         due_date: taskData.due_date,
-        project_id: selectedProject === 'all' ? null : selectedProject,
+        project_id: resolvedProjectId,
         user_id: user?.$id
       };
 
@@ -374,6 +385,32 @@ export const Tasks = () => {
     setIsCreateDialogOpen(true);
   };
 
+  const findTaskById = (taskId: string): TaskWithRelations | undefined => {
+    for (const task of tasks) {
+      if (task.id === taskId) return task;
+
+      const subtask = task.subtasks?.find((item) => item.id === taskId);
+      if (subtask) return subtask as TaskWithRelations;
+    }
+
+    return undefined;
+  };
+
+  useEffect(() => {
+    if (!selectedTask) return;
+
+    const refreshedTask = findTaskById(selectedTask.id);
+
+    if (!refreshedTask) {
+      setSelectedTask(null);
+      return;
+    }
+
+    if (refreshedTask !== selectedTask) {
+      setSelectedTask(refreshedTask);
+    }
+  }, [tasks, selectedTask?.id]);
+
   const handleCreateSubtask = async (subtaskData: any) => {
     try {
       let user;
@@ -397,6 +434,19 @@ export const Tasks = () => {
         return;
       }
 
+      const resolvedParentTaskId = subtaskData.parent_task_id || parentTaskId;
+      const parentTask = findTaskById(resolvedParentTaskId);
+      const parentProjectId = parentTask?.project_id || (selectedProject !== 'all' ? selectedProject : null);
+
+      if (!parentProjectId) {
+        toast({
+          title: "Error",
+          description: "Could not find the parent task project for this subtask",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const insertData = {
         title: subtaskData.title || '',
         description: subtaskData.description,
@@ -404,9 +454,9 @@ export const Tasks = () => {
         priority: subtaskData.priority,
         task_type: subtaskData.task_type,
         assignees: subtaskData.assignees || [],
-        due_date: subtaskData.due_date,
-        parent_task_id: subtaskData.parent_task_id,
-        project_id: selectedProject === 'all' ? null : selectedProject,
+        due_date: subtaskData.due_date?.toISOString?.() || subtaskData.due_date,
+        parent_task_id: resolvedParentTaskId,
+        project_id: parentProjectId,
         user_id: user.$id
       };
 
@@ -475,128 +525,199 @@ export const Tasks = () => {
       </div>;
   }
 
-  return <div className="p-6 py-0">
-      <div className="flex flex-col h-full">
-            {/* Header */}
-            <div className="border-b bg-background px-4 sm:px-6 py-6 -mx-6">
-              {/* Top section with title and actions */}
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h1 className="text-2xl font-semibold text-foreground">Tasks</h1>
-                  <p className="text-muted-foreground mt-1 text-base">List of task for all team members</p>
-                </div>
+  const viewTabs: { key: 'board' | 'list' | 'calendar'; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { key: 'board', label: 'Board', icon: Kanban },
+    { key: 'list', label: 'List', icon: LayoutList },
+    { key: 'calendar', label: 'Timeline', icon: Calendar },
+  ];
 
-                <Button onClick={() => handleAddTask()} className="w-fit">
-                  <Plus className="h-4 w-4 mr-2" />
-                  <span>Add Task</span>
-                </Button>
-              </div>
-
-              {/* Navigation tabs and view controls */}
-              <div className="flex items-center justify-between">
-              <div className="inline-flex items-center bg-muted rounded-lg p-1">
-                <button className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${activeView === 'board' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`} onClick={() => setActiveView('board')}>
-                  <Kanban className="h-4 w-4" />
-                  <span>Board</span>
-                </button>
-                <button className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${activeView === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`} onClick={() => setActiveView('list')}>
-                  <LayoutList className="h-4 w-4" />
-                  <span>List</span>
-                </button>
-                <button className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${activeView === 'calendar' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`} onClick={() => setActiveView('calendar')}>
-                  <Calendar className="h-4 w-4" />
-                  <span>Timeline</span>
-                </button>
-              </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search task..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10 h-9 rounded-lg border-border bg-background" />
-                  </div>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-9 px-3 rounded-lg border-border">
-                        <Filter className="h-4 w-4 mr-2" />
-                        Filter
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-64 p-4 space-y-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Project</label>
-                        <Select value={selectedProject} onValueChange={setSelectedProject}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="All Projects" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Projects</SelectItem>
-                            {projects.map(project => <SelectItem key={project.id} value={project.id}>
-                                {project.name}
-                              </SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Status</label>
-                        <Select value={statusFilter} onValueChange={setStatusFilter}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="All Status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Status</SelectItem>
-                            <SelectItem value="Planning">Planning</SelectItem>
-                            <SelectItem value="In progress">In Progress</SelectItem>
-                            <SelectItem value="Paused">Paused</SelectItem>
-                            <SelectItem value="Completed">Completed</SelectItem>
-                            <SelectItem value="Cancelled">Cancelled</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Priority</label>
-                        <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="All Priority" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Priority</SelectItem>
-                            <SelectItem value="Low">Low</SelectItem>
-                            <SelectItem value="Normal">Normal</SelectItem>
-                            <SelectItem value="High">High</SelectItem>
-                            <SelectItem value="Urgent">Urgent</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            </div>
-
-
-            {/* Content */}
-            <div className="flex-1 overflow-hidden">
-              {activeView === 'list' && <ClickUpTaskList tasks={filteredTasks} isLoading={isLoading} onTaskClick={task => {
-          console.log('Task clicked:', task.title);
-          setSelectedTask(task);
-        }} onUpdateTask={updateTask} onAddTask={handleAddTask} />}
-
-              {activeView === 'board' && <TaskBoardView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddTask={status => handleAddTask(status)} onTaskClick={task => {
-          console.log('Board task clicked:', task.title);
-          setSelectedTask(task);
-        }} />}
-
-              {activeView === 'calendar' && <TaskCalendarView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} />}
-            </div>
+  return <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {/* Header row — title + Add Task */}
+        <div className="flex items-start justify-between">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <h1 className="text-foreground" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 24, lineHeight: '32px', letterSpacing: '-0.03em' }}>
+              Tasks
+            </h1>
+            <p className="text-muted-foreground" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 400, fontSize: 16, lineHeight: '24px' }}>
+              List of task for all team members
+            </p>
           </div>
+          <button
+            onClick={() => handleAddTask()}
+            className="inline-flex items-center justify-center transition-opacity hover:opacity-90 bg-brand text-brand-foreground"
+            style={{
+              gap: 8,
+              padding: '8px 12px',
+              height: 38,
+              backgroundImage: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 100%)',
+              boxShadow: '0px 1px 2px rgba(14,18,27,0.239216), 0px 0px 0px 1px hsl(var(--brand))',
+              borderRadius: 7,
+              fontFamily: 'Inter, sans-serif',
+              fontWeight: 500,
+              fontSize: 14,
+              lineHeight: '20px',
+            }}
+          >
+            <Plus style={{ width: 16, height: 16 }} strokeWidth={1.67} />
+            <span>Add Task</span>
+          </button>
+        </div>
+
+        {/* Tabs + search/filter row */}
+        <div className="flex items-center justify-between">
+          <div
+            className="inline-flex items-center bg-surface-2"
+            style={{ padding: 4, gap: 0, borderRadius: 8 }}
+          >
+            {viewTabs.map(({ key, label, icon: Icon }) => {
+              const active = activeView === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setActiveView(key)}
+                  className={cn(
+                    "inline-flex items-center transition-all",
+                    active ? "bg-card text-foreground shadow-sm" : "bg-transparent text-muted-foreground"
+                  )}
+                  style={{
+                    gap: 4,
+                    padding: '4px 12px',
+                    height: 28,
+                    borderRadius: active ? 8 : 10,
+                    fontFamily: 'Inter, sans-serif',
+                    fontWeight: 500,
+                    fontSize: 12,
+                    lineHeight: '20px',
+                  }}
+                >
+                  <Icon className="h-3 w-3" />
+                  <span>{label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center" style={{ gap: 12 }}>
+            <div className="relative" style={{ width: 208, height: 36 }}>
+              <Search
+                className="text-muted-foreground"
+                style={{ position: 'absolute', left: 12, top: 10, width: 16, height: 16 }}
+                strokeWidth={1.67}
+              />
+              <Input
+                placeholder="Search task..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="bg-surface-2 border-border-soft text-foreground"
+                style={{
+                  width: 208,
+                  height: 36,
+                  paddingLeft: 40,
+                  paddingRight: 12,
+                  borderRadius: 12,
+                  fontFamily: 'Inter, sans-serif',
+                  fontSize: 14,
+                }}
+              />
+            </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="inline-flex items-center justify-center transition-colors hover:bg-surface-hover bg-surface-2 border border-border-soft text-foreground"
+                  style={{
+                    gap: 8,
+                    height: 36,
+                    padding: '0 12px',
+                    borderRadius: 12,
+                    fontFamily: 'Inter, sans-serif',
+                    fontWeight: 500,
+                    fontSize: 14,
+                    lineHeight: '20px',
+                  }}
+                >
+                  <Filter style={{ width: 16, height: 16 }} strokeWidth={1.67} />
+                  <span>Filter</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64 p-4 space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Project</label>
+                  <Select value={selectedProject} onValueChange={setSelectedProject}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="All Projects" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Projects</SelectItem>
+                      {projects.map(project => <SelectItem key={project.id} value={project.id}>
+                          {project.name}
+                        </SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Status</label>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="All Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      {TASK_STATUS_OPTIONS.map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          {status.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Priority</label>
+                  <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="All Priority" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Priority</SelectItem>
+                      <SelectItem value="Low">Low</SelectItem>
+                      <SelectItem value="Normal">Normal</SelectItem>
+                      <SelectItem value="High">High</SelectItem>
+                      <SelectItem value="Urgent">Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1">
+          {activeView === 'list' && <ClickUpTaskList tasks={filteredTasks} isLoading={isLoading} onTaskClick={task => {
+      setSelectedTask(task);
+    }} onUpdateTask={updateTask} onAddTask={handleAddTask} />}
+
+          {activeView === 'board' && <TaskBoardView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddTask={status => handleAddTask(status)} onTaskClick={task => {
+      setSelectedTask(task);
+    }} />}
+
+          {activeView === 'calendar' && <TaskCalendarView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} />}
+        </div>
       {/* Task Detail Sidebar */}
       <TaskDetailSidebar task={selectedTask} isOpen={!!selectedTask} onClose={() => setSelectedTask(null)} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddSubtask={handleAddSubtask} onTaskSelect={setSelectedTask} allTasks={tasks} />
 
       {/* Create Task Dialog */}
-      <TaskDialog isOpen={isCreateDialogOpen} onClose={() => setIsCreateDialogOpen(false)} onSubmit={handleCreateTask} title="Create New Task" />
+      <TaskDialog
+        isOpen={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        onSubmit={handleCreateTask}
+        title="Create New Task"
+        projects={projects.map((project) => ({ id: project.id, name: project.name }))}
+        requireProjectSelection={selectedProject === 'all'}
+        initialData={selectedProject !== 'all' ? { project_id: selectedProject } : undefined}
+      />
 
       {/* Create Subtask Dialog */}
       <SubtaskDialog isOpen={isSubtaskDialogOpen} onClose={() => setIsSubtaskDialogOpen(false)} onSubmit={handleCreateSubtask} parentTaskId={parentTaskId} title="Create New Subtask" />

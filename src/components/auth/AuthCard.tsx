@@ -32,7 +32,7 @@ const AuthCard = memo(({
           <div className="h-6 w-6 rounded-full bg-primary" />
         </div>
         <h1 className="text-center text-xl font-semibold tracking-tight">
-          Welcome to Studio Manager
+          Welcome to Worka
         </h1>
         <p className="mt-1.5 text-center text-sm text-muted-foreground">
           Manage your clients and projects easily

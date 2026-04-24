@@ -272,6 +272,40 @@ export const useProjects = () => {
     }
   };
 
+  const handleInlineUpdate = async (projectId: string, fields: {
+    name?: string;
+    clientId?: string;
+    status?: ProjectStatus;
+    deadline?: Date;
+    fee?: number;
+    currency?: Currency;
+    projectType?: ProjectType;
+    categories?: ProjectCategory[];
+    teamMembers?: string[];
+  }) => {
+    try {
+      const updateData: Record<string, any> = {};
+      if (fields.name !== undefined) updateData.name = fields.name;
+      if (fields.clientId !== undefined) updateData.client_id = fields.clientId;
+      if (fields.status !== undefined) updateData.status = fields.status;
+      if (fields.deadline !== undefined) updateData.deadline = fields.deadline.toISOString();
+      if (fields.fee !== undefined) updateData.fee = fields.fee;
+      if (fields.currency !== undefined) updateData.currency = fields.currency;
+      if (fields.projectType !== undefined) updateData.project_type = fields.projectType;
+      if (fields.categories !== undefined) updateData.categories = fields.categories;
+      if (fields.teamMembers !== undefined) updateData.team_members = fields.teamMembers;
+
+      await databases.updateDocument(DATABASE_ID, 'projects', projectId, updateData);
+
+      setProjects(prev => prev.map(p =>
+        p.id === projectId ? { ...p, ...fields } : p
+      ));
+    } catch (error: any) {
+      console.error("Error updating project:", error);
+      toast.error(error.message || "Failed to update project");
+    }
+  };
+
   return {
     projects,
     clients,
@@ -279,6 +313,7 @@ export const useProjects = () => {
     isLoading,
     handleAddProject,
     handleEditProject,
-    handleDeleteProject
+    handleDeleteProject,
+    handleInlineUpdate
   };
 };

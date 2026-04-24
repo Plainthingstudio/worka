@@ -57,5 +57,5 @@ export const useAssigneeNames = () => {
     });
   };
 
-  return { getAssigneeNames, isLoading };
+  return { getAssigneeNames, teamMembers, isLoading };
 };

@@ -14,6 +14,8 @@ export const useProjectToTask = () => {
         return "Planning";
       case "In progress":
         return "In progress";
+      case "Awaiting Feedback":
+        return "Awaiting Feedback";
       case "Completed":
       case "Paused":
       case "Cancelled":

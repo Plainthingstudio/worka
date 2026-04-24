@@ -1,11 +1,11 @@
-
-import React from "react";
+import React, { useState } from "react";
 import ProjectHeader from "@/components/project-details/ProjectHeader";
 import ProjectInfo from "@/components/project-details/ProjectInfo";
 import PaymentSummary from "@/components/project-details/PaymentSummary";
 import PaymentHistory from "@/components/project-details/PaymentHistory";
 import ProjectDialogs from "@/components/project-details/ProjectDialogs";
-import ProjectTasksPreview from "@/components/project-details/ProjectTasksPreview";
+import ProjectTabs, { ProjectTab } from "@/components/project-details/ProjectTabs";
+import ProjectTasksView from "@/components/project-details/ProjectTasksView";
 import { CreateTaskFromProjectDialog } from "@/components/project-details/CreateTaskFromProjectDialog";
 import { Project, Client, Payment, ProjectStatus, TeamMember } from "@/types";
 import { TaskWithRelations } from "@/types/task";
@@ -59,8 +59,6 @@ const ProjectContent = ({
   client,
   teamMembers,
   currentPayment,
-  tasks,
-  isTasksLoading,
   dialogState,
   selectedStatus,
   onEdit,
@@ -71,11 +69,13 @@ const ProjectContent = ({
   onAddPayment,
   onEditPayment,
   onDeletePayment,
-  handlers
+  handlers,
 }: ProjectContentProps) => {
+  const [activeTab, setActiveTab] = useState<ProjectTab>("overview");
+
   return (
-    <>
-      <ProjectHeader 
+    <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
+      <ProjectHeader
         project={project}
         onEdit={onEdit}
         onDelete={onDelete}
@@ -84,32 +84,38 @@ const ProjectContent = ({
         onCreateTask={onCreateTask}
       />
 
-      <div className="grid gap-6 md:grid-cols-7">
-        <ProjectInfo project={project} client={client} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <ProjectTabs activeTab={activeTab} onChange={setActiveTab} />
 
-        <div className="col-span-7 md:col-span-2">
-          <PaymentSummary 
-            project={project} 
-            onAddPayment={onAddPayment} 
-          />
-        </div>
+        {activeTab === "overview" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <ProjectInfo project={project} client={client} />
 
-        <div className="col-span-7">
-          <ProjectTasksPreview
+            <div
+              className="flex flex-col md:flex-row"
+              style={{ gap: 8, width: "100%" }}
+            >
+              <div style={{ flex: "1 1 0", minWidth: 0, maxWidth: 485 }}>
+                <PaymentSummary project={project} onAddPayment={onAddPayment} />
+              </div>
+              <div style={{ flex: "1 1 0", minWidth: 0 }}>
+                <PaymentHistory
+                  project={project}
+                  onEditPayment={onEditPayment}
+                  onDeletePayment={onDeletePayment}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab !== "overview" && (
+          <ProjectTasksView
             projectId={project.id}
-            tasks={tasks}
-            isLoading={isTasksLoading}
+            view={activeTab}
             onCreateTask={onCreateTask}
           />
-        </div>
-
-        <div className="col-span-7">
-          <PaymentHistory 
-            project={project}
-            onEditPayment={onEditPayment}
-            onDeletePayment={onDeletePayment}
-          />
-        </div>
+        )}
       </div>
 
       <ProjectDialogs
@@ -145,7 +151,7 @@ const ProjectContent = ({
         onSubmit={handlers.onCreateTaskSubmit}
         project={project}
       />
-    </>
+    </div>
   );
 };
 

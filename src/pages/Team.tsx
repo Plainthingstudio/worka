@@ -222,7 +222,7 @@ const Team = () => {
 
   return (
     <>
-      <main className="container mx-auto p-6 space-y-6">
+      <main className="w-full p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">
@@ -260,8 +260,8 @@ const Team = () => {
             setPositionFilter={setPositionFilter}
           />
 
-          <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
-            <div className="overflow-x-auto p-4 py-[8px] px-[8px]">
+          <div className="rounded-xl animate-fade-in">
+            <div className="overflow-x-auto">
               <TeamTable
                 members={filteredMembers}
                 onEdit={canManageTeam() ? openEditMemberDialog : undefined}

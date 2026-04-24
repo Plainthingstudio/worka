@@ -52,8 +52,9 @@ import {
   Trash2,
   Plus
 } from 'lucide-react';
-import { TaskWithRelations, TaskPriority, TaskType, TaskStatus } from '@/types/task';
+import { TaskWithRelations, TaskPriority, TaskType, TaskStatus, TASK_STATUS_OPTIONS, TASK_STATUSES } from '@/types/task';
 import { format } from 'date-fns';
+import { MentionText } from '@/components/tasks/MentionText';
 import { useTaskProject } from '@/hooks/useTaskProject';
 import DeleteConfirmationDialog from '@/components/projects/DeleteConfirmationDialog';
 
@@ -62,7 +63,7 @@ const taskSchema = z.object({
   description: z.string().optional(),
   priority: z.enum(['Low', 'Normal', 'High', 'Urgent']),
   task_type: z.enum(['Primary', 'Secondary', 'Tertiary']),
-  status: z.enum(['Planning', 'In progress', 'Paused', 'Completed', 'Cancelled']),
+  status: z.enum(TASK_STATUSES),
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -138,8 +139,8 @@ export const TaskDetailDialog = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      alert('File size must be less than 10MB');
+    if (file.size > 50 * 1024 * 1024) { // 50MB limit
+      alert('File size must be less than 50MB');
       return;
     }
 
@@ -358,11 +359,11 @@ export const TaskDetailDialog = ({
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="Planning">Planning</SelectItem>
-                                <SelectItem value="In progress">In Progress</SelectItem>
-                                <SelectItem value="Paused">Paused</SelectItem>
-                                <SelectItem value="Completed">Completed</SelectItem>
-                                <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                {TASK_STATUS_OPTIONS.map((status) => (
+                                  <SelectItem key={status.value} value={status.value}>
+                                    {status.label}
+                                  </SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -466,7 +467,9 @@ export const TaskDetailDialog = ({
                           {format(comment.created_at, 'MMM dd, yyyy HH:mm')}
                         </span>
                       </div>
-                      <p className="text-sm">{comment.content}</p>
+                      <div className="text-sm">
+                        <MentionText content={comment.content || ''} candidates={[]} />
+                      </div>
                     </div>
                   ))}
                   {(!task.comments || task.comments.length === 0) && (

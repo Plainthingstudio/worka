@@ -1,11 +1,12 @@
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-import { account, databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
+import { account, databases, DATABASE_ID } from '@/integrations/appwrite/client';
 import {
   generateIllustrationBriefPDF,
   generateUIDesignBriefPDF,
   generateGraphicDesignBriefPDF
 } from '@/utils/briefPdfGenerator';
+import { mergeBriefPayload } from '@/utils/briefPayload';
 
 interface BriefData {
   id: string;
@@ -38,11 +39,12 @@ export function useBriefPdf() {
       }
 
       if (!collectionId) return brief;
+      if (!brief.id) {
+        console.warn("Cannot fetch full brief data for PDF without a brief ID:", brief);
+        return brief;
+      }
 
-      const response = await databases.listDocuments(DATABASE_ID, collectionId, [
-        Query.equal('$id', brief.id)
-      ]);
-      const data = response.documents[0] ?? null;
+      const data = await databases.getDocument(DATABASE_ID, collectionId, brief.id);
 
       if (data && typeof data === 'object') {
         console.log("Retrieved full brief details for PDF generation:", data);
@@ -50,7 +52,9 @@ export function useBriefPdf() {
         // Transform any snake_case to camelCase if needed
         const fullBriefData: BriefData = {
           ...brief,
-          ...data
+          ...mergeBriefPayload(data),
+          id: data.$id,
+          type: brief.type,
         };
 
         if (data.company_name) {

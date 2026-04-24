@@ -32,7 +32,8 @@ const Projects = () => {
     isLoading, 
     handleAddProject, 
     handleEditProject, 
-    handleDeleteProject 
+    handleDeleteProject,
+    handleInlineUpdate
   } = useProjects();
 
   const {
@@ -41,7 +42,6 @@ const Projects = () => {
     isDeleting,
     openAddProjectDialog,
     closeAddProjectDialog,
-    openEditProjectDialog,
     closeEditProjectDialog,
     openDeleteDialog,
     closeDeleteDialog
@@ -93,7 +93,7 @@ const Projects = () => {
 
   return (
     <>
-      <main className="container mx-auto p-6">
+      <main className="w-full p-6">
         <ProjectsHeader onCreateProject={openAddProjectDialog} />
 
         {isLoading ? (
@@ -109,13 +109,14 @@ const Projects = () => {
               setStatusFilter={setStatusFilter} 
             />
 
-            <div className="glass-card rounded-xl border shadow-sm animate-fade-in">
-              <div className="overflow-x-auto p-4 py-[8px] px-[8px]">
-                <ProjectsTable 
-                  projects={filteredProjects} 
-                  clients={clients} 
-                  onEdit={openEditProjectDialog} 
-                  onDelete={openDeleteDialog} 
+            <div className="rounded-xl animate-fade-in">
+              <div className="overflow-x-auto">
+                <ProjectsTable
+                  projects={filteredProjects}
+                  clients={clients}
+                  allTeamMembers={teamMembers}
+                  onDelete={openDeleteDialog}
+                  onInlineUpdate={handleInlineUpdate}
                 />
               </div>
             </div>

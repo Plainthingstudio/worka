@@ -24,6 +24,7 @@ export const useClients = () => {
         address: client.address,
         leadSource: client.lead_source as LeadSource,
         createdAt: new Date(client.$createdAt),
+        createdBy: client.user_id,
       }));
 
       setClients(transformedClients);
@@ -122,11 +123,29 @@ export const useClients = () => {
     fetchClients();
   }, []);
 
+  const inlineUpdateClient = async (clientId: string, fields: Partial<Pick<Client, 'name' | 'email' | 'phone' | 'address' | 'leadSource'>>) => {
+    try {
+      const updateData: Record<string, any> = {};
+      if (fields.name !== undefined) updateData.name = fields.name;
+      if (fields.email !== undefined) updateData.email = fields.email;
+      if (fields.phone !== undefined) updateData.phone = fields.phone;
+      if (fields.address !== undefined) updateData.address = fields.address;
+      if (fields.leadSource !== undefined) updateData.lead_source = fields.leadSource;
+
+      await databases.updateDocument(DATABASE_ID, "clients", clientId, updateData);
+      setClients(prev => prev.map(c => c.id === clientId ? { ...c, ...fields } : c));
+    } catch (error: any) {
+      console.error("Error updating client:", error);
+      toast.error(error.message || "Failed to update client");
+    }
+  };
+
   return {
     clients,
     isLoading,
     addClient,
     updateClient,
-    deleteClient
+    deleteClient,
+    inlineUpdateClient
   };
 };

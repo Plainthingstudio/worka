@@ -32,8 +32,8 @@ export const TaskCalendarView = ({ tasks, isLoading, onUpdateTask }: TaskCalenda
       case 'Urgent': return 'bg-destructive';
       case 'High': return 'bg-orange-500';
       case 'Normal': return 'bg-blue-500';
-      case 'Low': return 'bg-gray-500';
-      default: return 'bg-gray-500';
+      case 'Low': return 'bg-muted-foreground';
+      default: return 'bg-muted-foreground';
     }
   };
 

@@ -28,7 +28,7 @@ const Leads = () => {
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
 
   return (
-    <main className="flex-1 container mx-auto py-6 max-w-[1400px] px-[24px]">
+    <main className="flex-1 w-full py-6 px-[24px]">
       <KanbanBoard 
         leads={filteredLeads} 
         isLoading={isLoading} 

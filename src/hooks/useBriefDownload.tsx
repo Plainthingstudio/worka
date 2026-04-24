@@ -1,10 +1,11 @@
 
 import { useState } from 'react';
-import { databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
+import { databases, DATABASE_ID } from '@/integrations/appwrite/client';
 import { toast } from '@/hooks/use-toast';
 import { generateUIDesignBriefPDF } from '@/utils/uiDesignBriefPdf';
 import { generateGraphicDesignBriefPDF } from '@/utils/graphicDesignBriefPdf';
 import { generateIllustrationBriefPDF } from '@/utils/illustrationBriefPdf';
+import { mergeBriefPayload } from '@/utils/briefPayload';
 
 export const useBriefDownload = () => {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -32,11 +33,16 @@ export const useBriefDownload = () => {
         return;
       }
 
-      // Fetch the brief details
-      const response = await databases.listDocuments(DATABASE_ID, collectionId, [
-        Query.equal('$id', briefId)
-      ]);
-      const data = response.documents[0] ?? null;
+      if (!briefId) {
+        toast({
+          title: "Error",
+          description: "Brief ID is missing",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const data = await databases.getDocument(DATABASE_ID, collectionId, briefId);
 
       if (!data) {
         toast({
@@ -49,8 +55,14 @@ export const useBriefDownload = () => {
 
       // Generate PDF based on brief type
       try {
+        const normalizedBrief = {
+          ...mergeBriefPayload(data),
+          id: data.$id,
+          type: briefType,
+        };
+
         if (briefType === 'UI Design') {
-          await generateUIDesignBriefPDF(data);
+          await generateUIDesignBriefPDF(normalizedBrief);
           // The function handles the download internally, so we don't need to return a blob
           toast({
             title: "Success",
@@ -58,7 +70,7 @@ export const useBriefDownload = () => {
           });
           return;
         } else if (briefType === 'Graphic Design') {
-          const result = await generateGraphicDesignBriefPDF(data);
+          const result = await generateGraphicDesignBriefPDF(normalizedBrief);
           if (result === true) {
             // The function handles the download internally
             toast({
@@ -70,7 +82,7 @@ export const useBriefDownload = () => {
             throw new Error('Failed to generate Graphic Design PDF');
           }
         } else if (briefType === 'Illustration Design') {
-          await generateIllustrationBriefPDF(data);
+          await generateIllustrationBriefPDF(normalizedBrief);
           // The function handles the download internally, so we don't need to return a blob
           toast({
             title: "Success",

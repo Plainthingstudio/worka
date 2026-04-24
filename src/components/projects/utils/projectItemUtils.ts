@@ -1,12 +1,14 @@
 
 import { ProjectStatus, ProjectType } from "@/types";
 
-export const getStatusBadgeVariant = (status: ProjectStatus) => {
+export const getStatusBadgeVariant = (status: ProjectStatus | string) => {
   switch (status) {
     case "Planning":
       return "planning";
     case "In progress":
       return "in-progress";
+    case "Awaiting Feedback":
+      return "awaiting-feedback";
     case "Completed":
       return "completed";
     case "Paused":

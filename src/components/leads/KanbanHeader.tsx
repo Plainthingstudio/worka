@@ -2,7 +2,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Layout, List, Filter, Search } from 'lucide-react';
 import { LeadStage } from '@/types';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -106,28 +105,51 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
         </div>
         
         <div className="flex justify-between items-center mb-6 ">
-          <Tabs value={viewMode} onValueChange={value => onViewModeChange(value as 'kanban' | 'list')}>
-            <TabsList>
-              <TabsTrigger value="kanban" className="flex items-center gap-2">
-                <Layout className="h-4 w-4" />
-                <span className="hidden sm:inline">Kanban</span>
-              </TabsTrigger>
-              <TabsTrigger value="list" className="flex items-center gap-2">
-                <List className="h-4 w-4" />
-                <span className="hidden sm:inline">List</span>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div
+            className="inline-flex items-center"
+            style={{ padding: 4, gap: 0, background: 'rgba(248, 250, 252, 1)', borderRadius: 8 }}
+          >
+            {([
+              { key: 'kanban', label: 'Kanban', icon: Layout },
+              { key: 'list', label: 'List', icon: List },
+            ] as const).map(({ key, label, icon: Icon }) => {
+              const active = viewMode === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => onViewModeChange(key)}
+                  className="inline-flex items-center transition-all"
+                  style={{
+                    gap: 4,
+                    padding: '4px 12px',
+                    height: 28,
+                    borderRadius: active ? 8 : 10,
+                    background: active ? '#FFFFFF' : 'transparent',
+                    boxShadow: active ? '0px 1px 2px rgba(0,0,0,0.05)' : undefined,
+                    fontFamily: 'Inter, sans-serif',
+                    fontWeight: 500,
+                    fontSize: 12,
+                    lineHeight: '20px',
+                    color: active ? '#020817' : '#64748B',
+                  }}
+                >
+                  <Icon className="h-3 w-3" />
+                  <span className="hidden sm:inline">{label}</span>
+                </button>
+              );
+            })}
+          </div>
 
           <div className="flex items-center gap-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input placeholder="Search leads..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10 w-64" />
+              <Input placeholder="Search leads..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10 w-64 h-9" />
             </div>
 
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
+                <Button variant="outline" className="flex items-center gap-2 h-9">
                   <Filter className="h-4 w-4" />
                   Filter
                 </Button>

@@ -8,17 +8,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Client, Project } from "@/types";
+import { Client, Project, TeamMember } from "@/types";
 import ProjectItem from "./ProjectItem";
 
 interface ProjectsTableProps {
   projects: Project[];
   clients: Client[];
-  onEdit: (project: Project) => void;
+  allTeamMembers: TeamMember[];
   onDelete: (id: string) => void;
+  onInlineUpdate: (projectId: string, fields: Partial<Project>) => void;
 }
 
-const ProjectsTable = ({ projects, clients, onEdit, onDelete }: ProjectsTableProps) => {
+const ProjectsTable = ({ projects, clients, allTeamMembers, onDelete, onInlineUpdate }: ProjectsTableProps) => {
   return (
     <Table>
       <TableHeader>
@@ -31,14 +32,13 @@ const ProjectsTable = ({ projects, clients, onEdit, onDelete }: ProjectsTablePro
           <TableHead>Fee</TableHead>
           <TableHead>Type</TableHead>
           <TableHead>Team</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {projects.length === 0 ? (
           <TableRow>
             <TableCell
-              colSpan={9}
+              colSpan={8}
               className="h-24 text-center text-muted-foreground"
             >
               No projects found.
@@ -48,12 +48,14 @@ const ProjectsTable = ({ projects, clients, onEdit, onDelete }: ProjectsTablePro
           projects.map((project) => {
             const client = clients.find(c => c.id === project.clientId);
             return (
-              <ProjectItem 
+              <ProjectItem
                 key={project.id}
                 project={project}
                 client={client}
-                onEdit={onEdit}
+                allClients={clients}
+                allTeamMembers={allTeamMembers}
                 onDelete={onDelete}
+                onInlineUpdate={onInlineUpdate}
               />
             );
           })

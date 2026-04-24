@@ -12,16 +12,16 @@ export const Layout = ({ children, title }: LayoutProps) => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
   useEffect(() => {
+    const sidebarElement = document.querySelector('[class*="flex flex-col"][class*="fixed inset-y-0 left-0"]');
+
     const handleSidebarChange = () => {
-      const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
-      setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
+      if (!sidebarElement) return;
+      setIsSidebarExpanded(sidebarElement.classList.contains('w-56'));
     };
 
     handleSidebarChange();
 
     const observer = new MutationObserver(handleSidebarChange);
-    const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
-    
     if (sidebarElement) {
       observer.observe(sidebarElement, { attributes: true, attributeFilter: ['class'] });
     }
@@ -30,17 +30,23 @@ export const Layout = ({ children, title }: LayoutProps) => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-surface-2">
       <Sidebar />
       <div
-        className={`flex-1 w-full transition-all duration-300 ease-in-out ${
-          isSidebarExpanded ? "pl-56" : "pl-14"
+        className={`w-full transition-all duration-300 ease-in-out ${
+          isSidebarExpanded ? "pl-56" : "pl-16"
         }`}
       >
-        <Navbar title={title || ""} />
-        <main className="w-full overflow-auto">
-          {children}
-        </main>
+        <div className="pt-3 min-h-screen">
+          <div
+            className="bg-card min-h-[calc(100vh-12px)] overflow-hidden border border-border-soft border-r-0 border-b-0 rounded-tl-lg"
+          >
+            <Navbar title={title || ""} />
+            <main className="w-full overflow-auto bg-card">
+              {children}
+            </main>
+          </div>
+        </div>
       </div>
     </div>
   );

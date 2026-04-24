@@ -29,7 +29,7 @@ const ActionsCell = ({ project, onEdit, onDelete }: ActionsCellProps) => {
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={() => navigate(`/projects/${project.id}`)}
+              onClick={(e) => { e.stopPropagation(); navigate(`/projects/${project.id}`); }}
             >
               <EyeIcon className="h-4 w-4" />
               <span className="sr-only">View</span>
@@ -48,7 +48,7 @@ const ActionsCell = ({ project, onEdit, onDelete }: ActionsCellProps) => {
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={() => onEdit(project)}
+              onClick={(e) => { e.stopPropagation(); onEdit(project); }}
             >
               <Pencil className="h-4 w-4" />
               <span className="sr-only">Edit</span>
@@ -67,7 +67,7 @@ const ActionsCell = ({ project, onEdit, onDelete }: ActionsCellProps) => {
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-destructive"
-              onClick={() => onDelete(project.id)}
+              onClick={(e) => { e.stopPropagation(); onDelete(project.id); }}
             >
               <Trash className="h-4 w-4" />
               <span className="sr-only">Delete</span>

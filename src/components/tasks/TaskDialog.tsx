@@ -34,16 +34,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { TaskPriority, TaskType, TaskStatus } from '@/types/task';
+import { TaskPriority, TaskType, TaskStatus, TASK_STATUS_OPTIONS, TASK_STATUSES } from '@/types/task';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { cn } from '@/lib/utils';
 
 const taskSchema = z.object({
+  project_id: z.string().optional(),
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
   priority: z.enum(['Low', 'Normal', 'High', 'Urgent']),
   task_type: z.enum(['Primary', 'Secondary', 'Tertiary']),
-  status: z.enum(['Planning', 'In progress', 'Completed', 'Paused', 'Cancelled']),
+  status: z.enum(TASK_STATUSES),
   due_date: z.date().optional(),
   assignees: z.array(z.string()).optional(),
 });
@@ -56,14 +57,25 @@ interface TaskDialogProps {
   onSubmit: (data: TaskFormData) => void;
   title: string;
   initialData?: Partial<TaskFormData>;
+  projects?: Array<{ id: string; name: string }>;
+  requireProjectSelection?: boolean;
 }
 
-export const TaskDialog = ({ isOpen, onClose, onSubmit, title, initialData }: TaskDialogProps) => {
+export const TaskDialog = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  title,
+  initialData,
+  projects = [],
+  requireProjectSelection = false,
+}: TaskDialogProps) => {
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
+      project_id: initialData?.project_id || '',
       title: initialData?.title || '',
       description: initialData?.description || '',
       priority: initialData?.priority || 'Normal',
@@ -83,6 +95,14 @@ export const TaskDialog = ({ isOpen, onClose, onSubmit, title, initialData }: Ta
   }, [isOpen, fetchTeamMembers]);
 
   const handleSubmit = (data: TaskFormData) => {
+    if (requireProjectSelection && !data.project_id) {
+      form.setError('project_id', {
+        type: 'manual',
+        message: 'Project is required',
+      });
+      return;
+    }
+
     onSubmit(data);
     form.reset();
   };
@@ -101,6 +121,33 @@ export const TaskDialog = ({ isOpen, onClose, onSubmit, title, initialData }: Ta
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            {requireProjectSelection && (
+              <FormField
+                control={form.control}
+                name="project_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Project</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select project" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {projects.map((project) => (
+                          <SelectItem key={project.id} value={project.id}>
+                            {project.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             <FormField
               control={form.control}
               name="title"
@@ -195,11 +242,11 @@ export const TaskDialog = ({ isOpen, onClose, onSubmit, title, initialData }: Ta
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Planning">Planning</SelectItem>
-                      <SelectItem value="In progress">In progress</SelectItem>
-                      <SelectItem value="Paused">Paused</SelectItem>
-                      <SelectItem value="Completed">Completed</SelectItem>
-                      <SelectItem value="Cancelled">Cancelled</SelectItem>
+                      {TASK_STATUS_OPTIONS.map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          {status.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

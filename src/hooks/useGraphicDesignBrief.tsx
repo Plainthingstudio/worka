@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { account, databases, DATABASE_ID, ID } from "@/integrations/appwrite/client";
-import { stringifyJsonField } from "@/utils/appwriteJson";
+import { stringifyBriefPayload } from "@/utils/briefPayload";
 
 export interface GraphicDesignBriefFormValues {
   name: string;
@@ -75,39 +75,25 @@ export const useGraphicDesignBrief = (submittedForId?: string | null) => {
       console.log("Logo feelings data:", data.logoFeelings);
       console.log("Submitted for user ID:", submittedForId);
 
+      const submissionDate = new Date().toISOString();
+      const briefPayload = {
+        ...data,
+        type: "Graphic Design",
+        status: "New",
+        logoFeelings: data.logoFeelings || {},
+        services,
+        printMedia,
+        digitalMedia,
+        submissionDate,
+      };
+
       const briefData: any = {
         name: data.name || "",
         email: data.email || "",
         company_name: data.companyName || "",
         status: "New",
-        about_company: data.aboutCompany || "",
-        vision_mission: data.visionMission || "",
-        slogan: data.slogan || "",
-        logo_feelings: stringifyJsonField(data.logoFeelings || {}, "{}"),
-        logo_type: data.logoType || "",
-        reference1: data.reference1 || "",
-        reference2: data.reference2 || "",
-        reference3: data.reference3 || "",
-        reference4: data.reference4 || "",
-        target_age: data.targetAge || "",
-        target_gender: data.targetGender || "",
-        target_demography: data.targetDemography || "",
-        target_profession: data.targetProfession || "",
-        target_personality: data.targetPersonality || "",
-        products_services: data.productsServices || "",
-        features_and_benefits: data.featuresAndBenefits || "",
-        market_category: data.marketCategory || "",
-        competitor1: data.competitor1 || "",
-        competitor2: data.competitor2 || "",
-        competitor3: data.competitor3 || "",
-        competitor4: data.competitor4 || "",
-        brand_positioning: data.brandPositioning || "",
-        barrier_to_entry: data.barrierToEntry || "",
-        specific_imagery: data.specificImagery || "",
-        services: services,
-        print_media: printMedia,
-        digital_media: digitalMedia,
-        submission_date: new Date().toISOString()
+        brief_payload: stringifyBriefPayload(briefPayload),
+        submission_date: submissionDate,
       };
 
       if (submittedForId) {

@@ -39,7 +39,8 @@ export const useFetchLeads = () => {
         notes: lead.notes,
         address: lead.address,
         createdAt: new Date(lead.$createdAt),
-        updatedAt: new Date(lead.$updatedAt)
+        updatedAt: new Date(lead.$updatedAt),
+        createdBy: lead.user_id,
       }));
 
       setLeads(transformedLeads);

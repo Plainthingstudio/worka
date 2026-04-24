@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import UIDesignBriefDetails from "./UIDesignBriefDetails";
 import GraphicDesignBriefDetails from "./GraphicDesignBriefDetails";
 import IllustrationBriefDetails from "./IllustrationBriefDetails";
-import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
+import { account, databases, DATABASE_ID } from "@/integrations/appwrite/client";
 import { toast } from "sonner";
+import { mergeBriefPayload } from "@/utils/briefPayload";
 
 interface BriefDetailsDialogProps {
   open: boolean;
@@ -64,17 +65,15 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
             collectionId = 'graphic_design_briefs';
           }
 
-          if (collectionId) {
-            const response = await databases.listDocuments(DATABASE_ID, collectionId, [
-              Query.equal('$id', briefDetails.id)
-            ]);
-            const data = response.documents[0] ?? null;
+          if (collectionId && briefDetails.id) {
+            const data = await databases.getDocument(DATABASE_ID, collectionId, briefDetails.id);
 
             if (data) {
               console.log("Retrieved full brief details:", data);
 
               const briefData = {
-                ...data,
+                ...mergeBriefPayload(data),
+                id: data.$id,
                 type: briefDetails.type,
                 companyName: data.company_name,
                 submissionDate: data.submission_date
@@ -85,6 +84,9 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
               console.warn("No brief details returned");
               setFullBriefDetails(preparedDetails);
             }
+          } else if (collectionId) {
+            console.warn("Brief ID is missing, using already loaded brief details:", briefDetails);
+            setFullBriefDetails(preparedDetails);
           } else {
             setFullBriefDetails(preparedDetails);
           }
@@ -125,7 +127,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
     if (!details) return null;
 
     // Create a deep copy to avoid modifying the original
-    let processedDetails = JSON.parse(JSON.stringify(details));
+    let processedDetails = JSON.parse(JSON.stringify(mergeBriefPayload(details)));
 
     // Normalize property names
     processedDetails = {
@@ -174,15 +176,19 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
     try {
       console.log("NOTE: This method is deprecated. Using direct collection query instead.");
 
-      const response = await databases.listDocuments(DATABASE_ID, 'illustration_design_briefs', [
-        Query.equal('$id', briefDetails.id)
-      ]);
-      const data = response.documents[0] ?? null;
+      if (!briefDetails.id) {
+        const preparedDetails = prepareDetailsForDisplay(briefDetails);
+        setFullBriefDetails(preparedDetails);
+        return;
+      }
+
+      const data = await databases.getDocument(DATABASE_ID, 'illustration_design_briefs', briefDetails.id);
 
       if (data) {
         console.log("Full illustration brief fetched:", data);
         const preparedData = prepareDetailsForDisplay({
           ...data,
+          id: data.$id,
           type: "Illustration Design",
           submissionDate: data.submission_date,
           companyName: data.company_name
@@ -203,15 +209,19 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
     try {
       console.log("NOTE: This method is deprecated. Using direct collection query instead.");
 
-      const response = await databases.listDocuments(DATABASE_ID, 'ui_design_briefs', [
-        Query.equal('$id', briefDetails.id)
-      ]);
-      const data = response.documents[0] ?? null;
+      if (!briefDetails.id) {
+        const preparedDetails = prepareDetailsForDisplay(briefDetails);
+        setFullBriefDetails(preparedDetails);
+        return;
+      }
+
+      const data = await databases.getDocument(DATABASE_ID, 'ui_design_briefs', briefDetails.id);
 
       if (data) {
         console.log("Full UI brief fetched:", data);
         const preparedData = prepareDetailsForDisplay({
           ...data,
+          id: data.$id,
           type: "UI Design",
           submissionDate: data.submission_date,
           companyName: data.company_name
@@ -232,10 +242,13 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
     try {
       console.log("NOTE: This method is deprecated. Using direct collection query instead.");
 
-      const response = await databases.listDocuments(DATABASE_ID, 'graphic_design_briefs', [
-        Query.equal('$id', briefDetails.id)
-      ]);
-      const data = response.documents[0] ?? null;
+      if (!briefDetails.id) {
+        const preparedDetails = prepareDetailsForDisplay(briefDetails);
+        setFullBriefDetails(preparedDetails);
+        return;
+      }
+
+      const data = await databases.getDocument(DATABASE_ID, 'graphic_design_briefs', briefDetails.id);
 
       if (data) {
         console.log("Full graphic brief fetched:", data);
@@ -256,6 +269,7 @@ const BriefDetailsDialog: React.FC<BriefDetailsDialogProps> = ({
 
         const preparedData = prepareDetailsForDisplay({
           ...data,
+          id: data.$id,
           logoFeelings: logoFeelings,
           type: "Graphic Design",
           submissionDate: data.submission_date,
