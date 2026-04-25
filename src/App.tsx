@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './components/ThemeProvider';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Layout } from './components/Layout';
+import { account, isAppwriteConfigured } from '@/integrations/appwrite/client';
 
 // Import your pages
 import Index from '@/pages/Index';
@@ -32,6 +33,78 @@ import DesignSystem from '@/pages/DesignSystem';
 // Create a client
 const queryClient = new QueryClient();
 
+const AuthenticatedRoute = ({ children }: { children: React.ReactNode }) => {
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkSession = async () => {
+      if (!isAppwriteConfigured) {
+        localStorage.removeItem("isLoggedIn");
+        if (isMounted) {
+          setIsAuthenticated(false);
+          setIsCheckingAuth(false);
+        }
+        return;
+      }
+
+      try {
+        await account.getSession("current");
+        localStorage.setItem("isLoggedIn", "true");
+        if (isMounted) {
+          setIsAuthenticated(true);
+        }
+      } catch {
+        localStorage.removeItem("isLoggedIn");
+        if (isMounted) {
+          setIsAuthenticated(false);
+        }
+      } finally {
+        if (isMounted) {
+          setIsCheckingAuth(false);
+        }
+      }
+    };
+
+    checkSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+          <p className="mt-4 text-lg text-muted-foreground">Checking session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const ProtectedLayout = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <AuthenticatedRoute>
+    <Layout title={title}>{children}</Layout>
+  </AuthenticatedRoute>
+);
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -41,24 +114,24 @@ function App() {
             <Route path="/auth" element={<Auth />} />
             <Route path="/thank-you" element={<ThankYou />} />
             <Route path="/404" element={<NotFound />} />
-            <Route path="/dashboard" element={<Layout title="Dashboard"><Dashboard /></Layout>} />
-            <Route path="/projects" element={<Layout title="Projects"><Projects /></Layout>} />
-            <Route path="/projects/:projectId" element={<ProjectDetails />} />
-            <Route path="/tasks" element={<Layout title="Tasks"><Tasks /></Layout>} />
-            <Route path="/clients" element={<Layout title="Clients"><Clients /></Layout>} />
-            <Route path="/leads" element={<Layout title="Leads & Pipeline"><Leads /></Layout>} />
-            <Route path="/invoices" element={<Layout title="Invoices"><Invoices /></Layout>} />
-            <Route path="/invoices/new" element={<Layout title="Create Invoice"><InvoiceForm /></Layout>} />
-            <Route path="/invoices/edit/:invoiceId" element={<Layout title="Edit Invoice"><InvoiceForm /></Layout>} />
-            <Route path="/invoices/:invoiceId" element={<Layout title="Invoice Details"><InvoiceDetails /></Layout>} />
-            <Route path="/statistics" element={<Layout title="Statistics"><Statistics /></Layout>} />
-            <Route path="/briefs" element={<Layout title="Briefs"><Briefs /></Layout>} />
-            <Route path="/team" element={<Layout title="Team"><Team /></Layout>} />
-            <Route path="/settings" element={<Layout title="Settings"><Settings /></Layout>} />
+            <Route path="/dashboard" element={<ProtectedLayout title="Dashboard"><Dashboard /></ProtectedLayout>} />
+            <Route path="/projects" element={<ProtectedLayout title="Projects"><Projects /></ProtectedLayout>} />
+            <Route path="/projects/:projectId" element={<AuthenticatedRoute><ProjectDetails /></AuthenticatedRoute>} />
+            <Route path="/tasks" element={<ProtectedLayout title="Tasks"><Tasks /></ProtectedLayout>} />
+            <Route path="/clients" element={<ProtectedLayout title="Clients"><Clients /></ProtectedLayout>} />
+            <Route path="/leads" element={<ProtectedLayout title="Leads & Pipeline"><Leads /></ProtectedLayout>} />
+            <Route path="/invoices" element={<ProtectedLayout title="Invoices"><Invoices /></ProtectedLayout>} />
+            <Route path="/invoices/new" element={<ProtectedLayout title="Create Invoice"><InvoiceForm /></ProtectedLayout>} />
+            <Route path="/invoices/edit/:invoiceId" element={<ProtectedLayout title="Edit Invoice"><InvoiceForm /></ProtectedLayout>} />
+            <Route path="/invoices/:invoiceId" element={<ProtectedLayout title="Invoice Details"><InvoiceDetails /></ProtectedLayout>} />
+            <Route path="/statistics" element={<ProtectedLayout title="Statistics"><Statistics /></ProtectedLayout>} />
+            <Route path="/briefs" element={<ProtectedLayout title="Briefs"><Briefs /></ProtectedLayout>} />
+            <Route path="/team" element={<ProtectedLayout title="Team"><Team /></ProtectedLayout>} />
+            <Route path="/settings" element={<ProtectedLayout title="Settings"><Settings /></ProtectedLayout>} />
             <Route path="/brief/graphic" element={<GraphicDesignBrief />} />
             <Route path="/brief/ui" element={<UIDesignBrief />} />
             <Route path="/brief/illustration" element={<IllustrationsBrief />} />
-            <Route path="/design-system" element={<DesignSystem />} />
+            <Route path="/design-system" element={<AuthenticatedRoute><DesignSystem /></AuthenticatedRoute>} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/login" element={<Navigate to="/auth" replace />} />
             <Route path="*" element={<Navigate to="/404" />} />

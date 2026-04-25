@@ -9,8 +9,6 @@ interface PaymentSummaryProps {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: "#FFFFFF",
-  border: "1px solid #E2E8F0",
   boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.05)",
   borderRadius: 12,
   padding: 12,
@@ -34,7 +32,6 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 500,
   fontSize: 14,
   lineHeight: "20px",
-  color: "#020817",
 };
 
 const valueStyle: React.CSSProperties = {
@@ -42,7 +39,6 @@ const valueStyle: React.CSSProperties = {
   fontWeight: 400,
   fontSize: 14,
   lineHeight: "20px",
-  color: "#020817",
 };
 
 const PaymentSummary = ({ project, onAddPayment }: PaymentSummaryProps) => {
@@ -50,7 +46,7 @@ const PaymentSummary = ({ project, onAddPayment }: PaymentSummaryProps) => {
   const remaining = project.fee - paidAmount;
 
   return (
-    <div style={cardStyle}>
+    <div className="bg-card border border-border-soft" style={cardStyle}>
       <SectionCardHeader
         icon={Wallet}
         title="Payment Summary"
@@ -59,20 +55,17 @@ const PaymentSummary = ({ project, onAddPayment }: PaymentSummaryProps) => {
           <button
             type="button"
             onClick={onAddPayment}
-            className="inline-flex items-center justify-center transition-colors hover:bg-slate-50"
+            className="inline-flex items-center justify-center transition-colors hover:bg-accent bg-card border border-border-soft text-foreground"
             style={{
               gap: 4,
               padding: "8px 12px",
               height: 36,
-              background: "#FFFFFF",
-              border: "1px solid #E2E8F0",
               boxShadow: "0px 1px 2px rgba(15, 23, 42, 0.05)",
               borderRadius: 7,
               fontFamily: "Inter, sans-serif",
               fontWeight: 500,
               fontSize: 14,
               lineHeight: "20px",
-              color: "#020817",
               cursor: "pointer",
             }}
           >
@@ -99,7 +92,7 @@ const PaymentSummary = ({ project, onAddPayment }: PaymentSummaryProps) => {
             {remaining.toLocaleString()} {project.currency}
           </span>
         </div>
-        <div style={{ height: 1, background: "#E2E8F0", width: "100%" }} />
+        <div className="h-px bg-border-soft w-full" />
         <div style={rowStyle}>
           <span style={labelStyle}>Payment Count:</span>
           <span style={valueStyle}>{project.payments.length}</span>

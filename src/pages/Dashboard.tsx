@@ -25,14 +25,14 @@ import { useOwnerDashboard } from "@/hooks/useOwnerDashboard";
 import { TaskWithRelations } from "@/types/task";
 
 const shellCardClass =
-  "rounded-[12px] border border-[#E2E8F0] bg-white p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]";
+  "rounded-[12px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]";
 const headerIconClass =
-  "flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#E2E8F0] text-[#0080FF]";
+  "flex h-8 w-8 items-center justify-center rounded-[8px] border border-border-soft text-brand-accent";
 const tableShellClass =
-  "overflow-hidden rounded-[12px] border border-[rgba(255,255,255,0.2)] bg-[rgba(255,255,255,0.95)]";
+  "overflow-hidden rounded-[12px] border border-border-soft bg-card";
 const tableHeaderCellClass =
-  "flex items-center bg-[#F1F5F9] px-4 py-3 text-[14px] font-medium leading-5 text-[#64748B]";
-const tableBodyCellClass = "flex items-center border-b border-[#E2E8F0] px-4 py-[18px]";
+  "flex items-center bg-surface-3 px-4 py-3 text-[14px] font-medium leading-5 text-muted-foreground";
+const tableBodyCellClass = "flex items-center border-b border-border-soft px-4 py-[18px]";
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("en-US", {
@@ -60,7 +60,7 @@ const getInitials = (name: string) =>
 
 const AssigneePills = ({ names }: { names: string[] }) => {
   if (!names.length) {
-    return <span className="text-xs text-[#64748B]">Unassigned</span>;
+    return <span className="text-xs text-muted-foreground">Unassigned</span>;
   }
 
   return (
@@ -68,14 +68,14 @@ const AssigneePills = ({ names }: { names: string[] }) => {
       {names.slice(0, 3).map((name, index) => (
         <div
           key={`${name}-${index}`}
-          className="-ml-1 first:ml-0 flex h-6 w-6 items-center justify-center rounded-full border-[1.5px] border-white bg-[#EFF6FF] text-[10px] font-semibold leading-5 text-[#1D4ED8]"
+          className="-ml-1 first:ml-0 flex h-6 w-6 items-center justify-center rounded-full border-[1.5px] border-card bg-blue-50 text-[10px] font-semibold leading-5 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
           title={name}
         >
           {getInitials(name)}
         </div>
       ))}
       {names.length > 3 ? (
-        <div className="-ml-1 flex h-6 min-w-6 items-center justify-center rounded-full border-[1.5px] border-white bg-[#F1F5F9] px-1 text-[10px] font-semibold text-[#475569]">
+        <div className="-ml-1 flex h-6 min-w-6 items-center justify-center rounded-full border-[1.5px] border-card bg-surface-3 px-1 text-[10px] font-semibold text-foreground">
           +{names.length - 3}
         </div>
       ) : null}
@@ -84,7 +84,7 @@ const AssigneePills = ({ names }: { names: string[] }) => {
 };
 
 const EmptyTableState = ({ message }: { message: string }) => (
-  <div className="rounded-[12px] border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-5 text-sm text-[#64748B]">
+  <div className="rounded-[12px] border border-border-soft bg-surface-2 px-4 py-5 text-sm text-muted-foreground">
     {message}
   </div>
 );
@@ -155,10 +155,10 @@ const Dashboard = () => {
         })()}
       </div>
       <div>
-        <p className="text-[14px] font-semibold leading-[120%] tracking-[-0.03em] text-[#020817]">
+        <p className="text-[14px] font-semibold leading-[120%] tracking-[-0.03em] text-foreground">
           {title}
         </p>
-        <p className="mt-1 text-[11px] leading-[100%] tracking-[-0.02em] text-[#64748B]">
+        <p className="mt-1 text-[11px] leading-[100%] tracking-[-0.02em] text-muted-foreground">
           {description}
         </p>
       </div>
@@ -166,10 +166,10 @@ const Dashboard = () => {
   );
 
   return (
-    <main className="bg-white px-6 py-6">
+    <main className="bg-card px-6 py-6">
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <h2 className="text-[24px] font-semibold leading-8 tracking-[-0.03em] text-[#020817]">
+          <h2 className="text-[24px] font-semibold leading-8 tracking-[-0.03em] text-foreground">
             Dashboard Overview
           </h2>
 
@@ -183,7 +183,7 @@ const Dashboard = () => {
                 <ChevronDown className="h-4 w-4 text-inherit" strokeWidth={1.67} />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 border bg-white shadow-lg">
+            <DropdownMenuContent align="end" className="w-48 border bg-popover shadow-lg">
               <DropdownMenuItem
                 onClick={() => navigate("/projects?new=true")}
                 className="cursor-pointer hover:bg-accent"
@@ -279,20 +279,20 @@ const Dashboard = () => {
                       onClick={() => navigate(`/projects/${project.id}`)}
                       className="flex h-[60px] w-full text-left"
                     >
-                      <div className={`${tableBodyCellClass} w-[147.75px] flex-1 text-[14px] font-medium leading-5 text-[#020817]`}>
+                      <div className={`${tableBodyCellClass} w-[147.75px] flex-1 text-[14px] font-medium leading-5 text-foreground`}>
                         {project.name}
                       </div>
-                      <div className={`${tableBodyCellClass} w-[147.75px] flex-1 text-[14px] leading-5 text-[#475569]`}>
+                      <div className={`${tableBodyCellClass} w-[147.75px] flex-1 text-[14px] leading-5 text-muted-foreground`}>
                         {getClientName(project.clientId)}
                       </div>
-                      <div className={`${tableBodyCellClass} w-[147.75px] flex-1 text-[14px] leading-5 text-[#475569]`}>
+                      <div className={`${tableBodyCellClass} w-[147.75px] flex-1 text-[14px] leading-5 text-muted-foreground`}>
                         {formatShortDate(project.deadline)}
                       </div>
-                      <div className={`${tableBodyCellClass} w-[147.75px] flex-1 gap-3 text-[14px] leading-5 text-[#475569]`}>
+                      <div className={`${tableBodyCellClass} w-[147.75px] flex-1 gap-3 text-[14px] leading-5 text-muted-foreground`}>
                         <span>{project.progress}%</span>
-                        <div className="h-1.5 w-[93px] rounded-full bg-[#F1F5F9]">
+                        <div className="h-1.5 w-[93px] rounded-full bg-surface-3">
                           <div
-                            className="h-1.5 rounded-full bg-[#0080FF]"
+                            className="h-1.5 rounded-full bg-brand-accent"
                             style={{ width: `${project.progress}%` }}
                           />
                         </div>
@@ -344,10 +344,10 @@ const Dashboard = () => {
                       onClick={() => navigate("/tasks")}
                       className="flex h-[60px] w-full text-left"
                     >
-                      <div className={`${tableBodyCellClass} w-[149.75px] min-w-0 flex-1 text-[14px] font-medium leading-5 text-[#020817]`}>
+                      <div className={`${tableBodyCellClass} w-[149.75px] min-w-0 flex-1 text-[14px] font-medium leading-5 text-foreground`}>
                         <span className="truncate">{task.title}</span>
                       </div>
-                      <div className={`${tableBodyCellClass} w-[149.75px] flex-1 text-[14px] leading-5 text-[#475569]`}>
+                      <div className={`${tableBodyCellClass} w-[149.75px] flex-1 text-[14px] leading-5 text-muted-foreground`}>
                         {formatShortDate(task.due_date)}
                       </div>
                       <div className={`${tableBodyCellClass} w-[102px]`}>
@@ -393,13 +393,13 @@ const Dashboard = () => {
                       onClick={() => navigate(`/invoices/${invoice.id}`)}
                       className="flex h-[57.5px] w-full text-left"
                     >
-                      <div className={`${tableBodyCellClass} w-[133.83px] flex-1 text-[14px] font-medium leading-5 text-[#020817]`}>
+                      <div className={`${tableBodyCellClass} w-[133.83px] flex-1 text-[14px] font-medium leading-5 text-foreground`}>
                         {invoice.invoiceNumber}
                       </div>
-                      <div className={`${tableBodyCellClass} w-[133.83px] flex-1 text-[14px] font-medium leading-5 text-[#020817]`}>
+                      <div className={`${tableBodyCellClass} w-[133.83px] flex-1 text-[14px] font-medium leading-5 text-foreground`}>
                         {invoice.clientName}
                       </div>
-                      <div className={`${tableBodyCellClass} w-[133.83px] flex-1 text-[14px] font-medium leading-5 text-[#020817]`}>
+                      <div className={`${tableBodyCellClass} w-[133.83px] flex-1 text-[14px] font-medium leading-5 text-foreground`}>
                         {formatCurrency(invoice.total)}
                       </div>
                     </button>
@@ -434,10 +434,10 @@ const Dashboard = () => {
 
                   {availableTeamMembers.slice(0, 5).map((member) => (
                     <div key={member.id} className="flex h-[57.5px]">
-                      <div className={`${tableBodyCellClass} w-[92px] text-[14px] font-medium leading-5 text-[#020817]`}>
+                      <div className={`${tableBodyCellClass} w-[92px] text-[14px] font-medium leading-5 text-foreground`}>
                         {member.name}
                       </div>
-                      <div className={`${tableBodyCellClass} w-[163px] flex-1 text-[14px] leading-5 text-[#020817]`}>
+                      <div className={`${tableBodyCellClass} w-[163px] flex-1 text-[14px] leading-5 text-foreground`}>
                         {member.position}
                       </div>
                     </div>

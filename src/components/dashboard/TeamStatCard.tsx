@@ -22,7 +22,7 @@ const TeamStatCard = ({
   description
 }: TeamStatCardProps) => {
   return (
-    <div className={cn("flex flex-col overflow-hidden rounded-md p-4 transition-all duration-300 ease-in-out hover:shadow-md bg-white border border-border", className)}>
+    <div className={cn("flex flex-col overflow-hidden rounded-md p-4 transition-all duration-300 ease-in-out hover:shadow-md bg-card border border-border-soft", className)}>
       <div className="mb-2 flex items-center justify-between">
         <p className="font-medium text-muted-foreground text-sm">{title}</p>
         <div className="rounded-full bg-primary/10 p-2 text-primary">

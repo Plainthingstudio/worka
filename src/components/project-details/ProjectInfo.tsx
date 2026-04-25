@@ -24,8 +24,6 @@ interface ProjectInfoProps {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: "#FFFFFF",
-  border: "1px solid #E2E8F0",
   boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.05)",
   borderRadius: 12,
   padding: 12,
@@ -49,7 +47,6 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 500,
   fontSize: 14,
   lineHeight: "20px",
-  color: "#020817",
 };
 
 const valueStyle: React.CSSProperties = {
@@ -57,7 +54,6 @@ const valueStyle: React.CSSProperties = {
   fontWeight: 400,
   fontSize: 14,
   lineHeight: "20px",
-  color: "#64748B",
 };
 
 const InfoRow = ({
@@ -71,12 +67,12 @@ const InfoRow = ({
 }) => (
   <div style={rowStyle}>
     <Icon
-      className="h-4 w-4 flex-shrink-0"
-      style={{ color: "#64748B", marginTop: 4 }}
+      className="h-4 w-4 flex-shrink-0 text-muted-foreground"
+      style={{ marginTop: 4 }}
     />
     <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1 }}>
-      <span style={labelStyle}>{label}</span>
-      <div style={valueStyle}>{children}</div>
+      <span className="text-foreground" style={labelStyle}>{label}</span>
+      <div className="text-muted-foreground" style={valueStyle}>{children}</div>
     </div>
   </div>
 );
@@ -120,7 +116,7 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
   return (
     <div className="flex flex-col md:flex-row" style={{ gap: 16, width: "100%" }}>
       {/* Client Information Card */}
-      <div style={cardStyle}>
+      <div className="bg-card border border-border-soft" style={cardStyle}>
         <SectionCardHeader
           icon={UserRound}
           title="Client Information"
@@ -148,7 +144,7 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
       </div>
 
       {/* Project Details Card */}
-      <div style={cardStyle}>
+      <div className="bg-card border border-border-soft" style={cardStyle}>
         <SectionCardHeader
           icon={FolderOpen}
           title="Project Details"

@@ -93,7 +93,7 @@ const CategoryCell = ({ categories, onSave }: CategoryCellProps) => {
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <button
-          className="text-left rounded px-1 py-0.5 hover:bg-[#F1F5F9] transition-colors focus:outline-none focus:ring-1 focus:ring-[#3762FB]"
+          className="text-left rounded px-1 py-0.5 hover:bg-accent transition-colors focus:outline-none focus:ring-1 focus:ring-primary"
           onClick={e => { e.stopPropagation(); setOpen(true); }}
         >
           {displayBadges(categories)}
@@ -104,12 +104,12 @@ const CategoryCell = ({ categories, onSave }: CategoryCellProps) => {
         onClick={e => e.stopPropagation()}
         onPointerDownOutside={e => e.stopPropagation()}
       >
-        <p className="text-xs font-medium text-[#64748B] mb-2 px-1">Select categories</p>
+        <p className="text-xs font-medium text-muted-foreground mb-2 px-1">Select categories</p>
         <div className="flex flex-col gap-1 max-h-56 overflow-y-auto">
           {CATEGORY_OPTIONS.map(cat => (
             <label
               key={cat}
-              className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-[#F8FAFC] cursor-pointer"
+              className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-accent cursor-pointer"
             >
               <Checkbox
                 checked={draft.includes(cat)}
@@ -122,7 +122,7 @@ const CategoryCell = ({ categories, onSave }: CategoryCellProps) => {
         </div>
         <div className="mt-2 pt-2 border-t flex justify-end">
           <button
-            className="flex items-center gap-1 text-xs font-medium text-[#3762FB] hover:underline"
+            className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
             onClick={e => { e.stopPropagation(); if (onSave) onSave(draft); setOpen(false); }}
           >
             <Check className="h-3 w-3" /> Apply

@@ -45,13 +45,13 @@ const MyTasksTable: React.FC<MyTasksTableProps> = ({
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'High':
-        return 'bg-red-50 text-red-700 border-red-200';
+        return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-400/30';
       case 'Normal':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
+        return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-400/30';
       case 'Low':
-        return 'bg-green-50 text-green-700 border-green-200';
+        return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-400/30';
       default:
-        return 'bg-gray-50 text-gray-700 border-gray-200';
+        return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-500/15 dark:text-gray-300 dark:border-gray-400/30';
     }
   };
 
@@ -112,7 +112,7 @@ const MyTasksTable: React.FC<MyTasksTableProps> = ({
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3 w-3 text-muted-foreground" />
                         <span className={`text-xs ${
-                          isOverdue(task.due_date) ? 'text-red-600 font-medium' : 'text-muted-foreground'
+                          isOverdue(task.due_date) ? 'text-red-600 font-medium dark:text-red-400' : 'text-muted-foreground'
                         }`}>
                           {format(task.due_date, "MMM dd")}
                           {isOverdue(task.due_date) && " (Overdue)"}

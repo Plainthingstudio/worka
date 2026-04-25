@@ -32,7 +32,7 @@ const DateCell = ({ date, onSave }: DateCellProps) => {
       type="date"
       autoFocus
       value={value}
-      className="rounded border border-[#3762FB] px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-[#3762FB] w-[130px]"
+      className="rounded border border-primary bg-card text-foreground px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-primary w-[130px]"
       onClick={e => e.stopPropagation()}
       onChange={e => setValue(e.target.value)}
       onBlur={e => { e.stopPropagation(); commit(value); }}
@@ -43,7 +43,7 @@ const DateCell = ({ date, onSave }: DateCellProps) => {
     />
   ) : (
     <button
-      className="flex items-center gap-1 text-muted-foreground rounded px-1 py-0.5 hover:bg-[#F1F5F9] transition-colors text-sm"
+      className="flex items-center gap-1 text-muted-foreground rounded px-1 py-0.5 hover:bg-accent transition-colors text-sm"
       onClick={e => { e.stopPropagation(); setIsEditing(true); }}
     >
       <CalendarIcon className="h-3.5 w-3.5" />

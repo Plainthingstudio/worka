@@ -100,7 +100,7 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({
                 tickLine={false} 
                 axisLine={false} 
                 tick={{
-                  fill: '#6B7280',
+                  fill: 'hsl(var(--muted-foreground))',
                   fontSize: 12
                 }} 
                 dy={8} 
@@ -114,7 +114,7 @@ const EarningsSummary: React.FC<EarningsSummaryProps> = ({
                 tickLine={false} 
                 axisLine={false} 
                 tick={{
-                  fill: '#6B7280',
+                  fill: 'hsl(var(--muted-foreground))',
                   fontSize: 12
                 }} 
                 dx={-5} 

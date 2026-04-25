@@ -25,7 +25,7 @@ const ClientsTable = ({ clients, onDelete, onInlineUpdate }: ClientsTableProps) 
   return (
     <Table>
       <TableHeader>
-        <TableRow className="bg-slate-50">
+        <TableRow className="bg-surface-2">
           <TableHead style={headerCellStyle}>Name</TableHead>
           <TableHead style={headerCellStyle}>Email</TableHead>
           <TableHead style={headerCellStyle}>Phone Number</TableHead>

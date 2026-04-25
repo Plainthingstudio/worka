@@ -42,7 +42,7 @@ interface ClientItemProps {
 }
 
 const inputClass =
-  "w-full rounded border border-[#3762FB] px-2 py-0.5 text-sm outline-none focus:ring-1 focus:ring-[#3762FB]";
+  "w-full rounded border border-primary bg-card text-foreground px-2 py-0.5 text-sm outline-none focus:ring-1 focus:ring-primary";
 
 const EditableText = ({
   value,
@@ -83,7 +83,7 @@ const EditableText = ({
     />
   ) : (
     <button
-      className="flex items-center gap-2 w-full text-left rounded px-1 py-0.5 hover:bg-[#F1F5F9] transition-colors text-sm"
+      className="flex items-center gap-2 w-full text-left rounded px-1 py-0.5 hover:bg-accent transition-colors text-sm"
       onClick={e => { e.stopPropagation(); setDraft(value); setEditing(true); }}
     >
       {prefix}
@@ -115,7 +115,7 @@ const AddressField = ({
         autoFocus
         value={draft}
         placeholder="Enter address..."
-        className="w-full rounded border border-[#3762FB] px-2 py-0.5 text-xs outline-none focus:ring-1 focus:ring-[#3762FB]"
+        className="w-full rounded border border-primary bg-card text-foreground px-2 py-0.5 text-xs outline-none focus:ring-1 focus:ring-primary"
         onClick={e => e.stopPropagation()}
         onChange={e => setDraft(e.target.value)}
         onBlur={commit}
@@ -144,7 +144,7 @@ const AddressField = ({
       <Tooltip>
         <TooltipTrigger asChild>
           <button
-            className="flex items-center gap-1 text-xs text-muted-foreground rounded px-1 py-0.5 hover:bg-[#F1F5F9] transition-colors w-full"
+            className="flex items-center gap-1 text-xs text-muted-foreground rounded px-1 py-0.5 hover:bg-accent transition-colors w-full"
             onClick={e => { e.stopPropagation(); setDraft(address); setEditing(true); }}
           >
             <MapPin className="h-3 w-3 shrink-0" />
@@ -201,7 +201,7 @@ const ClientItem = ({ client, creator, onDelete, onInlineUpdate }: ClientItemPro
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="rounded focus:outline-none focus:ring-1 focus:ring-[#3762FB]"
+                className="rounded focus:outline-none focus:ring-1 focus:ring-primary"
                 onClick={e => e.stopPropagation()}
               >
                 <Badge
@@ -216,7 +216,7 @@ const ClientItem = ({ client, creator, onDelete, onInlineUpdate }: ClientItemPro
               {LEAD_SOURCES.map(s => (
                 <DropdownMenuItem
                   key={s}
-                  className={s === client.leadSource ? "font-medium text-[#3762FB]" : ""}
+                  className={s === client.leadSource ? "font-medium text-primary" : ""}
                   onClick={() => save({ leadSource: s })}
                 >
                   <Badge variant={getLeadSourceBadgeVariant(s)} className="pointer-events-none">
@@ -237,10 +237,10 @@ const ClientItem = ({ client, creator, onDelete, onInlineUpdate }: ClientItemPro
       <TableCell>
         {creator ? (
           <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-[10px] font-semibold text-[#1D4ED8]">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300 text-[10px] font-semibold">
               {creator.initials}
             </div>
-            <span className="text-sm text-[#475569] truncate max-w-[120px]">{creator.name}</span>
+            <span className="text-sm text-foreground/80 truncate max-w-[120px]">{creator.name}</span>
           </div>
         ) : (
           <span className="text-xs text-muted-foreground/50">—</span>
@@ -256,7 +256,7 @@ const ClientItem = ({ client, creator, onDelete, onInlineUpdate }: ClientItemPro
       <TableCell className="w-12 text-right">
         {onDelete && (
           <button
-            className="opacity-0 group-hover:opacity-100 transition-opacity rounded p-1 hover:bg-red-50 text-red-500"
+            className="opacity-0 group-hover:opacity-100 transition-opacity rounded p-1 hover:bg-red-50 text-red-500 dark:hover:bg-red-500/15 dark:text-red-400"
             onClick={e => { e.stopPropagation(); onDelete(client.id); }}
           >
             <Trash className="h-4 w-4" />

@@ -20,8 +20,6 @@ interface PaymentHistoryProps {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: "#FFFFFF",
-  border: "1px solid #E2E8F0",
   boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.05)",
   borderRadius: 12,
   padding: 12,
@@ -39,7 +37,7 @@ const PaymentHistory = ({
   onDeletePayment,
 }: PaymentHistoryProps) => {
   return (
-    <div style={cardStyle}>
+    <div className="bg-card border border-border-soft" style={cardStyle}>
       <SectionCardHeader
         icon={ReceiptText}
         title="Payment History"

@@ -69,7 +69,7 @@ const ProjectItem = ({
             ref={nameInputRef}
             autoFocus
             value={nameValue}
-            className="w-full rounded border border-[#3762FB] px-2 py-1 text-sm font-medium outline-none focus:ring-1 focus:ring-[#3762FB]"
+            className="w-full rounded border border-primary bg-card text-foreground px-2 py-1 text-sm font-medium outline-none focus:ring-1 focus:ring-primary"
             onChange={e => setNameValue(e.target.value)}
             onClick={e => e.stopPropagation()}
             onBlur={commitName}
@@ -80,7 +80,7 @@ const ProjectItem = ({
           />
         ) : (
           <span
-            className="cursor-text rounded px-1 py-0.5 hover:bg-[#F1F5F9] transition-colors"
+            className="cursor-text rounded px-1 py-0.5 hover:bg-accent transition-colors"
             onClick={e => { e.stopPropagation(); setIsEditingName(true); }}
           >
             {nameValue}
@@ -101,7 +101,7 @@ const ProjectItem = ({
         <DropdownMenu open={clientOpen} onOpenChange={setClientOpen}>
           <DropdownMenuTrigger asChild>
             <button
-              className="flex items-center gap-1 rounded px-1 py-0.5 text-sm hover:bg-[#F1F5F9] transition-colors"
+              className="flex items-center gap-1 rounded px-1 py-0.5 text-sm hover:bg-accent transition-colors"
               onClick={e => { e.stopPropagation(); setClientOpen(true); }}
             >
               {client?.name || "Unknown Client"}
@@ -112,7 +112,7 @@ const ProjectItem = ({
             {allClients.map(c => (
               <DropdownMenuItem
                 key={c.id}
-                className={c.id === project.clientId ? "font-medium text-[#3762FB]" : ""}
+                className={c.id === project.clientId ? "font-medium text-primary" : ""}
                 onClick={() => { onInlineUpdate(project.id, { clientId: c.id }); setClientOpen(false); }}
               >
                 {c.name}

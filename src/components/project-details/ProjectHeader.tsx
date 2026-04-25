@@ -47,7 +47,7 @@ const ProjectHeader = ({
       <button
         type="button"
         onClick={() => navigate("/projects")}
-        className="inline-flex items-center transition-opacity hover:opacity-80"
+        className="inline-flex items-center transition-opacity hover:opacity-80 text-muted-foreground"
         style={{
           gap: 4,
           fontFamily: "Inter, sans-serif",
@@ -55,7 +55,6 @@ const ProjectHeader = ({
           fontSize: 12,
           lineHeight: "16px",
           letterSpacing: "0.6px",
-          color: "#64748B",
           background: "transparent",
           border: "none",
           padding: 0,
@@ -81,13 +80,13 @@ const ProjectHeader = ({
           }}
         >
           <h1
+            className="text-foreground"
             style={{
               fontFamily: "Inter, sans-serif",
               fontWeight: 600,
               fontSize: 24,
               lineHeight: "32px",
               letterSpacing: "-0.48px",
-              color: "#020817",
               margin: 0,
             }}
           >
@@ -109,12 +108,10 @@ const ProjectHeader = ({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="inline-flex items-center justify-center transition-colors hover:bg-slate-50"
+                className="inline-flex items-center justify-center transition-colors hover:bg-accent bg-card border border-border-soft text-foreground"
                 style={{
                   width: 42,
                   height: 36,
-                  background: "#FFFFFF",
-                  border: "1px solid #E2E8F0",
                   boxShadow: "0px 1px 2px rgba(15, 23, 42, 0.05)",
                   borderRadius: 7,
                   cursor: "pointer",
@@ -123,7 +120,6 @@ const ProjectHeader = ({
               >
                 <MoreHorizontal
                   className="h-4 w-4"
-                  style={{ color: "#020817" }}
                   strokeWidth={1.67}
                 />
               </button>
@@ -144,26 +140,22 @@ const ProjectHeader = ({
             <button
               type="button"
               onClick={onMarkAsCompleted}
-              className="inline-flex items-center justify-center transition-colors hover:bg-slate-50"
+              className="inline-flex items-center justify-center transition-colors hover:bg-accent bg-card border border-border-soft text-foreground"
               style={{
                 gap: 4,
                 padding: "0 12px",
                 height: 38,
-                background: "#FFFFFF",
-                border: "1px solid #E2E8F0",
                 boxShadow: "0px 1px 2px rgba(15, 23, 42, 0.05)",
                 borderRadius: 7,
                 fontFamily: "Inter, sans-serif",
                 fontWeight: 500,
                 fontSize: 14,
                 lineHeight: "20px",
-                color: "#020817",
                 cursor: "pointer",
               }}
             >
               <CheckCircle
                 className="h-4 w-4"
-                style={{ color: "#020817" }}
                 strokeWidth={1.67}
               />
               <span>Mark as Completed</span>
@@ -172,26 +164,22 @@ const ProjectHeader = ({
             <button
               type="button"
               onClick={onChangeStatus}
-              className="inline-flex items-center justify-center transition-colors hover:bg-slate-50"
+              className="inline-flex items-center justify-center transition-colors hover:bg-accent bg-card border border-border-soft text-foreground"
               style={{
                 gap: 4,
                 padding: "0 12px",
                 height: 38,
-                background: "#FFFFFF",
-                border: "1px solid #E2E8F0",
                 boxShadow: "0px 1px 2px rgba(15, 23, 42, 0.05)",
                 borderRadius: 7,
                 fontFamily: "Inter, sans-serif",
                 fontWeight: 500,
                 fontSize: 14,
                 lineHeight: "20px",
-                color: "#020817",
                 cursor: "pointer",
               }}
             >
               <RotateCcw
                 className="h-4 w-4"
-                style={{ color: "#020817" }}
                 strokeWidth={1.67}
               />
               <span>Change Status</span>

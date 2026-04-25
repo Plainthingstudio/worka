@@ -48,11 +48,11 @@ const ClientsDistribution: React.FC<ClientsDistributionProps> = ({
             }} barSize={36}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" stroke={CHART_COLORS.gray} opacity={0.3} />
               <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{
-                fill: '#6B7280',
+                fill: 'hsl(var(--muted-foreground))',
                 fontSize: 12
               }} dy={10} />
               <YAxis tickLine={false} axisLine={false} tick={{
-                fill: '#6B7280',
+                fill: 'hsl(var(--muted-foreground))',
                 fontSize: 12
               }} dx={-5} />
               <Tooltip cursor={{

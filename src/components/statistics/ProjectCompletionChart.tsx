@@ -99,7 +99,7 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({
                 dataKey="month"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fill: '#6B7280', fontSize: 12 }}
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                 dy={8}
                 padding={{ left: 10, right: 10 }}
                 height={30}
@@ -107,7 +107,7 @@ const ProjectCompletionChart: React.FC<ProjectCompletionChartProps> = ({
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                tick={{ fill: '#6B7280', fontSize: 12 }}
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                 dx={-5}
                 width={40}
               />

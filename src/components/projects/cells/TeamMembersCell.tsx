@@ -74,7 +74,7 @@ const TeamMembersCell = ({ selectedIds, allTeamMembers, onSave }: TeamMembersCel
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <button
-          className="flex items-center gap-1 text-sm text-muted-foreground rounded px-1 py-0.5 hover:bg-[#F1F5F9] transition-colors"
+          className="flex items-center gap-1 text-sm text-muted-foreground rounded px-1 py-0.5 hover:bg-accent transition-colors"
           onClick={e => { e.stopPropagation(); setOpen(true); }}
         >
           <Users className="h-3.5 w-3.5" />
@@ -86,7 +86,7 @@ const TeamMembersCell = ({ selectedIds, allTeamMembers, onSave }: TeamMembersCel
         onClick={e => e.stopPropagation()}
         onPointerDownOutside={e => e.stopPropagation()}
       >
-        <p className="text-xs font-medium text-[#64748B] mb-2 px-1">Assign team members</p>
+        <p className="text-xs font-medium text-muted-foreground mb-2 px-1">Assign team members</p>
         {allTeamMembers.length === 0 ? (
           <p className="text-xs text-muted-foreground px-1">No team members found.</p>
         ) : (
@@ -94,7 +94,7 @@ const TeamMembersCell = ({ selectedIds, allTeamMembers, onSave }: TeamMembersCel
             {allTeamMembers.map(m => (
               <label
                 key={m.id}
-                className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-[#F8FAFC] cursor-pointer"
+                className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-accent cursor-pointer"
               >
                 <Checkbox
                   checked={draft.includes(m.id)}
@@ -111,7 +111,7 @@ const TeamMembersCell = ({ selectedIds, allTeamMembers, onSave }: TeamMembersCel
         )}
         <div className="mt-2 pt-2 border-t flex justify-end">
           <button
-            className="flex items-center gap-1 text-xs font-medium text-[#3762FB] hover:underline"
+            className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
             onClick={e => { e.stopPropagation(); if (onSave) onSave(draft); setOpen(false); }}
           >
             <Check className="h-3 w-3" /> Apply

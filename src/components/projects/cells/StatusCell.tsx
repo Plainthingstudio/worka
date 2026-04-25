@@ -33,7 +33,7 @@ const StatusCell = ({ status, onSave }: StatusCellProps) => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="rounded focus:outline-none focus:ring-1 focus:ring-[#3762FB]"
+          className="rounded focus:outline-none focus:ring-1 focus:ring-primary"
           onClick={e => e.stopPropagation()}
         >
           <Badge
@@ -48,7 +48,7 @@ const StatusCell = ({ status, onSave }: StatusCellProps) => {
         {STATUS_OPTIONS.map(s => (
           <DropdownMenuItem
             key={s}
-            className={s === status ? "font-medium text-[#3762FB]" : ""}
+            className={s === status ? "font-medium text-primary" : ""}
             onClick={() => onSave(s)}
           >
             <Badge variant={getStatusBadgeVariant(s)} className="pointer-events-none">

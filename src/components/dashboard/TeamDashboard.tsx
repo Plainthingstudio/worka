@@ -54,19 +54,19 @@ const TeamDashboard: React.FC = () => {
 
       {/* Overdue Alert */}
       {stats.overdueTasks > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3 dark:bg-red-950/30 dark:border-red-800/50">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600" />
-            <span className="font-medium text-red-900">
+            <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+            <span className="font-medium text-red-900 dark:text-red-200">
               You have {stats.overdueTasks} overdue task{stats.overdueTasks > 1 ? 's' : ''}
             </span>
           </div>
           <div className="space-y-2">
             {overdueTasks.slice(0, 3).map((task) => (
-              <div key={task.id} className="flex items-center justify-between bg-white border border-red-100 rounded-md p-3">
+              <div key={task.id} className="flex items-center justify-between bg-card border border-red-100 rounded-md p-3 dark:border-red-900/50">
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-red-900 truncate">{task.title}</h4>
-                  <p className="text-sm text-red-700">
+                  <h4 className="font-medium text-red-900 truncate dark:text-red-200">{task.title}</h4>
+                  <p className="text-sm text-red-700 dark:text-red-300">
                     Due: {task.due_date ? format(task.due_date, "MMM dd, yyyy") : "No due date"}
                   </p>
                 </div>
@@ -74,7 +74,7 @@ const TeamDashboard: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => navigate(`/tasks?taskId=${task.id}${task.project_id ? `&projectId=${task.project_id}` : ''}`)}
-                  className="ml-3 border-red-200 text-red-700 hover:bg-red-100"
+                  className="ml-3 border-red-200 text-red-700 hover:bg-red-100 dark:border-red-900/50 dark:text-red-300 dark:hover:bg-red-950/40"
                 >
                   <ArrowRight className="h-4 w-4 mr-1" />
                   View Task
@@ -87,7 +87,7 @@ const TeamDashboard: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate('/tasks')}
-                  className="text-red-700 hover:bg-red-100"
+                  className="text-red-700 hover:bg-red-100 dark:text-red-300 dark:hover:bg-red-950/40"
                 >
                   View all {stats.overdueTasks} overdue tasks
                 </Button>

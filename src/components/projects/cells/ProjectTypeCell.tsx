@@ -36,7 +36,7 @@ const ProjectTypeCell = ({ type, onSave }: ProjectTypeCellProps) => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="rounded focus:outline-none focus:ring-1 focus:ring-[#3762FB]"
+          className="rounded focus:outline-none focus:ring-1 focus:ring-primary"
           onClick={e => e.stopPropagation()}
         >
           <Badge
@@ -52,7 +52,7 @@ const ProjectTypeCell = ({ type, onSave }: ProjectTypeCellProps) => {
         {TYPE_OPTIONS.map(t => (
           <DropdownMenuItem
             key={t}
-            className={t === type ? "font-medium text-[#3762FB]" : ""}
+            className={t === type ? "font-medium text-primary" : ""}
             onClick={() => onSave(t)}
           >
             <Badge variant={getProjectTypeBadgeVariant(t)} className="inline-flex items-center gap-1 pointer-events-none">

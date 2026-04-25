@@ -106,8 +106,8 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
         
         <div className="flex justify-between items-center mb-6 ">
           <div
-            className="inline-flex items-center"
-            style={{ padding: 4, gap: 0, background: 'rgba(248, 250, 252, 1)', borderRadius: 8 }}
+            className="inline-flex items-center bg-surface-2"
+            style={{ padding: 4, gap: 0, borderRadius: 8 }}
           >
             {([
               { key: 'kanban', label: 'Kanban', icon: Layout },
@@ -119,19 +119,19 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
                   key={key}
                   type="button"
                   onClick={() => onViewModeChange(key)}
-                  className="inline-flex items-center transition-all"
+                  className={`inline-flex items-center transition-all ${
+                    active ? 'bg-card text-foreground' : 'bg-transparent text-muted-foreground'
+                  }`}
                   style={{
                     gap: 4,
                     padding: '4px 12px',
                     height: 28,
                     borderRadius: active ? 8 : 10,
-                    background: active ? '#FFFFFF' : 'transparent',
                     boxShadow: active ? '0px 1px 2px rgba(0,0,0,0.05)' : undefined,
                     fontFamily: 'Inter, sans-serif',
                     fontWeight: 500,
                     fontSize: 12,
                     lineHeight: '20px',
-                    color: active ? '#020817' : '#64748B',
                   }}
                 >
                   <Icon className="h-3 w-3" />

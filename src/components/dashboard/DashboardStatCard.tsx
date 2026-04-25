@@ -20,27 +20,27 @@ const DashboardStatCard = ({
 }: DashboardStatCardProps) => {
   const changeToneClassName =
     typeof change !== "number"
-      ? "text-[#64748B]"
+      ? "text-muted-foreground"
       : change > 0
-        ? "text-[#21C45D]"
+        ? "text-green-600 dark:text-green-400"
         : change < 0
-          ? "text-[#EF4444]"
-          : "text-[#64748B]";
+          ? "text-red-500 dark:text-red-400"
+          : "text-muted-foreground";
 
   const formattedChange =
     typeof change === "number" ? `${change > 0 ? "+" : ""}${change}%` : null;
 
   return (
-    <div className="flex min-h-[130px] flex-col justify-between rounded-[10px] border border-[#E2E8F0] bg-white p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
+    <div className="flex min-h-[130px] flex-col justify-between rounded-[10px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
       <div className="flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#E2E8F0] text-[#0080FF]">
+        <div className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-border-soft text-brand-accent">
           <Icon className="h-4 w-4" strokeWidth={1.75} />
         </div>
-        <p className="text-sm font-medium tracking-[-0.02em] text-[#64748B]">{title}</p>
+        <p className="text-sm font-medium tracking-[-0.02em] text-muted-foreground">{title}</p>
       </div>
 
       <div className="flex items-end justify-between gap-4">
-        <h3 className="text-[24px] font-bold leading-8 text-[#020817]">{value}</h3>
+        <h3 className="text-[24px] font-bold leading-8 text-foreground">{value}</h3>
         {(formattedChange || changeLabel || meta) && (
           <div className="text-right">
             {formattedChange ? (
@@ -48,7 +48,7 @@ const DashboardStatCard = ({
                 {formattedChange}
               </p>
             ) : null}
-            <p className="mt-1 text-xs font-medium leading-3 tracking-[-0.02em] text-[#64748B]">
+            <p className="mt-1 text-xs font-medium leading-3 tracking-[-0.02em] text-muted-foreground">
               {changeLabel || meta}
             </p>
           </div>

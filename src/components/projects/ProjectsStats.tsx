@@ -79,33 +79,32 @@ const ProjectsStats: React.FC<ProjectsStatsProps> = ({ projects }) => {
         return (
           <div
             key={label}
-            className="box-border flex h-[130px] min-w-[200px] flex-1 flex-col justify-between rounded-[10px] border border-[#E2E8F0] bg-white p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]"
+            className="box-border flex h-[130px] min-w-[200px] flex-1 flex-col justify-between rounded-[10px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]"
             style={{ flexBasis: "200px" }}
           >
             <div className="flex min-h-0 items-center gap-2">
-              <div className="box-border flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-[#E2E8F0]">
+              <div className="box-border flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-border-soft text-brand-accent">
                 <Icon
                   className="h-4 w-4 shrink-0"
-                  style={{ color: "#0080FF" }}
                   strokeWidth={1.5}
                 />
               </div>
-              <span className="text-[14px] font-medium leading-5 tracking-[-0.02em] text-[#64748B]">
+              <span className="text-[14px] font-medium leading-5 tracking-[-0.02em] text-muted-foreground">
                 {label}
               </span>
             </div>
 
             <div className="flex items-end justify-between gap-2">
-              <p className="m-0 text-[24px] font-bold leading-8 text-[#020817]">
+              <p className="m-0 text-[24px] font-bold leading-8 text-foreground">
                 {total}
               </p>
               <div className="flex flex-col items-end gap-1 text-right">
                 <div
                   className={cn(
                     "flex items-center gap-0.5 text-[12px] font-medium leading-3 tracking-[-0.02em]",
-                    isUp && "text-[#21C45D]",
-                    isDown && "text-[#EF4444]",
-                    isFlat && "text-[#64748B]"
+                    isUp && "text-green-600 dark:text-green-400",
+                    isDown && "text-red-500 dark:text-red-400",
+                    isFlat && "text-muted-foreground"
                   )}
                 >
                   {isUp && <TrendingUp className="h-3 w-3" strokeWidth={1.2} />}
@@ -114,7 +113,7 @@ const ProjectsStats: React.FC<ProjectsStatsProps> = ({ projects }) => {
                   {isUp && "+"}
                   {pct}%
                 </div>
-                <span className="whitespace-nowrap text-[12px] font-medium leading-3 tracking-[-0.02em] text-[#64748B]">
+                <span className="whitespace-nowrap text-[12px] font-medium leading-3 tracking-[-0.02em] text-muted-foreground">
                   from last month
                 </span>
               </div>

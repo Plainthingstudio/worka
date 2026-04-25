@@ -41,19 +41,17 @@ const AssigneeList = ({ names }: { names: string[] }) => {
           return (
             <div
               key={idx}
-              className="flex items-center justify-center"
+              className="flex items-center justify-center bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
               title={name}
               style={{
                 width: 24,
                 height: 24,
                 borderRadius: 9999,
-                background: "#EFF6FF",
-                border: "1.5px solid #FFFFFF",
+                border: "1.5px solid hsl(var(--card))",
                 marginLeft: idx === 0 ? 0 : -6,
                 fontFamily: "Inter, sans-serif",
                 fontWeight: 600,
                 fontSize: 10,
-                color: "#1D4ED8",
                 flexShrink: 0,
               }}
             >
@@ -141,24 +139,23 @@ const DeadlineCard: React.FC<DeadlineCardProps> = ({
 
   return (
     <div
-      className="bg-white overflow-hidden flex flex-col"
+      className="bg-card overflow-hidden flex flex-col border border-border-soft"
       style={{
         padding: 12,
         gap: 12,
-        border: "1px solid #E2E8F0",
         boxShadow: "0px 1px 2px rgba(0,0,0,0.05)",
         borderRadius: 12,
       }}
     >
       <div className="flex items-center">
         <h2
+          className="text-foreground"
           style={{
             fontFamily: "Inter, sans-serif",
             fontWeight: 600,
             fontSize: 14,
             lineHeight: "120%",
             letterSpacing: "-0.03em",
-            color: "#020817",
           }}
         >
           Upcoming Deadlines
@@ -177,7 +174,7 @@ const DeadlineCard: React.FC<DeadlineCardProps> = ({
         <TableBody>
           {rows.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} className="text-center" style={{ color: "#64748B" }}>
+              <TableCell colSpan={4} className="text-center text-muted-foreground">
                 No upcoming deadlines in the next 3 days
               </TableCell>
             </TableRow>

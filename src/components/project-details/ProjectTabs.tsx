@@ -22,10 +22,9 @@ const tabs: {
 const ProjectTabs = ({ activeTab, onChange }: ProjectTabsProps) => {
   return (
     <div
-      className="inline-flex items-center"
+      className="inline-flex items-center bg-surface-2"
       style={{
         padding: 4,
-        background: "#F8FAFC",
         borderRadius: 8,
         alignSelf: "flex-start",
         width: "fit-content",
@@ -38,19 +37,19 @@ const ProjectTabs = ({ activeTab, onChange }: ProjectTabsProps) => {
             key={key}
             type="button"
             onClick={() => onChange(key)}
-            className="inline-flex items-center transition-all"
+            className={`inline-flex items-center transition-all ${
+              active ? "bg-card text-foreground" : "bg-transparent text-muted-foreground"
+            }`}
             style={{
               gap: 4,
               padding: "4px 12px",
               height: 28,
               borderRadius: active ? 8 : 10,
-              background: active ? "#FFFFFF" : "transparent",
               boxShadow: active ? "0px 1px 2px rgba(0,0,0,0.05)" : undefined,
               fontFamily: "Inter, sans-serif",
               fontWeight: 500,
               fontSize: 12,
               lineHeight: "20px",
-              color: active ? "#020817" : "#64748B",
               border: "none",
               cursor: "pointer",
             }}

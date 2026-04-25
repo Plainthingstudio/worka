@@ -57,7 +57,6 @@ const headerCellStyle: React.CSSProperties = {
   fontSize: 12,
   lineHeight: '16px',
   letterSpacing: '0.6px',
-  color: '#64748B',
 };
 
 const statusOrder: TaskStatus[] = [
@@ -72,13 +71,13 @@ const getInitials = (name: string) =>
 const Avatar24 = ({ name }: { name: string }) => (
   <div
     title={name}
-    className="flex items-center justify-center shrink-0"
+    className="flex items-center justify-center shrink-0 bg-brand-accent text-white"
     style={{
       width: 24, height: 24, borderRadius: 9999,
-      background: '#0080FF', border: '2px solid #F8FAFC',
-      boxShadow: '0px 0px 0px 1px #E2E8F0',
+      border: '2px solid hsl(var(--surface-2))',
+      boxShadow: '0px 0px 0px 1px hsl(var(--border-soft))',
       fontFamily: 'Inter, sans-serif', fontWeight: 500,
-      fontSize: 12, lineHeight: '16px', color: '#F8FAFC',
+      fontSize: 12, lineHeight: '16px',
     }}
   >
     {getInitials(name)}
@@ -132,12 +131,12 @@ const ProjectTasksPreview: React.FC<ProjectTasksPreviewProps> = ({
       <div
         key={task.id}
         onClick={() => handleGoToTask(task.id)}
-        className="flex items-center hover:bg-slate-50/80 cursor-pointer group transition-colors"
+        className="flex items-center hover:bg-accent/40 cursor-pointer group transition-colors"
         style={{
           height: 48,
           padding: '12px 24px',
           gap: 24,
-          borderTop: index > 0 ? '1px solid rgba(226,232,240,0.5)' : undefined,
+          borderTop: index > 0 ? '1px solid hsl(var(--border-soft) / 0.5)' : undefined,
           opacity: task.status === 'Completed' ? 0.75 : 1,
         }}
       >
@@ -148,16 +147,16 @@ const ProjectTasksPreview: React.FC<ProjectTasksPreviewProps> = ({
             style={{ width: 20, height: 20, borderRadius: 10 }}
           >
             {task.status === 'Completed' ? (
-              <CheckCircle style={{ width: 16, height: 16, color: '#22C55E' }} strokeWidth={1.67} />
+              <CheckCircle className="text-green-500 dark:text-green-400" style={{ width: 16, height: 16 }} strokeWidth={1.67} />
             ) : (
-              <Circle style={{ width: 16, height: 16, color: '#94A3B8' }} strokeWidth={1.67} />
+              <Circle className="text-muted-foreground" style={{ width: 16, height: 16 }} strokeWidth={1.67} />
             )}
           </div>
           <span
-            className="truncate"
+            className="truncate text-foreground"
             style={{
               fontFamily: 'Inter, sans-serif', fontWeight: 500,
-              fontSize: 14, lineHeight: '20px', color: '#020817',
+              fontSize: 14, lineHeight: '20px',
               textDecoration: task.status === 'Completed' ? 'line-through' : 'none',
             }}
           >
@@ -165,11 +164,11 @@ const ProjectTasksPreview: React.FC<ProjectTasksPreviewProps> = ({
           </span>
           {subtaskCount > 0 && (
             <span
-              className="shrink-0 inline-flex items-center"
+              className="shrink-0 inline-flex items-center bg-surface-3/60 text-muted-foreground"
               style={{
-                padding: '0 8px', background: 'rgba(241,245,249,0.6)', borderRadius: 10,
+                padding: '0 8px', borderRadius: 10,
                 fontFamily: 'Inter, sans-serif', fontWeight: 500,
-                fontSize: 12, lineHeight: '16px', color: '#64748B',
+                fontSize: 12, lineHeight: '16px',
               }}
             >
               {subtaskCount}
@@ -187,13 +186,13 @@ const ProjectTasksPreview: React.FC<ProjectTasksPreviewProps> = ({
                 </div>
               ))}
               {assigneeNames.length > 3 && (
-                <span style={{ marginLeft: 6, fontFamily: 'Inter, sans-serif', fontWeight: 500, fontSize: 12, color: '#64748B' }}>
+                <span className="text-muted-foreground" style={{ marginLeft: 6, fontFamily: 'Inter, sans-serif', fontWeight: 500, fontSize: 12 }}>
                   +{assigneeNames.length - 3}
                 </span>
               )}
             </div>
           ) : (
-            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: '#94A3B8' }}>—</span>
+            <span className="text-muted-foreground/70" style={{ fontFamily: 'Inter, sans-serif', fontSize: 14 }}>—</span>
           )}
         </div>
 
@@ -201,13 +200,13 @@ const ProjectTasksPreview: React.FC<ProjectTasksPreviewProps> = ({
         <div className="flex items-center" style={{ width: colWidths.due, gap: 6 }}>
           {task.due_date ? (
             <>
-              <Calendar style={{ width: 14, height: 14, color: '#64748B' }} strokeWidth={1.17} />
-              <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 400, fontSize: 14, lineHeight: '20px', color: '#64748B' }}>
+              <Calendar className="text-muted-foreground" style={{ width: 14, height: 14 }} strokeWidth={1.17} />
+              <span className="text-muted-foreground" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 400, fontSize: 14, lineHeight: '20px' }}>
                 {format(task.due_date, 'MMM dd, yyyy')}
               </span>
             </>
           ) : (
-            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: '#94A3B8' }}>—</span>
+            <span className="text-muted-foreground/70" style={{ fontFamily: 'Inter, sans-serif', fontSize: 14 }}>—</span>
           )}
         </div>
 
@@ -284,11 +283,10 @@ const ProjectTasksPreview: React.FC<ProjectTasksPreviewProps> = ({
           <div className="overflow-x-auto">
             {/* Column headers */}
             <div
-              className="flex items-center"
+              className="flex items-center bg-surface-3/60 text-muted-foreground"
               style={{
                 height: 33, padding: '8px 24px', gap: 24,
-                background: 'rgba(241,245,249,0.6)',
-                borderBottom: '1px solid rgba(226,232,240,0.5)',
+                borderBottom: '1px solid hsl(var(--border-soft) / 0.5)',
               }}
             >
               <div style={{ ...headerCellStyle, width: colWidths.task }}>Task</div>
@@ -311,28 +309,27 @@ const ProjectTasksPreview: React.FC<ProjectTasksPreviewProps> = ({
                   {/* Group header */}
                   <div
                     onClick={() => toggleGroup(status)}
-                    className="flex items-center cursor-pointer hover:bg-slate-50 transition-colors"
+                    className="flex items-center cursor-pointer hover:bg-accent transition-colors bg-surface-2"
                     style={{
                       height: 36, padding: '6px 24px', gap: 10,
-                      background: '#F8FAFC',
-                      borderBottom: '1px solid rgba(226,232,240,0.5)',
+                      borderBottom: '1px solid hsl(var(--border-soft) / 0.5)',
                     }}
                   >
                     {isCollapsed ? (
-                      <ChevronRight style={{ width: 16, height: 16, color: '#64748B' }} strokeWidth={1.67} />
+                      <ChevronRight className="text-muted-foreground" style={{ width: 16, height: 16 }} strokeWidth={1.67} />
                     ) : (
-                      <ChevronDown style={{ width: 16, height: 16, color: '#64748B' }} strokeWidth={1.67} />
+                      <ChevronDown className="text-muted-foreground" style={{ width: 16, height: 16 }} strokeWidth={1.67} />
                     )}
                     <div style={{ width: 6, height: 20, background: cfg.dot, borderRadius: 20 }} />
-                    <span style={{
+                    <span className="text-foreground/80" style={{
                       fontFamily: 'Inter, sans-serif', fontWeight: 600,
-                      fontSize: 12, lineHeight: '16px', letterSpacing: '0.4px', color: '#475569',
+                      fontSize: 12, lineHeight: '16px', letterSpacing: '0.4px',
                     }}>
                       {cfg.label}
                     </span>
-                    <span style={{
+                    <span className="text-muted-foreground/70" style={{
                       fontFamily: 'Inter, sans-serif', fontWeight: 500,
-                      fontSize: 12, color: '#94A3B8',
+                      fontSize: 12,
                     }}>
                       {group.length}
                     </span>

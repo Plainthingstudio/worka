@@ -21,13 +21,13 @@ interface LeadsTableProps {
 
 const headStyle: React.CSSProperties = {
   padding: '8px 16px',
-  background: '#F8FAFC',
   fontFamily: 'Inter, sans-serif',
   fontWeight: 500,
   fontSize: 14,
   lineHeight: '20px',
-  color: '#64748B',
 };
+
+const headClass = 'bg-surface-2 text-muted-foreground';
 
 const LeadsTable: React.FC<LeadsTableProps> = ({
   leads,
@@ -42,14 +42,14 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
     <Table>
       <TableHeader className="rounded-none">
         <TableRow className="rounded-none">
-          <TableHead style={headStyle}>Name</TableHead>
-          <TableHead className="hidden md:table-cell" style={headStyle}>Email</TableHead>
-          <TableHead className="hidden lg:table-cell" style={headStyle}>Phone</TableHead>
-          <TableHead className="hidden md:table-cell" style={headStyle}>Source</TableHead>
-          <TableHead style={headStyle}>Stage</TableHead>
-          <TableHead className="hidden lg:table-cell" style={headStyle}>Created By</TableHead>
-          <TableHead className="hidden lg:table-cell" style={headStyle}>Updated</TableHead>
-          <TableHead style={{ ...headStyle, width: 48 }} />
+          <TableHead className={headClass} style={headStyle}>Name</TableHead>
+          <TableHead className={`hidden md:table-cell ${headClass}`} style={headStyle}>Email</TableHead>
+          <TableHead className={`hidden lg:table-cell ${headClass}`} style={headStyle}>Phone</TableHead>
+          <TableHead className={`hidden md:table-cell ${headClass}`} style={headStyle}>Source</TableHead>
+          <TableHead className={headClass} style={headStyle}>Stage</TableHead>
+          <TableHead className={`hidden lg:table-cell ${headClass}`} style={headStyle}>Created By</TableHead>
+          <TableHead className={`hidden lg:table-cell ${headClass}`} style={headStyle}>Updated</TableHead>
+          <TableHead className={headClass} style={{ ...headStyle, width: 48 }} />
         </TableRow>
       </TableHeader>
       <TableBody>

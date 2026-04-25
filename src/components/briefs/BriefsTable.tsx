@@ -57,7 +57,7 @@ const BriefsTable: React.FC<BriefsTableProps> = ({
       return "Invalid date";
     }
   };
-  return <div className="rounded-md border bg-white border shadow-sm">
+  return <div className="rounded-md border bg-card border-border-soft shadow-sm">
       <Table>
         <TableHeader>
           <TableRow>
