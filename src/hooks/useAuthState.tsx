@@ -11,7 +11,12 @@ import {
 import { AppwriteException } from "appwrite";
 import { isDemoLoginEnabled } from "@/config/runtime";
 
-export function useAuthState() {
+interface UseAuthStateOptions {
+  redirectOnAuthenticated?: boolean;
+}
+
+export function useAuthState(options: UseAuthStateOptions = {}) {
+  const { redirectOnAuthenticated = true } = options;
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -32,7 +37,9 @@ export function useAuthState() {
         await account.getSession("current");
         setIsAuthenticated(true);
         localStorage.setItem("isLoggedIn", "true");
-        navigate("/dashboard", { replace: true });
+        if (redirectOnAuthenticated) {
+          navigate("/dashboard", { replace: true });
+        }
       } catch {
         setIsAuthenticated(false);
         localStorage.removeItem("isLoggedIn");
@@ -53,7 +60,9 @@ export function useAuthState() {
       if (events.some((e) => e.includes("sessions.create"))) {
         setIsAuthenticated(true);
         localStorage.setItem("isLoggedIn", "true");
-        navigate("/dashboard", { replace: true });
+        if (redirectOnAuthenticated) {
+          navigate("/dashboard", { replace: true });
+        }
       } else if (events.some((e) => e.includes("sessions.delete"))) {
         setIsAuthenticated(false);
         localStorage.removeItem("isLoggedIn");
@@ -61,7 +70,7 @@ export function useAuthState() {
     });
 
     return () => unsubscribe();
-  }, [navigate]);
+  }, [navigate, redirectOnAuthenticated]);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

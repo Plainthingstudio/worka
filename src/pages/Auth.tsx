@@ -9,6 +9,7 @@ import AuthFooter from "@/components/auth/AuthFooter";
 import AuthCardSuspense from "@/components/auth/AuthCardSuspense";
 import InvitationRegistration from "@/components/auth/InvitationRegistration";
 import {
+  account,
   appwriteConfigError,
   databases,
   DATABASE_ID,
@@ -35,6 +36,9 @@ interface InvitationData {
 }
 
 const Auth = () => {
+  const [searchParams] = useSearchParams();
+  const invitationToken = searchParams.get('invitation');
+
   const {
     isLoading,
     email,
@@ -46,13 +50,10 @@ const Auth = () => {
     handleLogin,
     handleDummyLogin,
     handleSignup
-  } = useAuthState();
+  } = useAuthState({ redirectOnAuthenticated: !invitationToken });
 
-  const [searchParams] = useSearchParams();
   const [invitation, setInvitation] = useState<InvitationData | null>(null);
   const [isValidatingInvitation, setIsValidatingInvitation] = useState(false);
-
-  const invitationToken = searchParams.get('invitation');
 
   useEffect(() => {
     const validateInvitation = async () => {
@@ -61,11 +62,37 @@ const Auth = () => {
 
       setIsValidatingInvitation(true);
       try {
-        const response = await databases.listDocuments(DATABASE_ID, 'invitations', [
+        const invitationQueries = [
           Query.equal('token', invitationToken),
           Query.isNull('accepted_at'),
           Query.greaterThan('expires_at', new Date().toISOString())
-        ]);
+        ];
+
+        const fetchInvitation = () =>
+          databases.listDocuments(DATABASE_ID, 'invitations', invitationQueries);
+
+        let response;
+        try {
+          response = await fetchInvitation();
+        } catch (error: any) {
+          const isPermissionError =
+            error?.code === 401 ||
+            error?.code === 403 ||
+            /missing scope|not authorized|unauthorized/i.test(error?.message || "");
+
+          if (!isPermissionError) {
+            throw error;
+          }
+
+          await account.createAnonymousSession();
+          try {
+            response = await fetchInvitation();
+          } finally {
+            await account.deleteSession("current").catch(() => undefined);
+            localStorage.removeItem("isLoggedIn");
+          }
+        }
+
         const data = response.documents[0] ?? null;
 
         if (!data) {
@@ -99,7 +126,7 @@ const Auth = () => {
   }
 
   // If already authenticated but still on this page (unlikely edge case), redirect
-  if (isAuthenticated) {
+  if (isAuthenticated && !invitationToken) {
     return <AuthRedirecting />;
   }
 
