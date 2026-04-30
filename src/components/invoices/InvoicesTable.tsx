@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Eye, Download, Trash, Edit, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,9 +29,11 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
   formatCurrency
 }) => {
   if (!invoices || invoices.length === 0) {
-    return <div className="rounded-md border p-8 text-center">
+    return (
+      <div className="py-12 text-center">
         <p className="text-muted-foreground">No invoices found. Create your first invoice to get started.</p>
-      </div>;
+      </div>
+    );
   }
   const handleStatusChange = (invoiceId: string, status: string) => {
     if (onStatusChange) {
@@ -44,7 +46,8 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
       onPaymentTypeChange(invoiceId, paymentType as PaymentType);
     }
   };
-  return <div className="rounded-md border bg-card border-border-soft shadow-sm">
+  return (
+    <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -140,6 +143,7 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
             </TableRow>)}
         </TableBody>
       </Table>
-    </div>;
+    </div>
+  );
 };
 export default InvoicesTable;

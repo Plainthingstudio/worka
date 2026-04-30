@@ -155,7 +155,7 @@ const MeetingScheduleCard = () => {
 
     if (!events.length) {
       return (
-        <div className="rounded-[12px] border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-5">
+        <div className="rounded-[12px] border border-border-soft bg-surface-2 px-4 py-5">
           <p className="text-sm font-medium text-foreground">
             Tidak ada meeting pada {format(selectedDate, "d MMMM yyyy")}.
           </p>

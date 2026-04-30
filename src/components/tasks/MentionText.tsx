@@ -26,7 +26,7 @@ function linkifyPlainText(text: string, keyPrefix: string): React.ReactNode[] {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-[#1D4ED8] underline underline-offset-2 hover:text-[#1E40AF] break-all"
+        className="text-blue-700 dark:text-blue-300 underline underline-offset-2 hover:text-blue-800 dark:hover:text-blue-200 break-all"
         onClick={(e) => e.stopPropagation()}
       >
         {raw}
@@ -79,9 +79,8 @@ export const MentionText: React.FC<MentionTextProps> = ({ content, candidates, c
       nodes.push(
         <span
           key={`m-${atIndex}`}
+          className="text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-500/20"
           style={{
-            color: "#1D4ED8",
-            background: "#DBEAFE",
             padding: "0 4px",
             borderRadius: 4,
             fontWeight: 500,
