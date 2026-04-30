@@ -60,19 +60,17 @@ const Invoices = () => {
   return (
     <>
       <main className="p-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div className="flex items-start justify-between mb-6">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">Invoices</h1>
               <p className="text-muted-foreground">
                 Manage and track client invoices.
               </p>
             </div>
-            <div className="flex gap-2 self-end md:self-auto">
-              <Button onClick={() => navigate('/invoices/new')}>
-                <Plus className="h-4 w-4 mr-2" />
-                New Invoice
-              </Button>
-            </div>
+            <Button onClick={() => navigate('/invoices/new')}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Invoice
+            </Button>
           </div>
 
           <div className="mb-6">

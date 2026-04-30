@@ -299,21 +299,24 @@ export const CommentInput: React.FC<CommentInputProps> = ({
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting || (!content.trim() && files.length === 0)}
-          className="inline-flex items-center justify-center transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="inline-flex items-center justify-center transition-opacity hover:opacity-90 disabled:opacity-50 bg-brand text-brand-foreground"
           style={{
             gap: 6,
             padding: "6px 10px",
             height: 28,
-            background: "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 100%), #3762FB",
-            boxShadow: "0px 1px 2px rgba(14,18,27,0.239216), 0px 0px 0px 1px #3762FB",
+            backgroundImage:
+              "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 100%)",
+            boxShadow:
+              "0px 1px 2px rgba(14,18,27,0.239216), 0px 0px 0px 1px hsl(var(--brand))",
             borderRadius: 7,
-            color: "#F8FAFC",
             fontFamily: "Inter, sans-serif",
             fontWeight: 500,
             fontSize: 12,
+            border: "none",
+            cursor: "pointer",
           }}
         >
-          <Send style={{ width: 12, height: 12 }} strokeWidth={1.67} />
+          <Send className="text-brand-foreground" style={{ width: 12, height: 12 }} strokeWidth={1.67} />
           {isSubmitting ? "Sending..." : "Send"}
         </button>
       </div>

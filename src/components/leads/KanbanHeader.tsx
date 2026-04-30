@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Layout, List, Filter, Search } from 'lucide-react';
+import { Plus, Layout, List, Filter, Search } from 'lucide-react';
 import { LeadStage } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -99,14 +99,14 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
           </div>
           
           <Button onClick={() => onAddLead('Leads')}>
-            <PlusCircle className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 h-4 w-4" />
             Add Lead
           </Button>
         </div>
         
         <div className="flex justify-between items-center mb-6 ">
           <div
-            className="inline-flex items-center bg-surface-2"
+            className="inline-flex items-center bg-surface-2 dark:bg-[hsl(222_33%_7%)]"
             style={{ padding: 4, gap: 0, borderRadius: 8 }}
           >
             {([
@@ -119,22 +119,22 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
                   key={key}
                   type="button"
                   onClick={() => onViewModeChange(key)}
-                  className={`inline-flex items-center transition-all ${
-                    active ? 'bg-card text-foreground' : 'bg-transparent text-muted-foreground'
+                  className={`inline-flex items-center text-[14px] font-medium leading-5 transition-all ${
+                    active
+                      ? 'bg-card text-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.08)] dark:bg-[hsl(225_31%_11%)] dark:shadow-[0px_1px_3px_rgba(0,0,0,0.5)]'
+                      : 'bg-transparent text-muted-foreground'
                   }`}
                   style={{
                     gap: 4,
                     padding: '4px 12px',
-                    height: 28,
+                    height: 32,
                     borderRadius: active ? 8 : 10,
-                    boxShadow: active ? '0px 1px 2px rgba(0,0,0,0.05)' : undefined,
                     fontFamily: 'Inter, sans-serif',
-                    fontWeight: 500,
-                    fontSize: 12,
-                    lineHeight: '20px',
+                    border: 'none',
+                    cursor: 'pointer',
                   }}
                 >
-                  <Icon className="h-3 w-3" />
+                  <Icon className="h-4 w-4 shrink-0" />
                   <span className="hidden sm:inline">{label}</span>
                 </button>
               );

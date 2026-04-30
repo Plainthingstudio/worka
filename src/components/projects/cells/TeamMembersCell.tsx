@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Users, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { TeamMember } from "@/types";
 import {
   Popover,
@@ -20,6 +20,40 @@ interface TeamMembersCellProps {
   allTeamMembers: TeamMember[];
   onSave?: (ids: string[]) => void;
 }
+
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(w => w[0].toUpperCase())
+    .join("");
+
+const AvatarStack = ({ members }: { members: TeamMember[] }) => {
+  if (members.length === 0) {
+    return <span className="text-xs text-muted-foreground">None</span>;
+  }
+  const visible = members.slice(0, 3);
+  const overflow = members.length - visible.length;
+  return (
+    <div className="flex items-center">
+      {visible.map((m, i) => (
+        <div
+          key={m.id}
+          className={`${i > 0 ? "-ml-1.5" : ""} flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-card bg-brand/10 text-[10px] font-semibold text-brand dark:bg-brand/20 dark:text-blue-300`}
+          title={m.name}
+        >
+          {getInitials(m.name)}
+        </div>
+      ))}
+      {overflow > 0 && (
+        <div className="-ml-1.5 flex h-6 min-w-6 items-center justify-center rounded-full border-[1.5px] border-card bg-surface-3 px-1 text-[10px] font-semibold text-foreground">
+          +{overflow}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const TeamMembersCell = ({ selectedIds, allTeamMembers, onSave }: TeamMembersCellProps) => {
   const [open, setOpen] = useState(false);
@@ -45,26 +79,24 @@ const TeamMembersCell = ({ selectedIds, allTeamMembers, onSave }: TeamMembersCel
   };
 
   if (!onSave) {
-    if (resolvedMembers.length === 0) {
-      return <span className="text-muted-foreground text-xs">None</span>;
-    }
     return (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="flex items-center gap-1 text-sm text-muted-foreground cursor-help">
-              <Users className="h-3.5 w-3.5" />
-              {resolvedMembers.length}
+            <div className="cursor-help">
+              <AvatarStack members={resolvedMembers} />
             </div>
           </TooltipTrigger>
-          <TooltipContent side="top">
-            <p className="font-medium">Assigned Team Members:</p>
-            <ul className="text-xs mt-1">
-              {resolvedMembers.map(m => (
-                <li key={m.id}>• {m.name} ({m.position})</li>
-              ))}
-            </ul>
-          </TooltipContent>
+          {resolvedMembers.length > 0 && (
+            <TooltipContent side="top">
+              <p className="font-medium mb-1">Assigned:</p>
+              <ul className="text-xs space-y-0.5">
+                {resolvedMembers.map(m => (
+                  <li key={m.id}>• {m.name} ({m.position})</li>
+                ))}
+              </ul>
+            </TooltipContent>
+          )}
         </Tooltip>
       </TooltipProvider>
     );
@@ -74,11 +106,10 @@ const TeamMembersCell = ({ selectedIds, allTeamMembers, onSave }: TeamMembersCel
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <button
-          className="flex items-center gap-1 text-sm text-muted-foreground rounded px-1 py-0.5 hover:bg-accent transition-colors"
+          className="rounded px-1 py-0.5 hover:bg-accent transition-colors"
           onClick={e => { e.stopPropagation(); setOpen(true); }}
         >
-          <Users className="h-3.5 w-3.5" />
-          {selectedIds.length > 0 ? selectedIds.length : <span className="text-xs">None</span>}
+          <AvatarStack members={resolvedMembers} />
         </button>
       </PopoverTrigger>
       <PopoverContent

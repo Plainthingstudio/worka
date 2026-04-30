@@ -3,6 +3,7 @@ import React from "react";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogDescription,
@@ -29,22 +30,14 @@ const DeletePaymentDialog = ({
             Are you sure you want to delete this payment? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex gap-2 pt-4">
-          <Button
-            variant="destructive"
-            onClick={onConfirm}
-            className="flex-1"
-          >
-            Delete
-          </Button>
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="flex-1"
-          >
+        <DialogFooter className="pt-4 sm:space-x-2">
+          <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
-        </div>
+          <Button type="button" variant="destructive" onClick={onConfirm}>
+            Delete
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

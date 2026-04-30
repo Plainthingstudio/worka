@@ -22,16 +22,12 @@ interface TeamMemberItemProps {
 const TeamMemberItem = ({ member, onEdit, onDelete }: TeamMemberItemProps) => {
   const showActions = onEdit || onDelete;
 
-  const getRoleBadgeColor = (role?: string) => {
+  const getRoleBadgeVariant = (role?: string): React.ComponentProps<typeof Badge>["variant"] => {
     switch (role) {
-      case 'owner':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'administrator':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'team':
-        return 'bg-green-100 text-green-800 border-green-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'owner':         return 'role-owner';
+      case 'administrator': return 'role-administrator';
+      case 'team':          return 'role-team';
+      default:              return 'role-default';
     }
   };
 
@@ -50,10 +46,7 @@ const TeamMemberItem = ({ member, onEdit, onDelete }: TeamMemberItemProps) => {
         <div className="flex flex-col gap-1">
           <span>{member.position}</span>
           {member.role && (
-            <Badge 
-              variant="outline" 
-              className={`text-xs w-fit ${getRoleBadgeColor(member.role)}`}
-            >
+            <Badge variant={getRoleBadgeVariant(member.role)} className="w-fit">
               {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
             </Badge>
           )}

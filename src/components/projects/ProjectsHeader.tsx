@@ -9,7 +9,7 @@ interface ProjectsHeaderProps {
 
 const ProjectsHeader = ({ onCreateProject }: ProjectsHeaderProps) => {
   return (
-    <div className="mb-8 flex items-center justify-between">
+    <div className="mb-8 flex items-start justify-between">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
           Projects

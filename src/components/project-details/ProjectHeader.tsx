@@ -189,17 +189,16 @@ const ProjectHeader = ({
           <button
             type="button"
             onClick={onCreateTask}
-            className="inline-flex items-center justify-center transition-opacity hover:opacity-90"
+            className="inline-flex items-center justify-center transition-opacity hover:opacity-90 bg-brand text-brand-foreground"
             style={{
               gap: 8,
               padding: "0 12px",
               height: 38,
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 100%), #3762FB",
+              backgroundImage:
+                "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 100%)",
               boxShadow:
-                "0px 1px 2px rgba(14,18,27,0.24), 0px 0px 0px 1px #3762FB",
+                "0px 1px 2px rgba(14,18,27,0.239216), 0px 0px 0px 1px hsl(var(--brand))",
               borderRadius: 7,
-              color: "#F8FAFC",
               fontFamily: "Inter, sans-serif",
               fontWeight: 500,
               fontSize: 14,
@@ -209,8 +208,7 @@ const ProjectHeader = ({
             }}
           >
             <Plus
-              className="h-4 w-4"
-              style={{ color: "#F8FAFC" }}
+              className="h-4 w-4 text-brand-foreground"
               strokeWidth={1.67}
             />
             <span>Create Task</span>

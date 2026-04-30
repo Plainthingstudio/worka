@@ -61,6 +61,16 @@ const badgeVariants = cva(
         "category":
           "bg-background text-foreground ring-border",
 
+        // Team role variants
+        "role-owner":
+          "bg-red-100 text-red-800 ring-red-600/20 dark:bg-red-500/15 dark:text-red-300 dark:ring-red-400/30",
+        "role-administrator":
+          "bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-500/15 dark:text-blue-300 dark:ring-blue-400/30",
+        "role-team":
+          "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-500/15 dark:text-green-300 dark:ring-green-400/30",
+        "role-default":
+          "bg-gray-50 text-gray-700 ring-gray-600/20 dark:bg-gray-500/15 dark:text-gray-300 dark:ring-gray-400/30",
+
         // Lead source variants
         "dribbble":
           "bg-pink-50 text-pink-700 ring-pink-700/10 dark:bg-pink-500/15 dark:text-pink-300 dark:ring-pink-400/30",

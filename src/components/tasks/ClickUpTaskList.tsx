@@ -772,7 +772,7 @@ export const ClickUpTaskList = ({
             {/* Group header — outside horizontal scroll so it stays fixed horizontally */}
             <div
               onClick={() => toggleGroup(status)}
-              className="flex items-center cursor-pointer group bg-surface-2"
+              className="flex items-center cursor-pointer group bg-surface-2 dark:bg-[hsl(222_33%_9%)]"
               style={{
                 height: 36,
                 padding: '6px 16px',

@@ -223,7 +223,7 @@ const Team = () => {
   return (
     <>
       <main className="w-full p-6 space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">
                 Team
@@ -239,12 +239,10 @@ const Team = () => {
             </div>
             {/* Only owners can invite team members, administrators can see all but cannot invite */}
             {userRole === 'owner' && (
-              <div className="flex gap-2">
-                <Button onClick={openInvitationDialog}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Invite Team Member
-                </Button>
-              </div>
+              <Button onClick={openInvitationDialog}>
+                <Plus className="mr-2 h-4 w-4" />
+                Invite Team Member
+              </Button>
             )}
           </div>
 

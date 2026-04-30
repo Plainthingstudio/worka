@@ -566,7 +566,7 @@ export const Tasks = () => {
         {/* Tabs + search/filter row */}
         <div className="flex items-center justify-between">
           <div
-            className="inline-flex items-center bg-surface-2"
+            className="inline-flex items-center bg-surface-2 dark:bg-[hsl(222_33%_7%)]"
             style={{ padding: 4, gap: 0, borderRadius: 8 }}
           >
             {viewTabs.map(({ key, label, icon: Icon }) => {
@@ -574,23 +574,25 @@ export const Tasks = () => {
               return (
                 <button
                   key={key}
+                  type="button"
                   onClick={() => setActiveView(key)}
                   className={cn(
-                    "inline-flex items-center transition-all",
-                    active ? "bg-card text-foreground shadow-sm" : "bg-transparent text-muted-foreground"
+                    "inline-flex items-center text-[14px] font-medium leading-5 transition-all",
+                    active
+                      ? "bg-card text-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.08)] dark:bg-[hsl(225_31%_11%)] dark:shadow-[0px_1px_3px_rgba(0,0,0,0.5)]"
+                      : "bg-transparent text-muted-foreground"
                   )}
                   style={{
                     gap: 4,
                     padding: '4px 12px',
-                    height: 28,
+                    height: 32,
                     borderRadius: active ? 8 : 10,
                     fontFamily: 'Inter, sans-serif',
-                    fontWeight: 500,
-                    fontSize: 12,
-                    lineHeight: '20px',
+                    border: 'none',
+                    cursor: 'pointer',
                   }}
                 >
-                  <Icon className="h-3 w-3" />
+                  <Icon className="h-4 w-4 shrink-0" />
                   <span>{label}</span>
                 </button>
               );
