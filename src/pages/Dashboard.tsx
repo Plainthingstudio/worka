@@ -25,7 +25,7 @@ import { useOwnerDashboard } from "@/hooks/useOwnerDashboard";
 import { TaskWithRelations } from "@/types/task";
 
 const shellCardClass =
-  "rounded-[12px] bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]";
+  "rounded-[12px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]";
 const headerIconClass =
   "flex h-8 w-8 items-center justify-center rounded-[8px] border border-border-soft text-brand-accent";
 const tableShellClass = "overflow-hidden rounded-[8px]";
