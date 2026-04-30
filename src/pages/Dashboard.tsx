@@ -25,11 +25,12 @@ import { useOwnerDashboard } from "@/hooks/useOwnerDashboard";
 import { TaskWithRelations } from "@/types/task";
 
 const shellCardClass =
-  "rounded-[12px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]";
+  "rounded-[12px] bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]";
 const headerIconClass =
   "flex h-8 w-8 items-center justify-center rounded-[8px] border border-border-soft text-brand-accent";
-const tableShellClass =
-  "overflow-hidden rounded-[12px] border border-border-soft bg-card";
+const tableShellClass = "overflow-hidden rounded-[8px]";
+const tableRowButtonClass =
+  "flex w-full text-left outline-none transition-colors hover:bg-surface-3/60 focus-visible:outline-none focus-visible:bg-surface-3/60 dark:hover:bg-muted/20";
 const tableHeaderCellClass =
   "flex items-center bg-surface-3 px-4 py-3 text-[14px] font-medium leading-5 text-muted-foreground";
 const tableBodyCellClass = "flex items-center border-b border-border-soft px-4 py-[18px]";
@@ -177,7 +178,7 @@ const Dashboard = () => {
             <DropdownMenuTrigger asChild>
               <Button
                 size="sm"
-                className="h-9 gap-2 self-start rounded-[7px] bg-[#3762FB] px-3 text-sm font-medium text-[#F8FAFC] shadow-[0px_1px_2px_rgba(14,18,27,0.239216),0px_0px_0px_1px_#3762FB] hover:bg-[#2f56e6] md:self-auto"
+                className="h-9 gap-2 self-start rounded-[7px] bg-primary px-3 text-sm font-medium text-primary-foreground shadow-[0px_1px_2px_rgba(14,18,27,0.239216)] ring-1 ring-primary hover:bg-primary/90 md:self-auto"
               >
                 Create
                 <ChevronDown className="h-4 w-4 text-inherit" strokeWidth={1.67} />
@@ -277,7 +278,7 @@ const Dashboard = () => {
                       key={project.id}
                       type="button"
                       onClick={() => navigate(`/projects/${project.id}`)}
-                      className="flex h-[60px] w-full text-left"
+                      className={`${tableRowButtonClass} h-[60px]`}
                     >
                       <div className={`${tableBodyCellClass} w-[147.75px] flex-1 text-[14px] font-medium leading-5 text-foreground`}>
                         {project.name}
@@ -342,7 +343,7 @@ const Dashboard = () => {
                       key={task.id}
                       type="button"
                       onClick={() => navigate("/tasks")}
-                      className="flex h-[60px] w-full text-left"
+                      className={`${tableRowButtonClass} h-[60px]`}
                     >
                       <div className={`${tableBodyCellClass} w-[149.75px] min-w-0 flex-1 text-[14px] font-medium leading-5 text-foreground`}>
                         <span className="truncate">{task.title}</span>
@@ -391,7 +392,7 @@ const Dashboard = () => {
                       key={invoice.id}
                       type="button"
                       onClick={() => navigate(`/invoices/${invoice.id}`)}
-                      className="flex h-[57.5px] w-full text-left"
+                      className={`${tableRowButtonClass} h-[57.5px]`}
                     >
                       <div className={`${tableBodyCellClass} w-[133.83px] flex-1 text-[14px] font-medium leading-5 text-foreground`}>
                         {invoice.invoiceNumber}
