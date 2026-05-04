@@ -1,47 +1,52 @@
-
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Client, LeadSource } from "@/types";
-import { account, databases, DATABASE_ID, ID, Query } from "@/integrations/appwrite/client";
+import { account, client, databases, DATABASE_ID, ID, Query } from "@/integrations/appwrite/client";
+
+export const clientsQueryKey = ["clients"] as const;
+
+const fetchClients = async (): Promise<Client[]> => {
+  const response = await databases.listDocuments(DATABASE_ID, "clients", [
+    Query.orderDesc("$createdAt"),
+  ]);
+
+  return response.documents.map((doc: any) => ({
+    id: doc.$id,
+    name: doc.name,
+    email: doc.email,
+    phone: doc.phone,
+    address: doc.address,
+    leadSource: doc.lead_source as LeadSource,
+    createdAt: new Date(doc.$createdAt),
+    createdBy: doc.user_id,
+  }));
+};
 
 export const useClients = () => {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchClients = async () => {
-    try {
-      setIsLoading(true);
+  const { data: clients = [], isLoading } = useQuery({
+    queryKey: clientsQueryKey,
+    queryFn: fetchClients,
+  });
 
-      const response = await databases.listDocuments(DATABASE_ID, "clients", [
-        Query.orderDesc("$createdAt"),
-      ]);
+  useEffect(() => {
+    const channel = `databases.${DATABASE_ID}.collections.clients.documents`;
+    const unsubscribe = client.subscribe(channel, () => {
+      queryClient.invalidateQueries({ queryKey: clientsQueryKey });
+    });
+    return () => unsubscribe();
+  }, [queryClient]);
 
-      const transformedClients = response.documents.map((client: any) => ({
-        id: client.$id,
-        name: client.name,
-        email: client.email,
-        phone: client.phone,
-        address: client.address,
-        leadSource: client.lead_source as LeadSource,
-        createdAt: new Date(client.$createdAt),
-        createdBy: client.user_id,
-      }));
-
-      setClients(transformedClients);
-    } catch (error) {
-      console.error("Error fetching clients:", error);
-      toast.error("Failed to load clients");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: clientsQueryKey });
 
   const addClient = async (data: any) => {
     try {
       const user = await account.get();
       const leadSource = data.leadSource as LeadSource;
 
-      const clientData = await databases.createDocument(DATABASE_ID, "clients", ID.unique(), {
+      await databases.createDocument(DATABASE_ID, "clients", ID.unique(), {
         name: data.name,
         email: data.email,
         phone: data.phone,
@@ -50,18 +55,8 @@ export const useClients = () => {
         user_id: user.$id,
       });
 
-      const newClient: Client = {
-        id: clientData.$id,
-        name: clientData.name,
-        email: clientData.email,
-        phone: clientData.phone,
-        address: clientData.address,
-        leadSource: clientData.lead_source as LeadSource,
-        createdAt: new Date(clientData.$createdAt),
-      };
-
-      setClients([newClient, ...clients]);
       toast.success("Client created successfully");
+      invalidate();
       return true;
     } catch (error: any) {
       console.error("Error creating client:", error);
@@ -82,21 +77,8 @@ export const useClients = () => {
         lead_source: leadSource,
       });
 
-      const updatedClients = clients.map((client) =>
-        client.id === clientId
-          ? {
-              ...client,
-              name: data.name,
-              email: data.email,
-              phone: data.phone,
-              address: data.address,
-              leadSource: data.leadSource as LeadSource,
-            }
-          : client
-      );
-
-      setClients(updatedClients);
       toast.success("Client updated successfully");
+      invalidate();
       return true;
     } catch (error: any) {
       console.error("Error updating client:", error);
@@ -108,8 +90,8 @@ export const useClients = () => {
   const deleteClient = async (id: string) => {
     try {
       await databases.deleteDocument(DATABASE_ID, "clients", id);
-      setClients(clients.filter((client) => client.id !== id));
       toast.success("Client deleted successfully");
+      invalidate();
       return true;
     } catch (error: any) {
       console.error("Error deleting client:", error);
@@ -118,12 +100,10 @@ export const useClients = () => {
     }
   };
 
-  // Load clients on component mount
-  useEffect(() => {
-    fetchClients();
-  }, []);
-
-  const inlineUpdateClient = async (clientId: string, fields: Partial<Pick<Client, 'name' | 'email' | 'phone' | 'address' | 'leadSource'>>) => {
+  const inlineUpdateClient = async (
+    clientId: string,
+    fields: Partial<Pick<Client, "name" | "email" | "phone" | "address" | "leadSource">>
+  ) => {
     try {
       const updateData: Record<string, any> = {};
       if (fields.name !== undefined) updateData.name = fields.name;
@@ -132,11 +112,16 @@ export const useClients = () => {
       if (fields.address !== undefined) updateData.address = fields.address;
       if (fields.leadSource !== undefined) updateData.lead_source = fields.leadSource;
 
+      queryClient.setQueryData<Client[]>(clientsQueryKey, (prev) =>
+        prev ? prev.map((c) => (c.id === clientId ? { ...c, ...fields } : c)) : prev
+      );
+
       await databases.updateDocument(DATABASE_ID, "clients", clientId, updateData);
-      setClients(prev => prev.map(c => c.id === clientId ? { ...c, ...fields } : c));
+      invalidate();
     } catch (error: any) {
       console.error("Error updating client:", error);
       toast.error(error.message || "Failed to update client");
+      invalidate();
     }
   };
 
@@ -146,6 +131,6 @@ export const useClients = () => {
     addClient,
     updateClient,
     deleteClient,
-    inlineUpdateClient
+    inlineUpdateClient,
   };
 };

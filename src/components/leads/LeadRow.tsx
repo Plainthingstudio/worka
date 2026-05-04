@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Lead, LeadSource, LeadStage } from '@/types';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { InitialAvatar } from '@/components/ui/avatar';
 import { Trash } from 'lucide-react';
 import {
   DropdownMenu,
@@ -213,9 +214,7 @@ const LeadRow: React.FC<LeadRowProps> = ({
       <TableCell className={`hidden lg:table-cell ${cellClass}`} style={cellStyle}>
         {creator ? (
           <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300 text-[10px] font-semibold">
-              {creator.initials}
-            </div>
+            <InitialAvatar name={creator.name} size={24} />
             <span className="text-sm text-foreground/80 truncate max-w-[120px]">{creator.name}</span>
           </div>
         ) : (

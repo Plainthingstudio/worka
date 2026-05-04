@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useAssigneeNames } from "@/hooks/useAssigneeNames";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { InitialAvatar } from "@/components/ui/avatar";
 
 interface ProjectTasksPreviewProps {
   projectId: string;
@@ -65,23 +66,8 @@ const statusOrder: TaskStatus[] = [
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
-const getInitials = (name: string) =>
-  name.trim().split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-
 const Avatar24 = ({ name }: { name: string }) => (
-  <div
-    title={name}
-    className="flex items-center justify-center shrink-0 bg-brand-accent text-white"
-    style={{
-      width: 24, height: 24, borderRadius: 9999,
-      border: '2px solid hsl(var(--surface-2))',
-      boxShadow: '0px 0px 0px 1px hsl(var(--border-soft))',
-      fontFamily: 'Inter, sans-serif', fontWeight: 500,
-      fontSize: 12, lineHeight: '16px',
-    }}
-  >
-    {getInitials(name)}
-  </div>
+  <InitialAvatar name={name} size={24} />
 );
 
 // ── Main component ───────────────────────────────────────────────────────────

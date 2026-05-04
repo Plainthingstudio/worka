@@ -16,6 +16,7 @@ import { TaskWithRelations, TaskStatus } from '@/types/task';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useAssigneeNames } from '@/hooks/useAssigneeNames';
+import { InitialAvatar } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -183,37 +184,8 @@ const headerCellStyle: React.CSSProperties = {
   letterSpacing: '0.6px',
 };
 
-const getInitials = (name: string) => {
-  if (!name) return '?';
-  return name
-    .trim()
-    .split(' ')
-    .filter(Boolean)
-    .map((w) => w.charAt(0))
-    .join('')
-    .toUpperCase()
-    .slice(0, 2) || '?';
-};
-
 const Avatar24 = ({ name }: { name: string }) => (
-  <div
-    title={name}
-    className="flex items-center justify-center bg-brand-accent text-white"
-    style={{
-      width: 24,
-      height: 24,
-      borderRadius: 9999,
-      border: '2px solid hsl(var(--surface-2))',
-      boxShadow: '0px 0px 0px 1px hsl(var(--border-soft))',
-      fontFamily: 'Inter, sans-serif',
-      fontWeight: 500,
-      fontSize: 12,
-      lineHeight: '16px',
-      flexShrink: 0,
-    }}
-  >
-    {getInitials(name)}
-  </div>
+  <InitialAvatar name={name} size={24} />
 );
 
 export const ClickUpTaskList = ({

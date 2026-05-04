@@ -1,11 +1,12 @@
-
-import { useState, useEffect } from 'react';
-import { account, databases, storage, DATABASE_ID, ID, Query } from '@/integrations/appwrite/client';
-import { Task, TaskComment, TaskAttachment, TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/task';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { account, client as appwriteClient, databases, storage, DATABASE_ID, ID, Query } from '@/integrations/appwrite/client';
+import { Task, TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/task';
 import { toast } from '@/hooks/use-toast';
 import { logStatusChange, logAssigneeChange, logPriorityChange, logDueDateChange, logTaskCreated, logComment } from '@/utils/activityLogger';
 
 const TASK_ATTACHMENTS_BUCKET = 'task-attachments';
+const PROJECT_TASKS_REALTIME_COLLECTIONS = ['tasks', 'task_comments', 'task_attachments'];
 
 type DateFieldInput = Date | string | null | undefined;
 
@@ -20,174 +21,116 @@ const parseDateField = (value: DateFieldInput) => {
   return value instanceof Date ? value : new Date(value);
 };
 
-export const useTasks = (projectId: string) => {
-  const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export const projectTasksQueryKey = (projectId: string) => ['projectTasks', projectId] as const;
 
-  const fetchTasks = async () => {
-    try {
-      setIsLoading(true);
-      console.log('Fetching tasks for project:', projectId);
+const fetchProjectTasks = async (projectId: string): Promise<TaskWithRelations[]> => {
+  const tasksResponse = await databases.listDocuments(DATABASE_ID, 'tasks', [
+    Query.equal('project_id', projectId),
+    Query.orderDesc('$createdAt'),
+  ]);
 
-      if (!projectId) {
-        setTasks([]);
-        setIsLoading(false);
-        return;
-      }
+  const allTaskDocs = tasksResponse.documents;
+  if (allTaskDocs.length === 0) return [];
 
-      // Fetch main tasks (no parent)
-      const tasksResponse = await databases.listDocuments(
-        DATABASE_ID,
-        'tasks',
-        [Query.equal('project_id', projectId), Query.isNull('parent_task_id'), Query.orderDesc('$createdAt')]
-      );
-      const tasksData = tasksResponse.documents;
+  const taskIds = allTaskDocs.map((t: any) => t.$id);
 
-      // Fetch subtasks
-      let subtasksData: any[] = [];
-      try {
-        const subtasksResponse = await databases.listDocuments(
-          DATABASE_ID,
-          'tasks',
-          [Query.equal('project_id', projectId), Query.orderDesc('$createdAt')]
-        );
-        subtasksData = subtasksResponse.documents.filter((t: any) => t.parent_task_id != null);
-      } catch (e) {
-        console.error('Error fetching subtasks:', e);
-      }
+  const [commentsResponse, attachmentsResponse] = await Promise.all([
+    databases.listDocuments(DATABASE_ID, 'task_comments', [Query.equal('task_id', taskIds)]),
+    databases.listDocuments(DATABASE_ID, 'task_attachments', [Query.equal('task_id', taskIds)]),
+  ]);
 
-      console.log('Fetched tasks data:', tasksData);
-      console.log('Fetched subtasks data:', subtasksData);
+  const commentsByTask = new Map<string, any[]>();
+  commentsResponse.documents.forEach((c: any) => {
+    if (!commentsByTask.has(c.task_id)) commentsByTask.set(c.task_id, []);
+    commentsByTask.get(c.task_id)!.push(c);
+  });
 
-      if (!tasksData) {
-        setTasks([]);
-        return;
-      }
+  const attachmentsByTask = new Map<string, any[]>();
+  attachmentsResponse.documents.forEach((a: any) => {
+    if (!attachmentsByTask.has(a.task_id)) attachmentsByTask.set(a.task_id, []);
+    attachmentsByTask.get(a.task_id)!.push(a);
+  });
 
-      // Fetch subtasks, comments, and attachments for each main task
-      const tasksWithSubtasks = await Promise.all(
-        tasksData.map(async (task: any) => {
-          // Subtasks
-          let subtasks: any[] = [];
-          try {
-            const subRes = await databases.listDocuments(
-              DATABASE_ID,
-              'tasks',
-              [Query.equal('parent_task_id', task.$id), Query.orderDesc('$createdAt')]
-            );
-            subtasks = subRes.documents;
-          } catch (e) {
-            // no subtasks
-          }
-
-          // Comments
-          let task_comments: any[] = [];
-          try {
-            const commentsRes = await databases.listDocuments(
-              DATABASE_ID,
-              'task_comments',
-              [Query.equal('task_id', task.$id)]
-            );
-            task_comments = commentsRes.documents;
-          } catch (e) {
-            // no comments
-          }
-
-          // Attachments
-          let task_attachments: any[] = [];
-          try {
-            const attachRes = await databases.listDocuments(
-              DATABASE_ID,
-              'task_attachments',
-              [Query.equal('task_id', task.$id)]
-            );
-            task_attachments = attachRes.documents;
-          } catch (e) {
-            // no attachments
-          }
-
-          return {
-            ...task,
-            id: task.$id,
-            task_comments,
-            task_attachments,
-            subtasks
-          };
-        })
-      );
-
-      const transformedTasks: TaskWithRelations[] = tasksWithSubtasks.map(task => ({
-        ...task,
-        id: task.$id,
-        status: task.status as TaskStatus,
-        priority: task.priority as TaskPriority,
-        task_type: task.task_type as TaskType,
-        due_date: task.due_date ? new Date(task.due_date) : undefined,
-        completed_at: task.completed_at ? new Date(task.completed_at) : undefined,
-        created_at: new Date(task.$createdAt),
-        updated_at: new Date(task.$updatedAt),
-        brief_id: task.brief_id,
-        brief_type: task.brief_type,
-        comments: task.task_comments?.map((comment: any) => ({
-          ...comment,
-          id: comment.$id,
-          created_at: new Date(comment.$createdAt),
-          updated_at: new Date(comment.$updatedAt),
-        })) || [],
-        attachments: task.task_attachments?.map((attachment: any) => ({
-          ...attachment,
-          id: attachment.$id,
-          created_at: new Date(attachment.$createdAt),
-        })) || [],
-        subtasks: task.subtasks?.map((subtask: any) => ({
-          ...subtask,
-          id: subtask.$id,
-          status: subtask.status as TaskStatus,
-          priority: subtask.priority as TaskPriority,
-          task_type: subtask.task_type as TaskType,
-          due_date: subtask.due_date ? new Date(subtask.due_date) : undefined,
-          completed_at: subtask.completed_at ? new Date(subtask.completed_at) : undefined,
-          created_at: new Date(subtask.$createdAt),
-          updated_at: new Date(subtask.$updatedAt),
-          brief_id: subtask.brief_id,
-          brief_type: subtask.brief_type,
-        })) || [],
-      }));
-
-      console.log('Transformed tasks:', transformedTasks);
-      setTasks(transformedTasks);
-    } catch (error) {
-      console.error('Error fetching tasks:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch tasks",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+  const subtasksByParent = new Map<string, any[]>();
+  allTaskDocs.forEach((t: any) => {
+    if (t.parent_task_id) {
+      if (!subtasksByParent.has(t.parent_task_id)) subtasksByParent.set(t.parent_task_id, []);
+      subtasksByParent.get(t.parent_task_id)!.push(t);
     }
-  };
+  });
+
+  const mainTasks = allTaskDocs.filter((t: any) => !t.parent_task_id);
+
+  return mainTasks.map((task: any) => ({
+    ...task,
+    id: task.$id,
+    status: task.status as TaskStatus,
+    priority: task.priority as TaskPriority,
+    task_type: task.task_type as TaskType,
+    due_date: task.due_date ? new Date(task.due_date) : undefined,
+    completed_at: task.completed_at ? new Date(task.completed_at) : undefined,
+    created_at: new Date(task.$createdAt),
+    updated_at: new Date(task.$updatedAt),
+    brief_id: task.brief_id,
+    brief_type: task.brief_type,
+    comments: (commentsByTask.get(task.$id) || []).map((comment: any) => ({
+      ...comment,
+      id: comment.$id,
+      created_at: new Date(comment.$createdAt),
+      updated_at: new Date(comment.$updatedAt),
+    })),
+    attachments: (attachmentsByTask.get(task.$id) || []).map((attachment: any) => ({
+      ...attachment,
+      id: attachment.$id,
+      created_at: new Date(attachment.$createdAt),
+    })),
+    subtasks: (subtasksByParent.get(task.$id) || []).map((subtask: any) => ({
+      ...subtask,
+      id: subtask.$id,
+      status: subtask.status as TaskStatus,
+      priority: subtask.priority as TaskPriority,
+      task_type: subtask.task_type as TaskType,
+      due_date: subtask.due_date ? new Date(subtask.due_date) : undefined,
+      completed_at: subtask.completed_at ? new Date(subtask.completed_at) : undefined,
+      created_at: new Date(subtask.$createdAt),
+      updated_at: new Date(subtask.$updatedAt),
+      brief_id: subtask.brief_id,
+      brief_type: subtask.brief_type,
+    })),
+  }));
+};
+
+export const useTasks = (projectId: string) => {
+  const queryClient = useQueryClient();
+  const queryKey = projectTasksQueryKey(projectId);
+
+  const { data: tasks = [], isLoading, refetch } = useQuery({
+    queryKey,
+    queryFn: () => fetchProjectTasks(projectId),
+    enabled: !!projectId,
+  });
+
+  useEffect(() => {
+    if (!projectId) return;
+
+    const channels = PROJECT_TASKS_REALTIME_COLLECTIONS.map(
+      (collection) => `databases.${DATABASE_ID}.collections.${collection}.documents`
+    );
+
+    const unsubscribe = appwriteClient.subscribe(channels, () => {
+      queryClient.invalidateQueries({ queryKey });
+    });
+
+    return () => unsubscribe();
+  }, [projectId, queryClient]);
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey });
 
   const createTask = async (taskData: Partial<Task> & { parent_task_id?: string }) => {
     try {
-      let user;
-      try {
-        user = await account.get();
-      } catch {
-        toast({
-          title: "Error",
-          description: "You must be logged in to create tasks",
-          variant: "destructive",
-        });
-        return null;
-      }
-
+      const user = await account.get();
       if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to create tasks",
-          variant: "destructive",
-        });
+        toast({ title: "Error", description: "You must be logged in to create tasks", variant: "destructive" });
         return null;
       }
 
@@ -209,34 +152,23 @@ export const useTasks = (projectId: string) => {
 
       const data = await databases.createDocument(DATABASE_ID, 'tasks', ID.unique(), insertData);
 
-      // Log task creation activity
       await logTaskCreated(data.$id);
 
-      toast({
-        title: "Success",
-        description: "Task created successfully",
-      });
-
-      await fetchTasks();
+      toast({ title: "Success", description: "Task created successfully" });
+      invalidate();
       return data;
     } catch (error) {
       console.error('Error creating task:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create task",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to create task", variant: "destructive" });
       return null;
     }
   };
 
   const updateTask = async (taskId: string, updates: Partial<Task>) => {
     try {
-      // Get current task data for comparison
       const currentTask = tasks.find(t => t.id === taskId);
 
       const processedUpdates: any = {};
-
       if (updates.title !== undefined) processedUpdates.title = updates.title;
       if (updates.description !== undefined) processedUpdates.description = updates.description;
       if (updates.status !== undefined) processedUpdates.status = updates.status;
@@ -248,18 +180,21 @@ export const useTasks = (projectId: string) => {
       if (updates.brief_id !== undefined) processedUpdates.brief_id = updates.brief_id;
       if (updates.brief_type !== undefined) processedUpdates.brief_type = updates.brief_type;
 
+      queryClient.setQueryData<TaskWithRelations[]>(queryKey, (prev) =>
+        prev
+          ? prev.map((t) => (t.id === taskId ? { ...t, ...updates } as TaskWithRelations : t))
+          : prev
+      );
+
       await databases.updateDocument(DATABASE_ID, 'tasks', taskId, processedUpdates);
 
-      // Log activity based on what changed
       if (currentTask) {
         if (updates.status !== undefined && updates.status !== currentTask.status) {
           await logStatusChange(taskId, currentTask.status, updates.status);
         }
-
         if (updates.priority !== undefined && updates.priority !== currentTask.priority) {
           await logPriorityChange(taskId, currentTask.priority, updates.priority);
         }
-
         if (updates.due_date !== undefined) {
           const oldDate = parseDateField(currentTask.due_date as DateFieldInput);
           const newDate = parseDateField(updates.due_date as DateFieldInput);
@@ -267,40 +202,23 @@ export const useTasks = (projectId: string) => {
             await logDueDateChange(taskId, oldDate, newDate);
           }
         }
-
-        // Log assignee changes
         if (updates.assignees !== undefined) {
           const oldAssignees = currentTask.assignees || [];
           const newAssignees = updates.assignees || [];
-
-          // Find added assignees
           const addedAssignees = newAssignees.filter(id => !oldAssignees.includes(id));
           const removedAssignees = oldAssignees.filter(id => !newAssignees.includes(id));
-
-          for (const assigneeId of addedAssignees) {
-            await logAssigneeChange(taskId, 'added', 'User');
-          }
-
-          for (const assigneeId of removedAssignees) {
-            await logAssigneeChange(taskId, 'removed', 'User');
-          }
+          for (const _ of addedAssignees) await logAssigneeChange(taskId, 'added', 'User');
+          for (const _ of removedAssignees) await logAssigneeChange(taskId, 'removed', 'User');
         }
       }
 
-      toast({
-        title: "Success",
-        description: "Task updated successfully",
-      });
-
-      await fetchTasks();
+      toast({ title: "Success", description: "Task updated successfully" });
+      invalidate();
       return true;
     } catch (error) {
       console.error('Error updating task:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update task",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to update task", variant: "destructive" });
+      invalidate();
       return false;
     }
   };
@@ -308,45 +226,21 @@ export const useTasks = (projectId: string) => {
   const deleteTask = async (taskId: string) => {
     try {
       await databases.deleteDocument(DATABASE_ID, 'tasks', taskId);
-
-      toast({
-        title: "Success",
-        description: "Task deleted successfully",
-      });
-
-      await fetchTasks();
+      toast({ title: "Success", description: "Task deleted successfully" });
+      invalidate();
       return true;
     } catch (error) {
       console.error('Error deleting task:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete task",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to delete task", variant: "destructive" });
       return false;
     }
   };
 
   const addComment = async (taskId: string, content: string) => {
     try {
-      let user;
-      try {
-        user = await account.get();
-      } catch {
-        toast({
-          title: "Error",
-          description: "You must be logged in to add comments",
-          variant: "destructive",
-        });
-        return false;
-      }
-
+      const user = await account.get();
       if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to add comments",
-          variant: "destructive",
-        });
+        toast({ title: "Error", description: "You must be logged in to add comments", variant: "destructive" });
         return false;
       }
 
@@ -356,10 +250,8 @@ export const useTasks = (projectId: string) => {
         user_id: user.$id,
       });
 
-      // Log the comment activity and create notifications
       await logComment(taskId, content);
-
-      await fetchTasks();
+      invalidate();
       return true;
     } catch (error) {
       console.error('Error adding comment:', error);
@@ -369,44 +261,15 @@ export const useTasks = (projectId: string) => {
 
   const uploadAttachment = async (taskId: string, file: File) => {
     try {
-      console.log('Starting file upload for task:', taskId, 'file:', file.name);
-
-      let user;
-      try {
-        user = await account.get();
-      } catch {
-        toast({
-          title: "Error",
-          description: "You must be logged in to upload files",
-          variant: "destructive",
-        });
-        return false;
-      }
-
+      const user = await account.get();
       if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to upload files",
-          variant: "destructive",
-        });
+        toast({ title: "Error", description: "You must be logged in to upload files", variant: "destructive" });
         return false;
       }
 
-      // Upload file to Appwrite storage
-      const uploadedFile = await storage.createFile(
-        TASK_ATTACHMENTS_BUCKET,
-        ID.unique(),
-        file
-      );
-
-      console.log('File uploaded successfully, getting URL');
-
-      // Get file view URL
+      const uploadedFile = await storage.createFile(TASK_ATTACHMENTS_BUCKET, ID.unique(), file);
       const fileUrl = storage.getFileView(TASK_ATTACHMENTS_BUCKET, uploadedFile.$id);
 
-      console.log('File URL:', fileUrl);
-
-      // Save attachment record to database
       await databases.createDocument(DATABASE_ID, 'task_attachments', ID.unique(), {
         task_id: taskId,
         user_id: user.$id,
@@ -416,93 +279,59 @@ export const useTasks = (projectId: string) => {
         file_type: file.type,
       });
 
-      console.log('Attachment record saved successfully');
-
-      toast({
-        title: "Success",
-        description: "File uploaded successfully",
-      });
-
-      await fetchTasks();
+      toast({ title: "Success", description: "File uploaded successfully" });
+      invalidate();
       return true;
     } catch (error) {
       console.error('Error uploading attachment:', error);
-      toast({
-        title: "Error",
-        description: "Failed to upload attachment",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to upload attachment", variant: "destructive" });
       return false;
     }
   };
 
-  useEffect(() => {
-    if (projectId) {
-      fetchTasks();
-    } else {
-      setTasks([]);
-      setIsLoading(false);
+  const createSubtask = async (subtaskData: any) => {
+    try {
+      const user = await account.get();
+      if (!user) {
+        toast({ title: "Error", description: "You must be logged in to create subtasks", variant: "destructive" });
+        return;
+      }
+
+      const insertData: any = {
+        title: subtaskData.title || '',
+        description: subtaskData.description,
+        status: subtaskData.status || 'Planning',
+        priority: subtaskData.priority,
+        task_type: subtaskData.task_type,
+        assignees: subtaskData.assignees || [],
+        due_date: subtaskData.due_date,
+        parent_task_id: subtaskData.parent_task_id,
+        project_id: projectId,
+        user_id: user.$id,
+      };
+
+      await databases.createDocument(DATABASE_ID, 'tasks', ID.unique(), insertData);
+
+      toast({ title: "Success", description: "Subtask created successfully" });
+      invalidate();
+    } catch (error: any) {
+      console.error('Error creating subtask:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create subtask: " + (error.message || ""),
+        variant: "destructive",
+      });
     }
-  }, [projectId]);
+  };
 
   return {
     tasks,
     isLoading,
-    fetchTasks,
-    createTask,
-    createSubtask: async (subtaskData: any) => {
-      try {
-        let user;
-        try {
-          user = await account.get();
-        } catch {
-          toast({
-            title: "Error",
-            description: "You must be logged in to create subtasks",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        if (!user) {
-          toast({
-            title: "Error",
-            description: "You must be logged in to create subtasks",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        const insertData: any = {
-          title: subtaskData.title || '',
-          description: subtaskData.description,
-          status: subtaskData.status || 'Planning',
-          priority: subtaskData.priority,
-          task_type: subtaskData.task_type,
-          assignees: subtaskData.assignees || [],
-          due_date: subtaskData.due_date,
-          parent_task_id: subtaskData.parent_task_id,
-          project_id: projectId,
-          user_id: user.$id,
-        };
-
-        await databases.createDocument(DATABASE_ID, 'tasks', ID.unique(), insertData);
-
-        toast({
-          title: "Success",
-          description: "Subtask created successfully",
-        });
-
-        await fetchTasks();
-      } catch (error: any) {
-        console.error('Error creating subtask:', error);
-        toast({
-          title: "Error",
-          description: "Failed to create subtask: " + (error.message || ""),
-          variant: "destructive",
-        });
-      }
+    fetchTasks: async () => {
+      await refetch();
     },
+    createTask,
+    createSubtask,
     updateTask,
     deleteTask,
     addComment,

@@ -31,7 +31,16 @@ import Tasks from '@/pages/Tasks';
 import DesignSystem from '@/pages/DesignSystem';
 
 // Create a client
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 const AuthenticatedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);

@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { InitialAvatar } from "@/components/ui/avatar";
 import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
 import MeetingScheduleCard from "@/components/dashboard/MeetingScheduleCard";
 import TeamDashboard from "@/components/dashboard/TeamDashboard";
@@ -51,14 +52,6 @@ const formatShortDate = (date?: Date) => {
   });
 };
 
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-
 const AssigneePills = ({ names }: { names: string[] }) => {
   if (!names.length) {
     return <span className="text-xs text-muted-foreground">Unassigned</span>;
@@ -67,16 +60,15 @@ const AssigneePills = ({ names }: { names: string[] }) => {
   return (
     <div className="flex items-center">
       {names.slice(0, 3).map((name, index) => (
-        <div
+        <InitialAvatar
           key={`${name}-${index}`}
-          className="-ml-1 first:ml-0 flex h-6 w-6 items-center justify-center rounded-full border-[1.5px] border-card bg-blue-50 text-[10px] font-semibold leading-5 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
-          title={name}
-        >
-          {getInitials(name)}
-        </div>
+          name={name}
+          size={24}
+          className="-ml-1 first:ml-0"
+        />
       ))}
       {names.length > 3 ? (
-        <div className="-ml-1 flex h-6 min-w-6 items-center justify-center rounded-full border-[1.5px] border-card bg-surface-3 px-1 text-[10px] font-semibold text-foreground">
+        <div className="-ml-1 flex h-6 min-w-6 items-center justify-center rounded-full border border-card bg-surface-3 px-1 text-[11px] font-normal text-foreground">
           +{names.length - 3}
         </div>
       ) : null}
@@ -94,7 +86,6 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { userRole, isLoading: roleLoading } = useUserRole();
   const {
-    isLoading,
     stats,
     activeProjects,
     activeTasks,
@@ -128,15 +119,8 @@ const Dashboard = () => {
 
   const activeTaskRows = useMemo(() => activeTasks.slice(0, 5), [activeTasks]);
 
-  if (roleLoading || (!userRole || (userRole !== "team" && isLoading))) {
-    return (
-      <div className="container mx-auto flex items-center justify-center p-6">
-        <div className="text-center">
-          <div className="inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary"></div>
-          <p className="mt-4 text-lg text-muted-foreground">Loading dashboard data...</p>
-        </div>
-      </div>
-    );
+  if (roleLoading) {
+    return null;
   }
 
   if (userRole === "team") {

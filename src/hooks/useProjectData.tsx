@@ -1,131 +1,119 @@
-
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Project, Client, ProjectStatus, Currency, ProjectType, LeadSource } from "@/types";
-import { databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
+import { client as appwriteClient, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
+
+interface ProjectDetailsData {
+  project: Project;
+  client: Client | null;
+}
+
+export const projectDetailsQueryKey = (projectId: string | undefined) =>
+  ["projectDetails", projectId] as const;
+
+const fetchProjectDetails = async (projectId: string): Promise<ProjectDetailsData> => {
+  const [projectData, paymentsResponse] = await Promise.all([
+    databases.getDocument(DATABASE_ID, "projects", projectId),
+    databases.listDocuments(DATABASE_ID, "payments", [Query.equal("project_id", projectId)]),
+  ]);
+
+  const payments = paymentsResponse.documents.map((payment: any) => ({
+    id: payment.$id,
+    projectId: payment.project_id,
+    amount: payment.amount,
+    date: new Date(payment.date),
+    paymentType: payment.payment_type,
+    notes: payment.notes || "",
+  }));
+
+  const project: Project = {
+    id: projectData.$id,
+    name: projectData.name,
+    clientId: projectData.client_id,
+    status: projectData.status as ProjectStatus,
+    deadline: new Date(projectData.deadline),
+    fee: projectData.fee,
+    currency: projectData.currency as Currency,
+    projectType: projectData.project_type as ProjectType,
+    categories: projectData.categories || [],
+    teamMembers: projectData.team_members || [],
+    createdAt: new Date(projectData.$createdAt),
+    payments,
+  };
+
+  let clientData: Client | null = null;
+  if (projectData.client_id) {
+    try {
+      const fetchedClient = await databases.getDocument(DATABASE_ID, "clients", projectData.client_id);
+      clientData = {
+        id: fetchedClient.$id,
+        name: fetchedClient.name,
+        email: fetchedClient.email,
+        phone: fetchedClient.phone || "",
+        address: fetchedClient.address || "",
+        leadSource: (fetchedClient.lead_source as LeadSource) || "Website",
+        createdAt: new Date(fetchedClient.$createdAt),
+      };
+    } catch {
+      toast.error("Client information not available");
+    }
+  }
+
+  return { project, client: clientData };
+};
 
 export const useProjectData = (projectId: string | undefined) => {
   const navigate = useNavigate();
-  const [project, setProject] = useState<Project | null>(null);
-  const [client, setClient] = useState<Client | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchClientData = useCallback(async (clientId: string) => {
-    try {
-      const response = await databases.listDocuments(
-        DATABASE_ID,
-        'clients',
-        [Query.equal('$id', clientId), Query.limit(1)]
-      );
-      const clientData = response.documents[0] ?? null;
+  const queryKey = projectDetailsQueryKey(projectId);
 
-      if (!clientData) {
-        toast.error("Client information not available");
-        return;
-      }
-
-      const transformedClient: Client = {
-        id: clientData.$id,
-        name: clientData.name,
-        email: clientData.email,
-        phone: clientData.phone || "",
-        address: clientData.address || "",
-        leadSource: clientData.lead_source as LeadSource || "Website",
-        createdAt: new Date(clientData.$createdAt),
-      };
-      setClient(transformedClient);
-    } catch (error) {
-      console.error("Error fetching client details:", error);
-      toast.error("Client information not available");
-    }
-  }, []);
+  const { data, isLoading, error } = useQuery({
+    queryKey,
+    queryFn: () => fetchProjectDetails(projectId!),
+    enabled: !!projectId,
+  });
 
   useEffect(() => {
-    const fetchProjectData = async () => {
-      if (!projectId) {
-        setIsLoading(false);
-        return;
-      }
+    if (error) {
+      toast.error("Project not found");
+      navigate("/projects");
+    }
+  }, [error, navigate]);
 
-      try {
-        setIsLoading(true);
+  useEffect(() => {
+    if (!projectId) return;
 
-        // Fetch project
-        let projectData: any = null;
-        try {
-          projectData = await databases.getDocument(DATABASE_ID, 'projects', projectId);
-        } catch (e) {
-          toast.error("Project not found");
-          navigate("/projects");
-          return;
-        }
+    const channels = [
+      `databases.${DATABASE_ID}.collections.projects.documents.${projectId}`,
+      `databases.${DATABASE_ID}.collections.payments.documents`,
+      `databases.${DATABASE_ID}.collections.clients.documents`,
+    ];
 
-        if (!projectData) {
-          toast.error("Project not found");
-          navigate("/projects");
-          return;
-        }
+    const unsubscribe = appwriteClient.subscribe(channels, () => {
+      queryClient.invalidateQueries({ queryKey });
+    });
 
-        // Fetch payments for this project
-        let payments: any[] = [];
-        try {
-          const paymentsResponse = await databases.listDocuments(
-            DATABASE_ID,
-            'payments',
-            [Query.equal('project_id', projectId)]
-          );
-          payments = paymentsResponse.documents.map((payment: any) => ({
-            id: payment.$id,
-            projectId: payment.project_id,
-            amount: payment.amount,
-            date: new Date(payment.date),
-            paymentType: payment.payment_type,
-            notes: payment.notes || "",
-          }));
-        } catch (e) {
-          // no payments
-        }
+    return () => unsubscribe();
+  }, [projectId, queryClient]);
 
-        // Transform project data
-        const transformedProject: Project = {
-          id: projectData.$id,
-          name: projectData.name,
-          clientId: projectData.client_id,
-          status: projectData.status as ProjectStatus,
-          deadline: new Date(projectData.deadline),
-          fee: projectData.fee,
-          currency: projectData.currency as Currency,
-          projectType: projectData.project_type as ProjectType,
-          categories: projectData.categories || [],
-          teamMembers: projectData.team_members || [],
-          createdAt: new Date(projectData.$createdAt),
-          payments: payments,
-        };
+  const setProject = (newProject: Project) => {
+    queryClient.setQueryData<ProjectDetailsData>(queryKey, (prev) =>
+      prev ? { ...prev, project: newProject } : { project: newProject, client: null }
+    );
+  };
 
-        setProject(transformedProject);
-
-        // Fetch client data
-        if (projectData.client_id) {
-          await fetchClientData(projectData.client_id);
-        }
-      } catch (error) {
-        console.error("Error fetching project details:", error);
-        toast.error("Failed to load project details");
-        navigate("/projects");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProjectData();
-  }, [projectId, navigate, fetchClientData]);
+  const refetchClient = () => {
+    queryClient.invalidateQueries({ queryKey });
+  };
 
   return {
-    project,
+    project: data?.project ?? null,
     setProject,
-    client,
+    client: data?.client ?? null,
     isLoading,
-    refetchClient: () => project?.clientId ? fetchClientData(project.clientId) : null
+    refetchClient,
   };
 };

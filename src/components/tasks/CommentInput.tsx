@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Paperclip, AtSign, Send, X } from "lucide-react";
+import { InitialAvatar } from "@/components/ui/avatar";
 
 interface MentionCandidate {
   user_id: string;
@@ -225,18 +226,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
                 fontSize: 14,
               }}
             >
-              <span
-                className="inline-flex items-center justify-center shrink-0 bg-brand-accent text-brand-foreground"
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 9999,
-                  fontSize: 10,
-                  fontWeight: 600,
-                }}
-              >
-                {c.name.split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase()}
-              </span>
+              <InitialAvatar name={c.name} size={24} />
               <span className="truncate">{c.name}</span>
             </button>
           ))}

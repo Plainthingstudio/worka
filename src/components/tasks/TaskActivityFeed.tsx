@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, InitialAvatar } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { TaskWithRelations } from '@/types/task';
 import { 
@@ -290,17 +290,12 @@ export const TaskActivityFeed = ({
           ) : (
             sortedActivities.map((activity) => {
               const displayName = activity.user_name || 'Unknown User';
-              const avatarInitial = displayName.charAt(0).toUpperCase();
               const isOwnComment = currentUserId === activity.user_id && activity.activity_type === 'comment';
               const isEditing = editingActivityId === activity.id;
-              
+
               return (
                 <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="text-xs">
-                      {avatarInitial}
-                    </AvatarFallback>
-                  </Avatar>
+                  <InitialAvatar name={displayName} size={32} />
                   
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center justify-between">

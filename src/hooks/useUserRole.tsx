@@ -1,60 +1,51 @@
-
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { account, databases, DATABASE_ID, Query, client } from "@/integrations/appwrite/client";
 
 export type UserRole = 'owner' | 'administrator' | 'team' | null;
 
-export const useUserRole = () => {
-  const [userRole, setUserRole] = useState<UserRole>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export const userRoleQueryKey = ["userRole"] as const;
 
-  const fetchUserRole = async () => {
-    try {
-      setIsLoading(true);
-      const user = await account.get();
+const fetchUserRoleFromAppwrite = async (): Promise<UserRole> => {
+  try {
+    const user = await account.get();
 
-      console.log('Fetching role for user:', user.$id);
+    const response = await databases.listDocuments(DATABASE_ID, "user_roles", [
+      Query.equal("user_id", user.$id),
+    ]);
 
-      const response = await databases.listDocuments(DATABASE_ID, "user_roles", [
-        Query.equal("user_id", user.$id),
-      ]);
-
-      if (response.total === 0) {
-        console.log('No role found for user');
-        setUserRole(null);
-      } else {
-        const role = response.documents[0].role as UserRole;
-        console.log('User role fetched:', role);
-        setUserRole(role);
-      }
-    } catch (error) {
-      console.error('Error in fetchUserRole:', error);
-      setUserRole(null);
-    } finally {
-      setIsLoading(false);
+    if (response.total === 0) {
+      return null;
     }
-  };
+
+    return response.documents[0].role as UserRole;
+  } catch (error) {
+    console.error('Error in fetchUserRole:', error);
+    return null;
+  }
+};
+
+export const useUserRole = () => {
+  const queryClient = useQueryClient();
+
+  const { data: userRole = null, isLoading, refetch } = useQuery({
+    queryKey: userRoleQueryKey,
+    queryFn: fetchUserRoleFromAppwrite,
+    staleTime: 5 * 60_000,
+  });
 
   useEffect(() => {
-    fetchUserRole();
-
     const unsubscribe = client.subscribe("account", (response) => {
       const events = response.events as string[];
       if (events.some((e) => e.includes("sessions.create"))) {
-        fetchUserRole();
+        queryClient.invalidateQueries({ queryKey: userRoleQueryKey });
       } else if (events.some((e) => e.includes("sessions.delete"))) {
-        setUserRole(null);
-        setIsLoading(false);
+        queryClient.setQueryData(userRoleQueryKey, null);
       }
     });
 
     return () => unsubscribe();
-  }, []);
-
-  // Log current state for debugging
-  useEffect(() => {
-    console.log('Current user role:', userRole, 'isLoading:', isLoading);
-  }, [userRole, isLoading]);
+  }, [queryClient]);
 
   const canViewTeam = userRole === 'owner' || userRole === 'administrator';
   const canViewProjects = userRole === 'owner' || userRole === 'administrator';
@@ -68,6 +59,6 @@ export const useUserRole = () => {
     canViewProjects,
     canManageTeam,
     canManageProjects,
-    fetchUserRole
+    fetchUserRole: refetch,
   };
 };

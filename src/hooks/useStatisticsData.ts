@@ -1,115 +1,113 @@
-
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Client, Project, TeamMember, TeamPosition } from '@/types';
-import { databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
+import { client as appwriteClient, databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
 import { toast } from 'sonner';
 
+interface StatisticsData {
+  clients: Client[];
+  projects: Project[];
+  teamMembers: TeamMember[];
+}
+
+const STATISTICS_REALTIME_COLLECTIONS = ['clients', 'projects', 'payments', 'team_members'];
+
+export const statisticsQueryKey = ['statistics'] as const;
+
+const fetchStatisticsData = async (): Promise<StatisticsData> => {
+  const [clientsResponse, projectsResponse, paymentsResponse, teamResponse] = await Promise.all([
+    databases.listDocuments(DATABASE_ID, 'clients', [Query.orderDesc('$createdAt')]),
+    databases.listDocuments(DATABASE_ID, 'projects'),
+    databases.listDocuments(DATABASE_ID, 'payments'),
+    databases.listDocuments(DATABASE_ID, 'team_members'),
+  ]);
+
+  const clients: Client[] = clientsResponse.documents.map((c: any) => ({
+    id: c.$id,
+    name: c.name,
+    email: c.email,
+    phone: c.phone || '',
+    address: c.address || '',
+    leadSource: (c.lead_source as any) || 'Website',
+    createdAt: new Date(c.$createdAt),
+  }));
+
+  const paymentsByProject = new Map<string, any[]>();
+  paymentsResponse.documents.forEach((payment: any) => {
+    const list = paymentsByProject.get(payment.project_id) || [];
+    list.push({
+      id: payment.$id,
+      projectId: payment.project_id,
+      paymentType: payment.payment_type,
+      amount: payment.amount,
+      date: new Date(payment.date),
+      notes: payment.notes || '',
+    });
+    paymentsByProject.set(payment.project_id, list);
+  });
+
+  const projects: Project[] = projectsResponse.documents.map((project: any) => ({
+    id: project.$id,
+    name: project.name,
+    clientId: project.client_id,
+    status: project.status as any,
+    deadline: new Date(project.deadline),
+    fee: project.fee,
+    currency: project.currency as any,
+    projectType: project.project_type as any,
+    categories: project.categories || ['Other'],
+    teamMembers: project.team_members || [],
+    createdAt: new Date(project.$createdAt),
+    payments: paymentsByProject.get(project.$id) || [],
+  }));
+
+  const teamMembers: TeamMember[] = teamResponse.documents.map((member: any) => ({
+    id: member.$id,
+    user_id: member.user_id,
+    name: member.name,
+    position: member.position as TeamPosition,
+    skills: member.skills || [],
+    startDate: new Date(member.start_date),
+    createdAt: new Date(member.$createdAt),
+  }));
+
+  return { clients, projects, teamMembers };
+};
+
 export const useStatisticsData = () => {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchData = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Fetch clients
-      const clientsResponse = await databases.listDocuments(
-        DATABASE_ID,
-        'clients',
-        [Query.orderDesc('$createdAt')]
-      );
-
-      const transformedClients: Client[] = clientsResponse.documents.map((client: any) => ({
-        id: client.$id,
-        name: client.name,
-        email: client.email,
-        phone: client.phone || '',
-        address: client.address || '',
-        leadSource: client.lead_source as any || 'Website',
-        createdAt: new Date(client.$createdAt)
-      }));
-
-      // Fetch projects
-      const projectsResponse = await databases.listDocuments(DATABASE_ID, 'projects');
-
-      // For each project fetch its payments
-      const transformedProjects: Project[] = await Promise.all(
-        projectsResponse.documents.map(async (project: any) => {
-          let payments: any[] = [];
-          try {
-            const paymentsResponse = await databases.listDocuments(
-              DATABASE_ID,
-              'payments',
-              [Query.equal('project_id', project.$id)]
-            );
-            payments = paymentsResponse.documents.map((payment: any) => ({
-              id: payment.$id,
-              projectId: payment.project_id,
-              paymentType: payment.payment_type as any,
-              amount: payment.amount,
-              date: new Date(payment.date),
-              notes: payment.notes || ''
-            }));
-          } catch (e) {
-            // no payments
-          }
-
-          return {
-            id: project.$id,
-            name: project.name,
-            clientId: project.client_id,
-            status: project.status as any,
-            deadline: new Date(project.deadline),
-            fee: project.fee,
-            currency: project.currency as any,
-            projectType: project.project_type as any,
-            categories: project.categories || ['Other'],
-            teamMembers: project.team_members || [],
-            createdAt: new Date(project.$createdAt),
-            payments: payments
-          };
-        })
-      );
-
-      // Fetch team members
-      const teamResponse = await databases.listDocuments(DATABASE_ID, 'team_members');
-
-      const transformedTeamMembers: TeamMember[] = teamResponse.documents.map((member: any) => ({
-        id: member.$id,
-        user_id: member.user_id,
-        name: member.name,
-        position: member.position as TeamPosition,
-        skills: member.skills || [],
-        startDate: new Date(member.start_date),
-        createdAt: new Date(member.$createdAt)
-      }));
-
-      setClients(transformedClients);
-      setProjects(transformedProjects);
-      setTeamMembers(transformedTeamMembers);
-    } catch (error: any) {
-      console.error("Error fetching statistics data:", error);
-      setError(error.message);
-      toast.error("Failed to load statistics data");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: statisticsQueryKey,
+    queryFn: fetchStatisticsData,
+  });
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (error) {
+      toast.error('Failed to load statistics data');
+    }
+  }, [error]);
+
+  useEffect(() => {
+    const channels = STATISTICS_REALTIME_COLLECTIONS.map(
+      (collection) => `databases.${DATABASE_ID}.collections.${collection}.documents`
+    );
+
+    const unsubscribe = appwriteClient.subscribe(channels, () => {
+      queryClient.invalidateQueries({ queryKey: statisticsQueryKey });
+    });
+
+    return () => unsubscribe();
+  }, [queryClient]);
 
   return {
-    clients,
-    projects,
-    teamMembers,
+    clients: data?.clients ?? [],
+    projects: data?.projects ?? [],
+    teamMembers: data?.teamMembers ?? [],
     isLoading,
-    error,
-    fetchData
+    error: error instanceof Error ? error.message : null,
+    fetchData: async () => {
+      await refetch();
+    },
   };
 };

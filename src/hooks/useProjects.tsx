@@ -1,151 +1,134 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Project, ProjectStatus, Currency, ProjectType, ProjectCategory, LeadSource } from "@/types";
-import { account, databases, DATABASE_ID, ID, Query } from "@/integrations/appwrite/client";
+import { account, client, databases, DATABASE_ID, ID } from "@/integrations/appwrite/client";
+
+interface ProjectsData {
+  projects: Project[];
+  clients: any[];
+  teamMembers: any[];
+}
+
+const PROJECTS_REALTIME_COLLECTIONS = [
+  "projects",
+  "payments",
+  "clients",
+  "team_members",
+];
+
+export const projectsQueryKey = ["projects"] as const;
+
+const fetchProjectsData = async (): Promise<ProjectsData> => {
+  const [clientsResponse, teamResponse, projectsResponse, paymentsResponse] = await Promise.all([
+    databases.listDocuments(DATABASE_ID, "clients"),
+    databases.listDocuments(DATABASE_ID, "team_members"),
+    databases.listDocuments(DATABASE_ID, "projects"),
+    databases.listDocuments(DATABASE_ID, "payments"),
+  ]);
+
+  const clients = clientsResponse.documents.map((c: any) => ({
+    id: c.$id,
+    name: c.name,
+    email: c.email,
+    phone: c.phone,
+    address: c.address,
+    leadSource: c.lead_source as LeadSource,
+    createdAt: new Date(c.$createdAt),
+  }));
+
+  const teamMembers = teamResponse.documents.map((member: any) => ({
+    id: member.$id,
+    name: member.name,
+    position: member.position,
+    startDate: new Date(member.start_date),
+    skills: member.skills || [],
+    createdAt: new Date(member.$createdAt),
+  }));
+
+  const paymentsByProject = new Map<string, any[]>();
+  paymentsResponse.documents.forEach((payment: any) => {
+    const list = paymentsByProject.get(payment.project_id) || [];
+    list.push({
+      id: payment.$id,
+      projectId: payment.project_id,
+      paymentType: payment.payment_type,
+      amount: payment.amount,
+      date: new Date(payment.date),
+      notes: payment.notes,
+    });
+    paymentsByProject.set(payment.project_id, list);
+  });
+
+  const projects: Project[] = projectsResponse.documents.map((project: any) => ({
+    id: project.$id,
+    name: project.name,
+    clientId: project.client_id,
+    status: project.status as ProjectStatus,
+    deadline: new Date(project.deadline),
+    fee: project.fee,
+    currency: project.currency as Currency,
+    projectType: project.project_type as ProjectType,
+    categories: project.categories as ProjectCategory[],
+    teamMembers: project.team_members || [],
+    createdAt: new Date(project.$createdAt),
+    payments: paymentsByProject.get(project.$id) || [],
+  }));
+
+  return { projects, clients, teamMembers };
+};
 
 export const useProjects = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [clients, setClients] = useState<any[]>([]);
-  const [teamMembers, setTeamMembers] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryKey: projectsQueryKey,
+    queryFn: fetchProjectsData,
+  });
+
+  const projects = data?.projects ?? [];
+  const clients = data?.clients ?? [];
+  const teamMembers = data?.teamMembers ?? [];
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    const channels = PROJECTS_REALTIME_COLLECTIONS.map(
+      (collection) => `databases.${DATABASE_ID}.collections.${collection}.documents`
+    );
 
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
+    const unsubscribe = client.subscribe(channels, () => {
+      queryClient.invalidateQueries({ queryKey: projectsQueryKey });
+    });
 
-      let session;
-      try {
-        session = await account.getSession('current');
-      } catch {
-        toast.error("You must be logged in to view projects");
-        setIsLoading(false);
-        return;
-      }
+    return () => unsubscribe();
+  }, [queryClient]);
 
-      if (!session) {
-        toast.error("You must be logged in to view projects");
-        setIsLoading(false);
-        return;
-      }
-
-      // Fetch clients
-      const clientsResponse = await databases.listDocuments(DATABASE_ID, 'clients');
-      const transformedClients = clientsResponse.documents.map((client: any) => ({
-        id: client.$id,
-        name: client.name,
-        email: client.email,
-        phone: client.phone,
-        address: client.address,
-        leadSource: client.lead_source as LeadSource,
-        createdAt: new Date(client.$createdAt)
-      }));
-      setClients(transformedClients);
-
-      // Fetch team members
-      try {
-        const teamResponse = await databases.listDocuments(DATABASE_ID, 'team_members');
-        const transformedTeamMembers = teamResponse.documents.map((member: any) => ({
-          id: member.$id,
-          name: member.name,
-          position: member.position,
-          startDate: new Date(member.start_date),
-          skills: member.skills || [],
-          createdAt: new Date(member.$createdAt)
-        }));
-        setTeamMembers(transformedTeamMembers);
-      } catch (teamError) {
-        console.error("Error fetching team members:", teamError);
-      }
-
-      // Fetch projects
-      const projectsResponse = await databases.listDocuments(DATABASE_ID, 'projects');
-
-      // For each project, fetch its payments
-      const transformedProjects = await Promise.all(
-        projectsResponse.documents.map(async (project: any) => {
-          let payments: any[] = [];
-          try {
-            const paymentsResponse = await databases.listDocuments(
-              DATABASE_ID,
-              'payments',
-              [Query.equal('project_id', project.$id)]
-            );
-            payments = paymentsResponse.documents.map((payment: any) => ({
-              id: payment.$id,
-              projectId: payment.project_id,
-              paymentType: payment.payment_type,
-              amount: payment.amount,
-              date: new Date(payment.date),
-              notes: payment.notes
-            }));
-          } catch {
-            // No payments found, keep empty
-          }
-
-          return {
-            id: project.$id,
-            name: project.name,
-            clientId: project.client_id,
-            status: project.status as ProjectStatus,
-            deadline: new Date(project.deadline),
-            fee: project.fee,
-            currency: project.currency as Currency,
-            projectType: project.project_type as ProjectType,
-            categories: project.categories as ProjectCategory[],
-            teamMembers: project.team_members || [],
-            createdAt: new Date(project.$createdAt),
-            payments: payments
-          };
-        })
-      );
-
-      setProjects(transformedProjects);
-    } catch (error) {
-      console.error("Error fetching projects data:", error);
-      toast.error("Failed to load projects data");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: projectsQueryKey });
 
   const handleAddProject = async (data: any) => {
     try {
-      let session;
-      try {
-        session = await account.getSession('current');
-      } catch {
-        toast.error("You must be logged in to create a project");
-        return;
-      }
-
+      const session = await account.getSession("current");
       if (!session) {
         toast.error("You must be logged in to create a project");
-        return;
+        return null;
       }
 
-      const status = data.status as ProjectStatus;
-      const currency = data.currency as Currency;
-      const projectType = data.projectType as ProjectType;
-      const categories = data.categories as ProjectCategory[];
-
-      const projectData = await databases.createDocument(DATABASE_ID, 'projects', ID.unique(), {
+      const projectData = await databases.createDocument(DATABASE_ID, "projects", ID.unique(), {
         name: data.name,
         client_id: data.clientId,
-        status: status,
+        status: data.status,
         deadline: data.deadline.toISOString(),
         fee: data.fee,
-        currency: currency,
-        project_type: projectType,
-        categories: categories,
+        currency: data.currency,
+        project_type: data.projectType,
+        categories: data.categories,
         team_members: data.teamMembers || [],
-        user_id: session.userId
+        user_id: session.userId,
       });
 
-      const newProject: Project = {
+      toast.success("Project created successfully");
+      invalidate();
+
+      return {
         id: projectData.$id,
         name: projectData.name,
         clientId: projectData.client_id,
@@ -157,12 +140,8 @@ export const useProjects = () => {
         categories: projectData.categories as ProjectCategory[],
         teamMembers: projectData.team_members || [],
         createdAt: new Date(projectData.$createdAt),
-        payments: []
-      };
-
-      setProjects([newProject, ...projects]);
-      toast.success("Project created successfully");
-      return newProject;
+        payments: [],
+      } satisfies Project;
     } catch (error: any) {
       console.error("Error creating project:", error);
       toast.error(error.message || "Failed to create project");
@@ -172,54 +151,21 @@ export const useProjects = () => {
 
   const handleEditProject = async (data: any, projectId: string) => {
     try {
-      let session;
-      try {
-        session = await account.getSession('current');
-      } catch {
-        toast.error("You must be logged in to update a project");
-        return null;
-      }
-
-      if (!session) {
-        toast.error("You must be logged in to update a project");
-        return null;
-      }
-
-      const status = data.status as ProjectStatus;
-      const currency = data.currency as Currency;
-      const projectType = data.projectType as ProjectType;
-      const categories = data.categories as ProjectCategory[];
-
-      await databases.updateDocument(DATABASE_ID, 'projects', projectId, {
+      await databases.updateDocument(DATABASE_ID, "projects", projectId, {
         name: data.name,
         client_id: data.clientId,
-        status: status,
+        status: data.status,
         deadline: data.deadline.toISOString(),
         fee: data.fee,
-        currency: currency,
-        project_type: projectType,
-        categories: categories,
-        team_members: data.teamMembers || []
+        currency: data.currency,
+        project_type: data.projectType,
+        categories: data.categories,
+        team_members: data.teamMembers || [],
       });
 
-      const updatedProjects = projects.map(project =>
-        project.id === projectId ? {
-          ...project,
-          name: data.name,
-          clientId: data.clientId,
-          status: data.status as ProjectStatus,
-          deadline: data.deadline,
-          fee: data.fee,
-          currency: data.currency as Currency,
-          projectType: data.projectType as ProjectType,
-          categories: data.categories as ProjectCategory[],
-          teamMembers: data.teamMembers || []
-        } : project
-      );
-
-      setProjects(updatedProjects);
       toast.success("Project updated successfully");
-      return updatedProjects.find(p => p.id === projectId) || null;
+      invalidate();
+      return projects.find((p) => p.id === projectId) || null;
     } catch (error: any) {
       console.error("Error updating project:", error);
       toast.error(error.message || "Failed to update project");
@@ -229,41 +175,21 @@ export const useProjects = () => {
 
   const handleDeleteProject = async (id: string) => {
     try {
-      let session;
-      try {
-        session = await account.getSession('current');
-      } catch {
-        toast.error("You must be logged in to delete a project");
-        return false;
-      }
+      const paymentsResponse = await databases.listDocuments(DATABASE_ID, "payments", []);
+      const relatedPayments = paymentsResponse.documents.filter(
+        (p: any) => p.project_id === id
+      );
 
-      if (!session) {
-        toast.error("You must be logged in to delete a project");
-        return false;
-      }
+      await Promise.all(
+        relatedPayments.map((payment: any) =>
+          databases.deleteDocument(DATABASE_ID, "payments", payment.$id)
+        )
+      );
 
-      // Delete related payments first
-      try {
-        const paymentsResponse = await databases.listDocuments(
-          DATABASE_ID,
-          'payments',
-          [Query.equal('project_id', id)]
-        );
-        await Promise.all(
-          paymentsResponse.documents.map((payment: any) =>
-            databases.deleteDocument(DATABASE_ID, 'payments', payment.$id)
-          )
-        );
-      } catch (paymentsError) {
-        console.error("Error deleting payments:", paymentsError);
-        throw paymentsError;
-      }
+      await databases.deleteDocument(DATABASE_ID, "projects", id);
 
-      await databases.deleteDocument(DATABASE_ID, 'projects', id);
-
-      const updatedProjects = projects.filter(project => project.id !== id);
-      setProjects(updatedProjects);
       toast.success("Project deleted successfully");
+      invalidate();
       return true;
     } catch (error: any) {
       console.error("Error deleting project:", error);
@@ -272,17 +198,20 @@ export const useProjects = () => {
     }
   };
 
-  const handleInlineUpdate = async (projectId: string, fields: {
-    name?: string;
-    clientId?: string;
-    status?: ProjectStatus;
-    deadline?: Date;
-    fee?: number;
-    currency?: Currency;
-    projectType?: ProjectType;
-    categories?: ProjectCategory[];
-    teamMembers?: string[];
-  }) => {
+  const handleInlineUpdate = async (
+    projectId: string,
+    fields: {
+      name?: string;
+      clientId?: string;
+      status?: ProjectStatus;
+      deadline?: Date;
+      fee?: number;
+      currency?: Currency;
+      projectType?: ProjectType;
+      categories?: ProjectCategory[];
+      teamMembers?: string[];
+    }
+  ) => {
     try {
       const updateData: Record<string, any> = {};
       if (fields.name !== undefined) updateData.name = fields.name;
@@ -295,14 +224,22 @@ export const useProjects = () => {
       if (fields.categories !== undefined) updateData.categories = fields.categories;
       if (fields.teamMembers !== undefined) updateData.team_members = fields.teamMembers;
 
-      await databases.updateDocument(DATABASE_ID, 'projects', projectId, updateData);
+      queryClient.setQueryData<ProjectsData>(projectsQueryKey, (prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          projects: prev.projects.map((p) =>
+            p.id === projectId ? { ...p, ...fields } : p
+          ),
+        };
+      });
 
-      setProjects(prev => prev.map(p =>
-        p.id === projectId ? { ...p, ...fields } : p
-      ));
+      await databases.updateDocument(DATABASE_ID, "projects", projectId, updateData);
+      invalidate();
     } catch (error: any) {
       console.error("Error updating project:", error);
       toast.error(error.message || "Failed to update project");
+      invalidate();
     }
   };
 
@@ -314,6 +251,6 @@ export const useProjects = () => {
     handleAddProject,
     handleEditProject,
     handleDeleteProject,
-    handleInlineUpdate
+    handleInlineUpdate,
   };
 };

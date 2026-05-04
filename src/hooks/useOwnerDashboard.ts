@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
-import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
+import { useEffect, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { client, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import { Client, Invoice, Lead, Project, TeamMember } from "@/types";
 import { TaskWithRelations, isTaskClosedStatus, isTaskWorkingStatus } from "@/types/task";
 import { format } from "date-fns";
@@ -20,171 +21,191 @@ export interface AvailableTeamMemberSummary extends TeamMember {
   awaitingFeedbackCount: number;
 }
 
+interface OwnerDashboardData {
+  clients: Client[];
+  projects: Project[];
+  tasks: TaskWithRelations[];
+  leads: Lead[];
+  teamMembers: TeamMember[];
+  invoices: Invoice[];
+}
+
+const fetchOwnerDashboardData = async (): Promise<OwnerDashboardData> => {
+  const [
+    clientsResponse,
+    projectsResponse,
+    paymentsResponse,
+    tasksResponse,
+    leadsResponse,
+    teamResponse,
+    profilesResponse,
+    invoicesResponse,
+  ] = await Promise.all([
+    databases.listDocuments(DATABASE_ID, "clients", [Query.orderDesc("$createdAt")]),
+    databases.listDocuments(DATABASE_ID, "projects"),
+    databases.listDocuments(DATABASE_ID, "payments"),
+    databases.listDocuments(DATABASE_ID, "tasks", [Query.orderDesc("$createdAt")]),
+    databases.listDocuments(DATABASE_ID, "leads", [Query.orderDesc("$createdAt")]),
+    databases.listDocuments(DATABASE_ID, "team_members", [Query.orderDesc("$createdAt")]),
+    databases.listDocuments(DATABASE_ID, "profiles"),
+    databases.listDocuments(DATABASE_ID, "invoices", [Query.orderDesc("$createdAt")]),
+  ]);
+
+  const profilesMap = new Map<string, any>();
+  profilesResponse.documents.forEach((profile: any) => {
+    profilesMap.set(profile.$id, profile);
+  });
+
+  const clients: Client[] = clientsResponse.documents.map((client: any) => ({
+    id: client.$id,
+    name: client.name,
+    email: client.email,
+    phone: client.phone,
+    address: client.address,
+    leadSource: client.lead_source,
+    createdAt: new Date(client.$createdAt),
+  }));
+
+  const paymentsByProject = new Map<string, any[]>();
+  paymentsResponse.documents.forEach((payment: any) => {
+    const paymentList = paymentsByProject.get(payment.project_id) || [];
+    paymentList.push(payment);
+    paymentsByProject.set(payment.project_id, paymentList);
+  });
+
+  const projects: Project[] = projectsResponse.documents.map((project: any) => ({
+    id: project.$id,
+    name: project.name,
+    clientId: project.client_id,
+    status: project.status,
+    deadline: new Date(project.deadline),
+    fee: project.fee,
+    currency: project.currency,
+    projectType: project.project_type,
+    categories: project.categories || [],
+    teamMembers: project.team_members || [],
+    createdAt: new Date(project.$createdAt),
+    payments: (paymentsByProject.get(project.$id) || []).map((payment: any) => ({
+      id: payment.$id,
+      projectId: payment.project_id,
+      paymentType: payment.payment_type,
+      amount: payment.amount,
+      date: new Date(payment.date),
+      notes: payment.notes,
+    })),
+  }));
+
+  const tasks: TaskWithRelations[] = tasksResponse.documents.map((task: any) => ({
+    id: task.$id,
+    project_id: task.project_id,
+    user_id: task.user_id,
+    title: task.title,
+    description: task.description,
+    status: task.status,
+    due_date: task.due_date ? new Date(task.due_date) : undefined,
+    priority: task.priority,
+    task_type: task.task_type,
+    assignees: task.assignees || [],
+    parent_task_id: task.parent_task_id,
+    completed_at: task.completed_at ? new Date(task.completed_at) : undefined,
+    created_at: new Date(task.$createdAt),
+    updated_at: new Date(task.$updatedAt),
+    brief_id: task.brief_id,
+    brief_type: task.brief_type,
+  }));
+
+  const leads: Lead[] = leadsResponse.documents.map((lead: any) => ({
+    id: lead.$id,
+    name: lead.name,
+    email: lead.email,
+    phone: lead.phone,
+    source: lead.source,
+    stage: lead.stage,
+    notes: lead.notes,
+    address: lead.address,
+    createdAt: new Date(lead.$createdAt),
+    updatedAt: new Date(lead.$updatedAt),
+  }));
+
+  const teamMembers: TeamMember[] = teamResponse.documents.map((member: any) => ({
+    id: member.$id,
+    user_id: member.user_id,
+    name: member.name,
+    position: member.position,
+    skills: member.skills || [],
+    startDate: new Date(member.start_date),
+    createdAt: new Date(member.$createdAt),
+    email: profilesMap.get(member.user_id)?.email || "",
+  }));
+
+  const clientsById = new Map(clients.map((client) => [client.id, client]));
+  const invoices: Invoice[] = invoicesResponse.documents.map((invoice: any) => ({
+    id: invoice.$id,
+    invoiceNumber: invoice.invoice_number,
+    clientId: invoice.client_id,
+    clientName: clientsById.get(invoice.client_id)?.name || "Unknown Client",
+    date: new Date(invoice.date),
+    dueDate: new Date(invoice.due_date),
+    paymentTerms: invoice.payment_terms,
+    items: [],
+    subtotal: invoice.subtotal,
+    taxPercentage: invoice.tax_percentage || 0,
+    taxAmount: invoice.tax_amount || 0,
+    discountPercentage: invoice.discount_percentage || 0,
+    discountAmount: invoice.discount_amount || 0,
+    total: invoice.total,
+    notes: invoice.notes || "",
+    termsAndConditions: invoice.terms_and_conditions || "",
+    createdAt: new Date(invoice.$createdAt),
+    status: invoice.status,
+    paymentType: invoice.payment_type || "Milestone Payment",
+  }));
+
+  return { clients, projects, tasks, leads, teamMembers, invoices };
+};
+
+export const ownerDashboardQueryKey = ["ownerDashboard"] as const;
+
+const DASHBOARD_REALTIME_COLLECTIONS = [
+  "clients",
+  "projects",
+  "payments",
+  "tasks",
+  "leads",
+  "team_members",
+  "profiles",
+  "invoices",
+];
+
 export const useOwnerDashboard = (enabled: boolean) => {
-  const [isLoading, setIsLoading] = useState(enabled);
-  const [clients, setClients] = useState<Client[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ownerDashboardQueryKey,
+    queryFn: fetchOwnerDashboardData,
+    enabled,
+  });
 
   useEffect(() => {
-    if (!enabled) {
-      setIsLoading(false);
-      return;
-    }
+    if (!enabled) return;
 
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        await account.getSession("current");
+    const channels = DASHBOARD_REALTIME_COLLECTIONS.map(
+      (collection) => `databases.${DATABASE_ID}.collections.${collection}.documents`
+    );
 
-        const [
-          clientsResponse,
-          projectsResponse,
-          paymentsResponse,
-          tasksResponse,
-          leadsResponse,
-          teamResponse,
-          profilesResponse,
-          invoicesResponse,
-        ] = await Promise.all([
-          databases.listDocuments(DATABASE_ID, "clients", [Query.orderDesc("$createdAt")]),
-          databases.listDocuments(DATABASE_ID, "projects"),
-          databases.listDocuments(DATABASE_ID, "payments"),
-          databases.listDocuments(DATABASE_ID, "tasks", [Query.orderDesc("$createdAt")]),
-          databases.listDocuments(DATABASE_ID, "leads", [Query.orderDesc("$createdAt")]),
-          databases.listDocuments(DATABASE_ID, "team_members", [Query.orderDesc("$createdAt")]),
-          databases.listDocuments(DATABASE_ID, "profiles"),
-          databases.listDocuments(DATABASE_ID, "invoices", [Query.orderDesc("$createdAt")]),
-        ]);
+    const unsubscribe = client.subscribe(channels, () => {
+      queryClient.invalidateQueries({ queryKey: ownerDashboardQueryKey });
+    });
 
-        const profilesMap = new Map<string, any>();
-        profilesResponse.documents.forEach((profile: any) => {
-          profilesMap.set(profile.$id, profile);
-        });
+    return () => unsubscribe();
+  }, [enabled, queryClient]);
 
-        const transformedClients: Client[] = clientsResponse.documents.map((client: any) => ({
-          id: client.$id,
-          name: client.name,
-          email: client.email,
-          phone: client.phone,
-          address: client.address,
-          leadSource: client.lead_source,
-          createdAt: new Date(client.$createdAt),
-        }));
-
-        const paymentsByProject = new Map<string, any[]>();
-        paymentsResponse.documents.forEach((payment: any) => {
-          const paymentList = paymentsByProject.get(payment.project_id) || [];
-          paymentList.push(payment);
-          paymentsByProject.set(payment.project_id, paymentList);
-        });
-
-        const transformedProjects: Project[] = projectsResponse.documents.map((project: any) => ({
-          id: project.$id,
-          name: project.name,
-          clientId: project.client_id,
-          status: project.status,
-          deadline: new Date(project.deadline),
-          fee: project.fee,
-          currency: project.currency,
-          projectType: project.project_type,
-          categories: project.categories || [],
-          teamMembers: project.team_members || [],
-          createdAt: new Date(project.$createdAt),
-          payments: (paymentsByProject.get(project.$id) || []).map((payment: any) => ({
-            id: payment.$id,
-            projectId: payment.project_id,
-            paymentType: payment.payment_type,
-            amount: payment.amount,
-            date: new Date(payment.date),
-            notes: payment.notes,
-          })),
-        }));
-
-        const transformedTasks: TaskWithRelations[] = tasksResponse.documents.map((task: any) => ({
-          id: task.$id,
-          project_id: task.project_id,
-          user_id: task.user_id,
-          title: task.title,
-          description: task.description,
-          status: task.status,
-          due_date: task.due_date ? new Date(task.due_date) : undefined,
-          priority: task.priority,
-          task_type: task.task_type,
-          assignees: task.assignees || [],
-          parent_task_id: task.parent_task_id,
-          completed_at: task.completed_at ? new Date(task.completed_at) : undefined,
-          created_at: new Date(task.$createdAt),
-          updated_at: new Date(task.$updatedAt),
-          brief_id: task.brief_id,
-          brief_type: task.brief_type,
-        }));
-
-        const transformedLeads: Lead[] = leadsResponse.documents.map((lead: any) => ({
-          id: lead.$id,
-          name: lead.name,
-          email: lead.email,
-          phone: lead.phone,
-          source: lead.source,
-          stage: lead.stage,
-          notes: lead.notes,
-          address: lead.address,
-          createdAt: new Date(lead.$createdAt),
-          updatedAt: new Date(lead.$updatedAt),
-        }));
-
-        const transformedTeamMembers: TeamMember[] = teamResponse.documents.map((member: any) => ({
-          id: member.$id,
-          user_id: member.user_id,
-          name: member.name,
-          position: member.position,
-          skills: member.skills || [],
-          startDate: new Date(member.start_date),
-          createdAt: new Date(member.$createdAt),
-          email: profilesMap.get(member.user_id)?.email || "",
-        }));
-
-        const clientsById = new Map(transformedClients.map((client) => [client.id, client]));
-        const transformedInvoices: Invoice[] = invoicesResponse.documents.map((invoice: any) => ({
-          id: invoice.$id,
-          invoiceNumber: invoice.invoice_number,
-          clientId: invoice.client_id,
-          clientName: clientsById.get(invoice.client_id)?.name || "Unknown Client",
-          date: new Date(invoice.date),
-          dueDate: new Date(invoice.due_date),
-          paymentTerms: invoice.payment_terms,
-          items: [],
-          subtotal: invoice.subtotal,
-          taxPercentage: invoice.tax_percentage || 0,
-          taxAmount: invoice.tax_amount || 0,
-          discountPercentage: invoice.discount_percentage || 0,
-          discountAmount: invoice.discount_amount || 0,
-          total: invoice.total,
-          notes: invoice.notes || "",
-          termsAndConditions: invoice.terms_and_conditions || "",
-          createdAt: new Date(invoice.$createdAt),
-          status: invoice.status,
-          paymentType: invoice.payment_type || "Milestone Payment",
-        }));
-
-        setClients(transformedClients);
-        setProjects(transformedProjects);
-        setTasks(transformedTasks);
-        setLeads(transformedLeads);
-        setTeamMembers(transformedTeamMembers);
-        setInvoices(transformedInvoices);
-      } catch (error) {
-        console.error("Error fetching owner dashboard data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [enabled]);
+  const clients = data?.clients ?? [];
+  const projects = data?.projects ?? [];
+  const tasks = data?.tasks ?? [];
+  const leads = data?.leads ?? [];
+  const teamMembers = data?.teamMembers ?? [];
+  const invoices = data?.invoices ?? [];
 
   const clientMap = useMemo(
     () => new Map(clients.map((client) => [client.id, client.name])),
@@ -314,6 +335,7 @@ export const useOwnerDashboard = (enabled: boolean) => {
 
   return {
     isLoading,
+    isFetching,
     stats,
     activeProjects,
     activeTasks,

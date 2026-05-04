@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
+import { InitialAvatar } from "@/components/ui/avatar";
 import {
   TooltipProvider,
   Tooltip,
@@ -21,14 +22,6 @@ interface TeamMembersCellProps {
   onSave?: (ids: string[]) => void;
 }
 
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map(w => w[0].toUpperCase())
-    .join("");
-
 const AvatarStack = ({ members }: { members: TeamMember[] }) => {
   if (members.length === 0) {
     return <span className="text-xs text-muted-foreground">None</span>;
@@ -38,16 +31,15 @@ const AvatarStack = ({ members }: { members: TeamMember[] }) => {
   return (
     <div className="flex items-center">
       {visible.map((m, i) => (
-        <div
+        <InitialAvatar
           key={m.id}
-          className={`${i > 0 ? "-ml-1.5" : ""} flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-card bg-brand/10 text-[10px] font-semibold text-brand dark:bg-brand/20 dark:text-blue-300`}
-          title={m.name}
-        >
-          {getInitials(m.name)}
-        </div>
+          name={m.name}
+          size={24}
+          className={i > 0 ? "-ml-1.5" : ""}
+        />
       ))}
       {overflow > 0 && (
-        <div className="-ml-1.5 flex h-6 min-w-6 items-center justify-center rounded-full border-[1.5px] border-card bg-surface-3 px-1 text-[10px] font-semibold text-foreground">
+        <div className="-ml-1.5 flex h-6 min-w-6 items-center justify-center rounded-full border border-card bg-surface-3 px-1 text-[11px] font-normal text-foreground">
           +{overflow}
         </div>
       )}

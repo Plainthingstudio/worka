@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, InitialAvatar } from '@/components/ui/avatar';
 import { useAssigneeNames } from '@/hooks/useAssigneeNames';
 
 interface TaskBoardViewProps {
@@ -78,23 +78,6 @@ export const TaskBoardView = ({
       case 'Low': return 'border-l-green-500';
       default: return 'border-l-border-soft';
     }
-  };
-
-  const getInitials = (name: string) => {
-    if (!name || typeof name !== 'string') {
-      return '?';
-    }
-    
-    const initials = name
-      .trim()
-      .split(' ')
-      .filter(word => word.length > 0)
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-    
-    return initials || '?';
   };
 
   const handleStatusChange = async (taskId: string, newStatus: TaskStatus) => {
@@ -227,15 +210,11 @@ export const TaskBoardView = ({
                           {assigneeNames.length > 0 ? (
                             <div className="flex -space-x-1">
                               {assigneeNames.slice(0, 3).map((name, index) => (
-                                <Avatar key={index} className="h-6 w-6 border-2 border-card">
-                                  <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                                    {getInitials(name)}
-                                  </AvatarFallback>
-                                </Avatar>
+                                <InitialAvatar key={index} name={name} size={24} />
                               ))}
                               {assigneeNames.length > 3 && (
-                                <div className="h-6 w-6 rounded-full bg-muted border-2 border-card flex items-center justify-center">
-                                  <span className="text-xs text-muted-foreground">+{assigneeNames.length - 3}</span>
+                                <div className="h-6 w-6 rounded-full bg-muted border border-card flex items-center justify-center">
+                                  <span className="text-[11px] text-muted-foreground">+{assigneeNames.length - 3}</span>
                                 </div>
                               )}
                             </div>

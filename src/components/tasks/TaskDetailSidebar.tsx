@@ -60,7 +60,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTaskProject } from '@/hooks/useTaskProject';
 import DeleteConfirmationDialog from '@/components/projects/DeleteConfirmationDialog';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, InitialAvatar } from '@/components/ui/avatar';
 import { account, databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
 import { Badge } from '@/components/ui/badge';
 import { CommentInput } from './CommentInput';
@@ -694,13 +694,10 @@ export const TaskDetailSidebar = ({
                             {task.assignees.map((assigneeId) => {
                               const member = teamMembers.find(m => m.user_id === assigneeId);
                               if (!member) return null;
-                              const initials = member.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
                               return (
                                 <Tooltip key={assigneeId}>
                                   <TooltipTrigger asChild>
-                                    <Avatar className="h-8 w-8 border-2 border-background">
-                                      <AvatarFallback className="text-xs font-medium">{initials}</AvatarFallback>
-                                    </Avatar>
+                                    <InitialAvatar name={member.name} size={32} />
                                   </TooltipTrigger>
                                   <TooltipContent><p>{member.name}</p></TooltipContent>
                                 </Tooltip>
@@ -721,14 +718,11 @@ export const TaskDetailSidebar = ({
                               {field.value?.map((assigneeId) => {
                                 const member = teamMembers.find(m => m.user_id === assigneeId);
                                 if (!member) return null;
-                                const initials = member.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
                                 return (
                                   <Tooltip key={assigneeId}>
                                     <TooltipTrigger asChild>
                                       <div className="relative group">
-                                        <Avatar className="h-8 w-8 border-2 border-background cursor-pointer">
-                                          <AvatarFallback className="text-xs font-medium">{initials}</AvatarFallback>
-                                        </Avatar>
+                                        <InitialAvatar name={member.name} size={32} className="cursor-pointer" />
                                         <button
                                           type="button"
                                           onClick={() => {
@@ -860,9 +854,6 @@ export const TaskDetailSidebar = ({
                           const firstAssignee = subtask.assignees?.[0]
                             ? teamMembers.find(m => m.user_id === subtask.assignees[0])
                             : undefined;
-                          const initials = firstAssignee?.name
-                            ? firstAssignee.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-                            : '—';
                           const statusBadge = getSubtaskStatusBadge(subtask.status);
 
                           return (
@@ -943,20 +934,7 @@ export const TaskDetailSidebar = ({
                               {/* Assignee avatar */}
                               <div className="shrink-0">
                                 {firstAssignee ? (
-                                  <div
-                                    className="flex items-center justify-center bg-brand-accent text-brand-foreground border-2 border-card ring-1 ring-border-soft"
-                                    title={firstAssignee.name}
-                                    style={{
-                                      width: 24,
-                                      height: 24,
-                                      borderRadius: 9999,
-                                      fontFamily: "Inter, sans-serif",
-                                      fontWeight: 500,
-                                      fontSize: 12,
-                                    }}
-                                  >
-                                    {initials}
-                                  </div>
+                                  <InitialAvatar name={firstAssignee.name} size={24} />
                                 ) : (
                                   <span
                                     className="text-muted-foreground"
@@ -1034,11 +1012,7 @@ export const TaskDetailSidebar = ({
                               className="flex gap-3 border border-border-soft"
                               style={{ padding: 13, borderRadius: 12 }}
                             >
-                              <Avatar className="h-8 w-8 shrink-0">
-                                <AvatarFallback className="text-xs bg-muted text-foreground">
-                                  {userNames[activity.user_id]?.charAt(0)?.toUpperCase() || 'U'}
-                                </AvatarFallback>
-                              </Avatar>
+                              <InitialAvatar name={userNames[activity.user_id] || 'User'} size={32} className="shrink-0" />
 
                               <div className="flex-1 space-y-2 min-w-0">
                                 <div className="flex items-center justify-between">

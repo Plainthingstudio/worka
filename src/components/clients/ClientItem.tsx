@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { Mail, Phone, MapPin, Trash } from "lucide-react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { InitialAvatar } from "@/components/ui/avatar";
 import { Client, LeadSource } from "@/types";
 import { getLeadSourceBadgeVariant } from "@/components/projects/utils/projectItemUtils";
 import {
@@ -237,9 +238,7 @@ const ClientItem = ({ client, creator, onDelete, onInlineUpdate }: ClientItemPro
       <TableCell>
         {creator ? (
           <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300 text-[10px] font-semibold">
-              {creator.initials}
-            </div>
+            <InitialAvatar name={creator.name} size={24} />
             <span className="text-sm text-foreground/80 truncate max-w-[120px]">{creator.name}</span>
           </div>
         ) : (

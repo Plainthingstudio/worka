@@ -22,7 +22,7 @@ import {
 import { TaskWithRelations } from '@/types/task';
 import { ClickUpTaskDetail } from './ClickUpTaskDetail';
 import { format } from 'date-fns';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, InitialAvatar } from '@/components/ui/avatar';
 import { useAssigneeNames } from '@/hooks/useAssigneeNames';
 
 interface TaskListViewProps {
@@ -72,23 +72,6 @@ export const TaskListView = ({
       case 'Tertiary': return 'bg-muted';
       default: return 'bg-muted';
     }
-  };
-
-  const getInitials = (name: string) => {
-    if (!name || typeof name !== 'string') {
-      return '?';
-    }
-    
-    const initials = name
-      .trim()
-      .split(' ')
-      .filter(word => word.length > 0)
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-    
-    return initials || '?';
   };
 
   const toggleTaskComplete = async (task: TaskWithRelations) => {
@@ -172,15 +155,11 @@ export const TaskListView = ({
                         <div className="flex items-center gap-2">
                           <div className="flex -space-x-1">
                             {assigneeNames.slice(0, 3).map((name, index) => (
-                              <Avatar key={index} className="h-5 w-5 border border-white">
-                                <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                                  {getInitials(name)}
-                                </AvatarFallback>
-                              </Avatar>
+                              <InitialAvatar key={index} name={name} size={24} />
                             ))}
                             {assigneeNames.length > 3 && (
-                              <div className="h-5 w-5 rounded-full bg-gray-200 border border-white flex items-center justify-center">
-                                <span className="text-xs text-gray-600">+{assigneeNames.length - 3}</span>
+                              <div className="h-6 w-6 rounded-full bg-surface-3 border border-card flex items-center justify-center">
+                                <span className="text-[11px] text-muted-foreground">+{assigneeNames.length - 3}</span>
                               </div>
                             )}
                           </div>

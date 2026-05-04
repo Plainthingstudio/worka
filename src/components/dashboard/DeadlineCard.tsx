@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { InitialAvatar } from "@/components/ui/avatar";
 
 interface DeadlineCardProps {
   projects: Project[];
@@ -30,35 +31,14 @@ const AssigneeList = ({ names }: { names: string[] }) => {
   return (
     <div className="flex items-center gap-2 min-w-0">
       <div className="flex items-center shrink-0">
-        {visible.map((name, idx) => {
-          const initials = name
-            .split(" ")
-            .map((w) => w[0])
-            .filter(Boolean)
-            .slice(0, 2)
-            .join("")
-            .toUpperCase();
-          return (
-            <div
-              key={idx}
-              className="flex items-center justify-center bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
-              title={name}
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: 9999,
-                border: "1.5px solid hsl(var(--card))",
-                marginLeft: idx === 0 ? 0 : -6,
-                fontFamily: "Inter, sans-serif",
-                fontWeight: 600,
-                fontSize: 10,
-                flexShrink: 0,
-              }}
-            >
-              {initials || "?"}
-            </div>
-          );
-        })}
+        {visible.map((name, idx) => (
+          <InitialAvatar
+            key={idx}
+            name={name}
+            size={24}
+            className={idx === 0 ? "" : "-ml-1.5"}
+          />
+        ))}
       </div>
       <span className="truncate text-foreground" style={{ fontSize: 14 }}>
         {visible.join(", ")}
