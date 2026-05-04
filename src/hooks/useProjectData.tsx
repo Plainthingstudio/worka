@@ -2,8 +2,9 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Project, Client, ProjectStatus, Currency, ProjectType, LeadSource } from "@/types";
+import { Project, Client, ProjectStatus, Currency, ProjectType, LeadSource, ProjectInvoicePayment } from "@/types";
 import { client as appwriteClient, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
+import { mapInvoiceDocumentToProjectPayment } from "@/utils/invoiceTypes";
 
 interface ProjectDetailsData {
   project: Project;
@@ -14,19 +15,22 @@ export const projectDetailsQueryKey = (projectId: string | undefined) =>
   ["projectDetails", projectId] as const;
 
 const fetchProjectDetails = async (projectId: string): Promise<ProjectDetailsData> => {
-  const [projectData, paymentsResponse] = await Promise.all([
-    databases.getDocument(DATABASE_ID, "projects", projectId),
-    databases.listDocuments(DATABASE_ID, "payments", [Query.equal("project_id", projectId)]),
-  ]);
+  const projectData = await databases.getDocument(DATABASE_ID, "projects", projectId);
 
-  const payments = paymentsResponse.documents.map((payment: any) => ({
-    id: payment.$id,
-    projectId: payment.project_id,
-    amount: payment.amount,
-    date: new Date(payment.date),
-    paymentType: payment.payment_type,
-    notes: payment.notes || "",
-  }));
+  let invoicePayments: ProjectInvoicePayment[] = [];
+  try {
+    const invoicesResponse = await databases.listDocuments(DATABASE_ID, "invoices", [
+      Query.equal("project_id", projectId),
+    ]);
+    invoicePayments = invoicesResponse.documents
+      .map(mapInvoiceDocumentToProjectPayment)
+      .filter((payment): payment is ProjectInvoicePayment => Boolean(payment));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error || "");
+    if (!message.includes("Unknown attribute")) {
+      throw error;
+    }
+  }
 
   const project: Project = {
     id: projectData.$id,
@@ -37,10 +41,14 @@ const fetchProjectDetails = async (projectId: string): Promise<ProjectDetailsDat
     fee: projectData.fee,
     currency: projectData.currency as Currency,
     projectType: projectData.project_type as ProjectType,
-    categories: projectData.categories || [],
+    serviceIds: projectData.service_ids || [],
+    subServiceIds: projectData.sub_service_ids || [],
+    serviceQuantities: projectData.service_quantities || [],
+    subServiceQuantities: projectData.sub_service_quantities || [],
     teamMembers: projectData.team_members || [],
     createdAt: new Date(projectData.$createdAt),
-    payments,
+    payments: [],
+    invoicePayments,
   };
 
   let clientData: Client | null = null;
@@ -88,7 +96,7 @@ export const useProjectData = (projectId: string | undefined) => {
 
     const channels = [
       `databases.${DATABASE_ID}.collections.projects.documents.${projectId}`,
-      `databases.${DATABASE_ID}.collections.payments.documents`,
+      `databases.${DATABASE_ID}.collections.invoices.documents`,
       `databases.${DATABASE_ID}.collections.clients.documents`,
     ];
 

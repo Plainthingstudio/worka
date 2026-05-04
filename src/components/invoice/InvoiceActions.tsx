@@ -1,54 +1,36 @@
 
 import React from "react";
-import { Eye, FileText } from "lucide-react";
+import { Eye, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Invoice } from "@/types";
-import { useToast } from "@/hooks/use-toast";
 
 interface InvoiceActionsProps {
-  isEditing?: boolean; // Keep for type compatibility but won't be used
-  onSubmit: () => void;
-  onGeneratePDF: () => void;
-  invoice: Invoice;
+  onSubmit: () => void | Promise<void>;
+  onGeneratePDF: () => void | Promise<void>;
+  isPersisting?: boolean;
 }
 
-const InvoiceActions: React.FC<InvoiceActionsProps> = ({ 
-  onSubmit, 
+const InvoiceActions: React.FC<InvoiceActionsProps> = ({
+  onSubmit,
   onGeneratePDF,
-  invoice
+  isPersisting = false,
 }) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  
+
   const handleSubmit = () => {
-    console.log("Submitting invoice...");
-    onSubmit();
+    void onSubmit();
   };
-  
-  const handleGeneratePDF = async () => {
-    toast({
-      title: "Generating PDF",
-      description: "Please wait while we generate your invoice PDF...",
-    });
-    
-    try {
-      await onGeneratePDF();
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to generate PDF. Please try again.",
-      });
-    }
+
+  const handleGeneratePDF = () => {
+    void onGeneratePDF();
   };
-  
+
   return (
-    <div className="flex justify-end gap-3">
+    <div className="flex flex-wrap justify-end gap-3">
       <Button
         type="button"
         variant="outline"
+        disabled={isPersisting}
         onClick={() => navigate("/invoices")}
       >
         Cancel
@@ -56,24 +38,32 @@ const InvoiceActions: React.FC<InvoiceActionsProps> = ({
       <Button
         type="button"
         variant="outline"
+        disabled={isPersisting}
         onClick={handleGeneratePDF}
       >
-        <Eye className="mr-1 h-4 w-4" />
+        {isPersisting ? (
+          <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+        ) : (
+          <Eye className="mr-1 h-4 w-4" />
+        )}
         Preview
       </Button>
       <Button
         type="button"
-        variant="secondary"
-        onClick={handleGeneratePDF}
-      >
-        <FileText className="mr-1 h-4 w-4" />
-        Generate PDF
-      </Button>
-      <Button
-        type="button"
+        variant="outline"
+        disabled={isPersisting}
         onClick={handleSubmit}
       >
+        {isPersisting ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
         Save Invoice
+      </Button>
+      <Button type="button" disabled={isPersisting} onClick={handleGeneratePDF}>
+        {isPersisting ? (
+          <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+        ) : (
+          <FileText className="mr-1 h-4 w-4" />
+        )}
+        Generate PDF
       </Button>
     </div>
   );

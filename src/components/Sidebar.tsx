@@ -14,7 +14,8 @@ import {
   UserRound,
   Settings,
   FolderKanban,
-  CheckSquare
+  CheckSquare,
+  Package
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "./Logo";
@@ -51,6 +52,7 @@ const Sidebar = () => {
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard", roles: ['owner', 'administrator', 'team'] },
     { icon: FolderKanban,    label: "Leads & Pipeline", href: "/leads", roles: ['owner', 'administrator'] },
     { icon: Users,           label: "Clients", href: "/clients", roles: ['owner', 'administrator'] },
+    { icon: Package,         label: "Services", href: "/services", roles: ['owner', 'administrator'] },
     { icon: ListChecks,      label: "Projects", href: "/projects", roles: ['owner', 'administrator'] },
     { icon: CheckSquare,     label: "Tasks", href: "/tasks", roles: ['owner', 'administrator', 'team'] },
     { icon: UserRound,       label: "Team", href: "/team", roles: ['owner', 'administrator', 'team'] },

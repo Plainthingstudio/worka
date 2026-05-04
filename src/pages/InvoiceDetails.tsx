@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { Invoice, PaymentType } from "@/types";
+import { Client, Invoice } from "@/types";
 import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import { useClients } from "@/hooks/useClients";
 import { useInvoicePdf } from "@/hooks/useInvoicePdf";
+import { invoiceTypeFromDocument } from "@/utils/invoiceTypes";
 
 // Import refactored components
 import InvoiceDetailsHeader from "@/components/invoice-details/InvoiceDetailsHeader";
@@ -14,6 +15,35 @@ import InvoiceNotesTerm from "@/components/invoice-details/InvoiceNotesTerm";
 import DeleteInvoiceDialog from "@/components/invoice-details/DeleteInvoiceDialog";
 import InvoiceLoading from "@/components/invoice-details/InvoiceLoading";
 
+type InvoiceDocument = {
+  $id: string;
+  $createdAt: string;
+  invoice_number: string;
+  client_id: string;
+  project_id?: string;
+  currency?: "USD" | "IDR";
+  date: string;
+  due_date: string;
+  payment_terms: string;
+  subtotal: number;
+  tax_percentage?: number;
+  tax_amount?: number;
+  discount_percentage?: number;
+  discount_amount?: number;
+  total: number;
+  notes?: string;
+  terms_and_conditions?: string;
+  status: string;
+  payment_type?: string;
+  invoice_type?: string;
+  payment_mode?: "percentage" | "nominal";
+  payment_percentage?: number;
+  payment_amount?: number;
+  project_total_snapshot?: number;
+  already_paid_snapshot?: number;
+  remaining_amount_snapshot?: number;
+};
+
 const InvoiceDetails = () => {
   const { invoiceId } = useParams();
   const navigate = useNavigate();
@@ -21,7 +51,7 @@ const InvoiceDetails = () => {
   const { clients, isLoading: isClientsLoading } = useClients();
   const { generatePDF } = useInvoicePdf();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
-  const [client, setClient] = useState<any>(null);
+  const [client, setClient] = useState<Client | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -56,14 +86,15 @@ const InvoiceDetails = () => {
         }
 
         // Fetch the invoice
-        let invoiceData = null;
+        let invoiceData: InvoiceDocument | null = null;
         try {
           const response = await databases.listDocuments(DATABASE_ID, 'invoices', [
             Query.equal('$id', invoiceId)
           ]);
-          invoiceData = response.documents[0] ?? null;
-        } catch (invoiceError: any) {
-          throw new Error(invoiceError?.message || 'Invoice not found');
+          invoiceData = (response.documents[0] as unknown as InvoiceDocument) ?? null;
+        } catch (invoiceError: unknown) {
+          const message = invoiceError instanceof Error ? invoiceError.message : 'Invoice not found';
+          throw new Error(message);
         }
 
         if (!invoiceData) {
@@ -85,10 +116,13 @@ const InvoiceDetails = () => {
           amount: item.amount
         }));
 
+        const invoiceType = invoiceTypeFromDocument(invoiceData);
         const loadedInvoice: Invoice = {
           id: invoiceData.$id,
           invoiceNumber: invoiceData.invoice_number,
           clientId: invoiceData.client_id,
+          projectId: invoiceData.project_id || "",
+          currency: invoiceData.currency || "IDR",
           date: new Date(invoiceData.date),
           dueDate: new Date(invoiceData.due_date),
           paymentTerms: invoiceData.payment_terms,
@@ -103,7 +137,14 @@ const InvoiceDetails = () => {
           termsAndConditions: invoiceData.terms_and_conditions || "",
           createdAt: new Date(invoiceData.$createdAt),
           status: validateInvoiceStatus(invoiceData.status),
-          paymentType: (invoiceData.payment_type as PaymentType) || "Milestone Payment"
+          invoiceType,
+          paymentType: invoiceType,
+          paymentMode: invoiceData.payment_mode || "percentage",
+          paymentPercentage: invoiceData.payment_percentage ?? (invoiceType === "Milestone Payment" ? 25 : 50),
+          paymentAmount: invoiceData.payment_amount || invoiceData.total || 0,
+          projectTotalSnapshot: invoiceData.project_total_snapshot || 0,
+          alreadyPaidSnapshot: invoiceData.already_paid_snapshot || 0,
+          remainingAmountSnapshot: invoiceData.remaining_amount_snapshot || 0
         };
 
         setInvoice(loadedInvoice);

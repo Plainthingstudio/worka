@@ -8,6 +8,14 @@ export type Currency = 'USD' | 'IDR';
 
 export type PaymentType = 'Down Payment' | 'Final Payment' | 'Milestone Payment';
 
+export type InvoiceType =
+  | 'Down Payment'
+  | 'Milestone Payment'
+  | 'Settlement Invoice'
+  | 'Full Invoice';
+
+export type InvoicePaymentMode = 'percentage' | 'nominal';
+
 export type PaymentTerms = 'Due on Receipt' | 'Net 15' | 'Net 30' | 'Net 45' | 'Net 60' | 'Custom';
 
 export type TeamPosition = 
@@ -22,21 +30,6 @@ export type TeamPosition =
   | 'Illustrator' 
   | 'Graphic Designer' 
   | 'Co-Founder';
-
-export type ProjectCategory = 
-  | 'Landing Page' 
-  | 'Website Design' 
-  | 'Mobile App Design' 
-  | 'Dashboard Design'
-  | 'Framer Development'
-  | 'Webflow Development'
-  | '2D Illustrations'
-  | '3D Illustrations'
-  | '2D Animations'
-  | '3D Animations'
-  | 'Logo Design'
-  | 'Branding Design'
-  | string; // Allow custom categories
 
 export interface DateRange {
   from: Date;
@@ -85,10 +78,55 @@ export interface Project {
   fee: number;
   currency: Currency;
   projectType: ProjectType;
-  categories: ProjectCategory[];
   payments: Payment[];
+  invoicePayments?: ProjectInvoicePayment[];
+  serviceIds?: string[];
+  subServiceIds?: string[];
+  serviceQuantities?: number[];
+  subServiceQuantities?: number[];
   teamMembers?: string[]; // Array of team member IDs
   createdAt: Date;
+}
+
+/** Stored in Appwrite (no spaces — Appwrite enum UI splits on space). */
+export type ServiceCategory = 'ui_ux_design' | 'graphic_design' | 'illustrations';
+
+export const SERVICE_CATEGORIES: ServiceCategory[] = ['ui_ux_design', 'graphic_design', 'illustrations'];
+
+export const SERVICE_CATEGORY_LABELS: Record<ServiceCategory, string> = {
+  ui_ux_design: 'UI/UX Design',
+  graphic_design: 'Graphic Design',
+  illustrations: 'Illustrations',
+};
+
+export interface StudioService {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  currency: Currency;
+  category?: ServiceCategory;
+  createdAt: Date;
+  subServices?: StudioSubService[];
+}
+
+export interface StudioSubService {
+  id: string;
+  serviceId: string;
+  name: string;
+  description?: string;
+  price: number;
+  currency: Currency;
+  createdAt: Date;
+}
+
+export interface ProjectInvoicePayment {
+  id: string;
+  invoiceNumber: string;
+  invoiceType: InvoiceType;
+  amount: number;
+  date: Date;
+  status: "Paid";
 }
 
 export interface InvoiceItem {
@@ -104,6 +142,9 @@ export interface Invoice {
   invoiceNumber: string;
   clientId: string;
   clientName?: string;
+  projectId?: string;
+  projectName?: string;
+  currency?: Currency;
   date: Date;
   dueDate: Date;
   paymentTerms: string;
@@ -118,7 +159,14 @@ export interface Invoice {
   termsAndConditions: string;
   createdAt: Date;
   status: "Draft" | "Sent" | "Paid" | "Overdue";
-  paymentType: PaymentType;
+  invoiceType: InvoiceType;
+  paymentType: InvoiceType;
+  paymentMode?: InvoicePaymentMode;
+  paymentPercentage?: number;
+  paymentAmount?: number;
+  projectTotalSnapshot?: number;
+  alreadyPaidSnapshot?: number;
+  remainingAmountSnapshot?: number;
 }
 
 export interface DashboardStats {

@@ -1,12 +1,13 @@
 
 import React from "react";
-import { useParams, Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { useParams } from "react-router-dom";
 import { useProjectDetails } from "@/hooks/useProjectDetails";
 import ProjectDetailsLayout from "@/components/project-details/ProjectDetailsLayout";
 import ProjectContent from "@/components/project-details/ProjectContent";
 import ProjectsLoading from "@/components/projects/ProjectsLoading";
 import Lottie from "lottie-react";
+
+type ProjectFormValues = Record<string, unknown>;
 
 const ProjectDetails = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -14,40 +15,23 @@ const ProjectDetails = () => {
   const {
     project,
     client,
-    teamMembers,
-    tasks,
-    isTasksLoading,
-    currentPayment,
     selectedStatus,
     isEditDialogOpen,
     isDeleteDialogOpen,
     isStatusDialogOpen,
-    isPaymentDialogOpen,
-    isEditPaymentDialogOpen,
-    isDeletePaymentDialogOpen,
     isCreateTaskDialogOpen,
     setIsEditDialogOpen,
     setIsDeleteDialogOpen,
     setIsStatusDialogOpen,
-    setIsPaymentDialogOpen,
-    setIsEditPaymentDialogOpen,
-    setIsDeletePaymentDialogOpen,
     setIsCreateTaskDialogOpen,
     setSelectedStatus,
     handleEditProject,
     handleDeleteProject,
     handleMarkAsCompleted,
     handleChangeStatus,
-    handleAddPayment,
-    handleEditPayment,
-    handleDeletePayment,
     handleCreateTask,
     handleCreateTaskSubmit,
-    openEditPaymentDialog,
-    openDeletePaymentDialog,
     isLoading,
-    isCreatingTask,
-    refetchClient,
     showConfetti
   } = useProjectDetails(projectId);
 
@@ -55,9 +39,6 @@ const ProjectDetails = () => {
     isEditDialogOpen,
     isDeleteDialogOpen,
     isStatusDialogOpen,
-    isPaymentDialogOpen,
-    isEditPaymentDialogOpen,
-    isDeletePaymentDialogOpen,
     isCreateTaskDialogOpen
   };
 
@@ -65,23 +46,13 @@ const ProjectDetails = () => {
     onCloseEditDialog: () => setIsEditDialogOpen(false),
     onCloseDeleteDialog: () => setIsDeleteDialogOpen(false),
     onCloseStatusDialog: () => setIsStatusDialogOpen(false),
-    onClosePaymentDialog: () => setIsPaymentDialogOpen(false),
-    onCloseEditPaymentDialog: () => {
-      setIsEditPaymentDialogOpen(false);
-    },
-    onCloseDeletePaymentDialog: () => {
-      setIsDeletePaymentDialogOpen(false);
-    },
     onCloseCreateTaskDialog: () => {
       setIsCreateTaskDialogOpen(false);
     },
-    onEditProject: (data: any) => handleEditProject(data),
+    onEditProject: (data: ProjectFormValues) => handleEditProject(data),
     onDeleteProject: handleDeleteProject,
     onChangeStatusSubmit: handleChangeStatus,
-    onStatusChange: (status: any) => setSelectedStatus(status),
-    onAddPaymentSubmit: handleAddPayment,
-    onEditPaymentSubmit: handleEditPayment,
-    onDeletePaymentSubmit: handleDeletePayment,
+    onStatusChange: (status: typeof selectedStatus) => setSelectedStatus(status),
     onCreateTaskSubmit: handleCreateTaskSubmit,
   };
 
@@ -291,10 +262,6 @@ const ProjectDetails = () => {
             <ProjectContent
               project={project}
               client={client}
-              teamMembers={teamMembers}
-              tasks={tasks}
-              isTasksLoading={isTasksLoading}
-              currentPayment={currentPayment}
               dialogState={dialogState}
               selectedStatus={selectedStatus}
               onEdit={() => setIsEditDialogOpen(true)}
@@ -305,9 +272,6 @@ const ProjectDetails = () => {
                 setIsStatusDialogOpen(true);
               }}
               onCreateTask={handleCreateTask}
-              onAddPayment={() => setIsPaymentDialogOpen(true)}
-              onEditPayment={openEditPaymentDialog}
-              onDeletePayment={openDeletePaymentDialog}
               handlers={handlers}
             />
           </>

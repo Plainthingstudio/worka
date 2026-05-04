@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { InvoiceItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -8,7 +8,9 @@ import { createEmptyItem, calculateItemAmount } from '@/utils/invoiceCalculation
 export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
   const { toast } = useToast();
   
-  // Initialize with initial items directly
+  // Line items are owned here; parent `invoice.items` is derived via merge in useInvoiceForm.
+  // Do not sync from parent on every prop change — that races when hook rows are ahead of
+  // parent (e.g. payment % rescale) and reverts totals.
   const [items, setItems] = useState<InvoiceItem[]>(() => {
     // Ensure we have a valid array of items
     if (!Array.isArray(initialItems) || initialItems.length === 0) {
@@ -27,33 +29,6 @@ export function useInvoiceItems(initialItems: InvoiceItem[] = []) {
       amount: item.amount || calculateItemAmount(Number(item.quantity) || 1, Number(item.rate) || 0)
     }));
   });
-
-  // Update items when initialItems prop changes
-  useEffect(() => {
-    if (Array.isArray(initialItems) && initialItems.length > 0) {
-      console.log("useInvoiceItems: initialItems prop changed:", initialItems);
-      
-      // Process and validate each item
-      const processedItems = initialItems.map(item => ({
-        id: item.id || uuidv4(),
-        description: item.description || "",
-        quantity: Number(item.quantity) || 1,
-        rate: Number(item.rate) || 0,
-        amount: item.amount || calculateItemAmount(Number(item.quantity) || 1, Number(item.rate) || 0)
-      }));
-      
-      // Only update if there are significant changes
-      if (JSON.stringify(processedItems) !== JSON.stringify(items)) {
-        console.log("Setting items state with processed initialItems");
-        setItems(processedItems);
-      }
-    } 
-    // Don't reset to empty item if initialItems is empty after being non-empty
-    else if (!Array.isArray(initialItems) && items.length === 0) {
-      console.log("Setting default empty item because there are no items");
-      setItems([createEmptyItem()]);
-    }
-  }, [initialItems]);
 
   const addItem = useCallback(() => {
     const newItem = createEmptyItem();

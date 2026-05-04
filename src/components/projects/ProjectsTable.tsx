@@ -25,7 +25,6 @@ const ProjectsTable = ({ projects, clients, allTeamMembers, onDelete, onInlineUp
       <TableHeader>
         <TableRow>
           <TableHead>Project Name</TableHead>
-          <TableHead>Categories</TableHead>
           <TableHead>Client</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Deadline</TableHead>
@@ -38,7 +37,7 @@ const ProjectsTable = ({ projects, clients, allTeamMembers, onDelete, onInlineUp
         {projects.length === 0 ? (
           <TableRow>
             <TableCell
-              colSpan={8}
+              colSpan={7}
               className="h-24 text-center text-muted-foreground"
             >
               No projects found.

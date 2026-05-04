@@ -12,13 +12,15 @@ const InvoiceForm = () => {
     setInvoice,
     isEditing,
     isLoading: isInvoiceLoading,
+    projects,
     addItem,
     removeItem,
     updateItem,
     handleInputChange,
     saveInvoice,
     generatePDF,
-    formatCurrency
+    formatCurrency,
+    isPersisting,
   } = useInvoiceForm();
 
   const isLoading = isInvoiceLoading || isClientsLoading;
@@ -46,6 +48,7 @@ const InvoiceForm = () => {
         isEditing={isEditing}
         isLoading={isLoading}
         clients={clients}
+        projects={projects}
         addItem={addItem}
         removeItem={removeItem}
         updateItem={updateItem}
@@ -53,6 +56,7 @@ const InvoiceForm = () => {
         saveInvoice={saveInvoice}
         generatePDF={generatePDF}
         formatCurrency={formatCurrency}
+        isPersisting={isPersisting}
       />
     </main>
   );

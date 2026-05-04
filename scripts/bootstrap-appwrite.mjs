@@ -25,8 +25,10 @@ const sleep = (ms) => new Promise((resolve) => {
   setTimeout(resolve, ms);
 });
 
+const endpoint = APPWRITE_ENDPOINT.replace(/\/$/, "").replace(/\/v1$/, "");
+
 const request = async (method, path, body) => {
-  const response = await fetch(`${APPWRITE_ENDPOINT.replace(/\/$/, "")}${path}`, {
+  const response = await fetch(`${endpoint}${path}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,

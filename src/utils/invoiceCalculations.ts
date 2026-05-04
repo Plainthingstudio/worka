@@ -1,10 +1,41 @@
 
-import { Invoice, InvoiceItem, PaymentType } from '@/types';
+import { Invoice, InvoiceItem, InvoiceType } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
 export const calculateItemAmount = (quantity: number, rate: number): number => {
   return (Number(quantity) || 1) * (Number(rate) || 0);
 };
+
+/** Tax and discount amounts when both percentages apply to the same base (matches full invoice math). */
+export const taxDiscountAmountsFromBase = (
+  base: number,
+  taxPercentage: number,
+  discountPercentage: number
+) => {
+  const taxAmount = (base * (Number(taxPercentage) || 0)) / 100;
+  const discountAmount = (base * (Number(discountPercentage) || 0)) / 100;
+  return { taxAmount, discountAmount };
+};
+
+export const totalFromBaseWithTaxDiscount = (
+  base: number,
+  taxPercentage: number,
+  discountPercentage: number
+) => {
+  const { taxAmount, discountAmount } = taxDiscountAmountsFromBase(base, taxPercentage, discountPercentage);
+  return base + taxAmount - discountAmount;
+};
+
+export function normalizeInvoiceLineItems(items: InvoiceItem[]): InvoiceItem[] {
+  return items.map((item) => ({
+    ...item,
+    id: item.id || uuidv4(),
+    description: item.description || "",
+    quantity: Number(item.quantity) || 1,
+    rate: Number(item.rate) || 0,
+    amount: calculateItemAmount(Number(item.quantity) || 1, Number(item.rate) || 0),
+  }));
+}
 
 export const calculateInvoiceTotals = (
   items: InvoiceItem[],
@@ -21,22 +52,14 @@ export const calculateInvoiceTotals = (
       updatedItems: []
     };
   }
-  
+
   console.log("Calculating totals for items:", items);
-  
-  const updatedItems = items.map(item => ({
-    ...item,
-    id: item.id || uuidv4(),
-    description: item.description || "",
-    quantity: Number(item.quantity) || 1,
-    rate: Number(item.rate) || 0,
-    amount: calculateItemAmount(Number(item.quantity) || 1, Number(item.rate) || 0)
-  }));
+
+  const updatedItems = normalizeInvoiceLineItems(items);
 
   const subtotal = updatedItems.reduce((sum, item) => sum + item.amount, 0);
-  const taxAmount = (subtotal * (Number(taxPercentage) || 0)) / 100;
-  const discountAmount = (subtotal * (Number(discountPercentage) || 0)) / 100;
-  const total = subtotal + taxAmount - discountAmount;
+  const { taxAmount, discountAmount } = taxDiscountAmountsFromBase(subtotal, taxPercentage, discountPercentage);
+  const total = totalFromBaseWithTaxDiscount(subtotal, taxPercentage, discountPercentage);
 
   console.log("Calculation results:", { subtotal, taxAmount, discountAmount, total });
 
@@ -69,7 +92,7 @@ export const createNewInvoice = (): Invoice => {
     clientId: "",
     date: new Date(),
     dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    paymentTerms: "Net 30",
+    paymentTerms: "",
     items: [emptyItem],
     subtotal: 0,
     taxPercentage: 0,
@@ -81,7 +104,14 @@ export const createNewInvoice = (): Invoice => {
     termsAndConditions: "Payment is due within the specified term. Please make the payment to the specified account.",
     createdAt: new Date(),
     status: "Draft" as "Draft" | "Sent" | "Paid" | "Overdue",
-    paymentType: "Milestone Payment" as PaymentType
+    invoiceType: "Full Invoice" as InvoiceType,
+    paymentType: "Full Invoice" as InvoiceType,
+    paymentMode: "percentage" as const,
+    paymentPercentage: 50,
+    paymentAmount: 0,
+    projectTotalSnapshot: 0,
+    alreadyPaidSnapshot: 0,
+    remainingAmountSnapshot: 0,
   };
   console.log("Created new invoice:", newInvoice);
   return newInvoice;

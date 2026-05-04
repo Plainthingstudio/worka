@@ -2,11 +2,15 @@
 import { format } from 'date-fns';
 import { Invoice } from '@/types';
 import { formatDateParts } from './invoiceHelpers';
+import { getInvoiceType, getPartialPaymentPrincipalLabel, isPartialInvoiceType } from '@/utils/invoiceTypes';
 
 /**
  * Generates the HTML for the invoice PDF
  */
-export const generateInvoiceHtml = (invoice: Invoice, client: any): string => {
+export const generateInvoiceHtml = (
+  invoice: Invoice,
+  client: { name: string; phone?: string; email: string; address?: string }
+): string => {
   // Format dates
   const formattedDate = format(new Date(invoice.date), "MMMM dd, yyyy");
   const formattedDueDate = format(new Date(invoice.dueDate), "MMMM dd, yyyy");
@@ -16,7 +20,8 @@ export const generateInvoiceHtml = (invoice: Invoice, client: any): string => {
   
   // Format client address with truncation if necessary
   const clientAddress = client.address || 'No address provided';
-  
+  const invoiceTypeLabel = getInvoiceType(invoice);
+
   // Generate HTML content for the invoice with new design
   return `
     <div id="invoice-container" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; width: 100%; margin: 0 auto; padding: 0; background: white; overflow: hidden;">
@@ -30,17 +35,24 @@ export const generateInvoiceHtml = (invoice: Invoice, client: any): string => {
           <img src="/lovable-uploads/c992b2ba-2210-4bfe-a32a-016522dfd451.png" style="max-width: 80%; max-height: 80%; object-fit: contain; width: auto; height: auto;" />
         </div>
         
-        <!-- Invoice number in a pill/capsule style - UPDATED padding to 0px top and 16px bottom -->
-        <div style="position: absolute; right: 30px; top: 52px; background: white; border-radius: 8px; padding: 0px 12px 16px 12px; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05); border: 0.5px solid #EBEFF6; justify-content: center; align-items: center; display: inline-flex;">
-          <div style="color: #7B23FF; font-size: 16px; font-family: Inter; font-weight: 500; line-height: 20px; word-wrap: break-word">${invoice.invoiceNumber}</div>
+        <!-- Invoice type (left) + invoice no (right): matching white cards -->
+        <div style="position: absolute; right: 30px; top: 52px; display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-start; justify-content: flex-end; gap: 10px; max-width: min(440px, 94vw);">
+          <div style="background: white; border-radius: 8px; padding: 10px 16px 12px 16px; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05); border: 0.5px solid #EBEFF6; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; box-sizing: border-box;">
+            <span style="color: #94A3B8; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; text-transform: uppercase; letter-spacing: 0.04em;">Invoice Type</span>
+            <span style="color: #7B23FF; font-size: 16px; font-family: Inter; font-weight: 600; line-height: 20px; text-align: right; max-width: 220px;">${invoiceTypeLabel}</span>
+          </div>
+          <div style="background: white; border-radius: 8px; padding: 10px 16px 12px 16px; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05); border: 0.5px solid #EBEFF6; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; box-sizing: border-box;">
+            <span style="color: #94A3B8; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; text-transform: uppercase; letter-spacing: 0.04em;">Invoice No.</span>
+            <span style="color: #7B23FF; font-size: 16px; font-family: Inter; font-weight: 600; line-height: 20px;">${invoice.invoiceNumber}</span>
+          </div>
         </div>
       </div>
       
       <!-- Updated From, To, and Date Sections with new design -->
-      <div style="padding: 30px 30px 15px 30px; margin-top: 35px; width: 100%; justify-content: space-between; align-items: flex-start; display: inline-flex; flex-wrap: wrap; align-content: flex-start">
+      <div style="padding: 28px 40px 28px 40px; margin-top: 35px; width: 100%; box-sizing: border-box; justify-content: space-between; align-items: flex-start; display: inline-flex; flex-wrap: wrap; align-content: flex-start; gap: 20px 24px;">
         <!-- From section -->
         <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
-          <div style="padding-left: 8px; padding-right: 8px; padding-top: 0px; padding-bottom: 12px; background: #F8E3FF; border-radius: 4px; justify-content: center; align-items: center; display: inline-flex">
+          <div style="padding: 8px 14px; background: #F8E3FF; border-radius: 6px; justify-content: center; align-items: center; display: inline-flex; box-sizing: border-box;">
             <div style="color: #7B23FF; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; word-wrap: break-word">From</div>
           </div>
           <div style="align-self: stretch; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex">
@@ -60,7 +72,7 @@ export const generateInvoiceHtml = (invoice: Invoice, client: any): string => {
         
         <!-- To section -->
         <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
-          <div style="padding-left: 8px; padding-right: 8px; padding-top: 0px; padding-bottom: 12px; background: #F8E3FF; border-radius: 4px; justify-content: center; align-items: center; display: inline-flex">
+          <div style="padding: 8px 14px; background: #F8E3FF; border-radius: 6px; justify-content: center; align-items: center; display: inline-flex; box-sizing: border-box;">
             <div style="color: #7B23FF; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; word-wrap: break-word">Invoice to:</div>
           </div>
           <div style="align-self: stretch; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex">
@@ -84,7 +96,7 @@ export const generateInvoiceHtml = (invoice: Invoice, client: any): string => {
         <!-- Date section -->
         <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
           <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: flex">
-            <div style="padding-left: 8px; padding-right: 8px; padding-top: 0px; padding-bottom: 12px; background: #F8E3FF; border-radius: 4px; justify-content: center; align-items: center; display: inline-flex">
+            <div style="padding: 8px 14px; background: #F8E3FF; border-radius: 6px; justify-content: center; align-items: center; display: inline-flex; box-sizing: border-box;">
               <div style="color: #7B23FF; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; word-wrap: break-word">Date:</div>
             </div>
             <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 4px; display: flex">
@@ -130,6 +142,78 @@ export const generateInvoiceHtml = (invoice: Invoice, client: any): string => {
  * Renders the items table section of the invoice
  */
 function renderInvoiceItems(invoice: Invoice): string {
+  const invoiceType = getInvoiceType(invoice);
+  const isPartialInvoice = isPartialInvoiceType(invoiceType);
+  const currency = invoice.currency || 'IDR';
+  const fmt = (n: number) =>
+    (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const standardSummaryRows = `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+              <span style="color: #4B5563; font-size: 14px;">Subtotal</span>
+              <span style="font-weight: 500; font-size: 14px;">${currency} ${fmt(invoice.subtotal)}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+              <span style="color: #4B5563; font-size: 14px;">Discount${
+                invoice.discountPercentage > 0 ? ` (${invoice.discountPercentage}%)` : ''
+              }</span>
+              <span style="font-weight: 500; font-size: 14px; color: #10B981;">${currency} ${fmt(
+                invoice.discountAmount
+              )}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+              <span style="color: #4B5563; font-size: 14px;">Tax${
+                invoice.taxPercentage > 0 ? ` (${invoice.taxPercentage}%)` : ''
+              }</span>
+              <span style="font-weight: 500; font-size: 14px; color: #3B82F6;">${currency} ${fmt(
+                invoice.taxAmount
+              )}</span>
+            </div>`;
+
+  const partialContextSection = isPartialInvoice
+    ? `
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed #CBD5E1;">
+              <div style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;">Project summary</div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span style="color: #4B5563; font-size: 14px;">Project total</span>
+                <span style="font-weight: 500; font-size: 14px;">${currency} ${fmt(
+                    invoice.projectTotalSnapshot || 0
+                  )}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span style="color: #4B5563; font-size: 14px;">${getPartialPaymentPrincipalLabel(
+                  invoice
+                )}</span>
+                <span style="font-weight: 500; font-size: 14px;">${currency} ${fmt(
+        invoice.paymentAmount || 0
+      )}</span>
+              </div>
+              ${
+                invoiceType !== 'Down Payment'
+                  ? `
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span style="color: #4B5563; font-size: 14px;">Already paid</span>
+                <span style="font-weight: 500; font-size: 14px;">${currency} ${fmt(
+                    invoice.alreadyPaidSnapshot || 0
+                  )}</span>
+              </div>`
+                  : ''
+              }
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span style="color: #4B5563; font-size: 14px;">${
+                  invoiceType === 'Down Payment'
+                    ? 'Remaining after down payment'
+                    : 'Remaining balance'
+                }</span>
+                <span style="font-weight: 500; font-size: 14px;">${currency} ${fmt(
+        invoice.remainingAmountSnapshot || 0
+      )}</span>
+              </div>
+            </div>`
+    : '';
+
+  const footerLabel = isPartialInvoice ? 'Amount due today' : 'Invoice total';
+
   return `
     <!-- Items Table -->
     <div style="padding: 15px 30px;">
@@ -142,36 +226,26 @@ function renderInvoiceItems(invoice: Invoice): string {
       </div>
       
       <!-- Table Content -->
-      ${invoice.items.map(item => `
+      ${invoice.items
+        .map(
+          (item) => `
         <div style="display: flex; padding: 15px 0; border-bottom: 1px solid #f3f4f6;">
           <div style="flex: 2; font-size: 14px;">${item.description}</div>
-          <div style="flex: 1; font-size: 14px; text-align: right;">$ ${item.rate.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+          <div style="flex: 1; font-size: 14px; text-align: right;">${currency} ${fmt(item.rate)}</div>
           <div style="flex: 1; font-size: 14px; text-align: right;">${item.quantity}</div>
-          <div style="flex: 1; font-size: 14px; text-align: right;">$ ${item.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
-        </div>
-      `).join('')}
+          <div style="flex: 1; font-size: 14px; text-align: right;">${currency} ${fmt(item.amount)}</div>
+        </div>`
+        )
+        .join('')}
       
       <!-- Summary Section -->
       <div style="display: flex; justify-content: flex-end; margin-top: 25px;">
-        <div style="width: 250px;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-            <span style="color: #4B5563; font-size: 14px;">Subtotal</span>
-            <span style="font-weight: 500; font-size: 14px;">$ ${invoice.subtotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-          </div>
-          
-          <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-            <span style="color: #4B5563; font-size: 14px;">Discount ${invoice.discountPercentage > 0 ? `(Special Offer)` : ''}</span>
-            <span style="font-weight: 500; font-size: 14px; color: #10B981;">$ ${invoice.discountAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-          </div>
-          
-          <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-            <span style="color: #4B5563; font-size: 14px;">TAX:</span>
-            <span style="font-weight: 500; font-size: 14px; color: #3B82F6;">$ ${invoice.taxAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-          </div>
-          
-          <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #e5e7eb; margin-top: 6px;">
-            <span style="font-weight: 600; font-size: 15px;">Invoice total</span>
-            <span style="font-weight: 700; font-size: 15px;">$ ${invoice.total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+        <div style="width: 280px;">
+          ${standardSummaryRows}
+          ${partialContextSection}
+          <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #e5e7eb; margin-top: 10px;">
+            <span style="font-weight: 600; font-size: 15px;">${footerLabel}</span>
+            <span style="font-weight: 700; font-size: 15px;">${currency} ${fmt(invoice.total)}</span>
           </div>
         </div>
       </div>

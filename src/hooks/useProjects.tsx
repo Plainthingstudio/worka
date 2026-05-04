@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Project, ProjectStatus, Currency, ProjectType, ProjectCategory, LeadSource } from "@/types";
+import { Project, ProjectStatus, Currency, ProjectType, LeadSource } from "@/types";
 import { account, client, databases, DATABASE_ID, ID } from "@/integrations/appwrite/client";
 
 interface ProjectsData {
@@ -69,7 +69,10 @@ const fetchProjectsData = async (): Promise<ProjectsData> => {
     fee: project.fee,
     currency: project.currency as Currency,
     projectType: project.project_type as ProjectType,
-    categories: project.categories as ProjectCategory[],
+    serviceIds: project.service_ids || [],
+    subServiceIds: project.sub_service_ids || [],
+    serviceQuantities: project.service_quantities || [],
+    subServiceQuantities: project.sub_service_quantities || [],
     teamMembers: project.team_members || [],
     createdAt: new Date(project.$createdAt),
     payments: paymentsByProject.get(project.$id) || [],
@@ -120,7 +123,10 @@ export const useProjects = () => {
         fee: data.fee,
         currency: data.currency,
         project_type: data.projectType,
-        categories: data.categories,
+        service_ids: data.serviceIds || [],
+        sub_service_ids: data.subServiceIds || [],
+        service_quantities: data.serviceQuantities || [],
+        sub_service_quantities: data.subServiceQuantities || [],
         team_members: data.teamMembers || [],
         user_id: session.userId,
       });
@@ -137,7 +143,10 @@ export const useProjects = () => {
         fee: projectData.fee,
         currency: projectData.currency as Currency,
         projectType: projectData.project_type as ProjectType,
-        categories: projectData.categories as ProjectCategory[],
+        serviceIds: projectData.service_ids || [],
+        subServiceIds: projectData.sub_service_ids || [],
+        serviceQuantities: projectData.service_quantities || [],
+        subServiceQuantities: projectData.sub_service_quantities || [],
         teamMembers: projectData.team_members || [],
         createdAt: new Date(projectData.$createdAt),
         payments: [],
@@ -159,7 +168,10 @@ export const useProjects = () => {
         fee: data.fee,
         currency: data.currency,
         project_type: data.projectType,
-        categories: data.categories,
+        service_ids: data.serviceIds || [],
+        sub_service_ids: data.subServiceIds || [],
+        service_quantities: data.serviceQuantities || [],
+        sub_service_quantities: data.subServiceQuantities || [],
         team_members: data.teamMembers || [],
       });
 
@@ -208,7 +220,10 @@ export const useProjects = () => {
       fee?: number;
       currency?: Currency;
       projectType?: ProjectType;
-      categories?: ProjectCategory[];
+      serviceIds?: string[];
+      subServiceIds?: string[];
+      serviceQuantities?: number[];
+      subServiceQuantities?: number[];
       teamMembers?: string[];
     }
   ) => {
@@ -221,7 +236,10 @@ export const useProjects = () => {
       if (fields.fee !== undefined) updateData.fee = fields.fee;
       if (fields.currency !== undefined) updateData.currency = fields.currency;
       if (fields.projectType !== undefined) updateData.project_type = fields.projectType;
-      if (fields.categories !== undefined) updateData.categories = fields.categories;
+      if (fields.serviceIds !== undefined) updateData.service_ids = fields.serviceIds;
+      if (fields.subServiceIds !== undefined) updateData.sub_service_ids = fields.subServiceIds;
+      if (fields.serviceQuantities !== undefined) updateData.service_quantities = fields.serviceQuantities;
+      if (fields.subServiceQuantities !== undefined) updateData.sub_service_quantities = fields.subServiceQuantities;
       if (fields.teamMembers !== undefined) updateData.team_members = fields.teamMembers;
 
       queryClient.setQueryData<ProjectsData>(projectsQueryKey, (prev) => {

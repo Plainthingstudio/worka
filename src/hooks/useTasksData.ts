@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { client, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import { TaskWithRelations, TaskStatus, TaskPriority, TaskType } from "@/types/task";
-import { Project, ProjectStatus, Currency, ProjectType, ProjectCategory } from "@/types";
+import { Project, ProjectStatus, Currency, ProjectType } from "@/types";
 
 export interface TasksData {
   tasks: TaskWithRelations[];
@@ -36,7 +36,6 @@ const fetchTasksData = async (): Promise<TasksData> => {
     fee: project.fee,
     currency: project.currency as Currency,
     projectType: project.project_type as ProjectType,
-    categories: project.categories as ProjectCategory[],
     payments: [],
     teamMembers: project.team_members || [],
     createdAt: new Date(project.$createdAt),

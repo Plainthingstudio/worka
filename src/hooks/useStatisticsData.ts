@@ -55,7 +55,6 @@ const fetchStatisticsData = async (): Promise<StatisticsData> => {
     fee: project.fee,
     currency: project.currency as any,
     projectType: project.project_type as any,
-    categories: project.categories || ['Other'],
     teamMembers: project.team_members || [],
     createdAt: new Date(project.$createdAt),
     payments: paymentsByProject.get(project.$id) || [],

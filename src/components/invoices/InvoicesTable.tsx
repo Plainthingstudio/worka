@@ -4,9 +4,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Eye, Download, Trash, Edit, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { Invoice, PaymentType } from "@/types";
+import { Invoice, InvoiceType } from "@/types";
 import DateCell from "@/components/projects/cells/DateCell";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { INVOICE_TYPES, getInvoiceType } from "@/utils/invoiceTypes";
 
 interface InvoicesTableProps {
   invoices: Invoice[];
@@ -15,7 +16,7 @@ interface InvoicesTableProps {
   onDeleteClick: (invoiceId: string) => void;
   onEditClick: (invoiceId: string) => void;
   onStatusChange?: (invoiceId: string, newStatus: "Draft" | "Sent" | "Paid" | "Overdue") => void;
-  onPaymentTypeChange?: (invoiceId: string, newType: PaymentType) => void;
+  onPaymentTypeChange?: (invoiceId: string, newType: InvoiceType) => void;
   formatCurrency: (amount: number) => string;
 }
 const InvoicesTable: React.FC<InvoicesTableProps> = ({
@@ -43,7 +44,7 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
 
   const handlePaymentTypeChange = (invoiceId: string, paymentType: string) => {
     if (onPaymentTypeChange) {
-      onPaymentTypeChange(invoiceId, paymentType as PaymentType);
+      onPaymentTypeChange(invoiceId, paymentType as InvoiceType);
     }
   };
   return (
@@ -74,21 +75,23 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
               <TableCell>
                 {onPaymentTypeChange ? (
                   <Select 
-                    defaultValue={invoice.paymentType || "Milestone Payment"} 
+                    value={getInvoiceType(invoice)}
                     onValueChange={(value) => handlePaymentTypeChange(invoice.id, value)}
                   >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Down Payment">Down Payment</SelectItem>
-                      <SelectItem value="Milestone Payment">Milestone Payment</SelectItem>
-                      <SelectItem value="Final Payment">Final Payment</SelectItem>
+                      {INVOICE_TYPES.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 ) : (
                   <div className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-gray-100 text-gray-800">
-                    {invoice.paymentType || "Milestone Payment"}
+                    {getInvoiceType(invoice)}
                   </div>
                 )}
               </TableCell>

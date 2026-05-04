@@ -2,7 +2,8 @@
 import { useCallback, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { account, databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
-import { Invoice, PaymentType } from '@/types';
+import { Invoice } from '@/types';
+import { invoiceTypeFromDocument } from '@/utils/invoiceTypes';
 
 export const useInvoicesFetching = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -68,11 +69,15 @@ export const useInvoicesFetching = () => {
         const client = clientsData.find((c: any) => c.$id === invoice.client_id);
         const clientName = client ? client.name : "Unknown Client";
 
+        const invoiceType = invoiceTypeFromDocument(invoice);
+
         return {
           id: invoice.$id,
           invoiceNumber: invoice.invoice_number,
           clientId: invoice.client_id,
           clientName: clientName,
+          projectId: invoice.project_id || "",
+          currency: invoice.currency || "IDR",
           date: new Date(invoice.date),
           dueDate: new Date(invoice.due_date),
           paymentTerms: invoice.payment_terms,
@@ -87,7 +92,14 @@ export const useInvoicesFetching = () => {
           termsAndConditions: invoice.terms_and_conditions || "",
           createdAt: new Date(invoice.$createdAt),
           status: validateStatus(invoice.status),
-          paymentType: (invoice.payment_type as PaymentType) || "Milestone Payment"
+          invoiceType,
+          paymentType: invoiceType,
+          paymentMode: invoice.payment_mode || "percentage",
+          paymentPercentage: invoice.payment_percentage ?? (invoiceType === "Milestone Payment" ? 25 : 50),
+          paymentAmount: invoice.payment_amount || invoice.total || 0,
+          projectTotalSnapshot: invoice.project_total_snapshot || 0,
+          alreadyPaidSnapshot: invoice.already_paid_snapshot || 0,
+          remainingAmountSnapshot: invoice.remaining_amount_snapshot || 0
         };
       });
 

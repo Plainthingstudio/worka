@@ -1,6 +1,6 @@
 
 import { z } from "zod";
-import { ProjectStatus, ProjectType, Currency, ProjectCategory } from "@/types";
+import { ProjectStatus, ProjectType, Currency } from "@/types";
 
 export const projectFormSchema = z.object({
   name: z.string().min(2, {
@@ -24,28 +24,14 @@ export const projectFormSchema = z.object({
   projectType: z.enum(["Project Based", "Monthly Retainer", "Monthly Pay as you go"], {
     required_error: "Please select a project type."
   }),
-  categories: z.array(z.string()).min(1, {
-    message: "Select at least one category."
-  }),
+  serviceIds: z.array(z.string()).optional(),
+  subServiceIds: z.array(z.string()).optional(),
+  serviceQuantities: z.array(z.number().int().min(0)).optional(),
+  subServiceQuantities: z.array(z.number().int().min(0)).optional(),
   teamMembers: z.array(z.string()).optional()
 });
 
 export type ProjectFormValues = z.infer<typeof projectFormSchema>;
-
-export const categoryOptions: ProjectCategory[] = [
-  'Landing Page',
-  'Website Design',
-  'Mobile App Design',
-  'Dashboard Design',
-  'Framer Development',
-  'Webflow Development',
-  '2D Illustrations',
-  '3D Illustrations',
-  '2D Animations',
-  '3D Animations',
-  'Logo Design',
-  'Branding Design'
-];
 
 export const projectStatuses: ProjectStatus[] = ["Planning", "In progress", "Completed", "Paused", "Cancelled"];
 export const currencies: Currency[] = ["USD", "IDR"];

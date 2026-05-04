@@ -12,11 +12,13 @@ import {
   MapPin,
   UserRound,
   FolderOpen,
+  Package,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Client, Project, TeamMember } from "@/types";
 import { databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import SectionCardHeader from "./SectionCardHeader";
+import { useServices } from "@/hooks/useServices";
 
 interface ProjectInfoProps {
   project: Project;
@@ -80,6 +82,24 @@ const InfoRow = ({
 const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
   const [assignedTeamMembers, setAssignedTeamMembers] = useState<TeamMember[]>([]);
   const [isLoadingTeamMembers, setIsLoadingTeamMembers] = useState(false);
+  const { services } = useServices();
+  const serviceQuantityMap = new Map<string, number>();
+  (project.serviceIds || []).forEach((id, index) => {
+    const qty = project.serviceQuantities?.[index];
+    serviceQuantityMap.set(id, typeof qty === "number" && qty > 0 ? qty : 1);
+  });
+  const subServiceQuantityMap = new Map<string, number>();
+  (project.subServiceIds || []).forEach((id, index) => {
+    const qty = project.subServiceQuantities?.[index];
+    subServiceQuantityMap.set(id, typeof qty === "number" && qty > 0 ? qty : 1);
+  });
+  const selectedServices = services
+    .filter((service) => serviceQuantityMap.has(service.id))
+    .map((service) => ({ service, qty: serviceQuantityMap.get(service.id) || 1 }));
+  const selectedSubServices = services
+    .flatMap((service) => service.subServices || [])
+    .filter((subService) => subServiceQuantityMap.has(subService.id))
+    .map((subService) => ({ subService, qty: subServiceQuantityMap.get(subService.id) || 1 }));
 
   useEffect(() => {
     const loadTeamMembers = async () => {
@@ -160,13 +180,24 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
           <InfoRow icon={Clock} label="Created At">
             {format(new Date(project.createdAt), "MMMM d, yyyy")}
           </InfoRow>
-          <InfoRow icon={Tag} label="Categories">
+          <InfoRow icon={Package} label="Services">
             <div className="flex flex-wrap" style={{ gap: 6, marginTop: 4 }}>
-              {project.categories.map((category, index) => (
-                <Badge key={index} variant="category">
-                  {category}
-                </Badge>
-              ))}
+              {selectedServices.length === 0 && selectedSubServices.length === 0 ? (
+                <span>No services selected</span>
+              ) : (
+                <>
+                  {selectedServices.map(({ service, qty }) => (
+                    <Badge key={service.id} variant="secondary">
+                      {service.name} ×{qty} - {(service.price * qty).toLocaleString()} {service.currency}
+                    </Badge>
+                  ))}
+                  {selectedSubServices.map(({ subService, qty }) => (
+                    <Badge key={subService.id} variant="outline">
+                      {subService.name} ×{qty} - {(subService.price * qty).toLocaleString()} {subService.currency}
+                    </Badge>
+                  ))}
+                </>
+              )}
             </div>
           </InfoRow>
           <InfoRow icon={Users} label="Team Members">

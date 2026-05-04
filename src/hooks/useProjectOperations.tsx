@@ -22,7 +22,10 @@ export const useProjectOperations = (project: Project | null, setProject: (proje
         fee: data.fee,
         currency: data.currency,
         project_type: data.projectType,
-        categories: data.categories,
+        service_ids: data.serviceIds || [],
+        sub_service_ids: data.subServiceIds || [],
+        service_quantities: data.serviceQuantities || [],
+        sub_service_quantities: data.subServiceQuantities || [],
         team_members: data.teamMembers || []
       });
 
@@ -35,7 +38,10 @@ export const useProjectOperations = (project: Project | null, setProject: (proje
         fee: data.fee,
         currency: data.currency,
         projectType: data.projectType,
-        categories: data.categories,
+        serviceIds: data.serviceIds || [],
+        subServiceIds: data.subServiceIds || [],
+        serviceQuantities: data.serviceQuantities || [],
+        subServiceQuantities: data.subServiceQuantities || [],
         teamMembers: data.teamMembers || []
       };
 

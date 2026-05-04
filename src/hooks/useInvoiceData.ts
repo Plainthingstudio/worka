@@ -2,9 +2,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { Invoice, InvoiceItem, PaymentType } from '@/types';
+import { Invoice, InvoiceItem } from '@/types';
 import { account, databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
 import { createNewInvoice } from '@/utils/invoiceCalculations';
+import { invoiceTypeFromDocument } from '@/utils/invoiceTypes';
 
 // Helper function to validate invoice status
 const validateInvoiceStatus = (status: string): "Draft" | "Sent" | "Paid" | "Overdue" => {
@@ -85,12 +86,15 @@ export function useInvoiceData(invoiceId: string | undefined) {
       }));
 
       const validStatus = validateInvoiceStatus(invoiceData.status);
+      const invoiceType = invoiceTypeFromDocument(invoiceData);
 
       const loadedInvoice: Invoice = {
         id: invoiceData.$id,
         invoiceNumber: invoiceData.invoice_number,
         clientId: invoiceData.client_id,
         clientName: clientName,
+        projectId: invoiceData.project_id || "",
+        currency: invoiceData.currency || "IDR",
         date: new Date(invoiceData.date),
         dueDate: new Date(invoiceData.due_date),
         paymentTerms: invoiceData.payment_terms,
@@ -105,7 +109,14 @@ export function useInvoiceData(invoiceId: string | undefined) {
         termsAndConditions: invoiceData.terms_and_conditions || "",
         createdAt: new Date(invoiceData.$createdAt),
         status: validStatus,
-        paymentType: (invoiceData.payment_type as PaymentType) || "Milestone Payment"
+        invoiceType,
+        paymentType: invoiceType,
+        paymentMode: invoiceData.payment_mode || "percentage",
+        paymentPercentage: invoiceData.payment_percentage ?? (invoiceType === "Milestone Payment" ? 25 : 50),
+        paymentAmount: invoiceData.payment_amount || invoiceData.total || 0,
+        projectTotalSnapshot: invoiceData.project_total_snapshot || 0,
+        alreadyPaidSnapshot: invoiceData.already_paid_snapshot || 0,
+        remainingAmountSnapshot: invoiceData.remaining_amount_snapshot || 0
       };
 
       console.log("Loaded invoice with items:", loadedInvoice);

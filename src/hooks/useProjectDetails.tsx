@@ -2,7 +2,6 @@
 import { useProjectData } from "./useProjectData";
 import { useProjectDialogs } from "./useProjectDialogs";
 import { useProjectOperations } from "./useProjectOperations";
-import { usePaymentOperations } from "./usePaymentOperations";
 import { useStatisticsData } from "./useStatisticsData";
 import { useProjectToTask } from "./useProjectToTask";
 import { useTasks } from "./useTasks";
@@ -20,21 +19,11 @@ export const useProjectDetails = (projectId: string | undefined) => {
     isEditDialogOpen,
     isDeleteDialogOpen,
     isStatusDialogOpen,
-    isPaymentDialogOpen,
-    isEditPaymentDialogOpen,
-    isDeletePaymentDialogOpen,
-    currentPayment,
     selectedStatus,
     setIsEditDialogOpen,
     setIsDeleteDialogOpen,
     setIsStatusDialogOpen,
-    setIsPaymentDialogOpen,
-    setIsEditPaymentDialogOpen,
-    setIsDeletePaymentDialogOpen,
     setSelectedStatus,
-    setCurrentPayment,
-    openEditPaymentDialog,
-    openDeletePaymentDialog
   } = useProjectDialogs();
 
   const {
@@ -45,32 +34,10 @@ export const useProjectDetails = (projectId: string | undefined) => {
     showConfetti
   } = useProjectOperations(project, setProject, refetchClient);
 
-  const {
-    handleAddPayment,
-    handleEditPayment: editPayment,
-    handleDeletePayment: deletePayment
-  } = usePaymentOperations(
-    project, 
-    setProject, 
-    () => setIsPaymentDialogOpen(false) // Close dialog on success
-  );
-
   // Wrapper functions to connect dialogs with operations
   const handleChangeStatus = () => {
     changeProjectStatus(selectedStatus);
     setIsStatusDialogOpen(false);
-  };
-
-  const handleEditPayment = (data: any) => {
-    editPayment(data, currentPayment?.id || null);
-    setCurrentPayment(null);
-    setIsEditPaymentDialogOpen(false);
-  };
-
-  const handleDeletePayment = () => {
-    deletePayment(currentPayment?.id || null);
-    setCurrentPayment(null);
-    setIsDeletePaymentDialogOpen(false);
   };
 
   const handleCreateTask = () => {
@@ -101,34 +68,22 @@ export const useProjectDetails = (projectId: string | undefined) => {
     teamMembers,
     tasks,
     isTasksLoading,
-    currentPayment,
     selectedStatus,
     isEditDialogOpen,
     isDeleteDialogOpen,
     isStatusDialogOpen,
-    isPaymentDialogOpen,
-    isEditPaymentDialogOpen,
-    isDeletePaymentDialogOpen,
     isCreateTaskDialogOpen,
     setIsEditDialogOpen,
     setIsDeleteDialogOpen,
     setIsStatusDialogOpen,
-    setIsPaymentDialogOpen,
-    setIsEditPaymentDialogOpen,
-    setIsDeletePaymentDialogOpen,
     setIsCreateTaskDialogOpen,
     setSelectedStatus,
     handleEditProject,
     handleDeleteProject,
     handleMarkAsCompleted,
     handleChangeStatus,
-    handleAddPayment,
-    handleEditPayment,
-    handleDeletePayment,
     handleCreateTask,
     handleCreateTaskSubmit,
-    openEditPaymentDialog,
-    openDeletePaymentDialog,
     isLoading: projectLoading || statisticsLoading,
     isCreatingTask,
     refetchClient,

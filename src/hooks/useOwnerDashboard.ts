@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { client, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import { Client, Invoice, Lead, Project, TeamMember } from "@/types";
+import { invoiceTypeFromDocument } from "@/utils/invoiceTypes";
 import { TaskWithRelations, isTaskClosedStatus, isTaskWorkingStatus } from "@/types/task";
 import { format } from "date-fns";
 
@@ -82,7 +83,6 @@ const fetchOwnerDashboardData = async (): Promise<OwnerDashboardData> => {
     fee: project.fee,
     currency: project.currency,
     projectType: project.project_type,
-    categories: project.categories || [],
     teamMembers: project.team_members || [],
     createdAt: new Date(project.$createdAt),
     payments: (paymentsByProject.get(project.$id) || []).map((payment: any) => ({
@@ -139,27 +139,39 @@ const fetchOwnerDashboardData = async (): Promise<OwnerDashboardData> => {
   }));
 
   const clientsById = new Map(clients.map((client) => [client.id, client]));
-  const invoices: Invoice[] = invoicesResponse.documents.map((invoice: any) => ({
-    id: invoice.$id,
-    invoiceNumber: invoice.invoice_number,
-    clientId: invoice.client_id,
-    clientName: clientsById.get(invoice.client_id)?.name || "Unknown Client",
-    date: new Date(invoice.date),
-    dueDate: new Date(invoice.due_date),
-    paymentTerms: invoice.payment_terms,
-    items: [],
-    subtotal: invoice.subtotal,
-    taxPercentage: invoice.tax_percentage || 0,
-    taxAmount: invoice.tax_amount || 0,
-    discountPercentage: invoice.discount_percentage || 0,
-    discountAmount: invoice.discount_amount || 0,
-    total: invoice.total,
-    notes: invoice.notes || "",
-    termsAndConditions: invoice.terms_and_conditions || "",
-    createdAt: new Date(invoice.$createdAt),
-    status: invoice.status,
-    paymentType: invoice.payment_type || "Milestone Payment",
-  }));
+  const invoices: Invoice[] = invoicesResponse.documents.map((invoice: any) => {
+    const invoiceType = invoiceTypeFromDocument(invoice);
+    return {
+      id: invoice.$id,
+      invoiceNumber: invoice.invoice_number,
+      clientId: invoice.client_id,
+      clientName: clientsById.get(invoice.client_id)?.name || "Unknown Client",
+      projectId: invoice.project_id || "",
+      currency: invoice.currency || "IDR",
+      date: new Date(invoice.date),
+      dueDate: new Date(invoice.due_date),
+      paymentTerms: invoice.payment_terms,
+      items: [],
+      subtotal: invoice.subtotal,
+      taxPercentage: invoice.tax_percentage || 0,
+      taxAmount: invoice.tax_amount || 0,
+      discountPercentage: invoice.discount_percentage || 0,
+      discountAmount: invoice.discount_amount || 0,
+      total: invoice.total,
+      notes: invoice.notes || "",
+      termsAndConditions: invoice.terms_and_conditions || "",
+      createdAt: new Date(invoice.$createdAt),
+      status: invoice.status,
+      invoiceType,
+      paymentType: invoiceType,
+      paymentMode: invoice.payment_mode || "percentage",
+      paymentPercentage: invoice.payment_percentage ?? (invoiceType === "Milestone Payment" ? 25 : 50),
+      paymentAmount: invoice.payment_amount || invoice.total || 0,
+      projectTotalSnapshot: invoice.project_total_snapshot || 0,
+      alreadyPaidSnapshot: invoice.already_paid_snapshot || 0,
+      remainingAmountSnapshot: invoice.remaining_amount_snapshot || 0,
+    };
+  });
 
   return { clients, projects, tasks, leads, teamMembers, invoices };
 };

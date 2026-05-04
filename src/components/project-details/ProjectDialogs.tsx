@@ -1,65 +1,42 @@
 
 import React from "react";
-import { Client, Project, Payment, ProjectStatus, TeamMember } from "@/types";
+import { Client, Project, ProjectStatus } from "@/types";
 import EditProjectDialog from "./dialogs/EditProjectDialog";
 import DeleteProjectDialog from "./dialogs/DeleteProjectDialog";
 import ChangeStatusDialog from "./dialogs/ChangeStatusDialog";
-import AddPaymentDialog from "./dialogs/AddPaymentDialog";
-import EditPaymentDialog from "./dialogs/EditPaymentDialog";
-import DeletePaymentDialog from "./dialogs/DeletePaymentDialog";
+
+type ProjectFormValues = Record<string, unknown>;
 
 interface ProjectDialogsProps {
   project: Project;
   clients: Client[];
-  teamMembers?: TeamMember[]; // Added teamMembers as optional prop
-  currentPayment: Payment | null;
   selectedStatus: ProjectStatus;
   isEditDialogOpen: boolean;
   isDeleteDialogOpen: boolean;
   isStatusDialogOpen: boolean;
-  isPaymentDialogOpen: boolean;
-  isEditPaymentDialogOpen: boolean;
-  isDeletePaymentDialogOpen: boolean;
   onCloseEditDialog: () => void;
   onCloseDeleteDialog: () => void;
   onCloseStatusDialog: () => void;
-  onClosePaymentDialog: () => void;
-  onCloseEditPaymentDialog: () => void;
-  onCloseDeletePaymentDialog: () => void;
-  onEditProject: (data: any) => void;
+  onEditProject: (data: ProjectFormValues) => void;
   onDeleteProject: () => void;
   onChangeStatus: () => void;
   onStatusChange: (status: ProjectStatus) => void;
-  onAddPayment: (data: any) => void;
-  onEditPayment: (data: any) => void;
-  onDeletePayment: () => void;
 }
 
 const ProjectDialogs = ({
   project,
   clients,
-  teamMembers,
-  currentPayment,
   selectedStatus,
   isEditDialogOpen,
   isDeleteDialogOpen,
   isStatusDialogOpen,
-  isPaymentDialogOpen,
-  isEditPaymentDialogOpen,
-  isDeletePaymentDialogOpen,
   onCloseEditDialog,
   onCloseDeleteDialog,
   onCloseStatusDialog,
-  onClosePaymentDialog,
-  onCloseEditPaymentDialog,
-  onCloseDeletePaymentDialog,
   onEditProject,
   onDeleteProject,
   onChangeStatus,
   onStatusChange,
-  onAddPayment,
-  onEditPayment,
-  onDeletePayment,
 }: ProjectDialogsProps) => {
   return (
     <>
@@ -83,27 +60,6 @@ const ProjectDialogs = ({
         onSave={onChangeStatus}
         selectedStatus={selectedStatus}
         onStatusChange={onStatusChange}
-      />
-
-      <AddPaymentDialog
-        isOpen={isPaymentDialogOpen}
-        onClose={onClosePaymentDialog}
-        onSave={onAddPayment}
-        project={project}
-      />
-
-      <EditPaymentDialog
-        isOpen={isEditPaymentDialogOpen}
-        onClose={onCloseEditPaymentDialog}
-        onSave={onEditPayment}
-        project={project}
-        payment={currentPayment}
-      />
-
-      <DeletePaymentDialog
-        isOpen={isDeletePaymentDialogOpen}
-        onClose={onCloseDeletePaymentDialog}
-        onConfirm={onDeletePayment}
       />
     </>
   );

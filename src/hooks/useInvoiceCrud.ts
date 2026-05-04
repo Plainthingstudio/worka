@@ -3,7 +3,32 @@ import { useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { account, databases, DATABASE_ID, ID, Query } from '@/integrations/appwrite/client';
 import { Invoice } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
+import { getInvoiceType, toLegacyPaymentType } from '@/utils/invoiceTypes';
+
+const NEW_INVOICE_ATTRIBUTE_KEYS = [
+  "project_id",
+  "invoice_type",
+  "currency",
+  "payment_mode",
+  "payment_percentage",
+  "payment_amount",
+  "project_total_snapshot",
+  "already_paid_snapshot",
+  "remaining_amount_snapshot",
+];
+
+const isUnknownAttributeError = (error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error || "");
+  return message.includes("Unknown attribute");
+};
+
+const withoutNewInvoiceAttributes = (payload: Record<string, any>) => {
+  const nextPayload = { ...payload };
+  NEW_INVOICE_ATTRIBUTE_KEYS.forEach((key) => {
+    delete nextPayload[key];
+  });
+  return nextPayload;
+};
 
 export const useInvoiceCrud = (
   setInvoices: React.Dispatch<React.SetStateAction<Invoice[]>>,
@@ -12,7 +37,11 @@ export const useInvoiceCrud = (
 ) => {
   const { toast } = useToast();
 
-  const saveInvoice = async (invoice: Invoice, isEditing: boolean): Promise<boolean> => {
+  const saveInvoice = async (
+    invoice: Invoice,
+    isEditing: boolean,
+    options?: { silent?: boolean }
+  ): Promise<boolean> => {
     try {
       // Get current user session
       let session;
@@ -37,12 +66,15 @@ export const useInvoiceCrud = (
       }
 
       // Format invoice for database insert/update
+      const invoiceType = getInvoiceType(invoice);
       const invoiceData: any = {
         invoice_number: invoice.invoiceNumber,
         client_id: invoice.clientId,
+        invoice_type: invoiceType,
+        currency: invoice.currency || "IDR",
         date: invoice.date instanceof Date ? invoice.date.toISOString() : invoice.date,
         due_date: invoice.dueDate instanceof Date ? invoice.dueDate.toISOString() : invoice.dueDate,
-        payment_terms: invoice.paymentTerms,
+        payment_terms: invoice.paymentTerms ?? "",
         subtotal: invoice.subtotal,
         tax_percentage: invoice.taxPercentage,
         tax_amount: invoice.taxAmount,
@@ -52,14 +84,37 @@ export const useInvoiceCrud = (
         notes: invoice.notes,
         terms_and_conditions: invoice.termsAndConditions,
         status: invoice.status,
+        payment_type: toLegacyPaymentType(invoiceType),
+        payment_mode: invoice.paymentMode || "percentage",
+        payment_percentage: invoice.paymentPercentage || 0,
+        payment_amount: invoice.paymentAmount || 0,
+        project_total_snapshot: invoice.projectTotalSnapshot || 0,
+        already_paid_snapshot: invoice.alreadyPaidSnapshot || 0,
+        remaining_amount_snapshot: invoice.remainingAmountSnapshot || 0,
         user_id: session.userId
       };
+      if (invoice.projectId) {
+        invoiceData.project_id = invoice.projectId;
+      }
 
       // Save invoice
-      if (isEditing) {
-        await databases.updateDocument(DATABASE_ID, 'invoices', invoice.id, invoiceData);
-      } else {
-        await databases.createDocument(DATABASE_ID, 'invoices', invoice.id || ID.unique(), invoiceData);
+      try {
+        if (isEditing) {
+          await databases.updateDocument(DATABASE_ID, 'invoices', invoice.id, invoiceData);
+        } else {
+          await databases.createDocument(DATABASE_ID, 'invoices', invoice.id || ID.unique(), invoiceData);
+        }
+      } catch (error) {
+        if (!isUnknownAttributeError(error)) {
+          throw error;
+        }
+
+        const legacyInvoiceData = withoutNewInvoiceAttributes(invoiceData);
+        if (isEditing) {
+          await databases.updateDocument(DATABASE_ID, 'invoices', invoice.id, legacyInvoiceData);
+        } else {
+          await databases.createDocument(DATABASE_ID, 'invoices', invoice.id || ID.unique(), legacyInvoiceData);
+        }
       }
 
       // Handle invoice items
@@ -91,10 +146,14 @@ export const useInvoiceCrud = (
         )
       );
 
-      toast({
-        title: isEditing ? "Invoice Updated" : "Invoice Created",
-        description: isEditing ? "Invoice has been updated successfully." : "Invoice has been created successfully."
-      });
+      const silent = options?.silent === true;
+
+      if (!silent) {
+        toast({
+          title: isEditing ? "Invoice Updated" : "Invoice Created",
+          description: isEditing ? "Invoice has been updated successfully." : "Invoice has been created successfully.",
+        });
+      }
 
       fetchInvoices();
       return true;

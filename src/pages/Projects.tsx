@@ -57,14 +57,16 @@ const Projects = () => {
 
   
 
+  const isCaptureMode = searchParams.get('capture') === '1';
+
   // Check for 'new=true' query parameter to auto-open create dialog
   useEffect(() => {
     if (searchParams.get('new') === 'true' && !isLoading && !roleLoading) {
       openAddProjectDialog();
-      // Remove the query parameter from URL
-      setSearchParams({});
+      // Remove the query parameter from URL — but keep capture param if present
+      setSearchParams(isCaptureMode ? { capture: '1' } : {});
     }
-  }, [searchParams, isLoading, roleLoading, openAddProjectDialog, setSearchParams]);
+  }, [searchParams, isLoading, roleLoading, openAddProjectDialog, setSearchParams, isCaptureMode]);
 
   const handleAddProjectSubmit = async (data: any) => {
     const result = await handleAddProject(data);
@@ -125,8 +127,12 @@ const Projects = () => {
       </main>
 
       {isAddingProject && (
-        <Dialog open={isAddingProject} onOpenChange={closeAddProjectDialog}>
-          <DialogContent className="sm:max-w-[600px]">
+        <Dialog open={isAddingProject} onOpenChange={isCaptureMode ? undefined : closeAddProjectDialog}>
+          <DialogContent
+            className="sm:max-w-[600px]"
+            onInteractOutside={isCaptureMode ? (e) => e.preventDefault() : undefined}
+            onEscapeKeyDown={isCaptureMode ? (e) => e.preventDefault() : undefined}
+          >
             <DialogHeader>
               <DialogTitle>Create Project</DialogTitle>
               <DialogDescription>

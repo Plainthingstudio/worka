@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 
-import CategoryCell from "./cells/CategoryCell";
 import StatusCell from "./cells/StatusCell";
 import DateCell from "./cells/DateCell";
 import FeeCell from "./cells/FeeCell";
@@ -86,14 +85,6 @@ const ProjectItem = ({
             {nameValue}
           </span>
         )}
-      </TableCell>
-
-      {/* Categories */}
-      <TableCell>
-        <CategoryCell
-          categories={project.categories}
-          onSave={cats => onInlineUpdate(project.id, { categories: cats })}
-        />
       </TableCell>
 
       {/* Client */}

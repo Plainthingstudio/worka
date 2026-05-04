@@ -30,6 +30,12 @@ const InvoiceHeader: React.FC<InvoiceHeaderProps> = ({ invoice, clients, setInvo
     }));
   };
 
+  const selectedClient = clients.find((c) => c.id === invoice.clientId);
+  const billToTriggerLabel =
+    selectedClient != null
+      ? `${selectedClient.name} · ${selectedClient.email}`
+      : undefined;
+
   return (
     <div className="space-y-6">
       <div className="grid gap-6 md:grid-cols-2">
@@ -50,32 +56,18 @@ const InvoiceHeader: React.FC<InvoiceHeaderProps> = ({ invoice, clients, setInvo
             value={invoice.clientId}
             onValueChange={(value) => setInvoice(prev => ({ ...prev, clientId: value }))}
           >
-            <SelectTrigger className="mt-1">
-              <SelectValue placeholder="Select a client" />
+            <SelectTrigger className="mt-1 h-auto min-h-10 py-2 text-left [&>span]:line-clamp-2">
+              <SelectValue placeholder="Select a client">{billToTriggerLabel}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {clients.map((client: Client) => (
                 <SelectItem key={client.id} value={client.id}>
-                  {client.name}
+                  <span className="font-medium">{client.name}</span>
+                  <span className="block text-xs text-muted-foreground">{client.email}</span>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          
-          {invoice.clientId && (
-            <div className="mt-2 text-sm text-muted-foreground">
-              {(() => {
-                const client = clients.find(c => c.id === invoice.clientId);
-                return client ? (
-                  <>
-                    {client.address && <div>{client.address}</div>}
-                    <div>{client.email}</div>
-                    <div>{client.phone}</div>
-                  </>
-                ) : null;
-              })()}
-            </div>
-          )}
         </div>
       </div>
 
@@ -123,17 +115,6 @@ const InvoiceHeader: React.FC<InvoiceHeaderProps> = ({ invoice, clients, setInvo
             </PopoverContent>
           </Popover>
         </div>
-      </div>
-
-      <div>
-        <Label htmlFor="paymentTerms">Payment Terms</Label>
-        <Input
-          id="paymentTerms"
-          name="paymentTerms"
-          value={invoice.paymentTerms}
-          onChange={handleInputChange}
-          className="mt-1"
-        />
       </div>
     </div>
   );

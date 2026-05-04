@@ -1,4 +1,4 @@
-import { Client, Project, LeadSource, ProjectStatus, ProjectType, Currency, PaymentType, ProjectCategory } from "@/types";
+import { Client, Project, LeadSource, ProjectStatus, ProjectType, Currency, PaymentType } from "@/types";
 
 // Mock data for clients
 export const clients: Client[] = [
@@ -60,7 +60,6 @@ export const projects: Project[] = [
     fee: 5000,
     currency: 'USD' as Currency,
     projectType: 'Project Based' as ProjectType,
-    categories: ['Website Design', 'Landing Page'],
     createdAt: new Date('2023-06-15T10:30:00Z'),
     payments: [
       {
@@ -82,7 +81,6 @@ export const projects: Project[] = [
     fee: 12000,
     currency: 'USD' as Currency,
     projectType: 'Project Based' as ProjectType,
-    categories: ['Mobile App Design'],
     createdAt: new Date('2023-05-20T09:15:00Z'),
     payments: [
       {
@@ -104,7 +102,6 @@ export const projects: Project[] = [
     fee: 3500,
     currency: 'USD' as Currency,
     projectType: 'Project Based' as ProjectType,
-    categories: ['Branding Design', 'Logo Design'],
     createdAt: new Date(new Date().getFullYear(), new Date().getMonth() - 2, 15),
     payments: [
       {
@@ -134,7 +131,6 @@ export const projects: Project[] = [
     fee: 75000,
     currency: 'IDR' as Currency,
     projectType: 'Monthly Retainer' as ProjectType,
-    categories: ['Dashboard Design', 'Website Design'],
     createdAt: new Date('2023-06-01T09:00:00Z'),
     payments: [
       {
@@ -156,7 +152,6 @@ export const projects: Project[] = [
     fee: 2000,
     currency: 'USD' as Currency,
     projectType: 'Project Based' as ProjectType,
-    categories: ['2D Illustrations', 'Branding Design'],
     createdAt: new Date('2023-05-15T11:30:00Z'),
     payments: [
       {
@@ -178,7 +173,6 @@ export const projects: Project[] = [
     fee: 1500,
     currency: 'USD' as Currency,
     projectType: 'Project Based' as ProjectType,
-    categories: ['Logo Design'],
     createdAt: new Date(new Date().getFullYear(), new Date().getMonth(), 5),
     payments: [
       {

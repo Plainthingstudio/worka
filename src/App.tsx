@@ -29,6 +29,7 @@ import NotFound from '@/pages/NotFound';
 import Leads from '@/pages/Leads';
 import Tasks from '@/pages/Tasks';
 import DesignSystem from '@/pages/DesignSystem';
+import Services from '@/pages/Services';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -128,6 +129,7 @@ function App() {
             <Route path="/projects/:projectId" element={<AuthenticatedRoute><ProjectDetails /></AuthenticatedRoute>} />
             <Route path="/tasks" element={<ProtectedLayout title="Tasks"><Tasks /></ProtectedLayout>} />
             <Route path="/clients" element={<ProtectedLayout title="Clients"><Clients /></ProtectedLayout>} />
+            <Route path="/services" element={<ProtectedLayout title="Services"><Services /></ProtectedLayout>} />
             <Route path="/leads" element={<ProtectedLayout title="Leads & Pipeline"><Leads /></ProtectedLayout>} />
             <Route path="/invoices" element={<ProtectedLayout title="Invoices"><Invoices /></ProtectedLayout>} />
             <Route path="/invoices/new" element={<ProtectedLayout title="Create Invoice"><InvoiceForm /></ProtectedLayout>} />

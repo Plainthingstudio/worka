@@ -1,6 +1,7 @@
 import React from "react";
 import { format } from "date-fns";
-import { DollarSign, CalendarIcon, Pencil, Trash, ReceiptText } from "lucide-react";
+import { DollarSign, CalendarIcon, Eye, ReceiptText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -10,13 +11,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Payment, Project } from "@/types";
+import { Project } from "@/types";
 import SectionCardHeader from "./SectionCardHeader";
 
 interface PaymentHistoryProps {
   project: Project;
-  onEditPayment: (payment: Payment) => void;
-  onDeletePayment: (payment: Payment) => void;
 }
 
 const cardStyle: React.CSSProperties = {
@@ -31,46 +30,48 @@ const cardStyle: React.CSSProperties = {
   height: "100%",
 };
 
-const PaymentHistory = ({
-  project,
-  onEditPayment,
-  onDeletePayment,
-}: PaymentHistoryProps) => {
+const PaymentHistory = ({ project }: PaymentHistoryProps) => {
+  const navigate = useNavigate();
+  const invoicePayments = project.invoicePayments || [];
+
   return (
     <div className="bg-card border border-border-soft" style={cardStyle}>
       <SectionCardHeader
         icon={ReceiptText}
         title="Payment History"
-        subtitle="All recorded payments for this project"
+        subtitle="Paid invoices linked to this project"
       />
       <div>
-        {project.payments.length === 0 ? (
+        {invoicePayments.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <DollarSign className="h-12 w-12 text-muted-foreground/50" />
-            <h3 className="mt-4 text-lg font-semibold">No payments yet</h3>
+            <h3 className="mt-4 text-lg font-semibold">No paid invoices yet</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Click the "Record Payment" button to record a payment for this project.
+              Mark a linked invoice as paid to reflect it in this project.
             </p>
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Payment Type</TableHead>
+                <TableHead>Invoice Type</TableHead>
+                <TableHead>Invoice #</TableHead>
                 <TableHead>Amount</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Notes</TableHead>
+                <TableHead>Paid Date</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {project.payments
+              {invoicePayments
                 .slice()
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 .map((payment) => (
                   <TableRow key={payment.id}>
                     <TableCell className="font-medium">
-                      {payment.paymentType}
+                      {payment.invoiceType}
+                    </TableCell>
+                    <TableCell>
+                      {payment.invoiceNumber}
                     </TableCell>
                     <TableCell>
                       {payment.amount.toLocaleString()} {project.currency}
@@ -81,29 +82,15 @@ const PaymentHistory = ({
                         {format(new Date(payment.date), "MMM dd, yyyy")}
                       </div>
                     </TableCell>
-                    <TableCell className="max-w-[200px] truncate">
-                      {payment.notes || "-"}
-                    </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onEditPayment(payment)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                          <span className="sr-only">Edit</span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive/90"
-                          onClick={() => onDeletePayment(payment)}
-                        >
-                          <Trash className="h-4 w-4" />
-                          <span className="sr-only">Delete</span>
-                        </Button>
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate(`/invoices/${payment.id}`)}
+                      >
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Invoice
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

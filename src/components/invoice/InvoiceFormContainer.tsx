@@ -7,7 +7,9 @@ import InvoiceItems from '@/components/invoice/InvoiceItems';
 import InvoiceSummary from '@/components/invoice/InvoiceSummary';
 import InvoiceNotes from '@/components/invoice/InvoiceNotes';
 import InvoiceActions from '@/components/invoice/InvoiceActions';
-import { Invoice, InvoiceItem, Client } from '@/types';
+import InvoicePaymentSettings from '@/components/invoice/InvoicePaymentSettings';
+import InvoiceLivePreview from '@/components/invoice/InvoiceLivePreview';
+import { Invoice, InvoiceItem, Client, Project } from '@/types';
 
 interface InvoiceFormContainerProps {
   invoice: Invoice;
@@ -15,13 +17,15 @@ interface InvoiceFormContainerProps {
   isEditing: boolean;
   isLoading?: boolean;
   clients: Client[];
+  projects: Project[];
   addItem: () => void;
   removeItem: (id: string) => void;
   updateItem: (id: string, field: keyof InvoiceItem, value: any) => void;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  saveInvoice: () => void;
-  generatePDF: () => void;
+  saveInvoice: () => void | Promise<void>;
+  generatePDF: () => void | Promise<void>;
   formatCurrency: (amount: number) => string;
+  isPersisting?: boolean;
 }
 
 const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
@@ -30,13 +34,15 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
   isEditing,
   isLoading = false,
   clients,
+  projects,
   addItem,
   removeItem,
   updateItem,
   handleInputChange,
   saveInvoice,
   generatePDF,
-  formatCurrency
+  formatCurrency,
+  isPersisting = false,
 }) => {
   // Debug log when invoice items change
   useEffect(() => {
@@ -74,38 +80,50 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
         {isEditing ? "Edit Invoice" : "Generate New Invoice"}
       </h1>
 
-      <div className="space-y-6 rounded-lg border bg-card p-6 shadow-sm">
-        <InvoiceHeader 
-          invoice={invoice} 
-          clients={clients} 
-          setInvoice={setInvoice} 
-        />
+      <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
+        <div className="space-y-6 rounded-lg border border-border bg-card p-6 shadow-sm">
+          <InvoicePaymentSettings
+            invoice={invoice}
+            projects={projects}
+            setInvoice={setInvoice}
+            formatCurrency={formatCurrency}
+          />
 
-        <InvoiceItems 
-          invoice={{...invoice, items}}
-          onAddItem={handleAddItem}
-          onRemoveItem={removeItem}
-          onUpdateItem={updateItem}
-          formatCurrency={formatCurrency}
-        />
+          <InvoiceHeader
+            invoice={invoice}
+            clients={clients}
+            setInvoice={setInvoice}
+          />
 
-        <InvoiceSummary 
-          invoice={invoice}
-          formatCurrency={formatCurrency}
-          handleInputChange={handleInputChange}
-        />
+          <InvoiceItems
+            invoice={{ ...invoice, items }}
+            onAddItem={handleAddItem}
+            onRemoveItem={removeItem}
+            onUpdateItem={updateItem}
+            formatCurrency={formatCurrency}
+          />
 
-        <InvoiceNotes 
-          invoice={invoice} 
-          handleInputChange={handleInputChange} 
-        />
+          <InvoiceSummary
+            invoice={invoice}
+            formatCurrency={formatCurrency}
+            handleInputChange={handleInputChange}
+          />
 
-        <InvoiceActions 
-          isEditing={isEditing} 
-          onSubmit={saveInvoice} 
-          onGeneratePDF={generatePDF}
-          invoice={invoice}
-        />
+          <InvoiceNotes
+            invoice={invoice}
+            handleInputChange={handleInputChange}
+          />
+
+          <InvoiceActions
+            onSubmit={saveInvoice}
+            onGeneratePDF={generatePDF}
+            isPersisting={isPersisting}
+          />
+        </div>
+
+        <div className="flex min-h-[50vh] flex-col xl:sticky xl:top-4 xl:min-h-0 xl:h-[calc(100vh-10rem)]">
+          <InvoiceLivePreview invoice={invoice} clients={clients} className="h-full min-h-0 flex-1" />
+        </div>
       </div>
     </>
   );

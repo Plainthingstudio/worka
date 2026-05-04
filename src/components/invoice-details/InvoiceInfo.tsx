@@ -1,9 +1,9 @@
 
 import React from "react";
 import { format } from "date-fns";
-import { Separator } from "@/components/ui/separator";
 import { Invoice } from "@/types";
 import { Client } from "@/types";
+import { getInvoiceType } from "@/utils/invoiceTypes";
 
 interface InvoiceInfoProps {
   invoice: Invoice;
@@ -27,7 +27,7 @@ const InvoiceInfo: React.FC<InvoiceInfoProps> = ({
               <p>Invoice Number: {invoice.invoiceNumber}</p>
               <p>Date: {format(new Date(invoice.date), "MMMM dd, yyyy")}</p>
               <p>Due Date: {format(new Date(invoice.dueDate), "MMMM dd, yyyy")}</p>
-              <p>Payment Terms: {invoice.paymentTerms}</p>
+              <p>Invoice Type: {getInvoiceType(invoice)}</p>
             </div>
           </div>
           

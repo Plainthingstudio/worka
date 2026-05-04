@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Invoice } from "@/types";
+import { getInvoiceType, getPartialPaymentPrincipalLabel, isPartialInvoiceType } from "@/utils/invoiceTypes";
 
 interface InvoiceItemsTableProps {
   invoice: Invoice;
@@ -20,6 +21,10 @@ const InvoiceItemsTable: React.FC<InvoiceItemsTableProps> = ({
   invoice,
   formatCurrency,
 }) => {
+  const invoiceType = getInvoiceType(invoice);
+  const isPartialInvoice = isPartialInvoiceType(invoiceType);
+  const currency = invoice.currency || "IDR";
+
   return (
     <div className="p-6">
       <Table>
@@ -36,35 +41,77 @@ const InvoiceItemsTable: React.FC<InvoiceItemsTableProps> = ({
             <TableRow key={item.id}>
               <TableCell>{item.description}</TableCell>
               <TableCell className="text-center">{item.quantity}</TableCell>
-              <TableCell className="text-center">${formatCurrency(item.rate)}</TableCell>
-              <TableCell className="text-right">${formatCurrency(item.amount)}</TableCell>
+              <TableCell className="text-center">
+                {currency} {formatCurrency(item.rate)}
+              </TableCell>
+              <TableCell className="text-right">
+                {currency} {formatCurrency(item.amount)}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
       <div className="mt-6 flex justify-end">
-        <div className="w-64 space-y-2">
+        <div className="w-72 space-y-2 text-sm">
           <div className="flex justify-between">
-            <span>Subtotal:</span>
-            <span>${formatCurrency(invoice.subtotal)}</span>
+            <span className="text-muted-foreground">Subtotal</span>
+            <span>
+              {currency} {formatCurrency(invoice.subtotal)}
+            </span>
           </div>
-          
           <div className="flex justify-between">
-            <span>Tax ({invoice.taxPercentage}%):</span>
-            <span>${formatCurrency(invoice.taxAmount)}</span>
+            <span className="text-muted-foreground">Tax ({invoice.taxPercentage}%)</span>
+            <span>
+              {currency} {formatCurrency(invoice.taxAmount)}
+            </span>
           </div>
-          
           <div className="flex justify-between">
-            <span>Discount ({invoice.discountPercentage}%):</span>
-            <span>${formatCurrency(invoice.discountAmount)}</span>
+            <span className="text-muted-foreground">Discount ({invoice.discountPercentage}%)</span>
+            <span>
+              {currency} {formatCurrency(invoice.discountAmount)}
+            </span>
           </div>
-          
+
+          {isPartialInvoice ? (
+            <>
+              <Separator className="my-2" />
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Project summary
+              </p>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Project total</span>
+                <span>{currency} {formatCurrency(invoice.projectTotalSnapshot || 0)}</span>
+              </div>
+
+              {invoiceType !== "Down Payment" && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Already paid</span>
+                  <span>{currency} {formatCurrency(invoice.alreadyPaidSnapshot || 0)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{getPartialPaymentPrincipalLabel(invoice)}</span>
+                <span>{currency} {formatCurrency(invoice.paymentAmount || 0)}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  {invoiceType === "Down Payment" ? "Remaining after down payment" : "Remaining balance"}
+                </span>
+                <span>{currency} {formatCurrency(invoice.remainingAmountSnapshot || 0)}</span>
+              </div>
+            </>
+          ) : null}
+
           <Separator />
-          
+
           <div className="flex justify-between font-medium">
-            <span>Total:</span>
-            <span>${formatCurrency(invoice.total)}</span>
+            <span>{isPartialInvoice ? "Amount due today" : "Total"}</span>
+            <span>
+              {currency} {formatCurrency(invoice.total)}
+            </span>
           </div>
         </div>
       </div>

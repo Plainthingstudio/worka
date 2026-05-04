@@ -8,8 +8,9 @@ import InvoicesFilter from '@/components/invoices/InvoicesFilter';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { useInvoices } from '@/hooks/useInvoices';
 import { useInvoiceStatus } from '@/hooks/useInvoiceStatus';
-import { PaymentType } from '@/types';
+import { InvoiceType } from '@/types';
 import { databases, DATABASE_ID } from '@/integrations/appwrite/client';
+import { toLegacyPaymentType } from '@/utils/invoiceTypes';
 
 const Invoices = () => {
   const navigate = useNavigate();
@@ -31,11 +32,23 @@ const Invoices = () => {
   const { updateInvoiceStatus } = useInvoiceStatus(fetchInvoices);
 
   // Update payment type function
-  const updatePaymentType = async (invoiceId: string, newType: PaymentType) => {
+  const updatePaymentType = async (invoiceId: string, newType: InvoiceType) => {
     try {
-      await databases.updateDocument(DATABASE_ID, 'invoices', invoiceId, {
-        payment_type: newType
-      });
+      try {
+        await databases.updateDocument(DATABASE_ID, 'invoices', invoiceId, {
+          invoice_type: newType,
+          payment_type: toLegacyPaymentType(newType)
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error || "");
+        if (!message.includes("Unknown attribute")) {
+          throw error;
+        }
+
+        await databases.updateDocument(DATABASE_ID, 'invoices', invoiceId, {
+          payment_type: toLegacyPaymentType(newType)
+        });
+      }
 
       // Refresh the invoices list
       fetchInvoices();

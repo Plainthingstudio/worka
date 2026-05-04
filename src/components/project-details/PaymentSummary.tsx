@@ -5,7 +5,6 @@ import SectionCardHeader from "./SectionCardHeader";
 
 interface PaymentSummaryProps {
   project: Project;
-  onAddPayment: () => void;
 }
 
 const cardStyle: React.CSSProperties = {
@@ -41,37 +40,17 @@ const valueStyle: React.CSSProperties = {
   lineHeight: "20px",
 };
 
-const PaymentSummary = ({ project, onAddPayment }: PaymentSummaryProps) => {
-  const paidAmount = project.payments.reduce((sum, p) => sum + p.amount, 0);
-  const remaining = project.fee - paidAmount;
+const PaymentSummary = ({ project }: PaymentSummaryProps) => {
+  const invoicePayments = project.invoicePayments || [];
+  const paidAmount = invoicePayments.reduce((sum, payment) => sum + payment.amount, 0);
+  const remaining = Math.max(project.fee - paidAmount, 0);
 
   return (
     <div className="bg-card border border-border-soft" style={cardStyle}>
       <SectionCardHeader
         icon={Wallet}
         title="Payment Summary"
-        subtitle="Track all payments for this project"
-        action={
-          <button
-            type="button"
-            onClick={onAddPayment}
-            className="inline-flex items-center justify-center transition-colors hover:bg-accent bg-card border border-border-soft text-foreground"
-            style={{
-              gap: 4,
-              padding: "8px 12px",
-              height: 36,
-              boxShadow: "0px 1px 2px rgba(15, 23, 42, 0.05)",
-              borderRadius: 7,
-              fontFamily: "Inter, sans-serif",
-              fontWeight: 500,
-              fontSize: 14,
-              lineHeight: "20px",
-              cursor: "pointer",
-            }}
-          >
-            Record Payment
-          </button>
-        }
+        subtitle="Paid invoices linked to this project"
       />
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={rowStyle}>
@@ -94,8 +73,8 @@ const PaymentSummary = ({ project, onAddPayment }: PaymentSummaryProps) => {
         </div>
         <div className="h-px bg-border-soft w-full" />
         <div style={rowStyle}>
-          <span style={labelStyle}>Payment Count:</span>
-          <span style={valueStyle}>{project.payments.length}</span>
+          <span style={labelStyle}>Paid Invoices:</span>
+          <span style={valueStyle}>{invoicePayments.length}</span>
         </div>
       </div>
     </div>
