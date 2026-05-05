@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Banknote, Percent } from "lucide-react";
 import { Invoice, InvoicePaymentMode, InvoiceType, Project } from "@/types";
 import { Label } from "@/components/ui/label";
@@ -12,13 +12,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { INVOICE_TYPES, getInvoiceType, isPartialInvoiceType } from "@/utils/invoiceTypes";
+import { INVOICE_TYPES, getCreatableInvoiceTypesForProject, getInvoiceType, isPartialInvoiceType, projectHasPriorDownPaymentInvoice } from "@/utils/invoiceTypes";
 
 const PERCENTAGE_PRESETS = [25, 30, 50] as const;
 
 interface InvoicePaymentSettingsProps {
   invoice: Invoice;
   projects: Project[];
+  invoices: Invoice[];
+  isEditing: boolean;
   setInvoice: React.Dispatch<React.SetStateAction<Invoice>>;
   formatCurrency: (amount: number) => string;
 }
@@ -37,12 +39,58 @@ const PAYMENT_MODE_SEGMENTS = [
 const InvoicePaymentSettings: React.FC<InvoicePaymentSettingsProps> = ({
   invoice,
   projects,
+  invoices,
+  isEditing,
   setInvoice,
   formatCurrency,
 }) => {
   const invoiceType = getInvoiceType(invoice);
   const isPartial = isPartialInvoiceType(invoiceType);
   const selectedProject = projects.find((project) => project.id === invoice.projectId);
+  const applyPhaseRestriction = !isEditing && Boolean(invoice.projectId);
+  const hasPriorDownPayment = useMemo(
+    () => projectHasPriorDownPaymentInvoice(invoices, invoice.projectId, invoice.id),
+    [invoices, invoice.projectId, invoice.id]
+  );
+  const phaseHint = useMemo(() => getCreatableInvoiceTypesForProject(hasPriorDownPayment), [hasPriorDownPayment]);
+  const disabledTypes = useMemo(() => {
+    if (!applyPhaseRestriction) return new Set<InvoiceType>();
+    return new Set(phaseHint.disabled);
+  }, [applyPhaseRestriction, phaseHint.disabled]);
+
+  const invoicesRef = useRef(invoices);
+  invoicesRef.current = invoices;
+
+  useEffect(() => {
+    if (isEditing || !invoice.projectId) return;
+    const list = invoicesRef.current;
+    setInvoice((prev) => {
+      const hasDp = projectHasPriorDownPaymentInvoice(list, prev.projectId, prev.id);
+      const t = getInvoiceType(prev);
+      if (!hasDp) {
+        if (t === "Milestone Payment" || t === "Settlement Invoice") {
+          return {
+            ...prev,
+            invoiceType: "Down Payment",
+            paymentType: "Down Payment",
+            paymentMode: prev.paymentMode || "percentage",
+            paymentPercentage: prev.paymentPercentage ?? 50,
+          };
+        }
+      } else if (t === "Down Payment" || t === "Full Invoice") {
+        return {
+          ...prev,
+          invoiceType: "Milestone Payment",
+          paymentType: "Milestone Payment",
+          paymentMode: prev.paymentMode || "percentage",
+          paymentPercentage: prev.paymentPercentage ?? 25,
+        };
+      }
+      return prev;
+    });
+    // Only re-run when phase eligibility or project changes. Do not depend on `invoices` array
+    // identity or an inline `setInvoice` (was causing a tight update loop after DP phase).
+  }, [isEditing, invoice.projectId, invoice.id, hasPriorDownPayment, setInvoice]);
   const currency = invoice.currency || selectedProject?.currency || "IDR";
   const projectTotal = invoice.projectTotalSnapshot || selectedProject?.fee || 0;
   const alreadyPaid = invoice.alreadyPaidSnapshot || 0;
@@ -103,7 +151,7 @@ const InvoicePaymentSettings: React.FC<InvoicePaymentSettingsProps> = ({
           </Select>
         </div>
 
-        <div>
+        <div className="space-y-1.5">
           <Label>Invoice Type</Label>
           <Select value={invoiceType} onValueChange={(value) => updateInvoiceType(value as InvoiceType)}>
             <SelectTrigger className="mt-1">
@@ -111,12 +159,19 @@ const InvoicePaymentSettings: React.FC<InvoicePaymentSettingsProps> = ({
             </SelectTrigger>
             <SelectContent>
               {INVOICE_TYPES.map((type) => (
-                <SelectItem key={type} value={type}>
+                <SelectItem key={type} value={type} disabled={disabledTypes.has(type)}>
                   {type}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {applyPhaseRestriction && (
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {hasPriorDownPayment
+                ? "This project already has a down payment invoice. Next bills: milestone or settlement only."
+                : "First invoice for this project: down payment or full invoice only."}
+            </p>
+          )}
         </div>
       </div>
 

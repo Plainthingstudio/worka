@@ -277,7 +277,9 @@ export function useInvoiceForm() {
     const timer = window.setTimeout(async () => {
       if (persistLockRef.current) return;
       const inv = invoiceRef.current;
-      if (!validateInvoice(inv)) return;
+      // Fresh blank invoice: don't validate or toast — wait until user links a client (or project fills client).
+      if (!inv.clientId) return;
+      if (!validateInvoice(inv, { silent: true })) return;
 
       persistLockRef.current = true;
       try {
@@ -386,14 +388,17 @@ export function useInvoiceForm() {
     }
   }, [invoice, isEditing, validateInvoice, saveToDB, generatePDF, navigate]);
 
+  const setInvoiceSynced = useCallback((value: React.SetStateAction<Invoice>) => {
+    setInvoice((prev) => {
+      const next = typeof value === "function" ? value(prev) : value;
+      setBaseInvoice(next);
+      return next;
+    });
+  }, [setBaseInvoice]);
+
   return {
     invoice,
-    setInvoice: (value: React.SetStateAction<Invoice>) => {
-      // Update both local and base invoice
-      const newInvoice = typeof value === 'function' ? value(invoice) : value;
-      setInvoice(newInvoice);
-      setBaseInvoice(newInvoice);
-    },
+    setInvoice: setInvoiceSynced,
     isEditing,
     isLoading: isLoading || isProjectsLoading,
     projects,

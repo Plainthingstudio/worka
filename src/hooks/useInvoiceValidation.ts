@@ -4,62 +4,70 @@ import { Invoice } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { getInvoiceType, isPartialInvoiceType } from '@/utils/invoiceTypes';
 
+export type ValidateInvoiceOptions = {
+  /** If true, do not show toasts (for background autosave). */
+  silent?: boolean;
+};
+
 export function useInvoiceValidation() {
   const { toast } = useToast();
 
-  const validateInvoice = useCallback((invoice: Invoice): boolean => {
-    if (!invoice.clientId) {
-      toast({
-        title: "Missing client",
-        description: "Please select a client for this invoice.",
-        variant: "destructive"
-      });
-      return false;
-    }
+  const validateInvoice = useCallback(
+    (invoice: Invoice, options?: ValidateInvoiceOptions): boolean => {
+      const silent = options?.silent === true;
+      const notify = (title: string, description: string) => {
+        if (!silent) {
+          toast({ title, description, variant: "destructive" });
+        }
+      };
 
-    const invoiceType = getInvoiceType(invoice);
-    if (isPartialInvoiceType(invoiceType) && !invoice.projectId) {
-      toast({
-        title: "Missing project",
-        description: "Please link this invoice to a project.",
-        variant: "destructive"
-      });
-      return false;
-    }
+      if (!invoice.clientId) {
+        notify("Missing client", "Please select a client for this invoice.");
+        return false;
+      }
 
-    if (isPartialInvoiceType(invoiceType) && Number(invoice.total) <= 0) {
-      toast({
-        title: "Invalid payment amount",
-        description: "The invoice amount must be greater than zero.",
-        variant: "destructive"
-      });
-      return false;
-    }
+      const invoiceType = getInvoiceType(invoice);
+      if (isPartialInvoiceType(invoiceType) && !invoice.projectId) {
+        notify("Missing project", "Please link this invoice to a project.");
+        return false;
+      }
 
-    const availableBalance = Math.max(
-      Number(invoice.projectTotalSnapshot || 0) - Number(invoice.alreadyPaidSnapshot || 0),
-      0
-    );
-    if (isPartialInvoiceType(invoiceType) && availableBalance > 0 && Number(invoice.paymentAmount || 0) > availableBalance + 0.01) {
-      toast({
-        title: "Amount exceeds remaining balance",
-        description: "The invoice payment cannot be greater than the remaining project balance.",
-        variant: "destructive"
-      });
-      return false;
-    }
+      if (isPartialInvoiceType(invoiceType) && Number(invoice.total) <= 0) {
+        notify("Invalid payment amount", "The invoice amount must be greater than zero.");
+        return false;
+      }
 
-    if (!Array.isArray(invoice.items) || invoice.items.some(item => !item.description || Number(item.quantity) <= 0)) {
-      toast({
-        title: "Invalid items",
-        description: "Please ensure all items have a description and positive quantity.",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    return true;
-  }, [toast]);
+      const availableBalance = Math.max(
+        Number(invoice.projectTotalSnapshot || 0) - Number(invoice.alreadyPaidSnapshot || 0),
+        0
+      );
+      if (
+        isPartialInvoiceType(invoiceType) &&
+        availableBalance > 0 &&
+        Number(invoice.paymentAmount || 0) > availableBalance + 0.01
+      ) {
+        notify(
+          "Amount exceeds remaining balance",
+          "The invoice payment cannot be greater than the remaining project balance."
+        );
+        return false;
+      }
+
+      if (
+        !Array.isArray(invoice.items) ||
+        invoice.items.some((item) => !item.description || Number(item.quantity) <= 0)
+      ) {
+        notify(
+          "Invalid items",
+          "Please ensure all items have a description and positive quantity."
+        );
+        return false;
+      }
+
+      return true;
+    },
+    [toast]
+  );
 
   return { validateInvoice };
 }

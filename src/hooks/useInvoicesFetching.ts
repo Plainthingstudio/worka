@@ -42,6 +42,9 @@ export const useInvoicesFetching = () => {
       const clientsResponse = await databases.listDocuments(DATABASE_ID, 'clients');
       const clientsData = clientsResponse.documents;
 
+      const projectsResponse = await databases.listDocuments(DATABASE_ID, 'projects');
+      const projectsData = projectsResponse.documents;
+
       console.log("Fetched invoice items from DB:", invoiceItemsData);
       console.log("Fetched clients from DB:", clientsData);
 
@@ -69,6 +72,11 @@ export const useInvoicesFetching = () => {
         const client = clientsData.find((c: any) => c.$id === invoice.client_id);
         const clientName = client ? client.name : "Unknown Client";
 
+        const project = invoice.project_id
+          ? projectsData.find((p: any) => p.$id === invoice.project_id)
+          : undefined;
+        const projectName = project?.name ?? "";
+
         const invoiceType = invoiceTypeFromDocument(invoice);
 
         return {
@@ -77,6 +85,7 @@ export const useInvoicesFetching = () => {
           clientId: invoice.client_id,
           clientName: clientName,
           projectId: invoice.project_id || "",
+          projectName,
           currency: invoice.currency || "IDR",
           date: new Date(invoice.date),
           dueDate: new Date(invoice.due_date),

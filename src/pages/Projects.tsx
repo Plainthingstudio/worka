@@ -139,7 +139,7 @@ const Projects = () => {
                 Fill in the details to create a new project.
               </DialogDescription>
             </DialogHeader>
-            <div className="max-h-[70vh] overflow-y-auto pr-2">
+            <div className="max-h-[70vh] overflow-y-auto scrollbar-hide">
               <ProjectForm 
                 clients={clients} 
                 teamMembers={teamMembers} 
@@ -160,7 +160,7 @@ const Projects = () => {
                 Make changes to the project details.
               </DialogDescription>
             </DialogHeader>
-            <div className="max-h-[70vh] overflow-y-auto pr-2">
+            <div className="max-h-[70vh] overflow-y-auto scrollbar-hide">
               <ProjectForm 
                 project={editingProject} 
                 clients={clients} 

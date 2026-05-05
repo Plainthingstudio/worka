@@ -56,6 +56,7 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
             <TableHead>Date</TableHead>
             <TableHead>Due Date</TableHead>
             <TableHead>Client</TableHead>
+            <TableHead>Project</TableHead>
             <TableHead>Type</TableHead>
             <TableHead className="text-right">Amount</TableHead>
             <TableHead>Status</TableHead>
@@ -72,6 +73,9 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({
                 <DateCell date={invoice.dueDate} />
               </TableCell>
               <TableCell>{invoice.clientName || "Unknown Client"}</TableCell>
+              <TableCell className="max-w-[200px] truncate" title={invoice.projectName || undefined}>
+                {invoice.projectName?.trim() ? invoice.projectName : "—"}
+              </TableCell>
               <TableCell>
                 {onPaymentTypeChange ? (
                   <Select 

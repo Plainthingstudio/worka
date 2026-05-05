@@ -49,7 +49,8 @@ const ProjectTeamMembers = ({
         <FormItem>
           <FormLabel>Assign Team Members</FormLabel>
           <div className="space-y-4">
-            <Select 
+            <Select
+              value=""
               onValueChange={handleTeamMemberSelect}
             >
               <SelectTrigger className="w-full">

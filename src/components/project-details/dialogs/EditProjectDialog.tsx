@@ -85,7 +85,7 @@ const EditProjectDialog = ({
             Make changes to the project details.
           </DialogDescription>
         </DialogHeader>
-        <div className="max-h-[70vh] overflow-y-auto pr-2">
+        <div className="max-h-[70vh] overflow-y-auto scrollbar-hide">
           {isLoading ? (
             <div className="flex justify-center p-4">
               <p>Loading...</p>

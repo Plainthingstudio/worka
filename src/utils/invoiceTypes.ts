@@ -34,6 +34,38 @@ export const getInvoiceType = (invoice: Partial<Invoice> | undefined): InvoiceTy
 export const isPartialInvoiceType = (invoiceType: InvoiceType) =>
   PARTIAL_INVOICE_TYPES.includes(invoiceType);
 
+/** True if the project already has any saved invoice (any status) with type Down Payment. */
+export const projectHasPriorDownPaymentInvoice = (
+  invoices: Invoice[],
+  projectId: string | undefined,
+  excludeInvoiceId?: string
+): boolean => {
+  if (!projectId) return false;
+  return invoices.some(
+    (inv) =>
+      inv.projectId === projectId &&
+      inv.id !== excludeInvoiceId &&
+      getInvoiceType(inv) === "Down Payment"
+  );
+};
+
+/** When creating a new invoice, which types are available based on project payment phase. */
+export const getCreatableInvoiceTypesForProject = (hasPriorDownPayment: boolean): {
+  enabled: InvoiceType[];
+  disabled: InvoiceType[];
+} => {
+  if (hasPriorDownPayment) {
+    return {
+      enabled: ["Milestone Payment", "Settlement Invoice"],
+      disabled: ["Down Payment", "Full Invoice"],
+    };
+  }
+  return {
+    enabled: ["Down Payment", "Full Invoice"],
+    disabled: ["Milestone Payment", "Settlement Invoice"],
+  };
+};
+
 export const toLegacyPaymentType = (invoiceType: InvoiceType): PaymentType => {
   if (invoiceType === "Down Payment" || invoiceType === "Milestone Payment") {
     return invoiceType;

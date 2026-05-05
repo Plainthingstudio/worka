@@ -18,6 +18,7 @@ interface InvoiceFormContainerProps {
   isLoading?: boolean;
   clients: Client[];
   projects: Project[];
+  invoices: Invoice[];
   addItem: () => void;
   removeItem: (id: string) => void;
   updateItem: (id: string, field: keyof InvoiceItem, value: any) => void;
@@ -35,6 +36,7 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
   isLoading = false,
   clients,
   projects,
+  invoices,
   addItem,
   removeItem,
   updateItem,
@@ -85,6 +87,8 @@ const InvoiceFormContainer: React.FC<InvoiceFormContainerProps> = ({
           <InvoicePaymentSettings
             invoice={invoice}
             projects={projects}
+            invoices={invoices}
+            isEditing={isEditing}
             setInvoice={setInvoice}
             formatCurrency={formatCurrency}
           />

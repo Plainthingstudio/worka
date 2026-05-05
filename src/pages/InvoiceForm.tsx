@@ -13,6 +13,7 @@ const InvoiceForm = () => {
     isEditing,
     isLoading: isInvoiceLoading,
     projects,
+    paidInvoices,
     addItem,
     removeItem,
     updateItem,
@@ -49,6 +50,7 @@ const InvoiceForm = () => {
         isLoading={isLoading}
         clients={clients}
         projects={projects}
+        invoices={paidInvoices}
         addItem={addItem}
         removeItem={removeItem}
         updateItem={updateItem}

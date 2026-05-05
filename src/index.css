@@ -264,3 +264,12 @@
 .dark .loading-shimmer {
   background: linear-gradient(to right, hsl(217 19% 10%) 8%, hsl(217 19% 16%) 18%, hsl(217 19% 10%) 33%);
 }
+
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

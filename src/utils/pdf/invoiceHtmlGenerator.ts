@@ -35,15 +35,27 @@ export const generateInvoiceHtml = (
           <img src="/lovable-uploads/c992b2ba-2210-4bfe-a32a-016522dfd451.png" style="max-width: 80%; max-height: 80%; object-fit: contain; width: auto; height: auto;" />
         </div>
         
-        <!-- Invoice type (left) + invoice no (right): matching white cards -->
+        <!-- Invoice type + invoice no: table layout for even padding in html2pdf/html2canvas -->
         <div style="position: absolute; right: 30px; top: 52px; display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-start; justify-content: flex-end; gap: 10px; max-width: min(440px, 94vw);">
-          <div style="background: white; border-radius: 8px; padding: 10px 16px 12px 16px; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05); border: 0.5px solid #EBEFF6; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; box-sizing: border-box;">
-            <span style="color: #94A3B8; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; text-transform: uppercase; letter-spacing: 0.04em;">Invoice Type</span>
-            <span style="color: #7B23FF; font-size: 16px; font-family: Inter; font-weight: 600; line-height: 20px; text-align: right; max-width: 220px;">${invoiceTypeLabel}</span>
+          <div style="display: inline-block; vertical-align: top; margin: 0; font-size: 0; line-height: 0; border-radius: 8px; overflow: hidden; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05); border: 0.5px solid #EBEFF6; max-width: 260px; background: white;">
+            <table cellpadding="0" cellspacing="0" border="0" style="width: 100%; border-collapse: collapse; margin: 0;">
+              <tr>
+                <td style="padding: 12px; text-align: right; vertical-align: top; background: white;">
+                  <div style="color: #94A3B8; font-size: 10px; font-family: Helvetica, Arial, sans-serif; font-weight: 500; line-height: 12px; text-transform: uppercase; letter-spacing: 0.04em; margin: 0; padding: 0;">Invoice Type</div>
+                  <div style="color: #7B23FF; font-size: 16px; font-family: Helvetica, Arial, sans-serif; font-weight: 600; line-height: 18px; margin: 4px 0 0 0; padding: 0; word-wrap: break-word;">${invoiceTypeLabel}</div>
+                </td>
+              </tr>
+            </table>
           </div>
-          <div style="background: white; border-radius: 8px; padding: 10px 16px 12px 16px; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05); border: 0.5px solid #EBEFF6; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; box-sizing: border-box;">
-            <span style="color: #94A3B8; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; text-transform: uppercase; letter-spacing: 0.04em;">Invoice No.</span>
-            <span style="color: #7B23FF; font-size: 16px; font-family: Inter; font-weight: 600; line-height: 20px;">${invoice.invoiceNumber}</span>
+          <div style="display: inline-block; vertical-align: top; margin: 0; font-size: 0; line-height: 0; border-radius: 8px; overflow: hidden; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05); border: 0.5px solid #EBEFF6; background: white;">
+            <table cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse; margin: 0;">
+              <tr>
+                <td style="padding: 12px; text-align: right; vertical-align: top; background: white;">
+                  <div style="color: #94A3B8; font-size: 10px; font-family: Helvetica, Arial, sans-serif; font-weight: 500; line-height: 12px; text-transform: uppercase; letter-spacing: 0.04em; margin: 0; padding: 0;">Invoice No.</div>
+                  <div style="color: #7B23FF; font-size: 16px; font-family: Helvetica, Arial, sans-serif; font-weight: 600; line-height: 18px; margin: 4px 0 0 0; padding: 0;">${invoice.invoiceNumber}</div>
+                </td>
+              </tr>
+            </table>
           </div>
         </div>
       </div>
@@ -52,9 +64,7 @@ export const generateInvoiceHtml = (
       <div style="padding: 28px 40px 28px 40px; margin-top: 35px; width: 100%; box-sizing: border-box; justify-content: space-between; align-items: flex-start; display: inline-flex; flex-wrap: wrap; align-content: flex-start; gap: 20px 24px;">
         <!-- From section -->
         <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
-          <div style="padding: 8px 14px; background: #F8E3FF; border-radius: 6px; justify-content: center; align-items: center; display: inline-flex; box-sizing: border-box;">
-            <div style="color: #7B23FF; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; word-wrap: break-word">From</div>
-          </div>
+          <div style="color: #7B23FF; font-size: 10px; font-family: Helvetica, Arial, sans-serif; font-weight: 500; line-height: 10px; text-transform: uppercase; letter-spacing: 0.04em;">From</div>
           <div style="align-self: stretch; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex">
             <div style="width: 178px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
               <div style="flex: 1 1 0; color: #19213D; font-size: 14px; font-family: Inter; font-weight: 600; line-height: 18px; word-wrap: break-word">Plainthing Studio</div>
@@ -72,9 +82,7 @@ export const generateInvoiceHtml = (
         
         <!-- To section -->
         <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
-          <div style="padding: 8px 14px; background: #F8E3FF; border-radius: 6px; justify-content: center; align-items: center; display: inline-flex; box-sizing: border-box;">
-            <div style="color: #7B23FF; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; word-wrap: break-word">Invoice to:</div>
-          </div>
+          <div style="color: #7B23FF; font-size: 10px; font-family: Helvetica, Arial, sans-serif; font-weight: 500; line-height: 10px; text-transform: uppercase; letter-spacing: 0.04em;">Invoice to:</div>
           <div style="align-self: stretch; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex">
             <div style="width: 178px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
               <div style="flex: 1 1 0; color: #19213D; font-size: 14px; font-family: Inter; font-weight: 600; line-height: 18px; word-wrap: break-word">${client.name}</div>
@@ -96,9 +104,7 @@ export const generateInvoiceHtml = (
         <!-- Date section -->
         <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
           <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: flex">
-            <div style="padding: 8px 14px; background: #F8E3FF; border-radius: 6px; justify-content: center; align-items: center; display: inline-flex; box-sizing: border-box;">
-              <div style="color: #7B23FF; font-size: 10px; font-family: Inter; font-weight: 500; line-height: 14px; word-wrap: break-word">Date:</div>
-            </div>
+            <div style="color: #7B23FF; font-size: 10px; font-family: Helvetica, Arial, sans-serif; font-weight: 500; line-height: 10px; text-transform: uppercase; letter-spacing: 0.04em;">Date:</div>
             <div style="flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 4px; display: flex">
               <div style="color: #5D6481; font-size: 10px; font-family: Inter; font-weight: 400; line-height: 14px; word-wrap: break-word">Issued</div>
               <div style="justify-content: flex-start; align-items: flex-start; gap: 2px; display: inline-flex">
