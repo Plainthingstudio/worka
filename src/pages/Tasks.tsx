@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Switch } from '@/components/ui/switch';
 import { ClickUpTaskList } from '@/components/tasks/ClickUpTaskList';
 import { TaskBoardView } from '@/components/tasks/TaskBoardView';
 import { TaskCalendarView } from '@/components/tasks/TaskCalendarView';
 import { TaskDetailSidebar } from '@/components/tasks/TaskDetailSidebar';
 import { TaskDialog } from '@/components/tasks/TaskDialog';
 import { SubtaskDialog } from '@/components/tasks/SubtaskDialog';
-import { account, databases, DATABASE_ID, ID, storage } from '@/integrations/appwrite/client';
+import { account, databases, DATABASE_ID, ID, Query, storage } from '@/integrations/appwrite/client';
 import { TaskWithRelations, TaskStatus, TASK_STATUS_OPTIONS } from '@/types/task';
 import { useTasksData } from '@/hooks/useTasksData';
 import { Plus, Search, Filter, LayoutList, Calendar, Kanban } from 'lucide-react';
@@ -29,6 +30,42 @@ export const Tasks = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [newTaskStatus, setNewTaskStatus] = useState<TaskStatus>('Planning');
   const [activeView, setActiveView] = useState<'list' | 'board' | 'calendar'>('list');
+  const [myTasksOnly, setMyTasksOnly] = useState(false);
+  const [myTaskIdentityIds, setMyTaskIdentityIds] = useState<string[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchMyTaskIdentities = async () => {
+      try {
+        const user = await account.get();
+        if (!isMounted) return;
+
+        setCurrentUserId(user.$id);
+
+        const teamResponse = await databases.listDocuments(DATABASE_ID, 'team_members', [
+          Query.equal('user_id', user.$id),
+        ]);
+        const memberIds = teamResponse.documents.map((member: any) => member.$id);
+
+        if (isMounted) {
+          setMyTaskIdentityIds(Array.from(new Set([user.$id, ...memberIds].filter(Boolean))));
+        }
+      } catch {
+        if (isMounted) {
+          setCurrentUserId(null);
+          setMyTaskIdentityIds([]);
+        }
+      }
+    };
+
+    fetchMyTaskIdentities();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Handle URL parameters on load
   useEffect(() => {
@@ -365,13 +402,44 @@ export const Tasks = () => {
     setIsSubtaskDialogOpen(true);
   };
 
-  const filteredTasks = tasks.filter(task => {
+  const isAssignedToCurrentUser = (task: TaskWithRelations) => {
+    const assignees = task.assignees || [];
+
+    return Boolean(
+      (currentUserId && task.user_id === currentUserId) ||
+        myTaskIdentityIds.some((id) => assignees.includes(id))
+    );
+  };
+
+  const matchesTaskFilters = (task: TaskWithRelations) => {
     if (selectedProject !== 'all' && task.project_id !== selectedProject) return false;
     if (statusFilter !== 'all' && task.status !== statusFilter) return false;
     if (priorityFilter !== 'all' && task.priority !== priorityFilter) return false;
     if (searchQuery && !task.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
-  });
+  };
+
+  const filteredTasks = tasks.reduce<TaskWithRelations[]>((acc, task) => {
+    const taskMatchesFilters = matchesTaskFilters(task);
+    const subtasks = (task.subtasks || []) as TaskWithRelations[];
+    const filteredSubtasks = subtasks.filter((subtask) => {
+      if (!matchesTaskFilters(subtask)) return false;
+      return !myTasksOnly || isAssignedToCurrentUser(subtask);
+    });
+
+    if (!myTasksOnly) {
+      if (taskMatchesFilters) {
+        acc.push({ ...task, subtasks: filteredSubtasks });
+      }
+      return acc;
+    }
+
+    if ((taskMatchesFilters && isAssignedToCurrentUser(task)) || filteredSubtasks.length > 0) {
+      acc.push({ ...task, subtasks: filteredSubtasks });
+    }
+
+    return acc;
+  }, []);
 
   // Listen for subtask detail opening events
   useEffect(() => {
@@ -426,39 +494,62 @@ export const Tasks = () => {
         </div>
 
         {/* Tabs + search/filter row */}
-        <div className="flex items-center justify-between">
-          <div
-            className="inline-flex items-center bg-surface-2 dark:bg-[hsl(222_33%_7%)]"
-            style={{ padding: 4, gap: 0, borderRadius: 8 }}
-          >
-            {viewTabs.map(({ key, label, icon: Icon }) => {
-              const active = activeView === key;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setActiveView(key)}
-                  className={cn(
-                    "inline-flex items-center text-[14px] font-medium leading-5 transition-all",
-                    active
-                      ? "bg-card text-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.08)] dark:bg-[hsl(225_31%_11%)] dark:shadow-[0px_1px_3px_rgba(0,0,0,0.5)]"
-                      : "bg-transparent text-muted-foreground"
-                  )}
-                  style={{
-                    gap: 4,
-                    padding: '4px 12px',
-                    height: 32,
-                    borderRadius: active ? 8 : 10,
-                    fontFamily: 'Inter, sans-serif',
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span>{label}</span>
-                </button>
-              );
-            })}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div
+              className="inline-flex items-center bg-surface-2 dark:bg-[hsl(222_33%_7%)]"
+              style={{ padding: 4, gap: 0, borderRadius: 8 }}
+            >
+              {viewTabs.map(({ key, label, icon: Icon }) => {
+                const active = activeView === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setActiveView(key)}
+                    className={cn(
+                      "inline-flex items-center text-[14px] font-medium leading-5 transition-all",
+                      active
+                        ? "bg-card text-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.08)] dark:bg-[hsl(225_31%_11%)] dark:shadow-[0px_1px_3px_rgba(0,0,0,0.5)]"
+                        : "bg-transparent text-muted-foreground"
+                    )}
+                    style={{
+                      gap: 4,
+                      padding: '4px 12px',
+                      height: 32,
+                      borderRadius: active ? 8 : 10,
+                      fontFamily: 'Inter, sans-serif',
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span>{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <label
+              className="inline-flex items-center border border-border-soft bg-card text-foreground"
+              style={{
+                gap: 8,
+                height: 36,
+                padding: '0 12px',
+                borderRadius: 12,
+                fontFamily: 'Inter, sans-serif',
+                fontWeight: 500,
+                fontSize: 14,
+                lineHeight: '20px',
+              }}
+            >
+              <Switch
+                checked={myTasksOnly}
+                onCheckedChange={setMyTasksOnly}
+                className="h-5 w-9 data-[state=checked]:bg-brand [&>span]:h-4 [&>span]:w-4 [&>span]:data-[state=checked]:translate-x-4"
+              />
+              <span>My task</span>
+            </label>
           </div>
 
           <div className="flex items-center" style={{ gap: 12 }}>
@@ -559,7 +650,7 @@ export const Tasks = () => {
 
         {/* Content */}
         <div className="flex-1">
-          {activeView === 'list' && <ClickUpTaskList tasks={filteredTasks} isLoading={isLoading} onTaskClick={task => {
+          {activeView === 'list' && <ClickUpTaskList tasks={filteredTasks} projects={projects} isLoading={isLoading} onTaskClick={task => {
       setSelectedTask(task);
     }} onUpdateTask={updateTask} onAddTask={handleAddTask} />}
 

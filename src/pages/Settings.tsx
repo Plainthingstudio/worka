@@ -57,17 +57,17 @@ const Settings = () => {
         </div>
         
         <Tabs value={activeTab} onValueChange={(value) => setSearchParams({ tab: value })} className="w-full">
-          <TabsList className="mb-6 w-full sm:w-auto h-auto bg-background border-b rounded-none p-0 justify-start">
-            <TabsTrigger value="profile" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4">
+          <TabsList className="mb-6 w-full max-w-full flex-wrap justify-start sm:w-auto">
+            <TabsTrigger value="profile">
               Profile
             </TabsTrigger>
-            <TabsTrigger value="account" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4">
+            <TabsTrigger value="account">
               Account
             </TabsTrigger>
-            <TabsTrigger value="integrations" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4">
+            <TabsTrigger value="integrations">
               Integrations
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 px-4">
+            <TabsTrigger value="notifications">
               Notifications
             </TabsTrigger>
           </TabsList>

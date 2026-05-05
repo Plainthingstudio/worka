@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
-import { TaskWithRelations, isTaskClosedStatus, isTaskWorkingStatus } from "@/types/task";
+import { account, client, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
+import { Currency, Project, ProjectStatus, ProjectType, TeamMember, TeamPosition } from "@/types";
+import { TaskPriority, TaskType, TaskWithRelations, isTaskClosedStatus, isTaskWorkingStatus } from "@/types/task";
 
 export interface TeamDashboardStats {
   myActiveTasks: number;
@@ -19,14 +20,20 @@ export const useTeamDashboard = () => {
     overdueTasks: 0,
   });
   const [myTasks, setMyTasks] = useState<TaskWithRelations[]>([]);
-  const [myProjects, setMyProjects] = useState<any[]>([]);
+  const [myProjects, setMyProjects] = useState<Project[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [overdueTasks, setOverdueTasks] = useState<TaskWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+    let hasLoaded = false;
+
     async function fetchTeamData() {
       try {
-        setIsLoading(true);
+        if (isMounted && !hasLoaded) {
+          setIsLoading(true);
+        }
 
         let session;
         try {
@@ -38,29 +45,48 @@ export const useTeamDashboard = () => {
 
         const userId = session.userId;
 
-        // Fetch tasks where user is creator
-        const tasksCreatorResponse = await databases.listDocuments(
+        const teamResponse = await databases.listDocuments(
           DATABASE_ID,
-          'tasks',
-          [Query.equal('user_id', userId), Query.orderDesc('$createdAt')]
+          'team_members',
+          [Query.orderDesc('$createdAt')]
         );
 
-        // Fetch tasks where user is assignee
-        const tasksAssigneeResponse = await databases.listDocuments(
+        const transformedTeamMembers: TeamMember[] = teamResponse.documents.map((member: any) => ({
+          id: member.$id,
+          user_id: member.user_id,
+          name: member.name,
+          position: member.position as TeamPosition,
+          startDate: new Date(member.start_date),
+          skills: member.skills || [],
+          createdAt: new Date(member.$createdAt),
+        }));
+
+        const currentMemberIds = transformedTeamMembers
+          .filter((member) => member.user_id === userId)
+          .map((member) => member.id);
+
+        const identityIds = Array.from(new Set([userId, ...currentMemberIds].filter(Boolean)));
+
+        const tasksResponse = await databases.listDocuments(
           DATABASE_ID,
           'tasks',
-          [Query.equal('assignees', userId), Query.orderDesc('$createdAt')]
+          [Query.orderDesc('$createdAt')]
         );
 
-        // Merge and deduplicate tasks
-        const allTaskDocs = [...tasksCreatorResponse.documents];
-        const seenIds = new Set(allTaskDocs.map((t: any) => t.$id));
-        for (const task of tasksAssigneeResponse.documents) {
-          if (!seenIds.has(task.$id)) {
-            allTaskDocs.push(task);
-            seenIds.add(task.$id);
-          }
-        }
+        const allTaskDocs = tasksResponse.documents.filter((task: any) => {
+          const taskAssignees = task.assignees || [];
+
+          return (
+            task.user_id === userId ||
+            identityIds.some((id) => taskAssignees.includes(id))
+          );
+        });
+
+        const projectsResponse = await databases.listDocuments(
+          DATABASE_ID,
+          'projects',
+          [Query.orderDesc('$createdAt')]
+        );
 
         // Fetch comments, attachments, activities for each task
         const transformedTasks: TaskWithRelations[] = await Promise.all(
@@ -92,8 +118,8 @@ export const useTeamDashboard = () => {
               description: task.description,
               status: task.status,
               due_date: task.due_date ? new Date(task.due_date) : undefined,
-              priority: task.priority,
-              task_type: task.task_type,
+              priority: task.priority as TaskPriority,
+              task_type: task.task_type as TaskType,
               assignees: task.assignees || [],
               parent_task_id: task.parent_task_id,
               completed_at: task.completed_at ? new Date(task.completed_at) : undefined,
@@ -108,29 +134,39 @@ export const useTeamDashboard = () => {
           })
         );
 
-        // Fetch projects where user is creator
-        const projectsCreatorResponse = await databases.listDocuments(
-          DATABASE_ID,
-          'projects',
-          [Query.equal('user_id', userId)]
+        const assignedProjectIds = new Set(
+          transformedTasks
+            .map((task) => task.project_id)
+            .filter(Boolean)
         );
 
-        // Fetch projects where user is a team member
-        const projectsTeamResponse = await databases.listDocuments(
-          DATABASE_ID,
-          'projects',
-          [Query.equal('team_members', userId)]
-        );
+        const allProjectDocs = projectsResponse.documents.filter((project: any) => {
+          const projectTeamMembers = project.team_members || [];
 
-        // Merge and deduplicate projects
-        const allProjectDocs = [...projectsCreatorResponse.documents];
-        const seenProjectIds = new Set(allProjectDocs.map((p: any) => p.$id));
-        for (const proj of projectsTeamResponse.documents) {
-          if (!seenProjectIds.has(proj.$id)) {
-            allProjectDocs.push(proj);
-            seenProjectIds.add(proj.$id);
-          }
-        }
+          return (
+            project.user_id === userId ||
+            assignedProjectIds.has(project.$id) ||
+            identityIds.some((id) => projectTeamMembers.includes(id))
+          );
+        });
+
+        const transformedProjects: Project[] = allProjectDocs.map((project: any) => ({
+          id: project.$id,
+          name: project.name,
+          clientId: project.client_id,
+          status: project.status as ProjectStatus,
+          deadline: new Date(project.deadline),
+          fee: project.fee,
+          currency: project.currency as Currency,
+          projectType: project.project_type as ProjectType,
+          payments: [],
+          serviceIds: project.service_ids || [],
+          subServiceIds: project.sub_service_ids || [],
+          serviceQuantities: project.service_quantities || [],
+          subServiceQuantities: project.sub_service_quantities || [],
+          teamMembers: project.team_members || [],
+          createdAt: new Date(project.$createdAt),
+        }));
 
         // Calculate stats
         const now = new Date();
@@ -160,31 +196,51 @@ export const useTeamDashboard = () => {
 
         const overdueTasksCount = overdueTasksList.length;
 
-        setMyTasks(transformedTasks);
-        setOverdueTasks(overdueTasksList);
-        setMyProjects(allProjectDocs);
-        setStats({
-          myActiveTasks: activeTasks.length,
-          completedThisWeek,
-          dueThisWeek,
-          totalProjects: allProjectDocs.length,
-          overdueTasks: overdueTasksCount,
-        });
+        if (isMounted) {
+          setMyTasks(transformedTasks);
+          setOverdueTasks(overdueTasksList);
+          setMyProjects(transformedProjects);
+          setTeamMembers(transformedTeamMembers);
+          setStats({
+            myActiveTasks: activeTasks.length,
+            completedThisWeek,
+            dueThisWeek,
+            totalProjects: transformedProjects.length,
+            overdueTasks: overdueTasksCount,
+          });
+        }
 
       } catch (error) {
         console.error("Error fetching team dashboard data:", error);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          hasLoaded = true;
+          setIsLoading(false);
+        }
       }
     }
 
     fetchTeamData();
+
+    const channels = ['tasks', 'projects', 'team_members'].map(
+      (collection) => `databases.${DATABASE_ID}.collections.${collection}.documents`
+    );
+
+    const unsubscribe = client.subscribe(channels, () => {
+      fetchTeamData();
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   return {
     stats,
     myTasks,
     myProjects,
+    teamMembers,
     overdueTasks,
     isLoading,
   };

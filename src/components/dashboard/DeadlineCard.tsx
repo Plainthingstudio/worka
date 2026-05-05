@@ -1,5 +1,6 @@
 import React from "react";
 import { format } from "date-fns";
+import { CalendarDays } from "lucide-react";
 import { Project } from "@/types";
 import { TeamMember } from "@/types";
 import { TaskWithRelations } from "@/types/task";
@@ -16,7 +17,7 @@ import { InitialAvatar } from "@/components/ui/avatar";
 interface DeadlineCardProps {
   projects: Project[];
   tasks: TaskWithRelations[];
-  teamMembers: TeamMember[];
+  teamMembers?: TeamMember[];
   getClientById: (clientId: string) => string;
 }
 
@@ -53,7 +54,7 @@ const AssigneeList = ({ names }: { names: string[] }) => {
 const DeadlineCard: React.FC<DeadlineCardProps> = ({
   projects,
   tasks,
-  teamMembers,
+  teamMembers = [],
   getClientById,
 }) => {
   const startOfToday = new Date();
@@ -118,63 +119,56 @@ const DeadlineCard: React.FC<DeadlineCardProps> = ({
   );
 
   return (
-    <div
-      className="bg-card overflow-hidden flex flex-col border border-border-soft"
-      style={{
-        padding: 12,
-        gap: 12,
-        boxShadow: "0px 1px 2px rgba(0,0,0,0.05)",
-        borderRadius: 12,
-      }}
-    >
-      <div className="flex items-center">
-        <h2
-          className="text-foreground"
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 600,
-            fontSize: 14,
-            lineHeight: "120%",
-            letterSpacing: "-0.03em",
-          }}
-        >
-          Upcoming Deadlines
-        </h2>
+    <section className="rounded-[12px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
+      <div className="flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-border-soft text-brand-accent">
+          <CalendarDays className="h-4 w-4" strokeWidth={1.75} />
+        </div>
+        <div>
+          <p className="text-[14px] font-semibold leading-[120%] text-foreground">
+            Upcoming Deadlines
+          </p>
+          <p className="mt-1 text-[11px] leading-[100%] text-muted-foreground">
+            View deadlines due in the next 3 days
+          </p>
+        </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead>Project Name</TableHead>
-            <TableHead>Client</TableHead>
-            <TableHead>Deadline</TableHead>
-            <TableHead>Assignees</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={4} className="text-center text-muted-foreground">
-                No upcoming deadlines in the next 3 days
-              </TableCell>
+      <div className="mt-3 overflow-hidden rounded-[8px]">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead>Project Name</TableHead>
+              <TableHead>Client</TableHead>
+              <TableHead>Deadline</TableHead>
+              <TableHead>Assignees</TableHead>
             </TableRow>
-          ) : (
-            rows.map((row) => (
-              <TableRow key={row.key}>
-                <TableCell className="font-medium text-foreground">{row.name}</TableCell>
-                <TableCell className="text-muted-foreground">{row.client}</TableCell>
-                <TableCell className="text-muted-foreground">
-                  {format(row.deadline, "MMM dd, yyyy")}
-                </TableCell>
-                <TableCell>
-                  <AssigneeList names={row.assignees} />
+          </TableHeader>
+          <TableBody>
+            {rows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center text-muted-foreground">
+                  No upcoming deadlines in the next 3 days
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
+            ) : (
+              rows.map((row) => (
+                <TableRow key={row.key}>
+                  <TableCell className="font-medium text-foreground">{row.name}</TableCell>
+                  <TableCell className="text-muted-foreground">{row.client}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {format(row.deadline, "MMM dd, yyyy")}
+                  </TableCell>
+                  <TableCell>
+                    <AssigneeList names={row.assignees} />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </section>
   );
 };
 

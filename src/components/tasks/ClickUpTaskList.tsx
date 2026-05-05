@@ -28,6 +28,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { Project } from '@/types';
 
 type SortKey = 'due_date' | 'priority';
 type SortDir = 'asc' | 'desc';
@@ -45,6 +46,7 @@ interface ClickUpTaskListProps {
   onTaskClick: (task: TaskWithRelations) => void;
   onUpdateTask: (taskId: string, updates: any) => Promise<boolean>;
   onAddTask: (status: TaskStatus) => void;
+  projects?: Pick<Project, 'id' | 'name'>[];
 }
 
 const statusConfig: Record<TaskStatus, { label: string; dot: string }> = {
@@ -74,15 +76,17 @@ const statusBadgeConfig: Record<TaskStatus, { bg: string; fg: string; ring: stri
 
 // Task is widest; assignee + due are medium; priority + status share equal width for even spacing
 const colWidths = {
-  task: 520,
-  assignee: 190,
-  due: 190,
-  priority: 168,
-  status: 168,
+  task: 440,
+  project: 220,
+  assignee: 180,
+  due: 170,
+  priority: 150,
+  status: 160,
 };
 
-const listMinWidth =
+const getListMinWidth = (showProjectColumn: boolean) =>
   colWidths.task +
+  (showProjectColumn ? colWidths.project + 24 : 0) +
   colWidths.assignee +
   colWidths.due +
   colWidths.priority +
@@ -93,6 +97,7 @@ interface ColumnHeadersProps {
   sortKey: SortKey | null;
   sortDir: SortDir;
   onToggleSort: (key: SortKey) => void;
+  showProjectColumn: boolean;
 }
 
 const SortIndicator = ({ active, dir }: { active: boolean; dir: SortDir }) => {
@@ -112,7 +117,7 @@ const SortIndicator = ({ active, dir }: { active: boolean; dir: SortDir }) => {
   );
 };
 
-const ColumnHeaders = ({ sortKey, sortDir, onToggleSort }: ColumnHeadersProps) => (
+const ColumnHeaders = ({ sortKey, sortDir, onToggleSort, showProjectColumn }: ColumnHeadersProps) => (
   <div
     className="flex items-center bg-card"
     style={{
@@ -135,6 +140,11 @@ const ColumnHeaders = ({ sortKey, sortDir, onToggleSort }: ColumnHeadersProps) =
     >
       Task
     </div>
+    {showProjectColumn && (
+      <div style={{ ...headerCellStyle, width: colWidths.project }} className="text-muted-foreground">
+        Project
+      </div>
+    )}
     <div style={headerCellStyle} className="text-muted-foreground">
       <span style={{ width: colWidths.assignee, display: 'inline-block' }}>Assignee</span>
     </div>
@@ -194,12 +204,16 @@ export const ClickUpTaskList = ({
   onTaskClick,
   onUpdateTask,
   onAddTask,
+  projects,
 }: ClickUpTaskListProps) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [collapsedSubtasks, setCollapsedSubtasks] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const { getAssigneeNames, teamMembers } = useAssigneeNames();
+  const showProjectColumn = Array.isArray(projects);
+  const listMinWidth = getListMinWidth(showProjectColumn);
+  const projectNamesById = new Map((projects || []).map((project) => [project.id, project.name]));
 
   // Inline editing state
   const [editingTitle, setEditingTitle] = useState<{ taskId: string; value: string } | null>(null);
@@ -302,6 +316,7 @@ export const ClickUpTaskList = ({
 
     const isEditingTitle = editingTitle?.taskId === task.id;
     const isEditingDate = editingDate?.taskId === task.id;
+    const projectName = task.project_id ? projectNamesById.get(task.project_id) : null;
 
     return (
       <div
@@ -437,6 +452,26 @@ export const ClickUpTaskList = ({
             )}
           </div>
         </div>
+
+        {/* Project */}
+        {showProjectColumn && (
+          <div className="flex min-w-0 items-center" style={{ width: colWidths.project }}>
+            <span
+              className={cn(
+                "min-w-0 truncate",
+                projectName ? "text-foreground" : "text-text-disabled"
+              )}
+              style={{
+                fontFamily: 'Inter, sans-serif',
+                fontWeight: 500,
+                fontSize: 14,
+                lineHeight: '20px',
+              }}
+            >
+              {projectName || 'No project'}
+            </span>
+          </div>
+        )}
 
         {/* Assignee */}
         <div className="flex items-center" style={{ width: colWidths.assignee }}>
@@ -825,6 +860,7 @@ export const ClickUpTaskList = ({
                     sortKey={sortKey}
                     sortDir={sortDir}
                     onToggleSort={handleToggleSort}
+                    showProjectColumn={showProjectColumn}
                   />
                   <div>
                     {statusTasks.map((task, index) => (

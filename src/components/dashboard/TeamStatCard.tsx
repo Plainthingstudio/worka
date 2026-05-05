@@ -19,35 +19,44 @@ const TeamStatCard = ({
   icon: Icon,
   change,
   className,
-  description
+  description,
 }: TeamStatCardProps) => {
+  const changeToneClassName =
+    change?.type === "increase"
+      ? "text-green-600 dark:text-green-400"
+      : "text-red-500 dark:text-red-400";
+
   return (
-    <div className={cn("flex flex-col overflow-hidden rounded-md p-4 transition-all duration-300 ease-in-out hover:shadow-md bg-card border border-border-soft", className)}>
-      <div className="mb-2 flex items-center justify-between">
-        <p className="font-medium text-muted-foreground text-sm">{title}</p>
-        <div className="rounded-full bg-primary/10 p-2 text-primary">
-          <Icon className="h-4 w-4" />
+    <div
+      className={cn(
+        "flex min-h-[130px] flex-col justify-between rounded-[10px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]",
+        className
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-border-soft text-brand-accent">
+          <Icon className="h-4 w-4" strokeWidth={1.75} />
         </div>
+        <p className="text-sm font-medium text-muted-foreground">{title}</p>
       </div>
-      <div className="flex items-end justify-between">
-        <div>
-          <h3 className="text-2xl font-bold">
-            {value}
-          </h3>
-          {description && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              {description}
-            </p>
-          )}
-          {change && (
-            <p className={cn("mt-1 text-xs font-medium", 
-              change.type === "increase" ? "text-green-600" : "text-red-600"
-            )}>
-              {change.type === "increase" ? "↑" : "↓"} {Math.abs(change.value)}%{" "}
-              <span className="text-muted-foreground">from last week</span>
-            </p>
-          )}
-        </div>
+
+      <div className="flex items-end justify-between gap-4">
+        <h3 className="text-[24px] font-bold leading-8 text-foreground">{value}</h3>
+        {(description || change) && (
+          <div className="text-right">
+            {change && (
+              <p className={cn("text-xs font-medium leading-3", changeToneClassName)}>
+                {change.type === "increase" ? "+" : "-"}
+                {Math.abs(change.value)}%
+              </p>
+            )}
+            {description ? (
+              <p className="mt-1 text-xs font-medium leading-3 text-muted-foreground">
+                {description}
+              </p>
+            ) : null}
+          </div>
+        )}
       </div>
     </div>
   );

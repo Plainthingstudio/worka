@@ -1,7 +1,7 @@
 import React from "react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Calendar } from "lucide-react";
+import { ArrowRight, Calendar, Flag, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -11,9 +11,94 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { TaskWithRelations } from "@/types/task";
-import { getStatusBadgeClass } from "@/utils/statusColors";
+import { TaskStatus, TaskWithRelations } from "@/types/task";
+
+const statusBadgeConfig: Record<TaskStatus, { bg: string; fg: string; ring: string }> = {
+  Planning: {
+    bg: "hsl(var(--status-planning-bg))",
+    fg: "hsl(var(--status-planning-fg))",
+    ring: "hsl(var(--status-planning-ring))",
+  },
+  "In progress": {
+    bg: "hsl(var(--status-progress-bg))",
+    fg: "hsl(var(--status-progress-fg))",
+    ring: "hsl(var(--status-progress-ring))",
+  },
+  "Awaiting Feedback": {
+    bg: "hsl(var(--status-feedback-bg))",
+    fg: "hsl(var(--status-feedback-fg))",
+    ring: "hsl(var(--status-feedback-ring))",
+  },
+  Paused: {
+    bg: "hsl(var(--status-paused-bg))",
+    fg: "hsl(var(--status-paused-fg))",
+    ring: "hsl(var(--status-paused-ring))",
+  },
+  Completed: {
+    bg: "hsl(var(--status-completed-bg))",
+    fg: "hsl(var(--status-completed-fg))",
+    ring: "hsl(var(--status-completed-ring))",
+  },
+  Cancelled: {
+    bg: "hsl(var(--status-cancelled-bg))",
+    fg: "hsl(var(--status-cancelled-fg))",
+    ring: "hsl(var(--status-cancelled-ring))",
+  },
+};
+
+const priorityConfig: Record<string, { bg: string; fg: string }> = {
+  Urgent: { bg: "hsl(var(--priority-urgent-bg))", fg: "hsl(var(--priority-urgent-fg))" },
+  High: { bg: "hsl(var(--priority-high-bg))", fg: "hsl(var(--priority-high-fg))" },
+  Normal: { bg: "hsl(var(--priority-normal-bg))", fg: "hsl(var(--priority-normal-fg))" },
+  Low: { bg: "hsl(var(--priority-low-bg))", fg: "hsl(var(--priority-low-fg))" },
+};
+
+const DashboardStatusBadge = ({ status }: { status: string }) => {
+  const config = statusBadgeConfig[status as TaskStatus] || statusBadgeConfig.Planning;
+
+  return (
+    <span
+      className="inline-flex max-w-full items-center truncate"
+      style={{
+        padding: "4px 8px",
+        background: config.bg,
+        boxShadow: `inset 0px 0px 0px 1px ${config.ring}`,
+        borderRadius: 10,
+        fontFamily: "Inter, sans-serif",
+        fontWeight: 500,
+        fontSize: 12,
+        lineHeight: "16px",
+        color: config.fg,
+      }}
+    >
+      {status}
+    </span>
+  );
+};
+
+const DashboardPriorityBadge = ({ priority }: { priority: string }) => {
+  const config = priorityConfig[priority] || priorityConfig.Normal;
+
+  return (
+    <span
+      className="inline-flex max-w-full items-center truncate"
+      style={{
+        padding: "4px 8px",
+        gap: 6,
+        background: config.bg,
+        borderRadius: 10,
+        fontFamily: "Inter, sans-serif",
+        fontWeight: 500,
+        fontSize: 12,
+        lineHeight: "16px",
+        color: config.fg,
+      }}
+    >
+      <Flag className="shrink-0" style={{ width: 12, height: 12, color: config.fg }} strokeWidth={1.5} />
+      <span className="min-w-0 truncate">{priority}</span>
+    </span>
+  );
+};
 
 interface MyTasksTableProps {
   tasks: TaskWithRelations[];
@@ -41,38 +126,42 @@ const MyTasksTable: React.FC<MyTasksTableProps> = ({
     })
     .slice(0, showAll ? undefined : 5);
 
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'High':
-        return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-400/30';
-      case 'Normal':
-        return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-400/30';
-      case 'Low':
-        return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-400/30';
-      default:
-        return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-500/15 dark:text-gray-300 dark:border-gray-400/30';
-    }
-  };
-
   const isOverdue = (dueDate: Date | undefined) => {
     if (!dueDate) return false;
     return dueDate < new Date();
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">{title}</h2>
-        <Button variant="ghost" size="sm" onClick={() => navigate("/tasks")}>
+    <section className="rounded-[12px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-border-soft text-brand-accent">
+            <ScrollText className="h-4 w-4" strokeWidth={1.75} />
+          </div>
+          <div>
+            <p className="text-[14px] font-semibold leading-[120%] text-foreground">
+              {title}
+            </p>
+            <p className="mt-1 text-[11px] leading-[100%] text-muted-foreground">
+              View your current assignments
+            </p>
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/tasks")}
+          className="h-8 shrink-0 gap-1 rounded-[7px] px-2 text-xs font-medium text-muted-foreground hover:bg-surface-3 hover:text-foreground"
+        >
           View All Tasks
-          <ArrowRight className="ml-2 h-4 w-4" />
+          <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
-      <div className="glass-card rounded-xl border shadow-sm">
+
+      <div className="mt-3 overflow-hidden rounded-[8px]">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="hover:bg-transparent">
               <TableHead>Task</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Priority</TableHead>
@@ -88,8 +177,12 @@ const MyTasksTable: React.FC<MyTasksTableProps> = ({
               </TableRow>
             ) : (
               activeTasks.map((task) => (
-                <TableRow key={task.id} className="cursor-pointer hover:bg-accent/50">
-                  <TableCell className="font-medium max-w-xs">
+                <TableRow
+                  key={task.id}
+                  onClick={() => navigate(`/tasks?taskId=${task.id}${task.project_id ? `&projectId=${task.project_id}` : ""}`)}
+                  className="cursor-pointer"
+                >
+                  <TableCell className="max-w-xs font-medium">
                     <div className="truncate">{task.title}</div>
                     {task.description && (
                       <div className="text-xs text-muted-foreground truncate">
@@ -98,14 +191,10 @@ const MyTasksTable: React.FC<MyTasksTableProps> = ({
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge className={`${getStatusBadgeClass(task.status)} text-xs`}>
-                      {task.status}
-                    </Badge>
+                    <DashboardStatusBadge status={task.status} />
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={`${getPriorityColor(task.priority)} text-xs`}>
-                      {task.priority}
-                    </Badge>
+                    <DashboardPriorityBadge priority={task.priority} />
                   </TableCell>
                   <TableCell>
                     {task.due_date ? (
@@ -128,7 +217,7 @@ const MyTasksTable: React.FC<MyTasksTableProps> = ({
           </TableBody>
         </Table>
       </div>
-    </div>
+    </section>
   );
 };
 
