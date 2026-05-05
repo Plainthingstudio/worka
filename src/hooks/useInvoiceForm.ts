@@ -49,7 +49,9 @@ function mergeInvoiceFromItems(
 
   if (isPartialInvoiceType(invoiceType) && selectedProject) {
     const projectTotal = Number(selectedProject.fee) || 0;
-    const alreadyPaid = getPaidAmountForProject(paidInvoices, selectedProject.id, prev.id);
+    const alreadyPaid =
+      getPaidAmountForProject(paidInvoices, selectedProject.id, prev.id) +
+      getManualPaidAmountForProject(selectedProject);
     const paymentBase = calculateInvoicePaymentAmount({
       invoiceType,
       paymentMode: prev.paymentMode || "percentage",
@@ -73,6 +75,9 @@ function mergeInvoiceFromItems(
 
   return next;
 }
+
+const getManualPaidAmountForProject = (project: Project | undefined): number =>
+  (project?.payments || []).reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0);
 
 function invoiceItemsMergeSignature(inv: Invoice): string {
   return JSON.stringify({
@@ -225,7 +230,9 @@ export function useInvoiceForm() {
     }
 
     const projectTotal = Number(selectedProject.fee) || 0;
-    const alreadyPaid = getPaidAmountForProject(invoices, selectedProject.id, inv.id);
+    const alreadyPaid =
+      getPaidAmountForProject(invoices, selectedProject.id, inv.id) +
+      getManualPaidAmountForProject(selectedProject);
     const target = calculateInvoicePaymentAmount({
       invoiceType,
       paymentMode: inv.paymentMode || "percentage",

@@ -69,3 +69,4 @@ npm run build
 Panduan deploy VPS:
 
 - [docs/DEPLOY_VPS.md](/Users/macbookpro/Documents/Simplify Project/studio-simplify/docs/DEPLOY_VPS.md)
+- [docs/PUSH_AND_PRODUCTION.md](/Users/macbookpro/Documents/Simplify Project/studio-simplify/docs/PUSH_AND_PRODUCTION.md)
