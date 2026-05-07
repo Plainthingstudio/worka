@@ -295,7 +295,7 @@ const Dashboard = () => {
           <MeetingScheduleCard />
         </div>
 
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_281px]">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_340px]">
           <section className={`${shellCardClass} min-h-[406px]`}>
             <div className="flex items-center justify-between gap-3">
               {renderSectionHeader(
@@ -409,21 +409,25 @@ const Dashboard = () => {
               ) : (
                 <div className={tableShellClass}>
                   <div className="flex h-9 rounded-[8px]">
-                    <div className={`${tableHeaderCellClass} w-[92px] rounded-l-[8px]`}>
+                    <div className={`${tableHeaderCellClass} w-[132px] min-w-0 rounded-l-[8px]`}>
                       Name
                     </div>
-                    <div className={`${tableHeaderCellClass} w-[163px] flex-1 rounded-r-[8px]`}>
+                    <div className={`${tableHeaderCellClass} min-w-0 flex-1 rounded-r-[8px]`}>
                       Position
                     </div>
                   </div>
 
                   {availableTeamMembers.slice(0, 5).map((member) => (
                     <div key={member.id} className="flex h-[57.5px]">
-                      <div className={`${tableBodyCellClass} w-[92px] text-[14px] font-medium leading-5 text-foreground`}>
-                        {member.name}
+                      <div className={`${tableBodyCellClass} w-[132px] min-w-0 text-[14px] font-medium leading-5 text-foreground`}>
+                        <span className="truncate" title={member.name}>
+                          {member.name}
+                        </span>
                       </div>
-                      <div className={`${tableBodyCellClass} w-[163px] flex-1 text-[14px] leading-5 text-foreground`}>
-                        {member.position}
+                      <div className={`${tableBodyCellClass} min-w-0 flex-1 text-[14px] leading-5 text-foreground`}>
+                        <span className="truncate" title={member.position}>
+                          {member.position}
+                        </span>
                       </div>
                     </div>
                   ))}

@@ -52,6 +52,8 @@ const Projects = () => {
     setSearch, 
     statusFilter, 
     setStatusFilter, 
+    deadlineSort,
+    toggleDeadlineSort,
     filteredProjects 
   } = useProjectFilters(projects);
 
@@ -117,6 +119,8 @@ const Projects = () => {
                   projects={filteredProjects}
                   clients={clients}
                   allTeamMembers={teamMembers}
+                  deadlineSort={deadlineSort}
+                  onToggleDeadlineSort={toggleDeadlineSort}
                   onDelete={openDeleteDialog}
                   onInlineUpdate={handleInlineUpdate}
                 />
