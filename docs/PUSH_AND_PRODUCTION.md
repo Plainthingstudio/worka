@@ -2,6 +2,53 @@
 
 Panduan ini dipakai setiap kali ingin mengirim perubahan Worka dari laptop ke GitHub lalu membuatnya live di production.
 
+## Manual Terminal Policy
+
+Kalau minta bantuan Codex untuk "push ke GitHub", "push ke production", atau "deploy production", Codex tidak perlu melakukan push/deploy langsung. Codex cukup memberikan command yang harus dijalankan manual satu per satu di terminal.
+
+Gunakan command GitHub dan production di bawah ini sebagai jawaban standar.
+
+### GitHub Only
+
+```sh
+cd "/Users/macbookpro/Documents/Simplify Project/studio-simplify"
+git status
+git push origin main
+git log --oneline --decorate -3
+git status --short --branch
+```
+
+### Production Only
+
+Jalankan setelah commit terbaru sudah berhasil ada di GitHub.
+
+```sh
+ssh ubuntu@103.93.129.191
+cd /home/ubuntu/worka
+git pull origin main
+npm install
+npm run build
+sudo systemctl reload nginx
+curl -s https://worka.plainthing.studio | grep assets/index
+```
+
+### GitHub Then Production
+
+```sh
+cd "/Users/macbookpro/Documents/Simplify Project/studio-simplify"
+git status
+git push origin main
+git log --oneline --decorate -3
+git status --short --branch
+ssh ubuntu@103.93.129.191
+cd /home/ubuntu/worka
+git pull origin main
+npm install
+npm run build
+sudo systemctl reload nginx
+curl -s https://worka.plainthing.studio | grep assets/index
+```
+
 ## 1. Cek Perubahan Lokal
 
 Masuk ke repo lokal:

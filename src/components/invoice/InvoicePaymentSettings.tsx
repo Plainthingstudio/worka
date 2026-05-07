@@ -47,7 +47,7 @@ const InvoicePaymentSettings: React.FC<InvoicePaymentSettingsProps> = ({
   const invoiceType = getInvoiceType(invoice);
   const isPartial = isPartialInvoiceType(invoiceType);
   const selectedProject = projects.find((project) => project.id === invoice.projectId);
-  const applyPhaseRestriction = !isEditing && Boolean(invoice.projectId);
+  const applyPhaseRestriction = Boolean(invoice.projectId);
   const hasPriorDownPayment = useMemo(
     () => projectHasPriorDownPaymentInvoice(invoices, invoice.projectId, invoice.id),
     [invoices, invoice.projectId, invoice.id]

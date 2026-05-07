@@ -57,10 +57,27 @@ const BriefsTable: React.FC<BriefsTableProps> = ({
       return "Invalid date";
     }
   };
-  return <div className="rounded-md border bg-card border-border-soft shadow-sm">
+
+  const isBriefNew = (brief: Brief) => {
+    const dateString = brief.submissionDate || brief.submission_date;
+    if (!dateString) return false;
+
+    const submittedAt = new Date(dateString).getTime();
+    if (!Number.isFinite(submittedAt)) return false;
+
+    const twoDaysInMs = 2 * 24 * 60 * 60 * 1000;
+    return Date.now() - submittedAt <= twoDaysInMs;
+  };
+
+  const shouldShowStatus = (brief: Brief) => {
+    const status = brief.status || "New";
+    return status !== "New" || isBriefNew(brief);
+  };
+
+  return <div className="overflow-x-auto">
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-surface-2">
             <TableHead>Type</TableHead>
             <TableHead>Client</TableHead>
             <TableHead>Company</TableHead>
@@ -88,10 +105,14 @@ const BriefsTable: React.FC<BriefsTableProps> = ({
                   {getSubmissionDate(brief)}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={getBriefStatusBadgeVariant(brief.status || "New")} className="inline-flex items-center gap-1">
-                    {getStatusIcon(brief.status || "New")}
-                    <span>{brief.status || "New"}</span>
-                  </Badge>
+                  {shouldShowStatus(brief) ? (
+                    <Badge variant={getBriefStatusBadgeVariant(brief.status || "New")} className="inline-flex items-center gap-1">
+                      {getStatusIcon(brief.status || "New")}
+                      <span>{brief.status || "New"}</span>
+                    </Badge>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">—</span>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">

@@ -114,6 +114,8 @@ sudo certbot --nginx -d app.your-domain.com -d appwrite.your-domain.com
 
 ## 8. Updating the app
 
+Manual terminal policy: if Codex is asked to push or deploy this project, Codex should provide the commands only. The user runs the GitHub push and production deploy manually in their terminal.
+
 ```bash
 deployment/deploy-frontend.sh
 ```
@@ -121,11 +123,13 @@ deployment/deploy-frontend.sh
 Or manually:
 
 ```bash
-cd /var/www/studio-simplify
-git pull
+ssh ubuntu@103.93.129.191
+cd /home/ubuntu/worka
+git pull origin main
 npm install
 npm run build
 sudo systemctl reload nginx
+curl -s https://worka.plainthing.studio | grep assets/index
 ```
 
 ## 9. Backups

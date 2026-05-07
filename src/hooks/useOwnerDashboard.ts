@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { client, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import { Client, Invoice, Lead, Project, TeamMember } from "@/types";
-import { invoiceTypeFromDocument } from "@/utils/invoiceTypes";
+import { getPaidInvoiceAmount, invoiceTypeFromDocument } from "@/utils/invoiceTypes";
 import { TaskWithRelations, isTaskClosedStatus, isTaskWorkingStatus } from "@/types/task";
 import { format } from "date-fns";
 
@@ -170,6 +170,7 @@ const fetchOwnerDashboardData = async (): Promise<OwnerDashboardData> => {
       projectTotalSnapshot: invoice.project_total_snapshot || 0,
       alreadyPaidSnapshot: invoice.already_paid_snapshot || 0,
       remainingAmountSnapshot: invoice.remaining_amount_snapshot || 0,
+      paidAt: invoice.status === "Paid" ? new Date(invoice.$updatedAt || invoice.date) : undefined,
     };
   });
 
@@ -251,7 +252,7 @@ export const useOwnerDashboard = (enabled: boolean) => {
       (project) => project.createdAt >= previousMonthStart && project.createdAt <= previousMonthEnd
     ).length;
 
-    const monthlyEarnings = projects.reduce((sum, project) => {
+    const manualMonthlyEarnings = projects.reduce((sum, project) => {
       return (
         sum +
         project.payments.reduce((paymentSum, payment) => {
@@ -260,7 +261,7 @@ export const useOwnerDashboard = (enabled: boolean) => {
       );
     }, 0);
 
-    const previousMonthEarnings = projects.reduce((sum, project) => {
+    const manualPreviousMonthEarnings = projects.reduce((sum, project) => {
       return (
         sum +
         project.payments.reduce((paymentSum, payment) => {
@@ -270,6 +271,26 @@ export const useOwnerDashboard = (enabled: boolean) => {
         }, 0)
       );
     }, 0);
+
+    const paidInvoiceMonthlyEarnings = invoices.reduce((sum, invoice) => {
+      if (invoice.status !== "Paid") return sum;
+
+      const paidAt = (invoice as Invoice & { paidAt?: Date }).paidAt || invoice.date;
+      return paidAt >= monthStart ? sum + getPaidInvoiceAmount(invoice) : sum;
+    }, 0);
+
+    const paidInvoicePreviousMonthEarnings = invoices.reduce((sum, invoice) => {
+      if (invoice.status !== "Paid") return sum;
+
+      const paidAt = (invoice as Invoice & { paidAt?: Date }).paidAt || invoice.date;
+      return paidAt >= previousMonthStart && paidAt <= previousMonthEnd
+        ? sum + getPaidInvoiceAmount(invoice)
+        : sum;
+    }, 0);
+
+    const monthlyEarnings = manualMonthlyEarnings + paidInvoiceMonthlyEarnings;
+    const previousMonthEarnings =
+      manualPreviousMonthEarnings + paidInvoicePreviousMonthEarnings;
 
     const getDelta = (currentValue: number, previousValue: number) => {
       if (previousValue === 0) return currentValue > 0 ? 100 : 0;
@@ -286,7 +307,7 @@ export const useOwnerDashboard = (enabled: boolean) => {
       monthlyNewProjectsDelta: getDelta(currentMonthProjects, previousMonthProjects),
       monthlyEarningsDelta: getDelta(monthlyEarnings, previousMonthEarnings),
     };
-  }, [leads, monthStart, previousMonthStart, projects]);
+  }, [invoices, leads, monthStart, previousMonthStart, projects]);
 
   const activeProjects = useMemo(
     () =>
