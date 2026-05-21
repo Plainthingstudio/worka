@@ -72,7 +72,7 @@ const Sidebar = () => {
   return (
     <div
       className={cn(
-        "fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ease-in-out bg-sidebar",
+        "app-sidebar fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ease-in-out bg-sidebar",
         expanded ? "w-56" : "w-16"
       )}
       style={{ borderRight: "none", borderImage: "none", boxSizing: "content-box" }}
@@ -91,7 +91,7 @@ const Sidebar = () => {
               <Logo size={40} />
               <div className="flex flex-col justify-center min-w-0">
                 <span
-                  className="leading-tight truncate text-foreground dark:text-foreground"
+                  className="app-sidebar-brand-title leading-tight truncate text-foreground dark:text-foreground"
                   style={{
                     fontFamily: "Inter, sans-serif",
                     fontWeight: 500,
@@ -102,7 +102,7 @@ const Sidebar = () => {
                   Worka
                 </span>
                 <span
-                  className="truncate text-muted-foreground"
+                  className="app-sidebar-brand-subtitle truncate text-muted-foreground"
                   style={{
                     fontFamily: "Inter, sans-serif",
                     fontWeight: 500,
@@ -117,7 +117,7 @@ const Sidebar = () => {
             </div>
             <button
               onClick={toggleSidebar}
-              className="flex items-center justify-center shrink-0 transition-colors hover:bg-sidebar-accent bg-card border border-sidebar-border"
+              className="app-sidebar-toggle flex items-center justify-center shrink-0 transition-colors hover:bg-sidebar-accent bg-card border border-sidebar-border"
               style={{
                 width: 24,
                 height: 24,
@@ -126,7 +126,7 @@ const Sidebar = () => {
               }}
               aria-label="Collapse sidebar"
             >
-              <ChevronLeft className="text-muted-foreground" style={{ width: 16, height: 16 }} strokeWidth={1.67} />
+              <ChevronLeft className="app-sidebar-icon-idle text-muted-foreground" style={{ width: 16, height: 16 }} strokeWidth={1.67} />
             </button>
           </>
         ) : (
@@ -135,12 +135,12 @@ const Sidebar = () => {
       </div>
 
       {/* Divider */}
-      <div className="bg-sidebar-border" style={{ height: 1 }} />
+      <div className="app-sidebar-divider bg-sidebar-border" style={{ height: 1 }} />
 
       {!expanded && (
         <button
           onClick={toggleSidebar}
-          className="mx-auto mt-2 flex items-center justify-center transition-colors hover:bg-sidebar-accent bg-card border border-sidebar-border"
+          className="app-sidebar-toggle mx-auto mt-2 flex items-center justify-center transition-colors hover:bg-sidebar-accent bg-card border border-sidebar-border"
           style={{
             width: 28,
             height: 28,
@@ -149,7 +149,7 @@ const Sidebar = () => {
           }}
           aria-label="Expand sidebar"
         >
-          <Menu className="text-muted-foreground" style={{ width: 16, height: 16 }} strokeWidth={1.67} />
+          <Menu className="app-sidebar-icon-idle text-muted-foreground" style={{ width: 16, height: 16 }} strokeWidth={1.67} />
         </button>
       )}
 
@@ -168,8 +168,8 @@ const Sidebar = () => {
                 "flex items-center transition-colors",
                 expanded ? "" : "justify-center",
                 isActive
-                  ? "bg-card border border-sidebar-border"
-                  : "hover:bg-sidebar-accent"
+                  ? "app-sidebar-nav-active bg-card border border-sidebar-border"
+                  : "app-sidebar-nav-idle hover:bg-sidebar-accent"
               )
             }
             style={({ isActive }) => {
@@ -192,7 +192,7 @@ const Sidebar = () => {
             {({ isActive }) => (
               <>
                 <item.icon
-                  className={isActive ? "text-brand-accent" : "text-muted-foreground"}
+                  className={isActive ? "text-brand-accent" : "app-sidebar-icon-idle text-muted-foreground"}
                   style={{
                     width: 16,
                     height: 16,
@@ -204,7 +204,9 @@ const Sidebar = () => {
                   <span
                     className={cn(
                       "truncate",
-                      isActive ? "text-foreground" : "text-muted-foreground"
+                      isActive
+                        ? "app-sidebar-nav-label-active text-foreground"
+                        : "app-sidebar-nav-label-idle text-muted-foreground"
                     )}
                     style={{
                       fontFamily: "Inter, sans-serif",
@@ -265,7 +267,7 @@ const Sidebar = () => {
 
       {/* Logout */}
       <div
-        className={cn(expanded ? "px-2" : "px-2", "border-t border-sidebar-border")}
+        className={cn(expanded ? "px-2" : "px-2", "app-sidebar-footer border-t border-sidebar-border")}
         style={{
           paddingTop: 9,
           paddingBottom: 9,
@@ -275,7 +277,7 @@ const Sidebar = () => {
           onClick={handleLogout}
           title={!expanded ? "Logout" : undefined}
           className={cn(
-            "flex w-full items-center transition-colors hover:bg-sidebar-accent text-muted-foreground",
+            "app-sidebar-logout flex w-full items-center transition-colors hover:bg-sidebar-accent text-muted-foreground",
             expanded ? "" : "justify-center"
           )}
           style={{

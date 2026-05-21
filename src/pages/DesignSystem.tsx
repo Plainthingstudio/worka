@@ -20,7 +20,6 @@ import {
   Search,
   Filter,
   Calendar,
-  Flag,
   Circle,
   CheckCircle,
   MoreHorizontal,
@@ -42,6 +41,8 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { PriorityIndicator } from "@/components/tasks/PriorityIndicator";
+import { PriorityFlagIcon } from "@/components/icons/PriorityFlagIcon";
 
 /* ────────────────────────────────────────────────────────────
    Building blocks
@@ -154,7 +155,7 @@ const TabPill = ({ active, icon: Icon, label }: { active?: boolean; icon: React.
     className={
       "inline-flex items-center text-[14px] font-medium leading-5 transition-all " +
       (active
-        ? "bg-card text-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.08)] dark:bg-[hsl(225_31%_11%)] dark:shadow-[0px_1px_3px_rgba(0,0,0,0.5)]"
+        ? "bg-card text-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.08)] dark:bg-surface-3 dark:shadow-none"
         : "bg-transparent text-muted-foreground")
     }
     style={{
@@ -470,7 +471,7 @@ export default function DesignSystem() {
 
           <Subsection title="Pill tab group (Board / List / Timeline)">
             <div
-              className="inline-flex items-center bg-surface-2 dark:bg-[hsl(222_33%_7%)]"
+              className="inline-flex items-center bg-surface-2 dark:bg-surface-2"
               style={{ padding: 4, borderRadius: 8 }}
             >
               <TabPill active icon={LayoutList} label="List" />
@@ -515,18 +516,10 @@ export default function DesignSystem() {
 
           <Subsection title="Priority (task priority flag)">
             <div className="flex flex-wrap gap-3">
-              <span className="inline-flex items-center" style={{ padding: "4px 8px", gap: 6, background: "#EFF6FF", borderRadius: 10, fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 12, color: "#2563EB" }}>
-                <Flag style={{ width: 12, height: 12, color: "#2563EB" }} strokeWidth={1.5} /> Normal
-              </span>
-              <span className="inline-flex items-center" style={{ padding: "4px 8px", gap: 6, background: "#FFEDD5", borderRadius: 10, fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 12, color: "#EA580C" }}>
-                <Flag style={{ width: 12, height: 12, color: "#EA580C" }} strokeWidth={1.5} /> High
-              </span>
-              <span className="inline-flex items-center" style={{ padding: "4px 8px", gap: 6, background: "#FEE2E2", borderRadius: 10, fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 12, color: "#DC2626" }}>
-                <Flag style={{ width: 12, height: 12, color: "#DC2626" }} strokeWidth={1.5} /> Urgent
-              </span>
-              <span className="inline-flex items-center" style={{ padding: "4px 8px", gap: 6, background: "#F1F5F9", borderRadius: 10, fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 12, color: "#64748B" }}>
-                <Flag style={{ width: 12, height: 12, color: "#64748B" }} strokeWidth={1.5} /> Low
-              </span>
+              <PriorityIndicator priority="Normal" />
+              <PriorityIndicator priority="High" />
+              <PriorityIndicator priority="Urgent" />
+              <PriorityIndicator priority="Low" />
             </div>
           </Subsection>
 
@@ -810,7 +803,7 @@ export default function DesignSystem() {
         {/* ─── ICONS ─────────────────────────────────────────── */}
         <Section title="Icon usage (Lucide · stroke 1.67)">
           <div className="flex flex-wrap gap-4">
-            {[ChevronLeft, ChevronRight, ChevronDown, Plus, Search, Filter, Bell, Calendar, Flag, CheckCircle, Circle, MoreHorizontal, ArrowRight, LogOut, LayoutDashboard, Users].map(
+            {[ChevronLeft, ChevronRight, ChevronDown, Plus, Search, Filter, Bell, Calendar, CheckCircle, Circle, MoreHorizontal, ArrowRight, LogOut, LayoutDashboard, Users].map(
               (Icon, i) => (
                 <div key={i} className="flex flex-col items-center gap-1">
                   <div className="w-10 h-10 rounded-lg border border-slate-200 bg-white flex items-center justify-center">
@@ -819,6 +812,11 @@ export default function DesignSystem() {
                 </div>
               )
             )}
+            <div className="flex flex-col items-center gap-1">
+              <div className="w-10 h-10 rounded-lg border border-slate-200 bg-white flex items-center justify-center">
+                <PriorityFlagIcon size={16} color="#020817" />
+              </div>
+            </div>
           </div>
         </Section>
 

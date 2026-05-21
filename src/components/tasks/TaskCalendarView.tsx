@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { TaskWithRelations } from '@/types/task';
 import { ClickUpTaskDetail } from './ClickUpTaskDetail';
+import { PriorityIndicator } from './PriorityIndicator';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from 'date-fns';
 
 interface TaskCalendarViewProps {
@@ -25,16 +25,6 @@ export const TaskCalendarView = ({ tasks, isLoading, onUpdateTask }: TaskCalenda
     return tasks.filter(task => 
       task.due_date && isSameDay(new Date(task.due_date), day)
     );
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'Urgent': return 'bg-destructive';
-      case 'High': return 'bg-orange-500';
-      case 'Normal': return 'bg-blue-500';
-      case 'Low': return 'bg-muted-foreground';
-      default: return 'bg-muted-foreground';
-    }
   };
 
   if (isLoading) {
@@ -106,9 +96,7 @@ export const TaskCalendarView = ({ tasks, isLoading, onUpdateTask }: TaskCalenda
                         onClick={() => setSelectedTask(task)}
                       >
                         <div className="flex items-center gap-1">
-                          <div 
-                            className={`w-2 h-2 rounded-full ${getPriorityColor(task.priority)}`}
-                          />
+                          <PriorityIndicator priority={task.priority} size="xs" showLabel={false} />
                           <span className="text-white truncate font-medium">
                             {task.title}
                           </span>
@@ -145,12 +133,7 @@ export const TaskCalendarView = ({ tasks, isLoading, onUpdateTask }: TaskCalenda
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <h4 className="font-medium text-sm">{task.title}</h4>
-                    <Badge 
-                      variant="secondary" 
-                      className={`text-white text-xs ${getPriorityColor(task.priority)}`}
-                    >
-                      {task.priority}
-                    </Badge>
+                    <PriorityIndicator priority={task.priority} size="sm" />
                   </div>
                   {task.description && (
                     <p className="text-xs text-muted-foreground line-clamp-2">

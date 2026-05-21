@@ -7,16 +7,16 @@ import { TaskDetailSidebar } from "@/components/tasks/TaskDetailSidebar";
 import { SubtaskDialog } from "@/components/tasks/SubtaskDialog";
 import { useTasks } from "@/hooks/useTasks";
 import { ProjectTab } from "./ProjectTabs";
-import { Switch } from "@/components/ui/switch";
 import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 
 interface ProjectTasksViewProps {
   projectId: string;
   view: Exclude<ProjectTab, "overview">;
   onCreateTask: () => void;
+  myTasksOnly: boolean;
 }
 
-const ProjectTasksView = ({ projectId, view, onCreateTask }: ProjectTasksViewProps) => {
+const ProjectTasksView = ({ projectId, view, onCreateTask, myTasksOnly }: ProjectTasksViewProps) => {
   const {
     tasks,
     isLoading,
@@ -30,7 +30,6 @@ const ProjectTasksView = ({ projectId, view, onCreateTask }: ProjectTasksViewPro
   const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
   const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = useState(false);
   const [parentTaskId, setParentTaskId] = useState<string>("");
-  const [myTasksOnly, setMyTasksOnly] = useState(true);
   const [myTaskIdentityIds, setMyTaskIdentityIds] = useState<string[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
@@ -108,29 +107,6 @@ const ProjectTasksView = ({ projectId, view, onCreateTask }: ProjectTasksViewPro
 
   return (
     <div className="w-full">
-      <div className="mb-4 flex items-center justify-end">
-        <label
-          className="inline-flex items-center border border-border-soft bg-card text-foreground"
-          style={{
-            gap: 8,
-            height: 36,
-            padding: "0 12px",
-            borderRadius: 12,
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 500,
-            fontSize: 14,
-            lineHeight: "20px",
-          }}
-        >
-          <Switch
-            checked={myTasksOnly}
-            onCheckedChange={setMyTasksOnly}
-            className="h-5 w-9 data-[state=checked]:bg-brand [&>span]:h-4 [&>span]:w-4 [&>span]:data-[state=checked]:translate-x-4"
-          />
-          <span>My task</span>
-        </label>
-      </div>
-
       {view === "list" && (
         <ClickUpTaskList
           tasks={visibleTasks}

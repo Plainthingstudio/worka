@@ -5,7 +5,6 @@ import {
   User, 
   MessageSquare, 
   Paperclip, 
-  Flag, 
   Users, 
   Calendar,
   CheckCircle,
@@ -33,6 +32,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal } from 'lucide-react';
+import { PriorityFlagIcon } from '@/components/icons/PriorityFlagIcon';
 
 interface TaskActivityFeedActivity {
   id: string;
@@ -148,7 +148,7 @@ export const TaskActivityFeed = ({
       case 'attachment': return <Paperclip className="h-4 w-4" />;
       case 'status_change': return <CheckCircle className="h-4 w-4" />;
       case 'assignee_change': return <Users className="h-4 w-4" />;
-      case 'priority_change': return <Flag className="h-4 w-4" />;
+      case 'priority_change': return <PriorityFlagIcon size={16} color="hsl(var(--muted-foreground))" />;
       case 'due_date_change': return <Calendar className="h-4 w-4" />;
       case 'task_created': return <Plus className="h-4 w-4" />;
       default: return <Clock className="h-4 w-4" />;

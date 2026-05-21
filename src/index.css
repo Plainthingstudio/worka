@@ -103,60 +103,60 @@
   }
 
   .dark {
-    --background: 222 47% 3%;
-    --foreground: 210 40% 96%;
+    --background: 240 7% 11%;
+    --foreground: 240 5% 95%;
 
-    --card: 225 31% 5%;
-    --card-foreground: 210 40% 96%;
+    --card: 240 6% 13%;
+    --card-foreground: 240 5% 95%;
 
-    --popover: 225 31% 5%;
-    --popover-foreground: 210 40% 96%;
+    --popover: 240 6% 13%;
+    --popover-foreground: 240 5% 95%;
 
     --primary: 224 96% 65%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 217 19% 12%;
-    --secondary-foreground: 210 40% 96%;
+    --secondary: 240 6% 17%;
+    --secondary-foreground: 240 5% 95%;
 
-    --muted: 217 19% 12%;
-    --muted-foreground: 215 16% 65%;
+    --muted: 240 6% 17%;
+    --muted-foreground: 240 6% 72%;
 
-    --accent: 217 19% 14%;
-    --accent-foreground: 210 40% 96%;
+    --accent: 240 6% 20%;
+    --accent-foreground: 240 5% 95%;
 
     --destructive: 0 70% 50%;
-    --destructive-foreground: 210 40% 96%;
+    --destructive-foreground: 240 5% 95%;
 
-    --border: 217 19% 16%;
-    --input: 217 19% 16%;
+    --border: 240 6% 22%;
+    --input: 240 6% 22%;
     --ring: 213 94% 68%;
 
-    --sidebar-background: 222 33% 4%;
-    --sidebar-foreground: 215 16% 75%;
+    --sidebar-background: 240 7% 11%;
+    --sidebar-foreground: 240 6% 72%;
     --sidebar-primary: 224 96% 65%;
     --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 217 19% 12%;
-    --sidebar-accent-foreground: 210 40% 96%;
-    --sidebar-border: 217 19% 14%;
+    --sidebar-accent: 240 6% 20%;
+    --sidebar-accent-foreground: 240 5% 95%;
+    --sidebar-border: 240 6% 22%;
     --sidebar-ring: 213 94% 68%;
 
     /* Chrome / surface tokens — dark */
-    --surface-1: 225 31% 5%;           /* card-equivalent */
-    --surface-2: 222 33% 4%;           /* page bg */
-    --surface-3: 217 19% 12%;          /* group header / hover */
-    --surface-hover: 217 19% 7%;
-    --border-soft: 217 19% 16%;
-    --border-subtle: 217 19% 14%;
-    --text-tertiary: 215 16% 55%;
-    --text-disabled: 215 16% 40%;
+    --surface-1: 240 6% 13%;           /* card-equivalent */
+    --surface-2: 240 7% 11%;           /* page bg */
+    --surface-3: 240 6% 17%;           /* group header / hover bg */
+    --surface-hover: 240 6% 20%;
+    --border-soft: 240 6% 22%;
+    --border-subtle: 240 5% 18%;
+    --text-tertiary: 240 4% 58%;
+    --text-disabled: 240 4% 42%;
     --brand: 224 96% 65%;
     --brand-foreground: 210 40% 98%;
     --brand-accent: 210 100% 60%;
 
     /* Status badges — dark (deeper bg, lighter fg) */
-    --status-planning-bg:    218 14% 18%;
-    --status-planning-fg:    218 14% 75%;
-    --status-planning-ring:  218 14% 50% / 0.4;
+    --status-planning-bg:    240 6% 20%;
+    --status-planning-fg:    240 6% 78%;
+    --status-planning-ring:  240 6% 55% / 0.35;
 
     --status-progress-bg:    224 60% 18%;
     --status-progress-fg:    214 95% 78%;
@@ -185,8 +185,8 @@
     --priority-high-fg:      33 95% 70%;
     --priority-normal-bg:    221 50% 20%;
     --priority-normal-fg:    214 95% 75%;
-    --priority-low-bg:       217 19% 20%;
-    --priority-low-fg:       215 16% 70%;
+    --priority-low-bg:       240 6% 20%;
+    --priority-low-fg:       240 6% 72%;
   }
 }
 
@@ -228,7 +228,7 @@
   }
 
   .status-paused {
-    @apply bg-purple-50 text-purple-700 ring-purple-700/10 dark:bg-purple-950/40 dark:text-purple-300 dark:ring-purple-400/20;
+    @apply bg-yellow-50 text-yellow-700 ring-yellow-600/20 dark:bg-yellow-500/15 dark:text-yellow-300 dark:ring-yellow-400/20;
   }
 
   .status-cancelled {
@@ -239,6 +239,142 @@
   .project-type-badge {
     @apply inline-flex items-center justify-center gap-1 rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset;
   }
+}
+
+.app-charcoal,
+.dashboard-charcoal {
+  --dashboard-page: #1b1b1f;
+  --dashboard-card: #202024;
+  --dashboard-nested: #2a2a2f;
+  --dashboard-hover: #303036;
+  --dashboard-border: #34343a;
+  --dashboard-primary: #f2f2f3;
+  --dashboard-secondary: #b8b8c0;
+  --dashboard-muted: #8f8f99;
+}
+
+.dark .dashboard-charcoal {
+  background: var(--dashboard-card);
+  color: var(--dashboard-primary);
+}
+
+.dark .app-charcoal {
+  background: var(--dashboard-page);
+  color: var(--dashboard-primary);
+}
+
+.dark .app-charcoal .app-shell-frame,
+.dark .app-charcoal .app-shell-content,
+.dark .app-charcoal .app-topbar {
+  background: var(--dashboard-card);
+  border-color: var(--dashboard-border);
+}
+
+.dark .app-charcoal .app-sidebar {
+  background: var(--dashboard-page);
+  color: var(--dashboard-secondary);
+}
+
+.dark .app-charcoal .app-sidebar-divider {
+  background: var(--dashboard-border);
+}
+
+.dark .app-charcoal .app-sidebar-footer,
+.dark .app-charcoal .app-sidebar-border {
+  border-color: var(--dashboard-border);
+}
+
+.dark .app-charcoal .app-sidebar-toggle {
+  background: var(--dashboard-card);
+  border-color: var(--dashboard-border);
+  color: var(--dashboard-secondary);
+  box-shadow: none;
+}
+
+.dark .app-charcoal .app-sidebar-toggle:hover,
+.dark .app-charcoal .app-sidebar-nav-idle:hover,
+.dark .app-charcoal .app-sidebar-logout:hover {
+  background: var(--dashboard-hover);
+}
+
+.dark .app-charcoal .app-sidebar-brand-title,
+.dark .app-charcoal .app-topbar-title,
+.dark .app-charcoal .app-sidebar-nav-label-active {
+  color: var(--dashboard-primary);
+}
+
+.dark .app-charcoal .app-topbar button {
+  color: var(--dashboard-secondary);
+}
+
+.dark .app-charcoal .app-topbar button:hover {
+  background: var(--dashboard-hover);
+  color: var(--dashboard-primary);
+}
+
+.dark .app-charcoal .app-sidebar-brand-subtitle,
+.dark .app-charcoal .app-sidebar-nav-label-idle,
+.dark .app-charcoal .app-sidebar-logout,
+.dark .app-charcoal .app-sidebar-icon-idle {
+  color: var(--dashboard-muted);
+}
+
+.dark .app-charcoal .app-sidebar-nav-active {
+  background: var(--dashboard-nested);
+  border-color: var(--dashboard-border);
+  box-shadow: none;
+}
+
+.dark .dashboard-charcoal .dashboard-panel {
+  background: var(--dashboard-card);
+  border-color: var(--dashboard-border);
+  box-shadow: none;
+}
+
+.dark .dashboard-charcoal .dashboard-surface-nested {
+  background: var(--dashboard-nested);
+  border-color: var(--dashboard-border);
+}
+
+.dark .dashboard-charcoal .dashboard-surface-subtle {
+  background: var(--dashboard-page);
+  border-color: var(--dashboard-border);
+}
+
+.dark .dashboard-charcoal .dashboard-border {
+  border-color: var(--dashboard-border);
+}
+
+.dark .dashboard-charcoal .dashboard-icon-tile {
+  background: var(--dashboard-nested);
+  border-color: var(--dashboard-border);
+}
+
+.dark .dashboard-charcoal .dashboard-row:hover,
+.dark .dashboard-charcoal .dashboard-row:focus-visible {
+  background: var(--dashboard-hover);
+}
+
+.dark .dashboard-charcoal .dashboard-button-subtle {
+  background: var(--dashboard-card);
+  border-color: var(--dashboard-border);
+  color: var(--dashboard-primary);
+}
+
+.dark .dashboard-charcoal .dashboard-button-subtle:hover {
+  background: var(--dashboard-hover);
+}
+
+.dark .dashboard-charcoal .dashboard-text-primary {
+  color: var(--dashboard-primary);
+}
+
+.dark .dashboard-charcoal .dashboard-text-secondary {
+  color: var(--dashboard-secondary);
+}
+
+.dark .dashboard-charcoal .dashboard-text-muted {
+  color: var(--dashboard-muted);
 }
 
 /* Loading animations */
@@ -262,7 +398,7 @@
 }
 
 .dark .loading-shimmer {
-  background: linear-gradient(to right, hsl(217 19% 10%) 8%, hsl(217 19% 16%) 18%, hsl(217 19% 10%) 33%);
+  background: linear-gradient(to right, hsl(var(--surface-2)) 8%, hsl(var(--surface-3)) 18%, hsl(var(--surface-2)) 33%);
 }
 
 .scrollbar-hide {

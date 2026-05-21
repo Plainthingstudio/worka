@@ -42,7 +42,6 @@ import {
   User, 
   MessageSquare, 
   Paperclip, 
-  Flag, 
   Upload,
   Download,
   Send,
@@ -57,6 +56,7 @@ import { format } from 'date-fns';
 import { MentionText } from '@/components/tasks/MentionText';
 import { useTaskProject } from '@/hooks/useTaskProject';
 import DeleteConfirmationDialog from '@/components/projects/DeleteConfirmationDialog';
+import { PriorityIndicator } from './PriorityIndicator';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -164,16 +164,6 @@ export const TaskDetailDialog = ({
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'Urgent': return 'bg-destructive';
-      case 'High': return 'bg-orange-500';
-      case 'Normal': return 'bg-blue-500';
-      case 'Low': return 'bg-gray-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -194,7 +184,7 @@ export const TaskDetailDialog = ({
           <DialogHeader>
             <div className="flex items-center justify-between">
               <DialogTitle className="flex items-center gap-2">
-                <div className={`w-3 h-3 rounded-full ${getPriorityColor(task.priority)}`} />
+                <PriorityIndicator priority={task.priority} size="sm" />
                 {task.title}
               </DialogTitle>
               <div className="flex items-center gap-2">
@@ -262,8 +252,12 @@ export const TaskDetailDialog = ({
 
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Description</label>
-                    <div className="mt-1 p-3 bg-muted rounded-md min-h-[100px]">
-                      {task.description || 'No description'}
+                    <div className="mt-1 min-h-[220px] rounded-md bg-muted p-3 text-sm leading-6">
+                      {task.description ? (
+                        <MentionText content={task.description} candidates={[]} />
+                      ) : (
+                        <span className="text-muted-foreground">No description</span>
+                      )}
                     </div>
                   </div>
 
@@ -277,9 +271,8 @@ export const TaskDetailDialog = ({
 
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Priority</label>
-                      <div className="mt-1 flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${getPriorityColor(task.priority)}`} />
-                        {task.priority}
+                      <div className="mt-1">
+                        <PriorityIndicator priority={task.priority} size="sm" />
                       </div>
                     </div>
 
@@ -338,7 +331,7 @@ export const TaskDetailDialog = ({
                         <FormItem>
                           <FormLabel>Description</FormLabel>
                           <FormControl>
-                            <Textarea rows={4} {...field} />
+                            <Textarea rows={10} className="min-h-[220px] resize-y leading-6" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -564,7 +557,7 @@ export const TaskDetailDialog = ({
                     <div key={subtask.id} className="border rounded-lg p-3 hover:bg-muted/50">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${getPriorityColor(subtask.priority)}`} />
+                          <PriorityIndicator priority={subtask.priority} size="sm" />
                           <span className="text-sm font-medium">{subtask.title}</span>
                           <Badge variant={subtask.status === 'Completed' ? 'default' : 'secondary'} className="text-xs">
                             {subtask.status}
@@ -582,7 +575,9 @@ export const TaskDetailDialog = ({
                         </Button>
                       </div>
                       {subtask.description && (
-                        <p className="text-xs text-muted-foreground mb-2">{subtask.description}</p>
+                        <p className="mb-2 text-xs text-muted-foreground">
+                          <MentionText content={subtask.description} candidates={[]} />
+                        </p>
                       )}
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <div className="flex items-center gap-3">

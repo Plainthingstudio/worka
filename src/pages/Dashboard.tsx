@@ -26,15 +26,15 @@ import { useOwnerDashboard } from "@/hooks/useOwnerDashboard";
 import { TaskWithRelations } from "@/types/task";
 
 const shellCardClass =
-  "rounded-[12px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]";
+  "dashboard-panel rounded-[12px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]";
 const headerIconClass =
-  "flex h-8 w-8 items-center justify-center rounded-[8px] border border-border-soft text-brand-accent";
+  "dashboard-icon-tile flex h-8 w-8 items-center justify-center rounded-[8px] border border-border-soft text-brand-accent";
 const tableShellClass = "overflow-hidden rounded-[8px]";
 const tableRowButtonClass =
-  "flex w-full text-left outline-none transition-colors hover:bg-surface-3/60 focus-visible:outline-none focus-visible:bg-surface-3/60 dark:hover:bg-muted/20";
+  "dashboard-row flex w-full text-left outline-none transition-colors hover:bg-surface-3/60 focus-visible:outline-none focus-visible:bg-surface-3/60";
 const tableHeaderCellClass =
-  "flex items-center bg-surface-3 px-4 py-3 text-[14px] font-medium leading-5 text-muted-foreground";
-const tableBodyCellClass = "flex items-center border-b border-border-soft px-4 py-[18px]";
+  "dashboard-surface-nested dashboard-text-muted flex items-center bg-surface-3 px-4 py-3 text-[14px] font-medium leading-5 text-muted-foreground";
+const tableBodyCellClass = "dashboard-border flex items-center border-b border-border-soft px-4 py-[18px]";
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("en-US", {
@@ -54,7 +54,7 @@ const formatShortDate = (date?: Date) => {
 
 const AssigneePills = ({ names }: { names: string[] }) => {
   if (!names.length) {
-    return <span className="text-xs text-muted-foreground">Unassigned</span>;
+    return <span className="dashboard-text-muted text-xs text-muted-foreground">Unassigned</span>;
   }
 
   return (
@@ -68,7 +68,7 @@ const AssigneePills = ({ names }: { names: string[] }) => {
         />
       ))}
       {names.length > 3 ? (
-        <div className="-ml-1 flex h-6 min-w-6 items-center justify-center rounded-full border border-card bg-surface-3 px-1 text-[11px] font-normal text-foreground">
+        <div className="dashboard-surface-nested dashboard-text-primary -ml-1 flex h-6 min-w-6 items-center justify-center rounded-full border border-card bg-surface-3 px-1 text-[11px] font-normal text-foreground">
           +{names.length - 3}
         </div>
       ) : null}
@@ -77,7 +77,7 @@ const AssigneePills = ({ names }: { names: string[] }) => {
 };
 
 const EmptyTableState = ({ message }: { message: string }) => (
-  <div className="rounded-[12px] border border-border-soft bg-surface-2 px-4 py-5 text-sm text-muted-foreground">
+  <div className="dashboard-surface-subtle dashboard-text-muted rounded-[12px] border border-border-soft bg-surface-2 px-4 py-5 text-sm text-muted-foreground">
     {message}
   </div>
 );
@@ -140,10 +140,10 @@ const Dashboard = () => {
         })()}
       </div>
       <div>
-        <p className="text-[14px] font-semibold leading-[120%] tracking-[-0.03em] text-foreground">
+        <p className="dashboard-text-primary text-[14px] font-semibold leading-[120%] tracking-[-0.03em] text-foreground">
           {title}
         </p>
-        <p className="mt-1 text-[11px] leading-[100%] tracking-[-0.02em] text-muted-foreground">
+        <p className="dashboard-text-muted mt-1 text-[11px] leading-[100%] tracking-[-0.02em] text-muted-foreground">
           {description}
         </p>
       </div>
@@ -151,10 +151,10 @@ const Dashboard = () => {
   );
 
   return (
-    <main className="bg-card px-6 py-6">
+    <main className="dashboard-charcoal bg-card px-6 py-6">
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <h2 className="text-[24px] font-semibold leading-8 tracking-[-0.03em] text-foreground">
+          <h2 className="dashboard-text-primary text-[24px] font-semibold leading-8 tracking-[-0.03em] text-foreground">
             Dashboard Overview
           </h2>
 
@@ -168,24 +168,24 @@ const Dashboard = () => {
                 <ChevronDown className="h-4 w-4 text-inherit" strokeWidth={1.67} />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 border bg-popover shadow-lg">
+            <DropdownMenuContent align="end" className="w-48 border bg-popover shadow-lg dark:border-[#34343a] dark:bg-[#202024]">
               <DropdownMenuItem
                 onClick={() => navigate("/projects?new=true")}
-                className="cursor-pointer hover:bg-accent"
+                className="cursor-pointer hover:bg-accent dark:text-[#f2f2f3] dark:hover:bg-[#303036]"
               >
                 <ListChecks className="mr-2 h-4 w-4" />
                 Create Project
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => navigate("/tasks?new=true")}
-                className="cursor-pointer hover:bg-accent"
+                className="cursor-pointer hover:bg-accent dark:text-[#f2f2f3] dark:hover:bg-[#303036]"
               >
                 <Briefcase className="mr-2 h-4 w-4" />
                 Create Task
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => navigate("/invoices/new")}
-                className="cursor-pointer hover:bg-accent"
+                className="cursor-pointer hover:bg-accent dark:text-[#f2f2f3] dark:hover:bg-[#303036]"
               >
                 <FileText className="mr-2 h-4 w-4" />
                 Create Invoice
@@ -264,18 +264,18 @@ const Dashboard = () => {
                       onClick={() => navigate(`/projects/${project.id}`)}
                       className={`${tableRowButtonClass} h-[60px]`}
                     >
-                      <div className={`${tableBodyCellClass} w-[147.75px] flex-1 text-[14px] font-medium leading-5 text-foreground`}>
+                      <div className={`${tableBodyCellClass} dashboard-text-primary w-[147.75px] flex-1 text-[14px] font-medium leading-5 text-foreground`}>
                         {project.name}
                       </div>
-                      <div className={`${tableBodyCellClass} w-[147.75px] flex-1 text-[14px] leading-5 text-muted-foreground`}>
+                      <div className={`${tableBodyCellClass} dashboard-text-secondary w-[147.75px] flex-1 text-[14px] leading-5 text-muted-foreground`}>
                         {getClientName(project.clientId)}
                       </div>
-                      <div className={`${tableBodyCellClass} w-[147.75px] flex-1 text-[14px] leading-5 text-muted-foreground`}>
+                      <div className={`${tableBodyCellClass} dashboard-text-secondary w-[147.75px] flex-1 text-[14px] leading-5 text-muted-foreground`}>
                         {formatShortDate(project.deadline)}
                       </div>
-                      <div className={`${tableBodyCellClass} w-[147.75px] flex-1 gap-3 text-[14px] leading-5 text-muted-foreground`}>
+                      <div className={`${tableBodyCellClass} dashboard-text-secondary w-[147.75px] flex-1 gap-3 text-[14px] leading-5 text-muted-foreground`}>
                         <span>{project.progress}%</span>
-                        <div className="h-1.5 w-[93px] rounded-full bg-surface-3">
+                        <div className="dashboard-surface-nested h-1.5 w-[93px] rounded-full bg-surface-3">
                           <div
                             className="h-1.5 rounded-full bg-brand-accent"
                             style={{ width: `${project.progress}%` }}
@@ -329,10 +329,10 @@ const Dashboard = () => {
                       onClick={() => navigate("/tasks")}
                       className={`${tableRowButtonClass} h-[60px]`}
                     >
-                      <div className={`${tableBodyCellClass} w-[149.75px] min-w-0 flex-1 text-[14px] font-medium leading-5 text-foreground`}>
+                      <div className={`${tableBodyCellClass} dashboard-text-primary w-[149.75px] min-w-0 flex-1 text-[14px] font-medium leading-5 text-foreground`}>
                         <span className="truncate">{task.title}</span>
                       </div>
-                      <div className={`${tableBodyCellClass} w-[149.75px] flex-1 text-[14px] leading-5 text-muted-foreground`}>
+                      <div className={`${tableBodyCellClass} dashboard-text-secondary w-[149.75px] flex-1 text-[14px] leading-5 text-muted-foreground`}>
                         {formatShortDate(task.due_date)}
                       </div>
                       <div className={`${tableBodyCellClass} w-[102px]`}>
@@ -378,13 +378,13 @@ const Dashboard = () => {
                       onClick={() => navigate(`/invoices/${invoice.id}`)}
                       className={`${tableRowButtonClass} h-[57.5px]`}
                     >
-                      <div className={`${tableBodyCellClass} w-[133.83px] flex-1 text-[14px] font-medium leading-5 text-foreground`}>
+                      <div className={`${tableBodyCellClass} dashboard-text-primary w-[133.83px] flex-1 text-[14px] font-medium leading-5 text-foreground`}>
                         {invoice.invoiceNumber}
                       </div>
-                      <div className={`${tableBodyCellClass} w-[133.83px] flex-1 text-[14px] font-medium leading-5 text-foreground`}>
+                      <div className={`${tableBodyCellClass} dashboard-text-primary w-[133.83px] flex-1 text-[14px] font-medium leading-5 text-foreground`}>
                         {invoice.clientName}
                       </div>
-                      <div className={`${tableBodyCellClass} w-[133.83px] flex-1 text-[14px] font-medium leading-5 text-foreground`}>
+                      <div className={`${tableBodyCellClass} dashboard-text-primary w-[133.83px] flex-1 text-[14px] font-medium leading-5 text-foreground`}>
                         {formatCurrency(invoice.total)}
                       </div>
                     </button>
@@ -419,12 +419,12 @@ const Dashboard = () => {
 
                   {availableTeamMembers.slice(0, 5).map((member) => (
                     <div key={member.id} className="flex h-[57.5px]">
-                      <div className={`${tableBodyCellClass} w-[132px] min-w-0 text-[14px] font-medium leading-5 text-foreground`}>
+                      <div className={`${tableBodyCellClass} dashboard-text-primary w-[132px] min-w-0 text-[14px] font-medium leading-5 text-foreground`}>
                         <span className="truncate" title={member.name}>
                           {member.name}
                         </span>
                       </div>
-                      <div className={`${tableBodyCellClass} min-w-0 flex-1 text-[14px] leading-5 text-foreground`}>
+                      <div className={`${tableBodyCellClass} dashboard-text-secondary min-w-0 flex-1 text-[14px] leading-5 text-foreground`}>
                         <span className="truncate" title={member.position}>
                           {member.position}
                         </span>

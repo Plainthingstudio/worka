@@ -35,6 +35,7 @@ import { format } from 'date-fns';
 import { TaskPriority, TaskType, TaskStatus, TASK_STATUS_OPTIONS, TASK_STATUSES } from '@/types/task';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { BriefSelector } from './BriefSelector';
+import { PriorityIndicator } from './PriorityIndicator';
 
 const subtaskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -196,7 +197,8 @@ export const SubtaskDialog = ({
                     <FormControl>
                       <Textarea 
                         placeholder="Enter subtask description..." 
-                        rows={3} 
+                        rows={6}
+                        className="min-h-[160px] resize-y leading-6"
                         {...field} 
                       />
                     </FormControl>
@@ -237,17 +239,17 @@ export const SubtaskDialog = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Priority</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select priority" />
+                            <PriorityIndicator priority={field.value} size="sm" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="z-[130]">
-                          <SelectItem value="Low">Low</SelectItem>
-                          <SelectItem value="Normal">Normal</SelectItem>
-                          <SelectItem value="High">High</SelectItem>
-                          <SelectItem value="Urgent">Urgent</SelectItem>
+                          <SelectItem value="Low"><PriorityIndicator priority="Low" size="sm" /></SelectItem>
+                          <SelectItem value="Normal"><PriorityIndicator priority="Normal" size="sm" /></SelectItem>
+                          <SelectItem value="High"><PriorityIndicator priority="High" size="sm" /></SelectItem>
+                          <SelectItem value="Urgent"><PriorityIndicator priority="Urgent" size="sm" /></SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

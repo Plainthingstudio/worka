@@ -14,7 +14,7 @@ interface NavbarProps {
 const Navbar = ({ title, onMenuClick }: NavbarProps) => {
   return (
     <header
-      className="bg-card border-b border-border-soft"
+      className="app-topbar bg-card border-b border-border-soft"
       style={{ height: 53 }}
     >
       <div className="flex h-full items-center justify-between" style={{ padding: "0 24px" }}>
@@ -30,7 +30,7 @@ const Navbar = ({ title, onMenuClick }: NavbarProps) => {
             </Button>
           )}
           <h1
-            className="text-foreground"
+            className="app-topbar-title text-foreground"
             style={{
               fontFamily: "Inter, sans-serif",
               fontWeight: 500,

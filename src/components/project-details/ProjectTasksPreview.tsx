@@ -2,13 +2,14 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, ArrowRight, Plus, Clock, Flag, ChevronDown, ChevronRight, CheckCircle, Circle } from "lucide-react";
+import { Calendar, ArrowRight, Plus, Clock, ChevronDown, ChevronRight, CheckCircle, Circle } from "lucide-react";
 import { TaskWithRelations, TaskStatus } from "@/types/task";
 import { useNavigate } from "react-router-dom";
 import { useAssigneeNames } from "@/hooks/useAssigneeNames";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { InitialAvatar } from "@/components/ui/avatar";
+import { PriorityIndicator } from "@/components/tasks/PriorityIndicator";
 
 interface ProjectTasksPreviewProps {
   projectId: string;
@@ -43,13 +44,6 @@ const statusBadgeConfig: Record<TaskStatus, { bg: string; fg: string; ring: stri
   Paused:              { bg: '#FEF9C3', fg: '#854D0E', ring: 'rgba(133,77,14,0.2)' },
   Completed:           { bg: '#DCFCE7', fg: '#166534', ring: 'rgba(22,101,52,0.2)' },
   Cancelled:           { bg: '#FEE2E2', fg: '#B91C1C', ring: 'rgba(185,28,28,0.2)' },
-};
-
-const priorityConfig: Record<string, { bg: string; fg: string }> = {
-  Urgent: { bg: '#FEE2E2', fg: '#DC2626' },
-  High:   { bg: '#FFEDD5', fg: '#EA580C' },
-  Normal: { bg: '#EFF6FF', fg: '#2563EB' },
-  Low:    { bg: '#F1F5F9', fg: '#64748B' },
 };
 
 const headerCellStyle: React.CSSProperties = {
@@ -109,7 +103,6 @@ const ProjectTasksPreview: React.FC<ProjectTasksPreviewProps> = ({
 
   const renderTaskRow = (task: TaskWithRelations, index: number) => {
     const assigneeNames = getAssigneeNames(task.assignees || []);
-    const priority = priorityConfig[task.priority] || priorityConfig.Normal;
     const statusBadge = statusBadgeConfig[task.status] || statusBadgeConfig.Planning;
     const subtaskCount = task.subtasks?.length ?? 0;
 
@@ -198,17 +191,7 @@ const ProjectTasksPreview: React.FC<ProjectTasksPreviewProps> = ({
 
         {/* Priority */}
         <div className="flex items-center" style={{ width: colWidths.priority }}>
-          <span
-            className="inline-flex items-center"
-            style={{
-              padding: '4px 8px', gap: 6, background: priority.bg, borderRadius: 10,
-              fontFamily: 'Inter, sans-serif', fontWeight: 500,
-              fontSize: 12, lineHeight: '16px', color: priority.fg,
-            }}
-          >
-            <Flag style={{ width: 12, height: 12, color: priority.fg }} strokeWidth={1.5} />
-            {task.priority}
-          </span>
+          <PriorityIndicator priority={task.priority} size="sm" />
         </div>
 
         {/* Status */}

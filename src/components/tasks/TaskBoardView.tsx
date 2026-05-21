@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Flag, Calendar, User, MessageSquare, Paperclip, MoreHorizontal, Plus, MoreVertical, GripVertical } from 'lucide-react';
+import { Calendar, User, MessageSquare, Paperclip, MoreHorizontal, Plus, MoreVertical, GripVertical } from 'lucide-react';
 import { TaskWithRelations, TaskStatus } from '@/types/task';
 import { ClickUpTaskDetail } from './ClickUpTaskDetail';
 import { format } from 'date-fns';
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, InitialAvatar } from '@/components/ui/avatar';
 import { useAssigneeNames } from '@/hooks/useAssigneeNames';
+import { PriorityIndicator } from './PriorityIndicator';
 
 interface TaskBoardViewProps {
   tasks: TaskWithRelations[];
@@ -49,36 +50,6 @@ export const TaskBoardView = ({
   const { getAssigneeNames } = useAssigneeNames();
   const [draggedTask, setDraggedTask] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'Urgent': return 'bg-destructive';
-      case 'High': return 'bg-orange-500';
-      case 'Normal': return 'bg-blue-500';
-      case 'Low': return 'bg-gray-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const getPriorityTextColor = (priority: string) => {
-    switch (priority) {
-      case 'Urgent': return 'text-red-500 dark:text-red-400';
-      case 'High': return 'text-orange-500 dark:text-orange-400';
-      case 'Normal': return 'text-blue-500 dark:text-blue-400';
-      case 'Low': return 'text-muted-foreground';
-      default: return 'text-muted-foreground';
-    }
-  };
-
-  const getPriorityBorderColor = (priority: string) => {
-    switch (priority) {
-      case 'Urgent': return 'border-l-red-500';
-      case 'High': return 'border-l-orange-500';
-      case 'Normal': return 'border-l-blue-500';
-      case 'Low': return 'border-l-green-500';
-      default: return 'border-l-border-soft';
-    }
-  };
 
   const handleStatusChange = async (taskId: string, newStatus: TaskStatus) => {
     await onUpdateTask(taskId, { 
@@ -197,10 +168,7 @@ export const TaskBoardView = ({
                       
                       {/* Priority Badge */}
                       <div className="flex items-center gap-2 mb-3">
-                        <div className={`flex items-center gap-1 text-xs ${getPriorityTextColor(task.priority)}`}>
-                          <Flag className="h-3 w-3" />
-                          <span>{task.priority}</span>
-                        </div>
+                        <PriorityIndicator priority={task.priority} size="sm" />
                       </div>
                       
                       {/* Task Meta Info */}

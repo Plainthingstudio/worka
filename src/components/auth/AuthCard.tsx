@@ -31,7 +31,7 @@ const AuthCard = memo(({
         <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
           <div className="h-6 w-6 rounded-full bg-primary" />
         </div>
-        <h1 className="text-center text-xl font-semibold tracking-tight">
+        <h1 className="text-center text-xl font-semibold tracking-tight text-foreground">
           Welcome to Worka
         </h1>
         <p className="mt-1.5 text-center text-sm text-muted-foreground">

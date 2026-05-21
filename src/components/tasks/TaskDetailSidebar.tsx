@@ -32,7 +32,6 @@ import {
   Calendar,
   User,
   Paperclip,
-  Flag,
   X,
   Users,
   CheckCircle,
@@ -58,6 +57,8 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { PriorityIndicator } from './PriorityIndicator';
+import { PriorityFlagIcon } from '@/components/icons/PriorityFlagIcon';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTaskProject } from '@/hooks/useTaskProject';
 import DeleteConfirmationDialog from '@/components/projects/DeleteConfirmationDialog';
@@ -116,6 +117,7 @@ export const TaskDetailSidebar = ({
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [assigneePickerOpen, setAssigneePickerOpen] = useState(false);
   const [draftAssignees, setDraftAssignees] = useState<string[]>([]);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
   const navigate = useNavigate();
   const { project } = useTaskProject(task?.project_id || null);
@@ -199,6 +201,7 @@ export const TaskDetailSidebar = ({
         assignees: task.assignees || [],
         due_date: task.due_date ? new Date(task.due_date) : undefined,
       });
+      setIsEditingDescription(false);
     }
   }, [task]);
 
@@ -232,16 +235,6 @@ export const TaskDetailSidebar = ({
 
   const handleBriefChange = () => {
     window.location.reload();
-  };
-
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case 'Urgent': return <Flag className="h-3 w-3 text-red-500" />;
-      case 'High': return <Flag className="h-3 w-3 text-orange-500" />;
-      case 'Normal': return <Flag className="h-3 w-3 text-blue-500" />;
-      case 'Low': return <Flag className="h-3 w-3 text-gray-500" />;
-      default: return <Flag className="h-3 w-3 text-gray-500" />;
-    }
   };
 
   const mentionCandidates = teamMembers.map((m) => ({
@@ -612,12 +605,9 @@ export const TaskDetailSidebar = ({
                   </FieldRow>
 
                   {/* Priority */}
-                  <FieldRow icon={<Flag style={iconStyle} strokeWidth={1.67} />} label="Priority">
+                  <FieldRow icon={<PriorityFlagIcon size={16} color="hsl(var(--muted-foreground))" />} label="Priority">
                     {userRole === 'team' ? (
-                      <div className="flex items-center gap-2 text-sm">
-                        {getPriorityIcon(form.watch('priority'))}
-                        {form.watch('priority')}
-                      </div>
+                      <PriorityIndicator priority={form.watch('priority')} size="sm" />
                     ) : (
                       <FormField
                         control={form.control}
@@ -632,16 +622,15 @@ export const TaskDetailSidebar = ({
                           >
                             <SelectTrigger className="text-sm w-48 border-none shadow-none bg-transparent px-0 py-0 h-auto hover:bg-transparent focus:ring-0 group [&>svg]:hidden">
                               <div className="flex items-center gap-2">
-                                {getPriorityIcon(field.value)}
-                                <SelectValue />
+                                <PriorityIndicator priority={field.value} size="sm" />
                                 <ChevronDown className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                               </div>
                             </SelectTrigger>
                             <SelectContent className="bg-popover border z-[80]">
-                              <SelectItem value="Low">Low</SelectItem>
-                              <SelectItem value="Normal">Normal</SelectItem>
-                              <SelectItem value="High">High</SelectItem>
-                              <SelectItem value="Urgent">Urgent</SelectItem>
+                              <SelectItem value="Low"><PriorityIndicator priority="Low" size="sm" /></SelectItem>
+                              <SelectItem value="Normal"><PriorityIndicator priority="Normal" size="sm" /></SelectItem>
+                              <SelectItem value="High"><PriorityIndicator priority="High" size="sm" /></SelectItem>
+                              <SelectItem value="Urgent"><PriorityIndicator priority="Urgent" size="sm" /></SelectItem>
                             </SelectContent>
                           </Select>
                         )}
@@ -830,9 +819,21 @@ export const TaskDetailSidebar = ({
                 {/* Description */}
                 <div className="space-y-3">
                   <h3 style={sectionTitleStyle}>Description</h3>
-                  {userRole === 'team' ? (
-                    <div className="p-3 bg-surface-2 text-foreground rounded-md min-h-[100px] text-sm">
-                      {task.description || 'No description'}
+                  {userRole === 'team' || !isEditingDescription ? (
+                    <div
+                      className={cn(
+                        "min-h-[220px] rounded-[10px] border border-border-soft bg-surface-2 p-3 text-sm leading-6 text-foreground",
+                        userRole !== 'team' && "cursor-text transition-colors hover:bg-surface-hover"
+                      )}
+                      onClick={() => {
+                        if (userRole !== 'team') setIsEditingDescription(true);
+                      }}
+                    >
+                      {task.description ? (
+                        <MentionText content={task.description} candidates={candidateNames} />
+                      ) : (
+                        <span className="text-muted-foreground">No description</span>
+                      )}
                     </div>
                   ) : (
                     <FormField
@@ -844,10 +845,14 @@ export const TaskDetailSidebar = ({
                             <Textarea
                               {...field}
                               placeholder="Add a description..."
-                              rows={6}
-                              className="resize-none text-sm border border-border-soft text-foreground bg-card"
-                              style={{ borderRadius: 10, padding: "8px 12px" }}
-                              onBlur={() => form.handleSubmit(handleSubmit)()}
+                              rows={10}
+                              className="min-h-[220px] resize-y text-sm leading-6 border border-border-soft text-foreground bg-card"
+                              style={{ borderRadius: 10, padding: "12px" }}
+                              onBlur={() => {
+                                form.handleSubmit(handleSubmit)();
+                                setIsEditingDescription(false);
+                              }}
+                              autoFocus
                             />
                           </FormControl>
                           <FormMessage />

@@ -9,7 +9,6 @@ import {
   User, 
   MessageSquare, 
   Paperclip,
-  Flag,
   CheckCircle,
   Circle
 } from 'lucide-react';
@@ -24,6 +23,7 @@ import { ClickUpTaskDetail } from './ClickUpTaskDetail';
 import { format } from 'date-fns';
 import { Avatar, AvatarFallback, InitialAvatar } from '@/components/ui/avatar';
 import { useAssigneeNames } from '@/hooks/useAssigneeNames';
+import { PriorityIndicator } from './PriorityIndicator';
 
 interface TaskListViewProps {
   tasks: TaskWithRelations[];
@@ -44,26 +44,6 @@ export const TaskListView = ({
 }: TaskListViewProps) => {
   const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
   const { getAssigneeNames } = useAssigneeNames();
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'Urgent': return 'bg-destructive';
-      case 'High': return 'bg-orange-500';
-      case 'Normal': return 'bg-blue-500';
-      case 'Low': return 'bg-gray-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const getPriorityTextColor = (priority: string) => {
-    switch (priority) {
-      case 'Urgent': return 'text-red-500';
-      case 'High': return 'text-orange-500';
-      case 'Normal': return 'text-blue-500';
-      case 'Low': return 'text-gray-400';
-      default: return 'text-gray-400';
-    }
-  };
 
   const getTaskTypeColor = (taskType: string) => {
     switch (taskType) {
@@ -124,10 +104,7 @@ export const TaskListView = ({
                         {task.title}
                       </h3>
                       <div className="flex gap-2">
-                        <div className={`flex items-center gap-1 text-xs ${getPriorityTextColor(task.priority)}`}>
-                          <Flag className="h-3 w-3" />
-                          <span>{task.priority}</span>
-                        </div>
+                        <PriorityIndicator priority={task.priority} size="sm" />
                         <Badge 
                           variant="outline" 
                           className={`text-xs ${getTaskTypeColor(task.task_type)}`}

@@ -30,7 +30,7 @@ export const Layout = ({ children, title }: LayoutProps) => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-surface-2">
+    <div className="app-charcoal min-h-screen bg-surface-2">
       <Sidebar />
       <div
         className={`w-full transition-all duration-300 ease-in-out ${
@@ -39,10 +39,10 @@ export const Layout = ({ children, title }: LayoutProps) => {
       >
         <div className="pt-3 min-h-screen">
           <div
-            className="bg-card min-h-[calc(100vh-12px)] overflow-hidden border border-border-soft border-r-0 border-b-0 rounded-tl-lg"
+            className="app-shell-frame bg-card min-h-[calc(100vh-12px)] overflow-hidden border border-border-soft border-r-0 border-b-0 rounded-tl-lg"
           >
             <Navbar title={title || ""} />
-            <main className="w-full overflow-auto bg-card">
+            <main className="app-shell-content w-full overflow-auto bg-card">
               {children}
             </main>
           </div>

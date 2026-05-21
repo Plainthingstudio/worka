@@ -51,7 +51,7 @@ const ProjectHeader = ({
         style={{
           gap: 4,
           fontFamily: "Inter, sans-serif",
-          fontWeight: 600,
+          fontWeight: 400,
           fontSize: 12,
           lineHeight: "16px",
           letterSpacing: "0.6px",
@@ -96,7 +96,10 @@ const ProjectHeader = ({
             <Badge variant={getStatusBadgeVariant(project.status as any)}>
               {project.status}
             </Badge>
-            <Badge variant={getProjectTypeBadgeVariant(project.projectType as any)}>
+            <Badge
+              variant={getProjectTypeBadgeVariant(project.projectType as any)}
+              className="gap-1"
+            >
               <Tag className="h-3.5 w-3.5" />
               {project.projectType}
             </Badge>

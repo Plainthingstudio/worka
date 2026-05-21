@@ -497,7 +497,7 @@ export const Tasks = () => {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3">
             <div
-              className="inline-flex items-center bg-surface-2 dark:bg-[hsl(222_33%_7%)]"
+              className="inline-flex items-center bg-surface-2 dark:bg-surface-2"
               style={{ padding: 4, gap: 0, borderRadius: 8 }}
             >
               {viewTabs.map(({ key, label, icon: Icon }) => {
@@ -510,7 +510,7 @@ export const Tasks = () => {
                     className={cn(
                       "inline-flex items-center text-[14px] font-medium leading-5 transition-all",
                       active
-                        ? "bg-card text-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.08)] dark:bg-[hsl(225_31%_11%)] dark:shadow-[0px_1px_3px_rgba(0,0,0,0.5)]"
+                        ? "bg-card text-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.08)] dark:bg-surface-3 dark:shadow-none"
                         : "bg-transparent text-muted-foreground"
                     )}
                     style={{

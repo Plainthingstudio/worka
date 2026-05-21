@@ -3,7 +3,6 @@ import {
   ChevronDown,
   ChevronRight,
   Calendar,
-  Flag,
   CheckCircle,
   Circle,
   Plus,
@@ -29,6 +28,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Project } from '@/types';
+import { PriorityIndicator } from './PriorityIndicator';
 
 type SortKey = 'due_date' | 'priority';
 type SortDir = 'asc' | 'desc';
@@ -56,13 +56,6 @@ const statusConfig: Record<TaskStatus, { label: string; dot: string }> = {
   'Completed':        { label: 'COMPLETED',        dot: 'hsl(var(--status-dot-completed))' },
   'Paused':           { label: 'PAUSED',           dot: 'hsl(var(--status-dot-paused))' },
   'Cancelled':        { label: 'CANCELLED',        dot: 'hsl(var(--status-dot-cancelled))' },
-};
-
-const priorityConfig: Record<string, { bg: string; fg: string }> = {
-  Urgent: { bg: 'hsl(var(--priority-urgent-bg))', fg: 'hsl(var(--priority-urgent-fg))' },
-  High:   { bg: 'hsl(var(--priority-high-bg))',   fg: 'hsl(var(--priority-high-fg))' },
-  Normal: { bg: 'hsl(var(--priority-normal-bg))', fg: 'hsl(var(--priority-normal-fg))' },
-  Low:    { bg: 'hsl(var(--priority-low-bg))',    fg: 'hsl(var(--priority-low-fg))' },
 };
 
 const statusBadgeConfig: Record<TaskStatus, { bg: string; fg: string; ring: string }> = {
@@ -307,7 +300,6 @@ export const ClickUpTaskList = ({
   ) => {
     const assigneeNames = getAssigneeNames(task.assignees || []);
     const subtasks = isSubtask ? [] : getSubtasks(task);
-    const priority = priorityConfig[task.priority] || priorityConfig.Normal;
     const statusLabel = task.status;
 
     const showRowBg = !(index === 0 && !isSubtask);
@@ -645,27 +637,17 @@ export const ClickUpTaskList = ({
                 onClick={(e) => e.stopPropagation()}
                 className="inline-flex max-w-full min-w-0 items-center hover:opacity-80 transition-opacity"
                 style={{
-                  padding: '4px 8px',
-                  gap: 6,
-                  background: priority.bg,
-                  borderRadius: 10,
-                  fontFamily: 'Inter, sans-serif',
-                  fontWeight: 500,
-                  fontSize: 12,
-                  lineHeight: '16px',
-                  color: priority.fg,
                   border: 'none',
                   cursor: 'pointer',
+                  background: 'transparent',
+                  padding: 0,
                 }}
               >
-                <Flag className="shrink-0" style={{ width: 12, height: 12, color: priority.fg }} strokeWidth={1.5} />
-                <span className="min-w-0 truncate">{task.priority}</span>
+                <PriorityIndicator priority={task.priority} className="min-w-0 truncate" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
-              {priorityOptions.map((p) => {
-                const pc = priorityConfig[p];
-                return (
+              {priorityOptions.map((p) => (
                   <DropdownMenuItem
                     key={p}
                     onClick={(e) => {
@@ -674,25 +656,10 @@ export const ClickUpTaskList = ({
                     }}
                     className="flex items-center gap-2"
                   >
-                    <span
-                      className="inline-flex items-center"
-                      style={{
-                        padding: '2px 6px',
-                        background: pc.bg,
-                        borderRadius: 8,
-                        fontSize: 12,
-                        fontWeight: 500,
-                        color: pc.fg,
-                        gap: 4,
-                      }}
-                    >
-                      <Flag style={{ width: 10, height: 10, color: pc.fg }} strokeWidth={1.5} />
-                      {p}
-                    </span>
+                    <PriorityIndicator priority={p} size="sm" />
                     {task.priority === p && <Check style={{ width: 12, height: 12 }} className="ml-auto text-blue-600" />}
                   </DropdownMenuItem>
-                );
-              })}
+                ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -779,7 +746,7 @@ export const ClickUpTaskList = ({
             {/* Group header — outside horizontal scroll so it stays fixed horizontally */}
             <div
               onClick={() => toggleGroup(status)}
-              className="flex items-center cursor-pointer group bg-surface-2 dark:bg-[hsl(222_33%_9%)]"
+              className="flex items-center cursor-pointer group bg-surface-2 dark:bg-surface-2"
               style={{
                 height: 36,
                 padding: '6px 16px',

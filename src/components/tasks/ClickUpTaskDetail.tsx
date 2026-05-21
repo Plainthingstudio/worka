@@ -33,7 +33,6 @@ import {
   User, 
   MessageSquare, 
   Paperclip, 
-  Flag, 
   X,
   Send,
   Upload,
@@ -49,6 +48,8 @@ import { format } from 'date-fns';
 import { MentionText } from '@/components/tasks/MentionText';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { PriorityIndicator } from './PriorityIndicator';
+import { PriorityFlagIcon } from '@/components/icons/PriorityFlagIcon';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -147,16 +148,6 @@ export const ClickUpTaskDetail = ({
   };
 
 
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case 'Urgent': return <Flag className="h-3 w-3 text-red-500" />;
-      case 'High': return <Flag className="h-3 w-3 text-orange-500" />;
-      case 'Normal': return <Flag className="h-3 w-3 text-blue-500" />;
-      case 'Low': return <Flag className="h-3 w-3 text-gray-500" />;
-      default: return <Flag className="h-3 w-3 text-gray-500" />;
-    }
-  };
-
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -247,7 +238,7 @@ export const ClickUpTaskDetail = ({
 
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Flag className="h-4 w-4" />
+                    <PriorityFlagIcon size={16} color="hsl(var(--muted-foreground))" />
                     Priority
                   </div>
                   <Form {...form}>
@@ -260,16 +251,13 @@ export const ClickUpTaskDetail = ({
                           form.handleSubmit(handleSubmit)();
                         }} defaultValue={field.value}>
                           <SelectTrigger>
-                            <div className="flex items-center gap-2">
-                              {getPriorityIcon(field.value)}
-                              <SelectValue />
-                            </div>
+                            <PriorityIndicator priority={field.value} size="sm" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Low">Low</SelectItem>
-                            <SelectItem value="Normal">Normal</SelectItem>
-                            <SelectItem value="High">High</SelectItem>
-                            <SelectItem value="Urgent">Urgent</SelectItem>
+                            <SelectItem value="Low"><PriorityIndicator priority="Low" size="sm" /></SelectItem>
+                            <SelectItem value="Normal"><PriorityIndicator priority="Normal" size="sm" /></SelectItem>
+                            <SelectItem value="High"><PriorityIndicator priority="High" size="sm" /></SelectItem>
+                            <SelectItem value="Urgent"><PriorityIndicator priority="Urgent" size="sm" /></SelectItem>
                           </SelectContent>
                         </Select>
                       )}
@@ -395,8 +383,8 @@ export const ClickUpTaskDetail = ({
                           <Textarea 
                             {...field} 
                             placeholder="Add a description..."
-                            rows={4}
-                            className="resize-none"
+                            rows={10}
+                            className="min-h-[220px] resize-y leading-6"
                             onBlur={() => form.handleSubmit(handleSubmit)()}
                           />
                         </FormControl>

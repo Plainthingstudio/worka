@@ -106,7 +106,7 @@ const MeetingScheduleCard = () => {
 
     if (isIntegrationLoading) {
       return (
-        <div className="rounded-[12px] border border-border-soft bg-surface-2 px-4 py-5 text-sm text-muted-foreground">
+        <div className="dashboard-surface-subtle dashboard-text-muted rounded-[12px] border border-border-soft bg-surface-2 px-4 py-5 text-sm text-muted-foreground">
           Loading calendar status...
         </div>
       );
@@ -114,11 +114,11 @@ const MeetingScheduleCard = () => {
 
     if (!profile.connected) {
       return (
-        <div className="rounded-[12px] border border-dashed border-border-soft bg-surface-2 px-4 py-5">
-          <p className="text-sm font-medium text-foreground">
+        <div className="dashboard-surface-subtle rounded-[12px] border border-dashed border-border-soft bg-surface-2 px-4 py-5">
+          <p className="dashboard-text-primary text-sm font-medium text-foreground">
             Hubungkan Google Calendar untuk melihat meeting terjadwal.
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="dashboard-text-muted mt-1 text-sm text-muted-foreground">
             Setelah connect, dashboard akan membaca event dari primary calendar Anda melalui Appwrite Function.
           </p>
           <Button className="mt-4" onClick={() => navigate("/settings?tab=integrations")}>
@@ -131,14 +131,14 @@ const MeetingScheduleCard = () => {
 
     if (needsReconnect || eventError) {
       return (
-        <div className="rounded-[12px] border border-dashed border-border-soft bg-surface-2 px-4 py-5">
-          <p className="text-sm font-medium text-foreground">
+        <div className="dashboard-surface-subtle rounded-[12px] border border-dashed border-border-soft bg-surface-2 px-4 py-5">
+          <p className="dashboard-text-primary text-sm font-medium text-foreground">
             {eventError || "Google Calendar perlu dihubungkan ulang."}
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="dashboard-text-muted mt-1 text-sm text-muted-foreground">
             Backend tidak bisa lagi me-refresh akses Google Calendar. Hubungkan ulang agar meeting tetap tersinkron.
           </p>
-          <Button className="mt-4" variant="outline" onClick={() => navigate("/settings?tab=integrations")}>
+          <Button className="dashboard-button-subtle mt-4" variant="outline" onClick={() => navigate("/settings?tab=integrations")}>
             Reconnect from Settings
           </Button>
         </div>
@@ -147,7 +147,7 @@ const MeetingScheduleCard = () => {
 
     if (isLoadingEvents) {
       return (
-        <div className="rounded-[12px] border border-border-soft bg-surface-2 px-4 py-5 text-sm text-muted-foreground">
+        <div className="dashboard-surface-subtle dashboard-text-muted rounded-[12px] border border-border-soft bg-surface-2 px-4 py-5 text-sm text-muted-foreground">
           Loading meetings for {format(selectedDate, "d MMM yyyy")}...
         </div>
       );
@@ -155,11 +155,11 @@ const MeetingScheduleCard = () => {
 
     if (!events.length) {
       return (
-        <div className="rounded-[12px] border border-border-soft bg-surface-2 px-4 py-5">
-          <p className="text-sm font-medium text-foreground">
+        <div className="dashboard-surface-subtle rounded-[12px] border border-border-soft bg-surface-2 px-4 py-5">
+          <p className="dashboard-text-primary text-sm font-medium text-foreground">
             Tidak ada meeting pada {format(selectedDate, "d MMMM yyyy")}.
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="dashboard-text-muted mt-1 text-sm text-muted-foreground">
             Gunakan tombol panah untuk melihat jadwal hari sebelumnya atau berikutnya.
           </p>
         </div>
@@ -167,14 +167,14 @@ const MeetingScheduleCard = () => {
     }
 
     return (
-      <div className="overflow-hidden rounded-[12px] border border-border-soft bg-card">
+      <div className="dashboard-panel overflow-hidden rounded-[12px] border border-border-soft bg-card">
         {events.map((event) => (
           <div
             key={event.id}
-            className="flex h-16 items-center justify-between gap-4 border-b border-border-soft px-4 py-2 last:border-b-0"
+            className="dashboard-border flex h-16 items-center justify-between gap-4 border-b border-border-soft px-4 py-2 last:border-b-0"
           >
             <div className="min-w-0">
-              <p className="truncate text-[14px] font-medium leading-5 text-foreground">{event.title}</p>
+              <p className="dashboard-text-primary truncate text-[14px] font-medium leading-5 text-foreground">{event.title}</p>
               <p className="mt-2 text-[12px] font-medium leading-5 text-brand-accent">
                 {event.isAllDay
                   ? "All day"
@@ -186,11 +186,11 @@ const MeetingScheduleCard = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 shrink-0 rounded-[7px] border-border-soft bg-card px-2 text-[12px] font-medium leading-5 text-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.05)]"
+                className="dashboard-button-subtle h-7 shrink-0 rounded-[7px] border-border-soft bg-card px-2 text-[12px] font-medium leading-5 text-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.05)]"
                 onClick={() => window.open(event.htmlLink, "_blank", "noopener,noreferrer")}
               >
                 <ExternalLink className="mr-1 h-3 w-3" />
-                Link
+                Join
               </Button>
             ) : null}
           </div>
@@ -200,17 +200,17 @@ const MeetingScheduleCard = () => {
   };
 
   return (
-    <section className="flex h-full min-h-[428px] flex-col rounded-[12px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
+    <section className="dashboard-panel flex h-full min-h-[428px] flex-col rounded-[12px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-border-soft text-brand-accent">
+          <div className="dashboard-icon-tile flex h-8 w-8 items-center justify-center rounded-[8px] border border-border-soft text-brand-accent">
             <CalendarDays className="h-4 w-4" strokeWidth={1.75} />
           </div>
           <div>
-            <p className="text-sm font-semibold leading-[120%] tracking-[-0.03em] text-foreground">
+            <p className="dashboard-text-primary text-sm font-semibold leading-[120%] tracking-[-0.03em] text-foreground">
               Meetings Scheduled
             </p>
-            <p className="mt-1 text-[11px] leading-[100%] tracking-[-0.02em] text-muted-foreground">
+            <p className="dashboard-text-muted mt-1 text-[11px] leading-[100%] tracking-[-0.02em] text-muted-foreground">
               View upcoming meetings
             </p>
           </div>
@@ -220,7 +220,7 @@ const MeetingScheduleCard = () => {
           <Button
             variant="outline"
             size="sm"
-            className="h-8 rounded-[10px] border-border-soft bg-card px-3 text-[12px] font-medium shadow-[0px_1px_2px_rgba(15,23,42,0.05)]"
+            className="dashboard-button-subtle h-8 rounded-[10px] border-border-soft bg-card px-3 text-[12px] font-medium shadow-[0px_1px_2px_rgba(15,23,42,0.05)]"
             onClick={() => setSelectedDate(new Date())}
           >
             Today
@@ -228,7 +228,7 @@ const MeetingScheduleCard = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-[10px] text-foreground"
+            className="dashboard-text-primary h-8 w-8 rounded-[10px] text-foreground"
             onClick={() => setSelectedDate((current) => addDays(current, -1))}
           >
             <ArrowLeft className="h-3.5 w-3.5" />
@@ -236,12 +236,12 @@ const MeetingScheduleCard = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-[10px] text-foreground"
+            className="dashboard-text-primary h-8 w-8 rounded-[10px] text-foreground"
             onClick={() => setSelectedDate((current) => addDays(current, 1))}
           >
             <ArrowRight className="h-3.5 w-3.5" />
           </Button>
-          <span className="ml-1 text-[11px] leading-[100%] tracking-[-0.02em] text-muted-foreground">
+          <span className="dashboard-text-muted ml-1 text-[11px] leading-[100%] tracking-[-0.02em] text-muted-foreground">
             {format(selectedDate, "d MMM")}
           </span>
         </div>
@@ -249,26 +249,26 @@ const MeetingScheduleCard = () => {
 
       {profile.connected && !needsReconnect && isConfigured && !eventError ? (
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="flex h-[92px] flex-col justify-between rounded-[10px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
+          <div className="dashboard-surface-nested flex h-[92px] flex-col justify-between rounded-[10px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
             <div className="flex items-center gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-yellow-400" />
-              <span className="text-[11px] font-medium leading-[14px] tracking-[-0.02em] text-foreground">
+              <span className="dashboard-text-primary text-[11px] font-medium leading-[14px] tracking-[-0.02em] text-foreground">
                 Today Meetings
               </span>
             </div>
-            <p className="text-[20px] font-medium leading-5 text-foreground">
+            <p className="dashboard-text-primary text-[20px] font-medium leading-5 text-foreground">
               {todayCount} {todayCount === 1 ? "Call" : "Calls"}
             </p>
           </div>
 
-          <div className="flex h-[92px] flex-col justify-between rounded-[10px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
+          <div className="dashboard-surface-nested flex h-[92px] flex-col justify-between rounded-[10px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
             <div className="flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-purple-600" />
-              <span className="text-[11px] font-medium leading-[14px] tracking-[-0.02em] text-foreground">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-accent" />
+              <span className="dashboard-text-primary text-[11px] font-medium leading-[14px] tracking-[-0.02em] text-foreground">
                 Tomorrow Meetings
               </span>
             </div>
-            <p className="text-[20px] font-medium leading-5 text-foreground">
+            <p className="dashboard-text-primary text-[20px] font-medium leading-5 text-foreground">
               {tomorrowCount} {tomorrowCount === 1 ? "Call" : "Calls"}
             </p>
           </div>

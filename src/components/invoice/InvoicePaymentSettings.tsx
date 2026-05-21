@@ -182,7 +182,7 @@ const InvoicePaymentSettings: React.FC<InvoicePaymentSettingsProps> = ({
               <div
                 role="tablist"
                 aria-label="Payment calculation mode"
-                className="inline-flex items-center bg-surface-2 dark:bg-[hsl(222_33%_7%)]"
+                className="inline-flex items-center bg-surface-2 dark:bg-surface-2"
                 style={{ padding: 4, gap: 0, borderRadius: 8 }}
               >
                 {PAYMENT_MODE_SEGMENTS.map(({ key, label, icon: Icon }) => {
@@ -196,7 +196,7 @@ const InvoicePaymentSettings: React.FC<InvoicePaymentSettingsProps> = ({
                       onClick={() => updateMode(key)}
                       className={`inline-flex items-center text-[14px] font-medium leading-5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                         active
-                          ? "bg-card text-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.08)] dark:bg-[hsl(225_31%_11%)] dark:shadow-[0px_1px_3px_rgba(0,0,0,0.5)]"
+                          ? "bg-card text-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.08)] dark:bg-surface-3 dark:shadow-none"
                           : "bg-transparent text-muted-foreground"
                       }`}
                       style={{

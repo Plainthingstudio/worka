@@ -22,6 +22,9 @@ import { parseJsonField } from "@/utils/appwriteJson";
 // Use lazy loading to reduce initial load
 const AuthCard = lazy(() => import("@/components/auth/AuthCard"));
 
+const authPageClassName =
+  "flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-background to-muted p-6";
+
 interface InvitationData {
   id: string;
   email: string;
@@ -140,7 +143,7 @@ const Auth = () => {
   if (invitationToken) {
     if (!isAppwriteConfigured) {
       return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-white to-blue-50 p-6">
+        <div className={authPageClassName}>
           <AuthBackButton />
           {configNotice}
           <AuthFooter />
@@ -150,7 +153,7 @@ const Auth = () => {
 
     if (!invitation) {
       return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-white to-blue-50 p-6">
+        <div className={authPageClassName}>
           <div className="text-center">
             <h1 className="text-2xl font-semibold mb-4">Invalid Invitation</h1>
             <p className="text-muted-foreground mb-6">
@@ -163,7 +166,7 @@ const Auth = () => {
     }
 
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-white to-blue-50 p-6">
+      <div className={authPageClassName}>
         <AuthBackButton />
         <InvitationRegistration invitation={invitation} />
         <AuthFooter />
@@ -172,7 +175,7 @@ const Auth = () => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-white to-blue-50 p-6">
+    <div className={authPageClassName}>
       <AuthBackButton />
       {configNotice}
 

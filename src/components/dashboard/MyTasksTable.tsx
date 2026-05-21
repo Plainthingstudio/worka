@@ -1,8 +1,9 @@
 import React from "react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Calendar, Flag, ScrollText } from "lucide-react";
+import { ArrowRight, Calendar, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PriorityIndicator } from "@/components/tasks/PriorityIndicator";
 import {
   Table,
   TableBody,
@@ -46,13 +47,6 @@ const statusBadgeConfig: Record<TaskStatus, { bg: string; fg: string; ring: stri
   },
 };
 
-const priorityConfig: Record<string, { bg: string; fg: string }> = {
-  Urgent: { bg: "hsl(var(--priority-urgent-bg))", fg: "hsl(var(--priority-urgent-fg))" },
-  High: { bg: "hsl(var(--priority-high-bg))", fg: "hsl(var(--priority-high-fg))" },
-  Normal: { bg: "hsl(var(--priority-normal-bg))", fg: "hsl(var(--priority-normal-fg))" },
-  Low: { bg: "hsl(var(--priority-low-bg))", fg: "hsl(var(--priority-low-fg))" },
-};
-
 const DashboardStatusBadge = ({ status }: { status: string }) => {
   const config = statusBadgeConfig[status as TaskStatus] || statusBadgeConfig.Planning;
 
@@ -72,30 +66,6 @@ const DashboardStatusBadge = ({ status }: { status: string }) => {
       }}
     >
       {status}
-    </span>
-  );
-};
-
-const DashboardPriorityBadge = ({ priority }: { priority: string }) => {
-  const config = priorityConfig[priority] || priorityConfig.Normal;
-
-  return (
-    <span
-      className="inline-flex max-w-full items-center truncate"
-      style={{
-        padding: "4px 8px",
-        gap: 6,
-        background: config.bg,
-        borderRadius: 10,
-        fontFamily: "Inter, sans-serif",
-        fontWeight: 500,
-        fontSize: 12,
-        lineHeight: "16px",
-        color: config.fg,
-      }}
-    >
-      <Flag className="shrink-0" style={{ width: 12, height: 12, color: config.fg }} strokeWidth={1.5} />
-      <span className="min-w-0 truncate">{priority}</span>
     </span>
   );
 };
@@ -194,7 +164,7 @@ const MyTasksTable: React.FC<MyTasksTableProps> = ({
                     <DashboardStatusBadge status={task.status} />
                   </TableCell>
                   <TableCell>
-                    <DashboardPriorityBadge priority={task.priority} />
+                    <PriorityIndicator priority={task.priority} size="sm" className="max-w-full truncate" />
                   </TableCell>
                   <TableCell>
                     {task.due_date ? (

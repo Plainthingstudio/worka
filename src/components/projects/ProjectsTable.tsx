@@ -13,6 +13,16 @@ import { Client, Project, TeamMember } from "@/types";
 import { DeadlineSort } from "@/hooks/useProjectFilters";
 import ProjectItem from "./ProjectItem";
 
+const headStyle: React.CSSProperties = {
+  padding: "8px 16px",
+  fontFamily: "Inter, sans-serif",
+  fontWeight: 500,
+  fontSize: 14,
+  lineHeight: "20px",
+};
+
+const headClass = "bg-surface-2 text-muted-foreground";
+
 interface ProjectsTableProps {
   projects: Project[];
   clients: Client[];
@@ -38,15 +48,15 @@ const ProjectsTable = ({
   return (
     <Table>
       <TableHeader>
-        <TableRow>
-          <TableHead>Project Name</TableHead>
-          <TableHead>Client</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>
+        <TableRow className="rounded-none hover:bg-surface-2">
+          <TableHead className={headClass} style={headStyle}>Project Name</TableHead>
+          <TableHead className={headClass} style={headStyle}>Client</TableHead>
+          <TableHead className={headClass} style={headStyle}>Status</TableHead>
+          <TableHead className={headClass} style={headStyle}>
             <button
               type="button"
               onClick={onToggleDeadlineSort}
-              className="inline-flex h-8 items-center gap-1 rounded-md px-1 text-left font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex h-5 items-center gap-1 rounded-md px-1 text-left font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label={
                 deadlineSort === "asc"
                   ? "Sort deadline descending"
@@ -59,9 +69,9 @@ const ProjectsTable = ({
               <DeadlineIcon className="h-4 w-4" aria-hidden="true" />
             </button>
           </TableHead>
-          <TableHead>Fee</TableHead>
-          <TableHead>Type</TableHead>
-          <TableHead>Team</TableHead>
+          <TableHead className={headClass} style={headStyle}>Fee</TableHead>
+          <TableHead className={headClass} style={headStyle}>Type</TableHead>
+          <TableHead className={headClass} style={headStyle}>Team</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

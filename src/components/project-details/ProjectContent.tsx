@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Switch } from "@/components/ui/switch";
 import ProjectHeader from "@/components/project-details/ProjectHeader";
 import ProjectInfo from "@/components/project-details/ProjectInfo";
 import PaymentSummary from "@/components/project-details/PaymentSummary";
@@ -52,6 +53,7 @@ const ProjectContent = ({
   handlers,
 }: ProjectContentProps) => {
   const [activeTab, setActiveTab] = useState<ProjectTab>("overview");
+  const [myTasksOnly, setMyTasksOnly] = useState(true);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
@@ -65,7 +67,32 @@ const ProjectContent = ({
       />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <ProjectTabs activeTab={activeTab} onChange={setActiveTab} />
+        <div className="flex flex-wrap items-center gap-3">
+          <ProjectTabs activeTab={activeTab} onChange={setActiveTab} />
+
+          {activeTab !== "overview" && (
+            <label
+              className="inline-flex items-center border border-border-soft bg-card text-foreground"
+              style={{
+                gap: 8,
+                height: 36,
+                padding: "0 12px",
+                borderRadius: 12,
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 500,
+                fontSize: 14,
+                lineHeight: "20px",
+              }}
+            >
+              <Switch
+                checked={myTasksOnly}
+                onCheckedChange={setMyTasksOnly}
+                className="h-5 w-9 data-[state=checked]:bg-brand [&>span]:h-4 [&>span]:w-4 [&>span]:data-[state=checked]:translate-x-4"
+              />
+              <span>My task</span>
+            </label>
+          )}
+        </div>
 
         {activeTab === "overview" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -90,6 +117,7 @@ const ProjectContent = ({
             projectId={project.id}
             view={activeTab}
             onCreateTask={onCreateTask}
+            myTasksOnly={myTasksOnly}
           />
         )}
       </div>
