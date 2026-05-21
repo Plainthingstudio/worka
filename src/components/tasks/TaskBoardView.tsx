@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, User, MessageSquare, Paperclip, MoreHorizontal, Plus, MoreVertical, GripVertical } from 'lucide-react';
+import { Calendar, User, MessageSquare, Paperclip, MoreHorizontal, Plus, GripVertical, CheckCircle, Circle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { TaskWithRelations, TaskStatus } from '@/types/task';
 import { ClickUpTaskDetail } from './ClickUpTaskDetail';
 import { format } from 'date-fns';
@@ -92,7 +93,7 @@ export const TaskBoardView = ({
             
             {/* Column Content */}
             <div 
-              className={`${column.bgColor} flex-1 p-4 space-y-3 overflow-y-auto rounded-lg transition-all duration-300 relative ${
+              className={`${column.bgColor} flex-1 p-2 space-y-3 overflow-y-auto rounded-lg transition-all duration-300 relative ${
                 dragOverColumn === column.status && draggedTask ? 
                   'bg-primary/10 border-2 border-primary border-dashed shadow-lg transform scale-105' : 
                   ''
@@ -133,8 +134,8 @@ export const TaskBoardView = ({
               )}
               {columnTasks.map((task) => {
                 const assigneeNames = getAssigneeNames(task.assignees || []);
-                console.log('Board task assignees for', task.title, ':', task.assignees, 'converted to names:', assigneeNames);
-                
+                const subtasks = task.subtasks ?? [];
+
                 return (
                   <Card
                     key={task.id}
@@ -156,23 +157,54 @@ export const TaskBoardView = ({
                     }}
                     onClick={() => onTaskClick?.(task)}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        {/* Task Title */}
-                        <h4 className="font-medium text-sm line-clamp-2 text-foreground flex-1">{task.title}</h4>
-                        {/* Drag Handle */}
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing mt-0.5">
-                          <GripVertical className="h-3 w-3 text-muted-foreground" />
+                    <CardContent className="flex flex-col items-start gap-3 p-4">
+                      <div className="flex w-full items-start justify-between gap-2">
+                        <h4 className="font-medium text-sm line-clamp-2 text-foreground flex-1 min-w-0">{task.title}</h4>
+                        <div className="flex shrink-0 items-center gap-0.5">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                              <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100">
+                                <MoreHorizontal className="h-3 w-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {statusColumns.map((status) => (
+                                <DropdownMenuItem 
+                                  key={status.status}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleStatusChange(task.id, status.status);
+                                  }}
+                                >
+                                  Move to {status.title}
+                                </DropdownMenuItem>
+                              ))}
+                              <DropdownMenuItem 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDeleteTask(task.id);
+                                }}
+                                className="text-destructive"
+                              >
+                                Delete Task
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing mt-0.5">
+                            <GripVertical className="h-3 w-3 text-muted-foreground" />
+                          </div>
                         </div>
                       </div>
                       
-                      {/* Priority Badge */}
-                      <div className="flex items-center gap-2 mb-3">
-                        <PriorityIndicator priority={task.priority} size="sm" />
-                      </div>
-                      
+                      <PriorityIndicator
+                        priority={task.priority}
+                        size="sm"
+                        noPadding
+                        className="justify-start"
+                      />
+
                       {/* Task Meta Info */}
-                      <div className="flex items-center justify-between">
+                      <div className="flex w-full items-center justify-between">
                         {/* Left side - Assignees */}
                         <div className="flex items-center gap-2">
                           {assigneeNames.length > 0 ? (
@@ -217,38 +249,55 @@ export const TaskBoardView = ({
                               </div>
                             )}
                           </div>
-
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                              <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100">
-                                <MoreHorizontal className="h-3 w-3" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              {statusColumns.map((status) => (
-                                <DropdownMenuItem 
-                                  key={status.status}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(task.id, status.status);
-                                  }}
-                                >
-                                  Move to {status.title}
-                                </DropdownMenuItem>
-                              ))}
-                              <DropdownMenuItem 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onDeleteTask(task.id);
-                                }}
-                                className="text-destructive"
-                              >
-                                Delete Task
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
                         </div>
                       </div>
+
+                      {subtasks.length > 0 && (
+                        <div className="flex w-full flex-col gap-1.5 rounded-md border border-border-soft p-2">
+                          {subtasks.map((subtask) => (
+                            <div
+                              key={subtask.id}
+                              className="flex w-full min-w-0 items-center gap-2 rounded hover:bg-surface-3/60"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onTaskClick?.(subtask as TaskWithRelations);
+                              }}
+                            >
+                              <button
+                                type="button"
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  const isCompleted = subtask.status === 'Completed';
+                                  await onUpdateTask(subtask.id, {
+                                    status: isCompleted ? 'In progress' : 'Completed',
+                                    completed_at: isCompleted ? null : new Date().toISOString(),
+                                  });
+                                }}
+                                className="inline-flex shrink-0 items-center justify-center hover:opacity-80"
+                                aria-label={
+                                  subtask.status === 'Completed'
+                                    ? 'Mark subtask as incomplete'
+                                    : 'Mark subtask as complete'
+                                }
+                              >
+                                {subtask.status === 'Completed' ? (
+                                  <CheckCircle className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                                ) : (
+                                  <Circle className="h-3.5 w-3.5 text-muted-foreground" />
+                                )}
+                              </button>
+                              <span
+                                className={cn(
+                                  'min-w-0 flex-1 truncate text-xs text-muted-foreground',
+                                  subtask.status === 'Completed' && 'line-through opacity-70'
+                                )}
+                              >
+                                {subtask.title}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 );

@@ -49,6 +49,7 @@ export type AvatarColorKey =
   | "blue"
   | "indigo"
   | "red"
+  | "pink"
   | "purple"
   | "cyan"
   | "teal"
@@ -61,6 +62,7 @@ export const AVATAR_COLOR_PALETTE: Record<AvatarColorKey, { bg: string; text: st
   blue:    { bg: "#DBEAFE", text: "#155DFC" },
   indigo:  { bg: "#E0E7FF", text: "#4F39F6" },
   red:     { bg: "#FFE4E6", text: "#EC003F" },
+  pink:    { bg: "#FCE7F3", text: "#E60076" },
   purple:  { bg: "#F3E8FF", text: "#9810FA" },
   cyan:    { bg: "#CEFAFE", text: "#0092B8" },
   teal:    { bg: "#CBFBF1", text: "#009689" },
@@ -74,6 +76,7 @@ const AUTO_COLOR_KEYS: AvatarColorKey[] = [
   "blue",
   "indigo",
   "red",
+  "pink",
   "purple",
   "cyan",
   "teal",

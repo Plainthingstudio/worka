@@ -73,7 +73,7 @@ const badgeVariants = cva(
 
         // Lead source variants
         "dribbble":
-          "bg-slate-50 text-slate-700 ring-slate-600/20 dark:bg-surface-3 dark:text-muted-foreground dark:ring-border-soft",
+          "bg-pink-50 text-pink-700 ring-pink-700/10 dark:bg-pink-500/15 dark:text-pink-300 dark:ring-pink-400/30",
         "website":
           "bg-cyan-50 text-cyan-700 ring-cyan-700/10 dark:bg-cyan-500/15 dark:text-cyan-300 dark:ring-cyan-400/30",
         "linkedin":

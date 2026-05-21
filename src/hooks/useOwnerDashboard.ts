@@ -31,33 +31,57 @@ interface OwnerDashboardData {
   invoices: Invoice[];
 }
 
+const PAGE_SIZE = 100;
+
+const fetchAllDocuments = async (collectionId: string, queries: string[] = []) => {
+  const documents: any[] = [];
+  let offset = 0;
+  let total = Number.POSITIVE_INFINITY;
+
+  while (documents.length < total) {
+    const response = await databases.listDocuments(DATABASE_ID, collectionId, [
+      ...queries,
+      Query.limit(PAGE_SIZE),
+      Query.offset(offset),
+    ]);
+
+    documents.push(...response.documents);
+    total = response.total;
+
+    if (response.documents.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+
+  return documents;
+};
+
 const fetchOwnerDashboardData = async (): Promise<OwnerDashboardData> => {
   const [
-    clientsResponse,
-    projectsResponse,
-    paymentsResponse,
-    tasksResponse,
-    leadsResponse,
-    teamResponse,
-    profilesResponse,
-    invoicesResponse,
+    clientDocuments,
+    projectDocuments,
+    paymentDocuments,
+    taskDocuments,
+    leadDocuments,
+    teamDocuments,
+    profileDocuments,
+    invoiceDocuments,
   ] = await Promise.all([
-    databases.listDocuments(DATABASE_ID, "clients", [Query.orderDesc("$createdAt")]),
-    databases.listDocuments(DATABASE_ID, "projects"),
-    databases.listDocuments(DATABASE_ID, "payments"),
-    databases.listDocuments(DATABASE_ID, "tasks", [Query.orderDesc("$createdAt")]),
-    databases.listDocuments(DATABASE_ID, "leads", [Query.orderDesc("$createdAt")]),
-    databases.listDocuments(DATABASE_ID, "team_members", [Query.orderDesc("$createdAt")]),
-    databases.listDocuments(DATABASE_ID, "profiles"),
-    databases.listDocuments(DATABASE_ID, "invoices", [Query.orderDesc("$createdAt")]),
+    fetchAllDocuments("clients", [Query.orderDesc("$createdAt")]),
+    fetchAllDocuments("projects"),
+    fetchAllDocuments("payments"),
+    fetchAllDocuments("tasks", [Query.orderDesc("$createdAt")]),
+    fetchAllDocuments("leads", [Query.orderDesc("$createdAt")]),
+    fetchAllDocuments("team_members", [Query.orderDesc("$createdAt")]),
+    fetchAllDocuments("profiles"),
+    fetchAllDocuments("invoices", [Query.orderDesc("$createdAt")]),
   ]);
 
   const profilesMap = new Map<string, any>();
-  profilesResponse.documents.forEach((profile: any) => {
+  profileDocuments.forEach((profile: any) => {
     profilesMap.set(profile.$id, profile);
   });
 
-  const clients: Client[] = clientsResponse.documents.map((client: any) => ({
+  const clients: Client[] = clientDocuments.map((client: any) => ({
     id: client.$id,
     name: client.name,
     email: client.email,
@@ -68,13 +92,13 @@ const fetchOwnerDashboardData = async (): Promise<OwnerDashboardData> => {
   }));
 
   const paymentsByProject = new Map<string, any[]>();
-  paymentsResponse.documents.forEach((payment: any) => {
+  paymentDocuments.forEach((payment: any) => {
     const paymentList = paymentsByProject.get(payment.project_id) || [];
     paymentList.push(payment);
     paymentsByProject.set(payment.project_id, paymentList);
   });
 
-  const projects: Project[] = projectsResponse.documents.map((project: any) => ({
+  const projects: Project[] = projectDocuments.map((project: any) => ({
     id: project.$id,
     name: project.name,
     clientId: project.client_id,
@@ -95,7 +119,7 @@ const fetchOwnerDashboardData = async (): Promise<OwnerDashboardData> => {
     })),
   }));
 
-  const tasks: TaskWithRelations[] = tasksResponse.documents.map((task: any) => ({
+  const tasks: TaskWithRelations[] = taskDocuments.map((task: any) => ({
     id: task.$id,
     project_id: task.project_id,
     user_id: task.user_id,
@@ -114,7 +138,7 @@ const fetchOwnerDashboardData = async (): Promise<OwnerDashboardData> => {
     brief_type: task.brief_type,
   }));
 
-  const leads: Lead[] = leadsResponse.documents.map((lead: any) => ({
+  const leads: Lead[] = leadDocuments.map((lead: any) => ({
     id: lead.$id,
     name: lead.name,
     email: lead.email,
@@ -127,7 +151,7 @@ const fetchOwnerDashboardData = async (): Promise<OwnerDashboardData> => {
     updatedAt: new Date(lead.$updatedAt),
   }));
 
-  const teamMembers: TeamMember[] = teamResponse.documents.map((member: any) => ({
+  const teamMembers: TeamMember[] = teamDocuments.map((member: any) => ({
     id: member.$id,
     user_id: member.user_id,
     name: member.name,
@@ -139,7 +163,7 @@ const fetchOwnerDashboardData = async (): Promise<OwnerDashboardData> => {
   }));
 
   const clientsById = new Map(clients.map((client) => [client.id, client]));
-  const invoices: Invoice[] = invoicesResponse.documents.map((invoice: any) => {
+  const invoices: Invoice[] = invoiceDocuments.map((invoice: any) => {
     const invoiceType = invoiceTypeFromDocument(invoice);
     return {
       id: invoice.$id,

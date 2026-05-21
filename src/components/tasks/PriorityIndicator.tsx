@@ -9,7 +9,7 @@ export const PRIORITY_FLAG_COLORS: Record<TaskPriority, string> = {
   Low: "#B8E6FE",
 };
 
-export const PRIORITY_TEXT_COLOR = "#62748E";
+export const PRIORITY_TEXT_COLOR = "hsl(var(--priority-text))";
 
 export function getPriorityFlagColor(priority: string): string {
   return PRIORITY_FLAG_COLORS[priority as TaskPriority] ?? PRIORITY_FLAG_COLORS.Normal;
@@ -20,6 +20,7 @@ interface PriorityIndicatorProps {
   className?: string;
   showLabel?: boolean;
   size?: "default" | "sm" | "xs";
+  noPadding?: boolean;
 }
 
 export function PriorityIndicator({
@@ -27,6 +28,7 @@ export function PriorityIndicator({
   className,
   showLabel = true,
   size = "default",
+  noPadding = false,
 }: PriorityIndicatorProps) {
   const flagColor = getPriorityFlagColor(priority);
   const iconSize = size === "default" ? 16 : size === "sm" ? 14 : 12;
@@ -37,7 +39,7 @@ export function PriorityIndicator({
     <span
       className={cn("inline-flex items-center justify-center whitespace-nowrap", className)}
       style={{
-        padding: size === "xs" ? "0 4px" : "2px 8px",
+        padding: noPadding ? 0 : size === "xs" ? "0 4px" : "2px 8px",
         gap: 4,
         borderRadius: 9999,
       }}
