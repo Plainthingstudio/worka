@@ -607,7 +607,7 @@ export const ClickUpTaskList = ({
               style={{ gap: 8 }}
             >
               {task.due_date ? (
-                <>
+                <span className="contents">
                   <Calendar className="text-muted-foreground" style={{ width: 14, height: 14 }} strokeWidth={1.17} />
                   <span
                     className="text-muted-foreground"
@@ -620,7 +620,7 @@ export const ClickUpTaskList = ({
                   >
                     {format(task.due_date, 'MMM dd')}
                   </span>
-                </>
+                </span>
               ) : (
                 <span className="text-text-disabled" style={{ fontFamily: 'Inter, sans-serif', fontSize: 14 }}>Set date…</span>
               )}
@@ -831,11 +831,11 @@ export const ClickUpTaskList = ({
                   />
                   <div>
                     {statusTasks.map((task, index) => (
-                      <React.Fragment key={task.id}>
+                      <div key={task.id} className="contents">
                         {renderTaskRow(task, index, false)}
                         {!collapsedSubtasks.has(task.id) &&
                           getSubtasks(task).map((sub) => renderTaskRow(sub, 1, true))}
-                      </React.Fragment>
+                      </div>
                     ))}
                   </div>
                 </div>

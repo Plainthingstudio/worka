@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { account, databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
+import { account, client, databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
 import { useToast } from '@/hooks/use-toast';
-import { parseJsonField } from "@/utils/appwriteJson";
+import { normalizeNotificationData } from "@/services/notificationService";
 
 interface Notification {
   id: string;
@@ -45,7 +45,7 @@ export const useNotifications = () => {
         type: doc.type,
         title: doc.title,
         message: doc.message,
-        data: parseJsonField(doc.data, {}),
+        data: normalizeNotificationData(doc.data),
         read_at: doc.read_at,
         created_at: doc.$createdAt,
       }));
@@ -107,7 +107,31 @@ export const useNotifications = () => {
   };
 
   useEffect(() => {
-    fetchNotifications();
+    let unsubscribe: (() => void) | undefined;
+
+    const bootstrap = async () => {
+      await fetchNotifications();
+
+      try {
+        const user = await account.get();
+        unsubscribe = client.subscribe(
+          [`databases.${DATABASE_ID}.collections.notifications.documents`],
+          (event: any) => {
+            const payload = event.payload;
+            if (!payload || payload.user_id !== user.$id) return;
+            fetchNotifications();
+          }
+        );
+      } catch {
+        // Logged-out users simply do not subscribe.
+      }
+    };
+
+    bootstrap();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   return {

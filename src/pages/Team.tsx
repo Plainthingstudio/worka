@@ -12,6 +12,7 @@ import InvitationDialog from "@/components/team/InvitationDialog";
 import PendingInvitations from "@/components/team/PendingInvitations";
 import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import { useUserRole } from "@/hooks/useUserRole";
+import { dispatchNotifications } from "@/services/notificationService";
 
 const APPWRITE_PAGE_SIZE = 100;
 
@@ -153,6 +154,7 @@ const Team = () => {
           Query.equal('user_id', editingMember.user_id)
         ]);
         const existingRole = existingRoleResponse.documents[0] ?? null;
+        const previousRole = existingRole?.role;
 
         if (existingRole) {
           // Update existing role
@@ -167,6 +169,16 @@ const Team = () => {
             user_id: editingMember.user_id,
             role: data.role,
             assigned_by: session.userId
+          });
+        }
+        if (previousRole !== data.role) {
+          await dispatchNotifications({
+            recipientIds: [editingMember.user_id],
+            type: "role_changed",
+            title: "Role updated",
+            message: `Your role has been updated to ${data.role}`,
+            data: { actor_id: session.userId },
+            actorId: session.userId,
           });
         }
       }

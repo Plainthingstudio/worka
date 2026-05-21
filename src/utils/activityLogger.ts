@@ -1,6 +1,10 @@
 
-import { account, databases, DATABASE_ID, ID, Query } from '@/integrations/appwrite/client';
+import { account, databases, DATABASE_ID, ID } from '@/integrations/appwrite/client';
 import { stringifyJsonField } from "@/utils/appwriteJson";
+import {
+  getCurrentUserId,
+  notifyTaskFollowers,
+} from "@/services/notificationService";
 
 export type ActivityType = 'comment' | 'status_change' | 'assignee_change' | 'priority_change' | 'attachment' | 'task_created' | 'due_date_change' | 'task_updated';
 
@@ -84,45 +88,49 @@ export const logTaskCreated = (taskId: string) => {
   });
 };
 
-export const logComment = async (taskId: string, content: string, attachments: any[] = []) => {
-  const activityLogged = await logActivity({
-    taskId,
-    activityType: 'comment',
-    content,
-    attachments
-  });
+export const logComment = async (
+  taskId: string,
+  content: string,
+  attachments: any[] = [],
+  options: { excludeUserIds?: string[] } = {}
+) => {
+  let activityId: string | undefined;
+  const activityLogged = await (async () => {
+    try {
+      const user = await account.get();
+      if (!user) {
+        console.error('No authenticated user found');
+        return false;
+      }
+
+      const activity = await databases.createDocument(DATABASE_ID, 'task_activities', ID.unique(), {
+        task_id: taskId,
+        user_id: user.$id,
+        activity_type: 'comment',
+        content,
+        metadata: stringifyJsonField({}, "{}"),
+        attachments: stringifyJsonField(attachments, "[]")
+      });
+      activityId = activity.$id;
+      return true;
+    } catch (error) {
+      console.error('Error logging activity:', error);
+      return false;
+    }
+  })();
 
   if (activityLogged) {
-    try {
-      const response = await databases.listDocuments(DATABASE_ID, 'tasks', [
-        Query.equal('$id', taskId),
-      ]);
-      const task = response.documents[0];
-
-      if (task) {
-        const user = await account.get();
-        if (!user) return activityLogged;
-
-        const usersToNotify = [
-          task.user_id,
-          ...(task.assignees || [])
-        ].filter((userId, index, arr) =>
-          userId !== user.$id && arr.indexOf(userId) === index
-        );
-
-        for (const userId of usersToNotify) {
-          await databases.createDocument(DATABASE_ID, 'notifications', ID.unique(), {
-            user_id: userId,
-            type: 'task_comment_added',
-            title: 'New Comment',
-            message: `New comment on task: ${task.title}`,
-            data: stringifyJsonField({ task_id: taskId, task_title: task.title }, "{}")
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Error creating comment notifications:', error);
-    }
+    const actorId = await getCurrentUserId();
+    const hasAttachments = attachments.length > 0;
+    await notifyTaskFollowers({
+      task: taskId,
+      type: hasAttachments ? 'task_attachment_added' : 'task_comment_added',
+      title: hasAttachments ? 'New task attachment' : 'New task comment',
+      message: hasAttachments ? 'A file was added to a task you follow.' : 'A comment was added to a task you follow.',
+      actorId,
+      data: { activity_id: activityId },
+      excludeUserIds: options.excludeUserIds || [],
+    });
   }
 
   return activityLogged;

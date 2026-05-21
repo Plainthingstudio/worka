@@ -1,5 +1,17 @@
 import React from 'react';
-import { Bell, Check, CheckCheck, Clock, Users, FolderOpen } from 'lucide-react';
+import {
+  Bell,
+  CalendarClock,
+  CheckCheck,
+  Clock,
+  CreditCard,
+  FileText,
+  FolderOpen,
+  MessageSquare,
+  Paperclip,
+  UserCheck,
+  UserMinus,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,15 +25,39 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationItem } from './NotificationItem';
 
 export const NotificationCenter = () => {
-  const { notifications, unreadCount, isLoading, markAllAsRead } = useNotifications();
+  const { notifications, unreadCount, isLoading, markAllAsRead, markAsRead } = useNotifications();
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'task_assigned':
-      case 'task_status_changed':
-        return <Clock className="h-4 w-4 text-primary" />;
+      case 'subtask_assigned':
+      case 'project_assigned':
+        return <UserCheck className="h-4 w-4 text-primary" />;
+      case 'task_unassigned':
+      case 'project_unassigned':
+        return <UserMinus className="h-4 w-4 text-muted-foreground" />;
+      case 'task_comment_added':
+      case 'task_mention':
+        return <MessageSquare className="h-4 w-4 text-primary" />;
+      case 'task_attachment_added':
+        return <Paperclip className="h-4 w-4 text-primary" />;
+      case 'task_due_date_changed':
+      case 'project_deadline_changed':
+      case 'task_due_reminder':
       case 'project_due_reminder':
+        return <CalendarClock className="h-4 w-4 text-primary" />;
+      case 'task_status_changed':
+      case 'task_priority_changed':
+        return <Clock className="h-4 w-4 text-primary" />;
+      case 'task_brief_connected':
+      case 'task_brief_disconnected':
+        return <FileText className="h-4 w-4 text-primary" />;
+      case 'project_payment_added':
+        return <CreditCard className="h-4 w-4 text-primary" />;
       case 'project_status_changed':
+      case 'project_task_created':
+      case 'project_activity_added':
+      case 'subtask_created':
         return <FolderOpen className="h-4 w-4 text-secondary" />;
       default:
         return <Bell className="h-4 w-4 text-muted-foreground" />;
@@ -77,6 +113,7 @@ export const NotificationCenter = () => {
                   key={notification.id}
                   notification={notification}
                   icon={getNotificationIcon(notification.type)}
+                  onMarkAsRead={markAsRead}
                 />
               ))}
             </div>

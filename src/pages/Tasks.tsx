@@ -16,6 +16,12 @@ import { Plus, Search, Filter, LayoutList, Calendar, Kanban } from 'lucide-react
 import { toast } from '@/hooks/use-toast';
 import { useSearchParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import {
+  getCurrentUserId,
+  notifyTaskAssigneeChanges,
+  notifyTaskCreated,
+  notifyTaskFollowers,
+} from '@/services/notificationService';
 
 export const Tasks = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -128,6 +134,7 @@ export const Tasks = () => {
       };
 
       const data = await databases.createDocument(DATABASE_ID, 'tasks', ID.unique(), insertData);
+      await notifyTaskCreated(data, user?.$id || null);
 
       toast({
         title: "Success",
@@ -148,6 +155,7 @@ export const Tasks = () => {
 
   const updateTask = async (taskId: string, updates: any) => {
     try {
+      const currentTask = findTaskById(taskId);
       const processedUpdates: any = {};
       if (updates.title !== undefined) processedUpdates.title = updates.title;
       if (updates.description !== undefined) processedUpdates.description = updates.description;
@@ -169,6 +177,61 @@ export const Tasks = () => {
       });
 
       await databases.updateDocument(DATABASE_ID, 'tasks', taskId, processedUpdates);
+      if (currentTask) {
+        const actorId = await getCurrentUserId();
+        const nextTask = { ...currentTask, ...processedUpdates, id: taskId };
+
+        if (updates.status !== undefined && updates.status !== currentTask.status) {
+          await notifyTaskFollowers({
+            task: nextTask,
+            type: 'task_status_changed',
+            title: 'Task status updated',
+            message: `Task "${currentTask.title}" status changed to ${updates.status}`,
+            actorId,
+            data: { old_status: currentTask.status, new_status: updates.status },
+          });
+        }
+
+        if (updates.priority !== undefined && updates.priority !== currentTask.priority) {
+          await notifyTaskFollowers({
+            task: nextTask,
+            type: 'task_priority_changed',
+            title: 'Task priority updated',
+            message: `Task "${currentTask.title}" priority changed to ${updates.priority}`,
+            actorId,
+            data: { old_priority: currentTask.priority, new_priority: updates.priority },
+          });
+        }
+
+        if (updates.due_date !== undefined) {
+          const oldDate = currentTask.due_date ? new Date(currentTask.due_date).getTime() : null;
+          const newDate = updates.due_date ? new Date(updates.due_date).getTime() : null;
+          if (oldDate !== newDate) {
+            await notifyTaskFollowers({
+              task: nextTask,
+              type: 'task_due_date_changed',
+              title: 'Task due date updated',
+              message: `Task "${currentTask.title}" due date was updated`,
+              actorId,
+              data: {
+                old_due_date: currentTask.due_date ? new Date(currentTask.due_date).toISOString() : undefined,
+                new_due_date: updates.due_date ? new Date(updates.due_date).toISOString() : undefined,
+              },
+            });
+          }
+        }
+
+        if (updates.assignees !== undefined) {
+          const oldAssignees = currentTask.assignees || [];
+          const newAssignees = updates.assignees || [];
+          await notifyTaskAssigneeChanges({
+            task: nextTask,
+            addedAssigneeIds: newAssignees.filter((id: string) => !oldAssignees.includes(id)),
+            removedAssigneeIds: oldAssignees.filter((id: string) => !newAssignees.includes(id)),
+            actorId,
+          });
+        }
+      }
 
       toast({
         title: "Success",
@@ -228,6 +291,13 @@ export const Tasks = () => {
         content,
         user_id: user.$id
       });
+      await notifyTaskFollowers({
+        task: taskId,
+        type: 'task_comment_added',
+        title: 'New task comment',
+        message: 'A comment was added to a task you follow.',
+        actorId: user.$id,
+      });
 
       setQueryData((prev) => {
         if (!prev) return prev;
@@ -279,6 +349,13 @@ export const Tasks = () => {
         file_url: fileUrl,
         file_size: file.size,
         file_type: file.type
+      });
+      await notifyTaskFollowers({
+        task: taskId,
+        type: 'task_attachment_added',
+        title: 'New task attachment',
+        message: `A file was added to a task you follow: ${file.name}`,
+        actorId: userId,
       });
 
       invalidate();
@@ -379,6 +456,7 @@ export const Tasks = () => {
       console.log('Creating subtask with data:', insertData);
 
       const data = await databases.createDocument(DATABASE_ID, 'tasks', ID.unique(), insertData);
+      await notifyTaskCreated(data, user.$id);
 
       console.log('Subtask created successfully:', data);
       toast({
@@ -661,7 +739,7 @@ export const Tasks = () => {
           {activeView === 'calendar' && <TaskCalendarView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} />}
         </div>
       {/* Task Detail Sidebar */}
-      <TaskDetailSidebar task={selectedTask} isOpen={!!selectedTask} onClose={() => setSelectedTask(null)} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddSubtask={handleAddSubtask} onTaskSelect={setSelectedTask} allTasks={tasks} />
+      <TaskDetailSidebar task={selectedTask} isOpen={!!selectedTask} onClose={() => setSelectedTask(null)} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddSubtask={handleAddSubtask} onTaskSelect={setSelectedTask} allTasks={tasks} focusActivityOnOpen={Boolean(searchParams.get('taskId'))} />
 
       {/* Create Task Dialog */}
       <TaskDialog

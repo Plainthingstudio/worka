@@ -50,6 +50,7 @@ const fetchProjectDetails = async (projectId: string): Promise<ProjectDetailsDat
 
   const project: Project = {
     id: projectData.$id,
+    user_id: projectData.user_id,
     name: projectData.name,
     clientId: projectData.client_id,
     status: projectData.status as ProjectStatus,

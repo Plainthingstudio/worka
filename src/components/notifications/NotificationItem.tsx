@@ -2,7 +2,7 @@ import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useNotifications } from '@/hooks/useNotifications';
+import { getNotificationDestination } from '@/services/notificationService';
 import { cn } from '@/lib/utils';
 
 interface Notification {
@@ -18,23 +18,19 @@ interface Notification {
 interface NotificationItemProps {
   notification: Notification;
   icon: React.ReactNode;
+  onMarkAsRead: (notificationId: string) => void;
 }
 
-export const NotificationItem = ({ notification, icon }: NotificationItemProps) => {
-  const { markAsRead } = useNotifications();
+export const NotificationItem = ({ notification, icon, onMarkAsRead }: NotificationItemProps) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
     if (!notification.read_at) {
-      markAsRead(notification.id);
+      onMarkAsRead(notification.id);
     }
 
-    // Navigate to relevant page based on notification type and data
-    if (notification.data?.task_id) {
-      navigate('/tasks');
-    } else if (notification.data?.project_id) {
-      navigate('/projects');
-    }
+    const destination = getNotificationDestination(notification.data);
+    if (destination) navigate(destination);
   };
 
   const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true });

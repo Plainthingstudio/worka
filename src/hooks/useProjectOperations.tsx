@@ -3,6 +3,11 @@ import { toast } from "sonner";
 import { Project, ProjectStatus } from "@/types";
 import { databases, DATABASE_ID } from "@/integrations/appwrite/client";
 import { useState } from "react";
+import {
+  getCurrentUserId,
+  notifyProjectAssigneeChanges,
+  notifyProjectFollowers,
+} from "@/services/notificationService";
 
 export const useProjectOperations = (project: Project | null, setProject: (project: Project) => void, refetchClient?: () => void) => {
   const [showConfetti, setShowConfetti] = useState(false);
@@ -11,6 +16,7 @@ export const useProjectOperations = (project: Project | null, setProject: (proje
     if (!project) return;
 
     try {
+      const actorId = await getCurrentUserId();
       console.log("Updating project with data:", data);
       console.log("Team members being saved:", data.teamMembers);
 
@@ -28,6 +34,39 @@ export const useProjectOperations = (project: Project | null, setProject: (proje
         sub_service_quantities: data.subServiceQuantities || [],
         team_members: data.teamMembers || []
       });
+      const oldTeamMembers = project.teamMembers || [];
+      const newTeamMembers = data.teamMembers || [];
+      await notifyProjectAssigneeChanges({
+        project: project.id,
+        addedTeamMemberIds: newTeamMembers.filter((id: string) => !oldTeamMembers.includes(id)),
+        removedTeamMemberIds: oldTeamMembers.filter((id: string) => !newTeamMembers.includes(id)),
+        actorId,
+      });
+
+      if (data.status !== project.status) {
+        await notifyProjectFollowers({
+          project: project.id,
+          type: "project_status_changed",
+          title: "Project status updated",
+          message: `Project "${project.name}" status changed to ${data.status}`,
+          actorId,
+          data: { old_status: project.status, new_status: data.status },
+        });
+      }
+
+      if (data.deadline?.getTime?.() !== project.deadline?.getTime?.()) {
+        await notifyProjectFollowers({
+          project: project.id,
+          type: "project_deadline_changed",
+          title: "Project deadline updated",
+          message: `Project "${project.name}" deadline was updated`,
+          actorId,
+          data: {
+            old_deadline: project.deadline?.toISOString?.(),
+            new_deadline: data.deadline?.toISOString?.(),
+          },
+        });
+      }
 
       const updatedProject = {
         ...project,
@@ -79,8 +118,17 @@ export const useProjectOperations = (project: Project | null, setProject: (proje
     if (!project) return;
 
     try {
+      const actorId = await getCurrentUserId();
       await databases.updateDocument(DATABASE_ID, 'projects', project.id, {
         status: 'Completed'
+      });
+      await notifyProjectFollowers({
+        project: project.id,
+        type: "project_status_changed",
+        title: "Project status updated",
+        message: `Project "${project.name}" status changed to Completed`,
+        actorId,
+        data: { old_status: project.status, new_status: "Completed" },
       });
 
       const updatedProject = { ...project, status: "Completed" as ProjectStatus };
@@ -107,9 +155,20 @@ export const useProjectOperations = (project: Project | null, setProject: (proje
     if (!project) return;
 
     try {
+      const actorId = await getCurrentUserId();
       await databases.updateDocument(DATABASE_ID, 'projects', project.id, {
         status: selectedStatus
       });
+      if (selectedStatus !== project.status) {
+        await notifyProjectFollowers({
+          project: project.id,
+          type: "project_status_changed",
+          title: "Project status updated",
+          message: `Project "${project.name}" status changed to ${selectedStatus}`,
+          actorId,
+          data: { old_status: project.status, new_status: selectedStatus },
+        });
+      }
 
       const updatedProject = { ...project, status: selectedStatus };
       setProject(updatedProject);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -21,7 +21,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -92,6 +91,7 @@ interface TaskDetailSidebarProps {
   onAddSubtask?: (taskId: string) => void;
   onTaskSelect?: (task: TaskWithRelations) => void;
   allTasks?: TaskWithRelations[];
+  focusActivityOnOpen?: boolean;
 }
 
 export const TaskDetailSidebar = ({
@@ -104,7 +104,8 @@ export const TaskDetailSidebar = ({
   onUploadAttachment,
   onAddSubtask,
   onTaskSelect,
-  allTasks = []
+  allTasks = [],
+  focusActivityOnOpen = false
 }: TaskDetailSidebarProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -118,6 +119,7 @@ export const TaskDetailSidebar = ({
   const [assigneePickerOpen, setAssigneePickerOpen] = useState(false);
   const [draftAssignees, setDraftAssignees] = useState<string[]>([]);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const activitySectionRef = useRef<HTMLDivElement | null>(null);
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
   const navigate = useNavigate();
   const { project } = useTaskProject(task?.project_id || null);
@@ -205,6 +207,15 @@ export const TaskDetailSidebar = ({
     }
   }, [task]);
 
+  useEffect(() => {
+    if (!isOpen || !focusActivityOnOpen || activitiesLoading) return;
+
+    setIsActivityOpen(true);
+    window.setTimeout(() => {
+      activitySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  }, [activitiesLoading, focusActivityOnOpen, isOpen, task?.id]);
+
   if (!task || !isOpen) return null;
 
   const parentTask = task.parent_task_id
@@ -251,7 +262,7 @@ export const TaskDetailSidebar = ({
     if (!task) return false;
     setIsSubmittingComment(true);
     try {
-      const success = await addActivity(content, files);
+      const success = await addActivity(content, files, mentionedUserIds);
       if (success && mentionedUserIds.length > 0) {
         await dispatchMentionNotifications({
           mentionedUserIds,
@@ -441,7 +452,7 @@ export const TaskDetailSidebar = ({
 
           {/* Content */}
           <div className="flex-1 flex flex-col min-h-0">
-            <ScrollArea className="flex-1">
+            <div className="flex-1 min-h-0 overflow-y-auto">
               <div style={{ padding: "24px 24px 0", display: "flex", flexDirection: "column", gap: 32 }}>
                 {/* Task title + parent reference */}
                 <div className="space-y-3">
@@ -1033,7 +1044,7 @@ export const TaskDetailSidebar = ({
                 )}
 
                 {/* Activity (collapsible) */}
-                <div>
+                <div ref={activitySectionRef}>
                   <button
                     type="button"
                     onClick={() => setIsActivityOpen((v) => !v)}
@@ -1187,7 +1198,7 @@ export const TaskDetailSidebar = ({
 
                 <div style={{ height: 24 }} />
               </div>
-            </ScrollArea>
+            </div>
 
             {/* Chat input (compact w/ mentions) */}
             <div

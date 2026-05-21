@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { toast } from "sonner";
 import { account, databases, DATABASE_ID, ID, Query } from "@/integrations/appwrite/client";
 import { useUserRole } from "@/hooks/useUserRole";
+import { dispatchNotifications } from "@/services/notificationService";
 
 interface Invitation {
   id: string;
@@ -149,6 +150,14 @@ const InvitationNotifications = () => {
           skills: [],
         });
       }
+      await dispatchNotifications({
+        recipientIds: [invitation.invited_by],
+        type: "invitation_accepted",
+        title: "Invitation accepted",
+        message: `A team invitation was accepted by ${invitation.email}`,
+        data: { actor_id: userId },
+        actorId: userId,
+      });
 
       // Refresh invitations and user role
       await fetchInvitations();

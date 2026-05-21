@@ -24,6 +24,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { databases, DATABASE_ID, ID } from "@/integrations/appwrite/client";
 import { projectDetailsQueryKey } from "@/hooks/useProjectData";
+import { getCurrentUserId, notifyProjectFollowers } from "@/services/notificationService";
 import SectionCardHeader from "./SectionCardHeader";
 
 interface PaymentSummaryProps {
@@ -129,6 +130,14 @@ const PaymentSummary = ({ project }: PaymentSummaryProps) => {
       }
 
       await databases.createDocument(DATABASE_ID, "payments", ID.unique(), payload);
+      await notifyProjectFollowers({
+        project: project.id,
+        type: "project_payment_added",
+        title: "Project payment recorded",
+        message: `${paymentType} payment was recorded for ${project.name}`,
+        actorId: await getCurrentUserId(),
+        data: { amount: parsedAmount, payment_type: paymentType },
+      });
       await queryClient.invalidateQueries({ queryKey: projectDetailsQueryKey(project.id) });
       toast.success("Payment recorded");
       setIsDialogOpen(false);

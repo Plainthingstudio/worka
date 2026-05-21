@@ -4,6 +4,12 @@ import { account, client as appwriteClient, databases, storage, DATABASE_ID, ID,
 import { Task, TaskWithRelations, TaskStatus, TaskPriority, TaskType } from '@/types/task';
 import { toast } from '@/hooks/use-toast';
 import { logStatusChange, logAssigneeChange, logPriorityChange, logDueDateChange, logTaskCreated, logComment } from '@/utils/activityLogger';
+import {
+  getCurrentUserId,
+  notifyTaskAssigneeChanges,
+  notifyTaskCreated,
+  notifyTaskFollowers,
+} from '@/services/notificationService';
 
 const TASK_ATTACHMENTS_BUCKET = 'task-attachments';
 const PROJECT_TASKS_REALTIME_COLLECTIONS = ['tasks', 'task_comments', 'task_attachments'];
@@ -153,6 +159,7 @@ export const useTasks = (projectId: string) => {
       const data = await databases.createDocument(DATABASE_ID, 'tasks', ID.unique(), insertData);
 
       await logTaskCreated(data.$id);
+      await notifyTaskCreated(data, user.$id);
 
       toast({ title: "Success", description: "Task created successfully" });
       invalidate();
@@ -189,17 +196,45 @@ export const useTasks = (projectId: string) => {
       await databases.updateDocument(DATABASE_ID, 'tasks', taskId, processedUpdates);
 
       if (currentTask) {
+        const actorId = await getCurrentUserId();
         if (updates.status !== undefined && updates.status !== currentTask.status) {
           await logStatusChange(taskId, currentTask.status, updates.status);
+          await notifyTaskFollowers({
+            task: { ...currentTask, ...processedUpdates, id: taskId },
+            type: 'task_status_changed',
+            title: 'Task status updated',
+            message: `Task "${currentTask.title}" status changed to ${updates.status}`,
+            actorId,
+            data: { new_status: updates.status, old_status: currentTask.status },
+          });
         }
         if (updates.priority !== undefined && updates.priority !== currentTask.priority) {
           await logPriorityChange(taskId, currentTask.priority, updates.priority);
+          await notifyTaskFollowers({
+            task: { ...currentTask, ...processedUpdates, id: taskId },
+            type: 'task_priority_changed',
+            title: 'Task priority updated',
+            message: `Task "${currentTask.title}" priority changed to ${updates.priority}`,
+            actorId,
+            data: { new_priority: updates.priority, old_priority: currentTask.priority },
+          });
         }
         if (updates.due_date !== undefined) {
           const oldDate = parseDateField(currentTask.due_date as DateFieldInput);
           const newDate = parseDateField(updates.due_date as DateFieldInput);
           if (oldDate?.getTime() !== newDate?.getTime()) {
             await logDueDateChange(taskId, oldDate, newDate);
+            await notifyTaskFollowers({
+              task: { ...currentTask, ...processedUpdates, id: taskId },
+              type: 'task_due_date_changed',
+              title: 'Task due date updated',
+              message: `Task "${currentTask.title}" due date was updated`,
+              actorId,
+              data: {
+                old_due_date: oldDate?.toISOString(),
+                new_due_date: newDate?.toISOString(),
+              },
+            });
           }
         }
         if (updates.assignees !== undefined) {
@@ -209,6 +244,12 @@ export const useTasks = (projectId: string) => {
           const removedAssignees = oldAssignees.filter(id => !newAssignees.includes(id));
           for (const _ of addedAssignees) await logAssigneeChange(taskId, 'added', 'User');
           for (const _ of removedAssignees) await logAssigneeChange(taskId, 'removed', 'User');
+          await notifyTaskAssigneeChanges({
+            task: { ...currentTask, ...processedUpdates, id: taskId },
+            addedAssigneeIds: addedAssignees,
+            removedAssigneeIds: removedAssignees,
+            actorId,
+          });
         }
       }
 
@@ -278,6 +319,13 @@ export const useTasks = (projectId: string) => {
         file_size: file.size,
         file_type: file.type,
       });
+      await notifyTaskFollowers({
+        task: taskId,
+        type: 'task_attachment_added',
+        title: 'New task attachment',
+        message: `A file was added to a task you follow: ${file.name}`,
+        actorId: user.$id,
+      });
 
       toast({ title: "Success", description: "File uploaded successfully" });
       invalidate();
@@ -310,7 +358,8 @@ export const useTasks = (projectId: string) => {
         user_id: user.$id,
       };
 
-      await databases.createDocument(DATABASE_ID, 'tasks', ID.unique(), insertData);
+      const data = await databases.createDocument(DATABASE_ID, 'tasks', ID.unique(), insertData);
+      await notifyTaskCreated(data, user.$id);
 
       toast({ title: "Success", description: "Subtask created successfully" });
       invalidate();

@@ -20,6 +20,7 @@ import {
 } from "@/integrations/appwrite/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { dispatchNotifications } from "@/services/notificationService";
 
 const registrationSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
@@ -138,6 +139,14 @@ const InvitationRegistration = ({ invitation }: InvitationRegistrationProps) => 
       } catch (teamMemberError) {
         console.error("Team member creation error:", teamMemberError);
       }
+      await dispatchNotifications({
+        recipientIds: [invitation.invited_by],
+        type: "invitation_accepted",
+        title: "Invitation accepted",
+        message: `${values.fullName} accepted the invitation to join the team`,
+        data: { actor_id: user.$id },
+        actorId: user.$id,
+      });
 
       toast.success("Registration successful! Welcome to the team!");
       window.location.href = "/dashboard";

@@ -70,6 +70,7 @@ export interface TeamMember {
 
 export interface Project {
   id: string;
+  user_id?: string;
   name: string;
   clientId: string;
   client?: Client;

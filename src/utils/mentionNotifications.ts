@@ -1,4 +1,5 @@
-import { account, databases, DATABASE_ID, ID } from "@/integrations/appwrite/client";
+import { account } from "@/integrations/appwrite/client";
+import { dispatchNotifications } from "@/services/notificationService";
 
 /**
  * Creates notification records for each mentioned user.
@@ -24,22 +25,18 @@ export async function dispatchMentionNotifications({
     return;
   }
 
-  const targets = mentionedUserIds.filter((id) => id !== currentUser?.$id);
   const preview = commentContent.length > 140
     ? commentContent.slice(0, 140) + "..."
     : commentContent;
 
   const actorName = currentUser?.name || currentUser?.email?.split("@")[0] || "Someone";
 
-  await Promise.allSettled(
-    targets.map((userId) =>
-      databases.createDocument(DATABASE_ID, "notifications", ID.unique(), {
-        user_id: userId,
-        type: "task_mention",
-        title: `${actorName} mentioned you in ${taskTitle}`,
-        message: preview,
-        data: JSON.stringify({ taskId, actorId: currentUser?.$id }),
-      })
-    )
-  );
+  await dispatchNotifications({
+    recipientIds: mentionedUserIds,
+    type: "task_mention",
+    title: `${actorName} mentioned you in ${taskTitle}`,
+    message: preview,
+    data: { task_id: taskId, actor_id: currentUser?.$id },
+    actorId: currentUser?.$id,
+  });
 }

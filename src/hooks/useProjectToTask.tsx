@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Project, ProjectStatus } from "@/types";
 import { TaskStatus, TaskPriority, TaskType } from "@/types/task";
 import { account, databases, DATABASE_ID, ID, Query } from "@/integrations/appwrite/client";
+import { notifyTaskCreated } from "@/services/notificationService";
 
 export const useProjectToTask = () => {
   const [isCreating, setIsCreating] = useState(false);
@@ -76,6 +77,7 @@ export const useProjectToTask = () => {
       console.log('Inserting task with data:', taskData);
 
       const data = await databases.createDocument(DATABASE_ID, 'tasks', ID.unique(), taskData);
+      await notifyTaskCreated(data, user.$id);
 
       console.log('Task created successfully:', data);
       toast.success("Task created successfully from project");

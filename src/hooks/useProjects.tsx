@@ -3,6 +3,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Project, ProjectStatus, Currency, ProjectType, LeadSource } from "@/types";
 import { account, client, databases, DATABASE_ID, ID } from "@/integrations/appwrite/client";
+import {
+  getCurrentUserId,
+  notifyProjectAssigneeChanges,
+  notifyProjectFollowers,
+} from "@/services/notificationService";
 
 interface ProjectsData {
   projects: Project[];
@@ -39,6 +44,7 @@ const fetchProjectsData = async (): Promise<ProjectsData> => {
 
   const teamMembers = teamResponse.documents.map((member: any) => ({
     id: member.$id,
+    user_id: member.user_id,
     name: member.name,
     position: member.position,
     startDate: new Date(member.start_date),
@@ -62,6 +68,7 @@ const fetchProjectsData = async (): Promise<ProjectsData> => {
 
   const projects: Project[] = projectsResponse.documents.map((project: any) => ({
     id: project.$id,
+    user_id: project.user_id,
     name: project.name,
     clientId: project.client_id,
     status: project.status as ProjectStatus,
@@ -130,12 +137,19 @@ export const useProjects = () => {
         team_members: data.teamMembers || [],
         user_id: session.userId,
       });
+      await notifyProjectAssigneeChanges({
+        project: projectData,
+        addedTeamMemberIds: data.teamMembers || [],
+        removedTeamMemberIds: [],
+        actorId: session.userId,
+      });
 
       toast.success("Project created successfully");
       invalidate();
 
       return {
         id: projectData.$id,
+        user_id: projectData.user_id,
         name: projectData.name,
         clientId: projectData.client_id,
         status: projectData.status as ProjectStatus,
@@ -160,6 +174,8 @@ export const useProjects = () => {
 
   const handleEditProject = async (data: any, projectId: string) => {
     try {
+      const currentProject = projects.find((p) => p.id === projectId);
+      const actorId = await getCurrentUserId();
       await databases.updateDocument(DATABASE_ID, "projects", projectId, {
         name: data.name,
         client_id: data.clientId,
@@ -174,6 +190,41 @@ export const useProjects = () => {
         sub_service_quantities: data.subServiceQuantities || [],
         team_members: data.teamMembers || [],
       });
+      if (currentProject) {
+        const oldTeamMembers = currentProject.teamMembers || [];
+        const newTeamMembers = data.teamMembers || [];
+        await notifyProjectAssigneeChanges({
+          project: projectId,
+          addedTeamMemberIds: newTeamMembers.filter((id: string) => !oldTeamMembers.includes(id)),
+          removedTeamMemberIds: oldTeamMembers.filter((id: string) => !newTeamMembers.includes(id)),
+          actorId,
+        });
+
+        if (data.status !== currentProject.status) {
+          await notifyProjectFollowers({
+            project: projectId,
+            type: "project_status_changed",
+            title: "Project status updated",
+            message: `Project "${currentProject.name}" status changed to ${data.status}`,
+            actorId,
+            data: { old_status: currentProject.status, new_status: data.status },
+          });
+        }
+
+        if (data.deadline?.getTime?.() !== currentProject.deadline?.getTime?.()) {
+          await notifyProjectFollowers({
+            project: projectId,
+            type: "project_deadline_changed",
+            title: "Project deadline updated",
+            message: `Project "${currentProject.name}" deadline was updated`,
+            actorId,
+            data: {
+              old_deadline: currentProject.deadline?.toISOString?.(),
+              new_deadline: data.deadline?.toISOString?.(),
+            },
+          });
+        }
+      }
 
       toast.success("Project updated successfully");
       invalidate();
@@ -228,6 +279,8 @@ export const useProjects = () => {
     }
   ) => {
     try {
+      const currentProject = projects.find((p) => p.id === projectId);
+      const actorId = await getCurrentUserId();
       const updateData: Record<string, any> = {};
       if (fields.name !== undefined) updateData.name = fields.name;
       if (fields.clientId !== undefined) updateData.client_id = fields.clientId;
@@ -253,6 +306,43 @@ export const useProjects = () => {
       });
 
       await databases.updateDocument(DATABASE_ID, "projects", projectId, updateData);
+      if (currentProject) {
+        if (fields.teamMembers !== undefined) {
+          const oldTeamMembers = currentProject.teamMembers || [];
+          const newTeamMembers = fields.teamMembers || [];
+          await notifyProjectAssigneeChanges({
+            project: projectId,
+            addedTeamMemberIds: newTeamMembers.filter((id) => !oldTeamMembers.includes(id)),
+            removedTeamMemberIds: oldTeamMembers.filter((id) => !newTeamMembers.includes(id)),
+            actorId,
+          });
+        }
+
+        if (fields.status !== undefined && fields.status !== currentProject.status) {
+          await notifyProjectFollowers({
+            project: projectId,
+            type: "project_status_changed",
+            title: "Project status updated",
+            message: `Project "${currentProject.name}" status changed to ${fields.status}`,
+            actorId,
+            data: { old_status: currentProject.status, new_status: fields.status },
+          });
+        }
+
+        if (fields.deadline !== undefined && fields.deadline.getTime() !== currentProject.deadline.getTime()) {
+          await notifyProjectFollowers({
+            project: projectId,
+            type: "project_deadline_changed",
+            title: "Project deadline updated",
+            message: `Project "${currentProject.name}" deadline was updated`,
+            actorId,
+            data: {
+              old_deadline: currentProject.deadline.toISOString(),
+              new_deadline: fields.deadline.toISOString(),
+            },
+          });
+        }
+      }
       invalidate();
     } catch (error: any) {
       console.error("Error updating project:", error);

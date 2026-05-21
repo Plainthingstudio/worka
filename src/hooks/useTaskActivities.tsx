@@ -100,7 +100,11 @@ export const useTaskActivities = (taskId: string) => {
     }
   };
 
-  const addActivity = async (content: string, files: File[] = []): Promise<boolean> => {
+  const addActivity = async (
+    content: string,
+    files: File[] = [],
+    mentionedUserIds: string[] = []
+  ): Promise<boolean> => {
     if (!content.trim() && files.length === 0) return false;
 
     try {
@@ -138,7 +142,9 @@ export const useTaskActivities = (taskId: string) => {
       }
 
       // Log the activity with comment and/or attachments
-      const success = await logComment(taskId, content, uploadedAttachments);
+      const success = await logComment(taskId, content, uploadedAttachments, {
+        excludeUserIds: mentionedUserIds,
+      });
 
       if (success) {
         await fetchActivities();
