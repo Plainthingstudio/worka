@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "bootstrap:appwrite": "node scripts/bootstrap-appwrite.mjs",
-    "bootstrap:owner": "node scripts/bootstrap-owner.mjs"
+    "bootstrap:owner": "node scripts/bootstrap-owner.mjs",
+    "bootstrap:user": "node scripts/bootstrap-user.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

@@ -13,6 +13,29 @@ import PendingInvitations from "@/components/team/PendingInvitations";
 import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import { useUserRole } from "@/hooks/useUserRole";
 
+const APPWRITE_PAGE_SIZE = 100;
+
+const fetchAllDocuments = async (collectionId: string, queries: string[] = []) => {
+  const documents: any[] = [];
+  let offset = 0;
+
+  while (true) {
+    const response = await databases.listDocuments(DATABASE_ID, collectionId, [
+      ...queries,
+      Query.limit(APPWRITE_PAGE_SIZE),
+      Query.offset(offset),
+    ]);
+
+    documents.push(...response.documents);
+
+    if (response.documents.length < APPWRITE_PAGE_SIZE) {
+      return documents;
+    }
+
+    offset += APPWRITE_PAGE_SIZE;
+  }
+};
+
 const Team = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [search, setSearch] = useState("");
@@ -46,14 +69,12 @@ const Team = () => {
       }
 
       // Fetch team members
-      const teamResponse = await databases.listDocuments(DATABASE_ID, 'team_members', [
+      const teamData = await fetchAllDocuments('team_members', [
         Query.orderDesc('$createdAt')
       ]);
-      const teamData = teamResponse.documents;
 
       // Get all user roles
-      const rolesResponse = await databases.listDocuments(DATABASE_ID, 'user_roles');
-      const rolesData = rolesResponse.documents;
+      const rolesData = await fetchAllDocuments('user_roles');
 
       // Create a map of user_id to role
       const rolesMap = new Map<string, string>();
@@ -62,9 +83,9 @@ const Team = () => {
       });
 
       // Fetch profiles to get emails
-      const profilesResponse = await databases.listDocuments(DATABASE_ID, 'profiles');
+      const profilesData = await fetchAllDocuments('profiles');
       const profilesMap = new Map<string, any>();
-      profilesResponse.documents.forEach((profile: any) => {
+      profilesData.forEach((profile: any) => {
         profilesMap.set(profile.$id, profile);
       });
 
