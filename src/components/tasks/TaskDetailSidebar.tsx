@@ -47,6 +47,7 @@ import {
   Download,
   ChevronDown,
   ChevronUp,
+  Check,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { TaskWithRelations, TASK_STATUS_OPTIONS, TASK_STATUSES } from '@/types/task';
@@ -113,6 +114,8 @@ export const TaskDetailSidebar = ({
   const [isSubtasksOpen, setIsSubtasksOpen] = useState(true);
   const [isActivityOpen, setIsActivityOpen] = useState(true);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [assigneePickerOpen, setAssigneePickerOpen] = useState(false);
+  const [draftAssignees, setDraftAssignees] = useState<string[]>([]);
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
   const navigate = useNavigate();
   const { project } = useTaskProject(task?.project_id || null);
@@ -247,6 +250,9 @@ export const TaskDetailSidebar = ({
   }));
 
   const candidateNames = mentionCandidates.map((c) => c.name);
+  const findTeamMemberByAssigneeId = (assigneeId: string) =>
+    teamMembers.find((member) => member.user_id === assigneeId || member.id === assigneeId);
+  const getTeamMemberAssigneeId = (member: typeof teamMembers[number]) => member.user_id || member.id;
 
   const handleSubmitComment = async (content: string, files: File[], mentionedUserIds: string[]) => {
     if (!task) return false;
@@ -692,7 +698,7 @@ export const TaskDetailSidebar = ({
                         {task.assignees && task.assignees.length > 0 ? (
                           <div className="flex -space-x-2">
                             {task.assignees.map((assigneeId) => {
-                              const member = teamMembers.find(m => m.user_id === assigneeId);
+                              const member = findTeamMemberByAssigneeId(assigneeId);
                               if (!member) return null;
                               return (
                                 <Tooltip key={assigneeId}>
@@ -716,7 +722,7 @@ export const TaskDetailSidebar = ({
                           <div className="flex items-center gap-2">
                             <div className="flex -space-x-2">
                               {field.value?.map((assigneeId) => {
-                                const member = teamMembers.find(m => m.user_id === assigneeId);
+                                const member = findTeamMemberByAssigneeId(assigneeId);
                                 if (!member) return null;
                                 return (
                                   <Tooltip key={assigneeId}>
@@ -742,28 +748,69 @@ export const TaskDetailSidebar = ({
                               })}
                             </div>
 
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
+                            <Popover
+                              open={assigneePickerOpen}
+                              onOpenChange={(open) => {
+                                setAssigneePickerOpen(open);
+                                if (open) setDraftAssignees(field.value || []);
+                              }}
+                            >
+                              <PopoverTrigger asChild>
                                 <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-full">
                                   <Plus className="h-4 w-4" />
                                 </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent className="z-[80]">
-                                {teamMembers.filter(m => !field.value?.includes(m.user_id)).map(member => (
-                                  <DropdownMenuItem
-                                    key={member.id}
-                                    onClick={() => {
-                                      const newAssignees = [...(field.value || []), member.user_id];
-                                      field.onChange(newAssignees);
-                                      form.handleSubmit(handleSubmit)();
-                                    }}
-                                  >
-                                    <User className="h-4 w-4 mr-2" />
-                                    {member.name}
-                                  </DropdownMenuItem>
-                                ))}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-64 p-2 z-[80]" align="start">
+                                <div className="flex flex-col gap-1 max-h-72 overflow-y-auto mb-2">
+                                  {teamMembers.map((member) => {
+                                    const memberId = getTeamMemberAssigneeId(member);
+                                    const isChecked = draftAssignees.includes(memberId);
+
+                                    return (
+                                      <button
+                                        key={member.id}
+                                        type="button"
+                                        onClick={() => {
+                                          setDraftAssignees((current) =>
+                                            isChecked
+                                              ? current.filter((id) => id !== memberId)
+                                              : [...current, memberId]
+                                          );
+                                        }}
+                                        className="flex items-center gap-3 px-2 py-1.5 rounded hover:bg-accent text-left w-full transition-colors"
+                                      >
+                                        <div
+                                          className={cn(
+                                            "flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors",
+                                            isChecked
+                                              ? "border-brand bg-brand text-brand-foreground"
+                                              : "border-border bg-background text-transparent"
+                                          )}
+                                        >
+                                          <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
+                                        </div>
+                                        <InitialAvatar name={member.name} size={28} />
+                                        <span className="min-w-0 truncate text-sm text-foreground">
+                                          {member.name}
+                                        </span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                                <Button
+                                  type="button"
+                                  className="w-full"
+                                  onClick={async () => {
+                                    field.onChange(draftAssignees);
+                                    form.setValue('assignees', draftAssignees);
+                                    await onUpdateTask(task.id, { assignees: draftAssignees });
+                                    setAssigneePickerOpen(false);
+                                  }}
+                                >
+                                  Apply
+                                </Button>
+                              </PopoverContent>
+                            </Popover>
                           </div>
                         )}
                       />
@@ -852,7 +899,7 @@ export const TaskDetailSidebar = ({
                       <div>
                         {task.subtasks?.map((subtask, index) => {
                           const firstAssignee = subtask.assignees?.[0]
-                            ? teamMembers.find(m => m.user_id === subtask.assignees[0])
+                            ? findTeamMemberByAssigneeId(subtask.assignees[0])
                             : undefined;
                           const statusBadge = getSubtaskStatusBadge(subtask.status);
 

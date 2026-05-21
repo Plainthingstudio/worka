@@ -40,10 +40,10 @@ const formatPrice = (price: number, currency: Currency) =>
   `${price.toLocaleString()} ${currency}`;
 
 const priceBadgeClass =
-  "inline-flex shrink-0 items-center rounded-[10px] bg-transparent px-2 py-1 text-xs font-medium leading-4 tracking-normal text-[#0F172A] shadow-[inset_0_0_0_1px_rgba(59,130,246,0.5)]";
+  "inline-flex shrink-0 items-center rounded-[10px] border border-brand/50 bg-background px-2 py-1 text-xs font-medium leading-4 tracking-normal text-foreground";
 
 const totalBadgeClass =
-  "inline-flex items-center rounded-[10px] bg-[#F1F5F9] px-2 py-1 text-xs font-medium leading-4 text-[#0F172A] shadow-[inset_0_0_0_1px_rgba(59,130,246,0.5)]";
+  "inline-flex items-center rounded-[10px] border border-brand/50 bg-surface-3 px-2 py-1 text-xs font-medium leading-4 text-foreground";
 
 /** Figma: 32×32 buttons, 7px radius; input 32h, slate bg, 10px radius; gap 4px */
 const QtyStepper = ({
@@ -65,7 +65,7 @@ const QtyStepper = ({
         variant="outline"
         size="icon"
         className={cn(
-          "h-8 w-8 shrink-0 rounded-[7px] border-[#E2E8F0] bg-white",
+          "h-8 w-8 shrink-0 rounded-[7px] border-border-soft bg-background text-muted-foreground hover:bg-surface-hover hover:text-foreground",
           value <= 0 && "opacity-50"
         )}
         onClick={dec}
@@ -87,13 +87,13 @@ const QtyStepper = ({
           const parsed = parseInt(raw, 10);
           onChange(Number.isNaN(parsed) ? 0 : Math.max(0, parsed));
         }}
-        className="h-8 w-14 shrink-0 rounded-[10px] border-[#E2E8F0] bg-[#F8FAFC] px-3 text-center text-sm font-normal tabular-nums leading-5 tracking-[-0.15px] text-[#020817]"
+        className="h-8 w-14 shrink-0 rounded-[10px] border-border-soft bg-surface-2 px-3 text-center text-sm font-normal tabular-nums leading-5 tracking-[-0.15px] text-foreground"
       />
       <Button
         type="button"
         variant="outline"
         size="icon"
-        className="h-8 w-8 shrink-0 rounded-[7px] border-[#E2E8F0] bg-white shadow-[0px_1px_2px_rgba(15,23,42,0.05)]"
+        className="h-8 w-8 shrink-0 rounded-[7px] border-border-soft bg-background text-muted-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.05)] hover:bg-surface-hover hover:text-foreground"
         onClick={inc}
         aria-label="Increase quantity"
       >
@@ -116,10 +116,10 @@ function groupKeyForService(service: StudioService): GroupKey {
 function categoryHeaderIcon(groupKey: GroupKey) {
   if (groupKey === "illustrations") {
     return (
-      <Package className="h-4 w-4 shrink-0 opacity-50 text-[#020817] -rotate-90" />
+      <Package className="h-4 w-4 shrink-0 -rotate-90 text-muted-foreground opacity-50" />
     );
   }
-  return <Package className="h-4 w-4 shrink-0 opacity-50 text-[#020817]" />;
+  return <Package className="h-4 w-4 shrink-0 text-muted-foreground opacity-50" />;
 }
 
 const ProjectServices = ({
@@ -221,11 +221,11 @@ const ProjectServices = ({
       return (
         <div
           key={subService.id}
-          className="flex flex-col gap-2 border-t border-[#E2E8F0] pt-[13px] sm:flex-row sm:items-center sm:justify-between sm:gap-2"
+          className="flex flex-col gap-2 border-t border-border-soft pt-[13px] sm:flex-row sm:items-center sm:justify-between sm:gap-2"
         >
           <div className="min-w-0 flex-1 space-y-1 pl-0 sm:pl-7">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-base font-medium tracking-[-0.3125px] text-[#020817]">
+              <span className="text-base font-medium tracking-[-0.3125px] text-foreground">
                 {subService.name}
               </span>
               <span className={priceBadgeClass}>
@@ -233,7 +233,7 @@ const ProjectServices = ({
               </span>
             </div>
             {subService.description && (
-              <p className="text-sm font-normal leading-5 tracking-[-0.15px] text-[#64748B]">
+              <p className="text-sm font-normal leading-5 tracking-[-0.15px] text-muted-foreground">
                 {subService.description}
               </p>
             )}
@@ -262,7 +262,7 @@ const ProjectServices = ({
       render={() => (
         <FormItem className="flex w-full flex-col items-stretch gap-2">
           <div className="flex h-6 w-full flex-row items-center justify-between gap-2 pr-px">
-            <FormLabel className="m-0 text-sm font-medium leading-[14px] tracking-[-0.15px] text-[#020817]">
+            <FormLabel className="m-0 text-sm font-medium leading-[14px] tracking-[-0.15px] text-foreground">
               Project Services
             </FormLabel>
             <span className={totalBadgeClass}>
@@ -275,7 +275,7 @@ const ProjectServices = ({
               Services database setup is required before services can be selected.
             </div>
           ) : availableServices.length === 0 ? (
-            <div className="rounded-md border border-dashed border-[#E2E8F0] p-5 text-center text-sm text-muted-foreground">
+            <div className="rounded-md border border-dashed border-border-soft p-5 text-center text-sm text-muted-foreground">
               No services found for {currency}. Create services first or switch currency.
             </div>
           ) : (
@@ -295,7 +295,7 @@ const ProjectServices = ({
                         <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
                       )}
                       {categoryHeaderIcon(groupKey)}
-                      <span className="text-xs font-medium leading-[14px] tracking-[-0.15px] text-[#020817]">
+                      <span className="text-xs font-medium leading-[14px] tracking-[-0.15px] text-foreground">
                         {label}
                       </span>
                     </button>
@@ -313,7 +313,7 @@ const ProjectServices = ({
                           return (
                             <div
                               key={service.id}
-                              className="flex w-full flex-col gap-3 rounded-[7px] border border-[#E2E8F0] bg-white p-3 shadow-[0px_1px_2px_rgba(15,23,42,0.05)]"
+                              className="flex w-full flex-col gap-3 rounded-[7px] border border-border-soft bg-card p-3 text-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.05)] dark:bg-surface-1"
                             >
                               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                                 <div className="min-w-0 flex-1 space-y-1">
@@ -327,7 +327,7 @@ const ProjectServices = ({
                                     ) : (
                                       <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
                                     )}
-                                    <span className="text-base font-medium tracking-[-0.3125px] text-[#020817]">
+                                    <span className="text-base font-medium tracking-[-0.3125px] text-foreground">
                                       {service.name}
                                     </span>
                                     <span className={priceBadgeClass}>
@@ -335,7 +335,7 @@ const ProjectServices = ({
                                     </span>
                                   </button>
                                   {!cardCollapsed && service.description && (
-                                    <p className="text-sm font-normal leading-5 tracking-[-0.15px] text-[#64748B]">
+                                    <p className="text-sm font-normal leading-5 tracking-[-0.15px] text-muted-foreground">
                                       {service.description}
                                     </p>
                                   )}

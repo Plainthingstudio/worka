@@ -30,7 +30,7 @@ export const Tasks = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [newTaskStatus, setNewTaskStatus] = useState<TaskStatus>('Planning');
   const [activeView, setActiveView] = useState<'list' | 'board' | 'calendar'>('list');
-  const [myTasksOnly, setMyTasksOnly] = useState(false);
+  const [myTasksOnly, setMyTasksOnly] = useState(true);
   const [myTaskIdentityIds, setMyTaskIdentityIds] = useState<string[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 

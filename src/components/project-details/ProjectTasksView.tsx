@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TaskWithRelations, TaskStatus } from "@/types/task";
 import { ClickUpTaskList } from "@/components/tasks/ClickUpTaskList";
 import { TaskBoardView } from "@/components/tasks/TaskBoardView";
@@ -7,6 +7,8 @@ import { TaskDetailSidebar } from "@/components/tasks/TaskDetailSidebar";
 import { SubtaskDialog } from "@/components/tasks/SubtaskDialog";
 import { useTasks } from "@/hooks/useTasks";
 import { ProjectTab } from "./ProjectTabs";
+import { Switch } from "@/components/ui/switch";
+import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 
 interface ProjectTasksViewProps {
   projectId: string;
@@ -28,6 +30,42 @@ const ProjectTasksView = ({ projectId, view, onCreateTask }: ProjectTasksViewPro
   const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
   const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = useState(false);
   const [parentTaskId, setParentTaskId] = useState<string>("");
+  const [myTasksOnly, setMyTasksOnly] = useState(true);
+  const [myTaskIdentityIds, setMyTaskIdentityIds] = useState<string[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchMyTaskIdentities = async () => {
+      try {
+        const user = await account.get();
+        if (!isMounted) return;
+
+        setCurrentUserId(user.$id);
+
+        const teamResponse = await databases.listDocuments(DATABASE_ID, "team_members", [
+          Query.equal("user_id", user.$id),
+        ]);
+        const memberIds = teamResponse.documents.map((member: any) => member.$id);
+
+        if (isMounted) {
+          setMyTaskIdentityIds(Array.from(new Set([user.$id, ...memberIds].filter(Boolean))));
+        }
+      } catch {
+        if (isMounted) {
+          setCurrentUserId(null);
+          setMyTaskIdentityIds([]);
+        }
+      }
+    };
+
+    fetchMyTaskIdentities();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleAddSubtask = (taskId: string) => {
     setParentTaskId(taskId);
@@ -46,11 +84,56 @@ const ProjectTasksView = ({ projectId, view, onCreateTask }: ProjectTasksViewPro
     onCreateTask();
   };
 
+  const isAssignedToCurrentUser = (task: TaskWithRelations) => {
+    const assignees = task.assignees || [];
+
+    return Boolean(
+      (currentUserId && task.user_id === currentUserId) ||
+        myTaskIdentityIds.some((id) => assignees.includes(id))
+    );
+  };
+
+  const visibleTasks = myTasksOnly
+    ? tasks.reduce<TaskWithRelations[]>((acc, task) => {
+        const subtasks = (task.subtasks || []) as TaskWithRelations[];
+        const filteredSubtasks = subtasks.filter(isAssignedToCurrentUser);
+
+        if (isAssignedToCurrentUser(task) || filteredSubtasks.length > 0) {
+          acc.push({ ...task, subtasks: filteredSubtasks });
+        }
+
+        return acc;
+      }, [])
+    : tasks;
+
   return (
     <div className="w-full">
+      <div className="mb-4 flex items-center justify-end">
+        <label
+          className="inline-flex items-center border border-border-soft bg-card text-foreground"
+          style={{
+            gap: 8,
+            height: 36,
+            padding: "0 12px",
+            borderRadius: 12,
+            fontFamily: "Inter, sans-serif",
+            fontWeight: 500,
+            fontSize: 14,
+            lineHeight: "20px",
+          }}
+        >
+          <Switch
+            checked={myTasksOnly}
+            onCheckedChange={setMyTasksOnly}
+            className="h-5 w-9 data-[state=checked]:bg-brand [&>span]:h-4 [&>span]:w-4 [&>span]:data-[state=checked]:translate-x-4"
+          />
+          <span>My task</span>
+        </label>
+      </div>
+
       {view === "list" && (
         <ClickUpTaskList
-          tasks={tasks}
+          tasks={visibleTasks}
           isLoading={isLoading}
           onTaskClick={(task) => setSelectedTask(task)}
           onUpdateTask={updateTask}
@@ -60,7 +143,7 @@ const ProjectTasksView = ({ projectId, view, onCreateTask }: ProjectTasksViewPro
 
       {view === "board" && (
         <TaskBoardView
-          tasks={tasks}
+          tasks={visibleTasks}
           isLoading={isLoading}
           onUpdateTask={updateTask}
           onDeleteTask={deleteTask}
@@ -73,7 +156,7 @@ const ProjectTasksView = ({ projectId, view, onCreateTask }: ProjectTasksViewPro
 
       {view === "timeline" && (
         <TaskCalendarView
-          tasks={tasks}
+          tasks={visibleTasks}
           isLoading={isLoading}
           onUpdateTask={updateTask}
         />

@@ -1,12 +1,34 @@
 
 import { useState, useEffect } from 'react';
-import { databases, DATABASE_ID } from '@/integrations/appwrite/client';
+import { databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
 
 interface TeamMember {
   id: string;
   user_id: string;
   name: string;
 }
+
+const APPWRITE_PAGE_SIZE = 100;
+
+const fetchAllTeamMembers = async () => {
+  const documents: any[] = [];
+  let offset = 0;
+
+  while (true) {
+    const response = await databases.listDocuments(DATABASE_ID, 'team_members', [
+      Query.limit(APPWRITE_PAGE_SIZE),
+      Query.offset(offset),
+    ]);
+
+    documents.push(...response.documents);
+
+    if (response.documents.length < APPWRITE_PAGE_SIZE) {
+      return documents;
+    }
+
+    offset += APPWRITE_PAGE_SIZE;
+  }
+};
 
 export const useAssigneeNames = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -15,8 +37,8 @@ export const useAssigneeNames = () => {
   useEffect(() => {
     const fetchTeamMembers = async () => {
       try {
-        const response = await databases.listDocuments(DATABASE_ID, 'team_members');
-        const data: TeamMember[] = response.documents.map((doc: any) => ({
+        const documents = await fetchAllTeamMembers();
+        const data: TeamMember[] = documents.map((doc: any) => ({
           id: doc.$id,
           user_id: doc.user_id,
           name: doc.name,
