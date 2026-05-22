@@ -1,9 +1,10 @@
-import React, { useState } from "react";
-import { Edit, Plus, Trash } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { Edit, MoreHorizontal, Plus, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -19,6 +20,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Currency,
   ServiceCategory,
@@ -52,10 +60,19 @@ const formatPrice = (price: number, currency: Currency) =>
   `${price.toLocaleString()} ${currency}`;
 
 const CATEGORY_COLORS: Record<ServiceCategory, string> = {
-  ui_ux_design: "bg-blue-100 text-blue-700 border-blue-200",
-  graphic_design: "bg-purple-100 text-purple-700 border-purple-200",
-  illustrations: "bg-amber-100 text-amber-700 border-amber-200",
+  ui_ux_design: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-400/30",
+  graphic_design: "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-400/30",
+  illustrations: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-400/30",
 };
+
+type ServiceCategoryFilter = "all" | ServiceCategory;
+
+const CATEGORY_TABS: Array<{ value: ServiceCategoryFilter; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "graphic_design", label: SERVICE_CATEGORY_LABELS.graphic_design },
+  { value: "ui_ux_design", label: SERVICE_CATEGORY_LABELS.ui_ux_design },
+  { value: "illustrations", label: SERVICE_CATEGORY_LABELS.illustrations },
+];
 
 const Services = () => {
   const {
@@ -76,6 +93,15 @@ const Services = () => {
   const [editingSubService, setEditingSubService] = useState<StudioSubService | null>(null);
   const [parentServiceId, setParentServiceId] = useState("");
   const [form, setForm] = useState<ServiceFormState>(emptyForm);
+  const [categoryFilter, setCategoryFilter] = useState<ServiceCategoryFilter>("all");
+
+  const filteredServices = useMemo(
+    () =>
+      categoryFilter === "all"
+        ? services
+        : services.filter((service) => service.category === categoryFilter),
+    [categoryFilter, services]
+  );
 
   const openServiceDialog = (service?: StudioService) => {
     setEditingService(service || null);
@@ -160,6 +186,26 @@ const Services = () => {
         </Button>
       </div>
 
+      {!setupRequired && !isLoading && services.length > 0 && (
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <Tabs
+            value={categoryFilter}
+            onValueChange={(value) => setCategoryFilter(value as ServiceCategoryFilter)}
+          >
+            <TabsList className="max-w-full overflow-x-auto">
+              {CATEGORY_TABS.map((tab) => (
+                <TabsTrigger key={tab.value} value={tab.value}>
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+          <p className="text-sm text-muted-foreground">
+            {filteredServices.length} service{filteredServices.length === 1 ? "" : "s"}
+          </p>
+        </div>
+      )}
+
       {setupRequired ? (
         <div className="rounded-md border border-amber-200 bg-amber-50 p-5 text-amber-900">
           <h2 className="font-semibold">Services database setup required</h2>
@@ -179,80 +225,116 @@ const Services = () => {
             Add your first service to make project pricing faster.
           </p>
         </div>
+      ) : filteredServices.length === 0 ? (
+        <div className="rounded-md border border-dashed bg-card p-10 text-center">
+          <h2 className="text-lg font-semibold">No services in this category</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Switch tabs or add a new service for {CATEGORY_TABS.find((tab) => tab.value === categoryFilter)?.label}.
+          </p>
+        </div>
       ) : (
-        <div className="grid gap-4">
-          {services.map((service) => (
-            <div key={service.id} className="rounded-md border bg-card p-4 shadow-sm">
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-lg font-semibold">{service.name}</h2>
-                    <Badge variant="secondary">{formatPrice(service.price, service.currency)}</Badge>
-                    {service.category && (
-                      <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${CATEGORY_COLORS[service.category]}`}>
-                        {SERVICE_CATEGORY_LABELS[service.category]}
-                      </span>
-                    )}
-                  </div>
-                  {service.description && (
-                    <p className="mt-1 text-sm text-muted-foreground">{service.description}</p>
-                  )}
-                </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {filteredServices.map((service) => {
+            const subServices = service.subServices || [];
 
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => openSubServiceDialog(service.id)}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Sub-service
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => openServiceDialog(service)}>
-                    <Edit className="h-4 w-4" />
-                    <span className="sr-only">Edit service</span>
-                  </Button>
-                  <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deleteService(service.id)}>
-                    <Trash className="h-4 w-4" />
-                    <span className="sr-only">Delete service</span>
-                  </Button>
-                </div>
-              </div>
-
-              {(service.subServices || []).length > 0 && (
-                <div className="mt-4 divide-y rounded-md border">
-                  {(service.subServices || []).map((subService) => (
-                    <div key={subService.id} className="flex items-center justify-between gap-3 p-3">
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-medium">{subService.name}</span>
-                          <Badge variant="outline">{formatPrice(subService.price, subService.currency)}</Badge>
+            return (
+              <article
+                key={service.id}
+                className="flex min-h-[260px] flex-col rounded-md border border-border-soft bg-card shadow-sm transition-colors hover:border-border"
+              >
+                <div className="flex flex-1 flex-col p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      {service.category && (
+                        <div className="mb-2">
+                          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${CATEGORY_COLORS[service.category]}`}>
+                            {SERVICE_CATEGORY_LABELS[service.category]}
+                          </span>
                         </div>
-                        {subService.description && (
-                          <p className="mt-1 text-sm text-muted-foreground">{subService.description}</p>
-                        )}
+                      )}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="min-w-0 truncate text-lg font-semibold leading-7">
+                          {service.name}
+                        </h2>
                       </div>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openSubServiceDialog(service.id, subService)}
-                        >
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Edit sub-service</span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive"
-                          onClick={() => deleteSubService(subService.id)}
-                        >
-                          <Trash className="h-4 w-4" />
-                          <span className="sr-only">Delete sub-service</span>
-                        </Button>
+                      <div className="mt-3">
+                        <p className="text-lg font-semibold leading-7 text-foreground">
+                          {formatPrice(service.price, service.currency)}
+                        </p>
                       </div>
                     </div>
-                  ))}
+
+                    <div className="flex shrink-0 items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="group relative h-8 w-8"
+                        onClick={() => openSubServiceDialog(service.id)}
+                      >
+                        <Plus className="h-4 w-4" />
+                        <span className="pointer-events-none absolute right-0 top-[calc(100%+6px)] z-20 whitespace-nowrap rounded-md border border-border-soft bg-popover px-2.5 py-1.5 text-xs font-medium text-popover-foreground opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
+                          Sub-service
+                        </span>
+                        <span className="sr-only">Add sub-service</span>
+                      </Button>
+                      <ServiceActionsMenu
+                        service={service}
+                        onEdit={openServiceDialog}
+                        onDelete={deleteService}
+                      />
+                    </div>
+                  </div>
+
+                  {service.description ? (
+                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">
+                      {service.description}
+                    </p>
+                  ) : (
+                    <p className="mt-3 text-sm leading-6 text-muted-foreground/70">
+                      No description yet.
+                    </p>
+                  )}
+
+                  <div className="mt-4 flex items-center border-t border-border-soft pt-4">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {subServices.length} sub-service{subServices.length === 1 ? "" : "s"}
+                    </span>
+                  </div>
                 </div>
-              )}
-            </div>
-          ))}
+
+                {subServices.length > 0 && (
+                  <div className="border-t border-border-soft bg-surface-2/60 p-3 dark:bg-surface-2">
+                    <div className="space-y-2">
+                      {subServices.map((subService) => (
+                        <div
+                          key={subService.id}
+                          className="flex items-center justify-between gap-3 rounded-md border border-border-soft bg-card px-3 py-2"
+                        >
+                          <div className="min-w-0">
+                            <span className="block min-w-0 truncate text-sm font-medium">{subService.name}</span>
+                            <p className="mt-0.5 text-sm font-semibold text-foreground">
+                              {formatPrice(subService.price, subService.currency)}
+                            </p>
+                            {subService.description && (
+                              <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                                {subService.description}
+                              </p>
+                            )}
+                          </div>
+                          <SubServiceActionsMenu
+                            serviceId={service.id}
+                            subService={subService}
+                            onEdit={openSubServiceDialog}
+                            onDelete={deleteSubService}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </article>
+            );
+          })}
         </div>
       )}
 
@@ -286,6 +368,74 @@ const Services = () => {
     </main>
   );
 };
+
+const ServiceActionsMenu = ({
+  service,
+  onEdit,
+  onDelete,
+}: {
+  service: StudioService;
+  onEdit: (service: StudioService) => void;
+  onDelete: (serviceId: string) => void;
+}) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+        <MoreHorizontal className="h-4 w-4" />
+        <span className="sr-only">Service actions</span>
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end" className="w-44">
+      <DropdownMenuItem onClick={() => onEdit(service)}>
+        <Edit className="mr-2 h-4 w-4" />
+        Edit service
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        className="text-destructive focus:text-destructive"
+        onClick={() => onDelete(service.id)}
+      >
+        <Trash className="mr-2 h-4 w-4" />
+        Delete service
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
+
+const SubServiceActionsMenu = ({
+  serviceId,
+  subService,
+  onEdit,
+  onDelete,
+}: {
+  serviceId: string;
+  subService: StudioSubService;
+  onEdit: (serviceId: string, subService: StudioSubService) => void;
+  onDelete: (subServiceId: string) => void;
+}) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+        <MoreHorizontal className="h-4 w-4" />
+        <span className="sr-only">Sub-service actions</span>
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuItem onClick={() => onEdit(serviceId, subService)}>
+        <Edit className="mr-2 h-4 w-4" />
+        Edit sub-service
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        className="text-destructive focus:text-destructive"
+        onClick={() => onDelete(subService.id)}
+      >
+        <Trash className="mr-2 h-4 w-4" />
+        Delete sub-service
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
 
 const ServiceForm = ({
   form,
