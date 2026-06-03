@@ -11,7 +11,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { InitialAvatar } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface TeamMemberMultiSelectProps {
@@ -125,7 +125,7 @@ const TeamMemberMultiSelect = ({
                     onSelect={() => handleSelect(member)}
                     className="gap-2"
                   >
-                    <InitialAvatar name={member.name} size={24} />
+                    <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size={24} />
                     <span className="truncate font-medium">{member.name}</span>
                     <span className="truncate text-xs text-muted-foreground">{member.position}</span>
                   </CommandItem>
@@ -147,7 +147,7 @@ const TeamMemberMultiSelect = ({
 
           return (
             <Badge key={memberValue} variant="category" className="flex items-center gap-1 py-1 pl-1.5">
-              <InitialAvatar name={member.name} size={24} />
+              <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size={24} />
               <span>{member.name} - {member.position}</span>
               <button
                 type="button"

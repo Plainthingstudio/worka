@@ -6,6 +6,16 @@ import { TaskStatus, TaskPriority, TaskType } from "@/types/task";
 import { account, databases, DATABASE_ID, ID, Query } from "@/integrations/appwrite/client";
 import { notifyTaskCreated } from "@/services/notificationService";
 
+type TaskFromProjectOverrides = {
+  title?: string;
+  description?: string;
+  status?: TaskStatus;
+  priority?: TaskPriority;
+  task_type?: TaskType;
+  due_date?: Date | string | null;
+  assignees?: string[];
+};
+
 export const useProjectToTask = () => {
   const [isCreating, setIsCreating] = useState(false);
 
@@ -25,7 +35,36 @@ export const useProjectToTask = () => {
     }
   };
 
-  const createTaskFromProject = async (project: Project) => {
+  const serializeDate = (value: Date | string | null | undefined) => {
+    if (!value) return undefined;
+    return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
+  };
+
+  const resolveProjectAssignees = async (memberIds: string[] = []) => {
+    if (memberIds.length === 0) return [];
+
+    try {
+      const teamResponse = await databases.listDocuments(
+        DATABASE_ID,
+        'team_members',
+        [Query.equal('$id', memberIds)]
+      );
+
+      const resolvedUserIds = teamResponse.documents.map((tm: any) => tm.user_id).filter(Boolean);
+      const resolvedDocumentIds = new Set(teamResponse.documents.map((tm: any) => tm.$id));
+      const alreadyUserIds = memberIds.filter((id) => !resolvedDocumentIds.has(id));
+
+      return Array.from(new Set([...resolvedUserIds, ...alreadyUserIds]));
+    } catch (teamError) {
+      console.error('Error fetching team members:', teamError);
+      return memberIds;
+    }
+  };
+
+  const createTaskFromProject = async (
+    project: Project,
+    overrides: TaskFromProjectOverrides = {}
+  ) => {
     try {
       setIsCreating(true);
       console.log('Creating task from project:', project);
@@ -45,34 +84,26 @@ export const useProjectToTask = () => {
 
       console.log('Current user:', user.$id);
 
-      // Get team member user_ids from project.teamMembers
-      let assignees: string[] = [];
-      if (project.teamMembers && project.teamMembers.length > 0) {
-        console.log('Fetching team members for IDs:', project.teamMembers);
-        try {
-          const teamResponse = await databases.listDocuments(
-            DATABASE_ID,
-            'team_members',
-            [Query.equal('$id', project.teamMembers)]
-          );
-          assignees = teamResponse.documents.map((tm: any) => tm.user_id);
-          console.log('Team member user IDs:', assignees);
-        } catch (teamError) {
-          console.error('Error fetching team members:', teamError);
-        }
-      }
+      const assignees = overrides.assignees !== undefined
+        ? Array.from(new Set(overrides.assignees))
+        : await resolveProjectAssignees(project.teamMembers || []);
+
+      const dueDate = serializeDate(overrides.due_date ?? project.deadline);
 
       const taskData: any = {
-        title: project.name,
-        description: `Task created from project: ${project.name}`,
-        status: mapProjectStatusToTaskStatus(project.status),
-        priority: 'Normal' as TaskPriority,
-        task_type: 'Primary' as TaskType,
-        due_date: project.deadline.toISOString(),
+        title: overrides.title || project.name,
+        description: overrides.description ?? `Task created from project: ${project.name}`,
+        status: overrides.status || mapProjectStatusToTaskStatus(project.status),
+        priority: overrides.priority || ('Normal' as TaskPriority),
+        task_type: overrides.task_type || ('Primary' as TaskType),
         assignees: assignees,
         project_id: project.id,
         user_id: user.$id,
       };
+
+      if (dueDate) {
+        taskData.due_date = dueDate;
+      }
 
       console.log('Inserting task with data:', taskData);
 

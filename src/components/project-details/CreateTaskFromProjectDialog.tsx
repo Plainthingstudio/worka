@@ -57,8 +57,9 @@ type TaskFormData = z.infer<typeof taskSchema>;
 interface CreateTaskFromProjectDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: TaskFormData) => void;
+  onSubmit: (data: TaskFormData) => boolean | Promise<boolean>;
   project: Project;
+  isSubmitting?: boolean;
 }
 
 const mapProjectStatusToTaskStatus = (projectStatus: ProjectStatus): TaskStatus => {
@@ -81,49 +82,73 @@ export const CreateTaskFromProjectDialog = ({
   isOpen, 
   onClose, 
   onSubmit, 
-  project 
+  project,
+  isSubmitting = false,
 }: CreateTaskFromProjectDialogProps) => {
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
 
+  const getDefaultValues = (): TaskFormData => ({
+    title: project.name,
+    description: `Task created from project: ${project.name}`,
+    priority: 'Normal',
+    task_type: 'Primary',
+    status: mapProjectStatusToTaskStatus(project.status),
+    due_date: project.deadline ? new Date(project.deadline) : undefined,
+    assignees: [],
+  });
+
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
-    defaultValues: {
-      title: project.name,
-      description: `Task created from project: ${project.name}`,
-      priority: 'Normal',
-      task_type: 'Primary',
-      status: mapProjectStatusToTaskStatus(project.status),
-      due_date: project.deadline,
-      assignees: [],
-    },
+    defaultValues: getDefaultValues(),
   });
 
   useEffect(() => {
-    if (isOpen) {
-      fetchTeamMembers().then((members) => {
-        // Pre-select project team members if available
-        if (project.teamMembers && project.teamMembers.length > 0) {
-          const projectAssignees = members
-            .filter(member => project.teamMembers?.includes(member.id))
-            .map(member => member.user_id);
-          form.setValue('assignees', projectAssignees);
-        }
-      });
-    }
-  }, [isOpen, fetchTeamMembers, project.teamMembers, form]);
+    if (!isOpen) return;
 
-  const handleSubmit = (data: TaskFormData) => {
-    onSubmit(data);
-    form.reset();
+    let isMounted = true;
+    form.reset(getDefaultValues());
+
+    fetchTeamMembers().then((members) => {
+      if (!isMounted) return;
+
+      const projectMemberIds = project.teamMembers || [];
+      if (projectMemberIds.length === 0) return;
+
+      const projectAssignees = members
+        .filter((member) =>
+          projectMemberIds.includes(member.id) ||
+          projectMemberIds.includes(member.user_id)
+        )
+        .map((member) => member.user_id || member.id);
+
+      form.setValue('assignees', Array.from(new Set(projectAssignees)), {
+        shouldDirty: false,
+        shouldTouch: false,
+      });
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, project.id]);
+
+  const handleSubmit = async (data: TaskFormData) => {
+    const success = await onSubmit(data);
+    if (success) {
+      form.reset(getDefaultValues());
+    }
   };
 
   const handleClose = () => {
-    form.reset();
+    if (form.formState.isSubmitting || isSubmitting) return;
+    form.reset(getDefaultValues());
     onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) handleClose();
+    }}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create Task from Project</DialogTitle>
@@ -298,11 +323,16 @@ export const CreateTaskFromProjectDialog = ({
             />
 
             <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={handleClose}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                disabled={form.formState.isSubmitting || isSubmitting}
+              >
                 Cancel
               </Button>
-              <Button type="submit">
-                Create Task
+              <Button type="submit" disabled={form.formState.isSubmitting || isSubmitting}>
+                {form.formState.isSubmitting || isSubmitting ? "Creating..." : "Create Task"}
               </Button>
             </div>
           </form>

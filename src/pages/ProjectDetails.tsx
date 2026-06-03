@@ -32,6 +32,7 @@ const ProjectDetails = () => {
     handleCreateTask,
     handleCreateTaskSubmit,
     isLoading,
+    isCreatingTask,
     showConfetti
   } = useProjectDetails(projectId);
 
@@ -272,8 +273,9 @@ const ProjectDetails = () => {
                 setIsStatusDialogOpen(true);
               }}
               onCreateTask={handleCreateTask}
-              handlers={handlers}
-            />
+      handlers={handlers}
+      isCreatingTask={isCreatingTask}
+    />
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-12">

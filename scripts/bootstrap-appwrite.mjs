@@ -65,6 +65,34 @@ const getOrCreate = async ({ label, getPath, createPath, createBody }) => {
   return created;
 };
 
+const ensureBucket = async ({ bucket }) => {
+  const getPath = `/v1/storage/buckets/${bucket.bucketId}`;
+  const updateBody = {
+    name: bucket.name,
+    permissions: bucket.permissions,
+    fileSecurity: bucket.fileSecurity,
+    enabled: bucket.enabled,
+    maximumFileSize: bucket.maximumFileSize,
+    allowedFileExtensions: bucket.allowedFileExtensions,
+    compression: bucket.compression,
+    encryption: bucket.encryption,
+    antivirus: bucket.antivirus,
+    transformations: bucket.transformations,
+  };
+
+  try {
+    await request("GET", getPath);
+    await request("PUT", getPath, updateBody);
+    console.log(`✓ Updated bucket ${bucket.bucketId}`);
+    return;
+  } catch (error) {
+    if (error.status !== 404) throw error;
+  }
+
+  await request("POST", "/v1/storage/buckets", bucket);
+  console.log(`✓ Created bucket ${bucket.bucketId}`);
+};
+
 const createAttribute = async ({ databaseId, collectionId, attribute }) => {
   const basePath = `/v1/databases/${databaseId}/collections/${collectionId}/attributes`;
 
@@ -226,12 +254,7 @@ const main = async () => {
   });
 
   for (const bucket of buckets) {
-    await getOrCreate({
-      label: `bucket ${bucket.bucketId}`,
-      getPath: `/v1/storage/buckets/${bucket.bucketId}`,
-      createPath: "/v1/storage/buckets",
-      createBody: bucket,
-    });
+    await ensureBucket({ bucket });
   }
 
   for (const collection of collections) {

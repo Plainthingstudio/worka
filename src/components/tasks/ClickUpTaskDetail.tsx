@@ -458,7 +458,6 @@ export const ClickUpTaskDetail = ({
                         id="file-upload"
                         className="hidden"
                         onChange={handleFileUpload}
-                        accept="image/*,application/pdf,.doc,.docx,.txt"
                       />
                       <Button 
                         variant="outline" 

@@ -102,7 +102,7 @@ export const getAvatarInitials = (name: string) =>
     .map((part) => part.charAt(0).toUpperCase())
     .join("")
 
-export type InitialAvatarSize = 24 | 32
+export type InitialAvatarSize = 24 | 28 | 32 | 40 | 48 | 64
 
 interface InitialAvatarProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "color"> {
   name: string
@@ -114,9 +114,9 @@ const InitialAvatar = React.forwardRef<HTMLDivElement, InitialAvatarProps>(
   ({ name, size = 24, color, className, style, ...props }, ref) => {
     const resolvedColor = color ?? getAvatarColorFor(name)
     const { bg, text } = AVATAR_COLOR_PALETTE[resolvedColor]
-    const fontSize = size === 24 ? 11 : 12
-    const lineHeight = size === 24 ? 14 : 18
-    const letterSpacing = size === 24 ? "0.02em" : "0.01em"
+    const fontSize = size <= 24 ? 11 : Math.max(12, Math.round(size * 0.38))
+    const lineHeight = size <= 24 ? 14 : Math.round(size * 0.56)
+    const letterSpacing = size <= 24 ? "0.02em" : "0.01em"
 
     return (
       <div
@@ -145,4 +145,40 @@ const InitialAvatar = React.forwardRef<HTMLDivElement, InitialAvatarProps>(
 )
 InitialAvatar.displayName = "InitialAvatar"
 
-export { Avatar, AvatarImage, AvatarFallback, InitialAvatar }
+interface UserAvatarProps
+  extends Omit<React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>, "children"> {
+  name: string
+  avatarUrl?: string | null
+  size?: InitialAvatarSize
+  imageAlt?: string
+}
+
+const UserAvatar = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Root>,
+  UserAvatarProps
+>(({ name, avatarUrl, size = 24, imageAlt, className, style, ...props }, ref) => (
+  <Avatar
+    ref={ref}
+    className={cn("border border-card", className)}
+    style={{
+      width: size,
+      height: size,
+      ...style,
+    }}
+    {...props}
+  >
+    {avatarUrl ? (
+      <AvatarImage
+        src={avatarUrl}
+        alt={imageAlt || `${name} avatar`}
+        className="object-cover"
+      />
+    ) : null}
+    <AvatarFallback className="bg-transparent p-0">
+      <InitialAvatar name={name} size={size} className="border-0" />
+    </AvatarFallback>
+  </Avatar>
+))
+UserAvatar.displayName = "UserAvatar"
+
+export { Avatar, AvatarImage, AvatarFallback, InitialAvatar, UserAvatar }

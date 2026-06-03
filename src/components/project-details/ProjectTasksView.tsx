@@ -31,7 +31,6 @@ const ProjectTasksView = ({ projectId, view, onCreateTask, myTasksOnly }: Projec
   const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = useState(false);
   const [parentTaskId, setParentTaskId] = useState<string>("");
   const [myTaskIdentityIds, setMyTaskIdentityIds] = useState<string[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -40,8 +39,6 @@ const ProjectTasksView = ({ projectId, view, onCreateTask, myTasksOnly }: Projec
       try {
         const user = await account.get();
         if (!isMounted) return;
-
-        setCurrentUserId(user.$id);
 
         const teamResponse = await databases.listDocuments(DATABASE_ID, "team_members", [
           Query.equal("user_id", user.$id),
@@ -53,7 +50,6 @@ const ProjectTasksView = ({ projectId, view, onCreateTask, myTasksOnly }: Projec
         }
       } catch {
         if (isMounted) {
-          setCurrentUserId(null);
           setMyTaskIdentityIds([]);
         }
       }
@@ -86,10 +82,7 @@ const ProjectTasksView = ({ projectId, view, onCreateTask, myTasksOnly }: Projec
   const isAssignedToCurrentUser = (task: TaskWithRelations) => {
     const assignees = task.assignees || [];
 
-    return Boolean(
-      (currentUserId && task.user_id === currentUserId) ||
-        myTaskIdentityIds.some((id) => assignees.includes(id))
-    );
+    return myTaskIdentityIds.some((id) => assignees.includes(id));
   };
 
   const visibleTasks = myTasksOnly

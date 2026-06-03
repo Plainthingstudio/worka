@@ -38,7 +38,6 @@ export const Tasks = () => {
   const [activeView, setActiveView] = useState<'list' | 'board' | 'calendar'>('list');
   const [myTasksOnly, setMyTasksOnly] = useState(true);
   const [myTaskIdentityIds, setMyTaskIdentityIds] = useState<string[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -47,8 +46,6 @@ export const Tasks = () => {
       try {
         const user = await account.get();
         if (!isMounted) return;
-
-        setCurrentUserId(user.$id);
 
         const teamResponse = await databases.listDocuments(DATABASE_ID, 'team_members', [
           Query.equal('user_id', user.$id),
@@ -60,7 +57,6 @@ export const Tasks = () => {
         }
       } catch {
         if (isMounted) {
-          setCurrentUserId(null);
           setMyTaskIdentityIds([]);
         }
       }
@@ -483,10 +479,7 @@ export const Tasks = () => {
   const isAssignedToCurrentUser = (task: TaskWithRelations) => {
     const assignees = task.assignees || [];
 
-    return Boolean(
-      (currentUserId && task.user_id === currentUserId) ||
-        myTaskIdentityIds.some((id) => assignees.includes(id))
-    );
+    return myTaskIdentityIds.some((id) => assignees.includes(id));
   };
 
   const matchesTaskFilters = (task: TaskWithRelations) => {

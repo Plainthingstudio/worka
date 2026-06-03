@@ -13,6 +13,7 @@ import PendingInvitations from "@/components/team/PendingInvitations";
 import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
 import { useUserRole } from "@/hooks/useUserRole";
 import { dispatchNotifications } from "@/services/notificationService";
+import { getAvatarUrl } from "@/lib/avatars";
 
 const APPWRITE_PAGE_SIZE = 100;
 
@@ -103,7 +104,10 @@ const Team = () => {
           skills: member.skills || [],
           createdAt: new Date(member.$createdAt),
           role: role,
-          email: profile?.email || null
+          email: profile?.email || null,
+          avatarFileId: profile?.avatar_file_id || undefined,
+          avatarUpdatedAt: profile?.avatar_updated_at || undefined,
+          avatarUrl: getAvatarUrl(profile?.avatar_file_id, profile?.avatar_updated_at),
         };
       });
 

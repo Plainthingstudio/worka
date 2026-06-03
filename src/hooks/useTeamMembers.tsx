@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { TeamMember, TeamPosition } from "@/types";
 import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
+import { getAvatarUrl } from "@/lib/avatars";
 
 const APPWRITE_PAGE_SIZE = 100;
 
@@ -58,6 +59,12 @@ export const useTeamMembers = () => {
       // Fetch team members
       const teamData = await fetchAllDocuments('team_members', [Query.orderDesc('$createdAt')]);
 
+      const profilesData = await fetchAllDocuments('profiles');
+      const profilesMap = new Map<string, any>();
+      profilesData.forEach((profile: any) => {
+        profilesMap.set(profile.$id, profile);
+      });
+
       // Get all user roles
       let rolesMap = new Map<string, string>();
       try {
@@ -71,6 +78,7 @@ export const useTeamMembers = () => {
 
       const transformedMembers: TeamMember[] = teamData.map((member: any) => {
         const role = rolesMap.get(member.user_id);
+        const profile = profilesMap.get(member.user_id);
 
         return {
           id: member.$id,
@@ -81,7 +89,10 @@ export const useTeamMembers = () => {
           skills: member.skills || [],
           createdAt: new Date(member.$createdAt),
           role: role,
-          email: null
+          email: profile?.email || null,
+          avatarFileId: profile?.avatar_file_id || undefined,
+          avatarUpdatedAt: profile?.avatar_updated_at || undefined,
+          avatarUrl: getAvatarUrl(profile?.avatar_file_id, profile?.avatar_updated_at),
         };
       });
 

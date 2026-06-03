@@ -21,7 +21,7 @@ import {
 import { TaskWithRelations } from '@/types/task';
 import { ClickUpTaskDetail } from './ClickUpTaskDetail';
 import { format } from 'date-fns';
-import { Avatar, AvatarFallback, InitialAvatar } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, UserAvatar } from '@/components/ui/avatar';
 import { useAssigneeNames } from '@/hooks/useAssigneeNames';
 import { PriorityIndicator } from './PriorityIndicator';
 
@@ -43,7 +43,7 @@ export const TaskListView = ({
   onUploadAttachment 
 }: TaskListViewProps) => {
   const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
-  const { getAssigneeNames } = useAssigneeNames();
+  const { getAssigneeMembers } = useAssigneeNames();
 
   const getTaskTypeColor = (taskType: string) => {
     switch (taskType) {
@@ -77,8 +77,7 @@ export const TaskListView = ({
   return (
     <div className="space-y-4">
       {tasks.map((task) => {
-        const assigneeNames = getAssigneeNames(task.assignees || []);
-        console.log('Task assignees for', task.title, ':', task.assignees, 'converted to names:', assigneeNames);
+        const assigneeMembers = getAssigneeMembers(task.assignees || []);
         
         return (
           <Card key={task.id} className="hover:shadow-md transition-shadow cursor-pointer">
@@ -128,19 +127,19 @@ export const TaskListView = ({
                         </div>
                       )}
                       
-                      {assigneeNames.length > 0 && (
+                      {assigneeMembers.length > 0 && (
                         <div className="flex items-center gap-2">
                           <div className="flex -space-x-1">
-                            {assigneeNames.slice(0, 3).map((name, index) => (
-                              <InitialAvatar key={index} name={name} size={24} />
+                            {assigneeMembers.slice(0, 3).map((member) => (
+                              <UserAvatar key={member.id} name={member.name} avatarUrl={member.avatarUrl} size={24} />
                             ))}
-                            {assigneeNames.length > 3 && (
+                            {assigneeMembers.length > 3 && (
                               <div className="h-6 w-6 rounded-full bg-surface-3 border border-card flex items-center justify-center">
-                                <span className="text-[11px] text-muted-foreground">+{assigneeNames.length - 3}</span>
+                                <span className="text-[11px] text-muted-foreground">+{assigneeMembers.length - 3}</span>
                               </div>
                             )}
                           </div>
-                          <span>{assigneeNames.length} assignee{assigneeNames.length > 1 ? 's' : ''}</span>
+                          <span>{assigneeMembers.length} assignee{assigneeMembers.length > 1 ? 's' : ''}</span>
                         </div>
                       )}
 

@@ -1,21 +1,24 @@
 
 import { useState, useEffect } from 'react';
 import { databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
+import { getAvatarUrl } from '@/lib/avatars';
 
 interface TeamMember {
   id: string;
   user_id: string;
   name: string;
+  avatarUrl?: string;
 }
 
 const APPWRITE_PAGE_SIZE = 100;
 
-const fetchAllTeamMembers = async () => {
+const fetchAllDocuments = async (collectionId: string, queries: string[] = []) => {
   const documents: any[] = [];
   let offset = 0;
 
   while (true) {
-    const response = await databases.listDocuments(DATABASE_ID, 'team_members', [
+    const response = await databases.listDocuments(DATABASE_ID, collectionId, [
+      ...queries,
       Query.limit(APPWRITE_PAGE_SIZE),
       Query.offset(offset),
     ]);
@@ -37,11 +40,23 @@ export const useAssigneeNames = () => {
   useEffect(() => {
     const fetchTeamMembers = async () => {
       try {
-        const documents = await fetchAllTeamMembers();
+        const [documents, profileDocuments] = await Promise.all([
+          fetchAllDocuments('team_members'),
+          fetchAllDocuments('profiles'),
+        ]);
+        const profilesMap = new Map<string, any>();
+        profileDocuments.forEach((profile: any) => {
+          profilesMap.set(profile.$id, profile);
+        });
+
         const data: TeamMember[] = documents.map((doc: any) => ({
           id: doc.$id,
           user_id: doc.user_id,
           name: doc.name,
+          avatarUrl: getAvatarUrl(
+            profilesMap.get(doc.user_id)?.avatar_file_id,
+            profilesMap.get(doc.user_id)?.avatar_updated_at
+          ),
         }));
         setTeamMembers(data);
       } catch (error) {
@@ -79,5 +94,18 @@ export const useAssigneeNames = () => {
     });
   };
 
-  return { getAssigneeNames, teamMembers, isLoading };
+  const getAssigneeMembers = (assigneeIds: (string | number)[]): TeamMember[] => {
+    if (!assigneeIds || assigneeIds.length === 0) return [];
+
+    return assigneeIds
+      .map((id) => {
+        const stringId = String(id);
+        return teamMembers.find(
+          (member) => member.user_id === stringId || member.id === stringId
+        );
+      })
+      .filter((member): member is TeamMember => Boolean(member));
+  };
+
+  return { getAssigneeNames, getAssigneeMembers, teamMembers, isLoading };
 };

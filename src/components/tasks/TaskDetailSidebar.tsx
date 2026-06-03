@@ -61,7 +61,7 @@ import { PriorityFlagIcon } from '@/components/icons/PriorityFlagIcon';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTaskProject } from '@/hooks/useTaskProject';
 import DeleteConfirmationDialog from '@/components/projects/DeleteConfirmationDialog';
-import { Avatar, AvatarFallback, InitialAvatar } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, UserAvatar } from '@/components/ui/avatar';
 import { account, databases, DATABASE_ID, Query } from '@/integrations/appwrite/client';
 import { Badge } from '@/components/ui/badge';
 import { CommentInput } from './CommentInput';
@@ -703,7 +703,7 @@ export const TaskDetailSidebar = ({
                               return (
                                 <Tooltip key={assigneeId}>
                                   <TooltipTrigger asChild>
-                                    <InitialAvatar name={member.name} size={32} />
+                                    <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size={32} />
                                   </TooltipTrigger>
                                   <TooltipContent><p>{member.name}</p></TooltipContent>
                                 </Tooltip>
@@ -728,7 +728,7 @@ export const TaskDetailSidebar = ({
                                   <Tooltip key={assigneeId}>
                                     <TooltipTrigger asChild>
                                       <div className="relative group">
-                                        <InitialAvatar name={member.name} size={32} className="cursor-pointer" />
+                                        <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size={32} className="cursor-pointer" />
                                         <button
                                           type="button"
                                           onClick={() => {
@@ -789,7 +789,7 @@ export const TaskDetailSidebar = ({
                                         >
                                           <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
                                         </div>
-                                        <InitialAvatar name={member.name} size={28} />
+                                        <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size={28} />
                                         <span className="min-w-0 truncate text-sm text-foreground">
                                           {member.name}
                                         </span>
@@ -997,7 +997,7 @@ export const TaskDetailSidebar = ({
                               {/* Assignee avatar */}
                               <div className="shrink-0">
                                 {firstAssignee ? (
-                                  <InitialAvatar name={firstAssignee.name} size={24} />
+                                  <UserAvatar name={firstAssignee.name} avatarUrl={firstAssignee.avatarUrl} size={24} />
                                 ) : (
                                   <span
                                     className="text-muted-foreground"
@@ -1075,7 +1075,12 @@ export const TaskDetailSidebar = ({
                               className="flex gap-3 border border-border-soft"
                               style={{ padding: 13, borderRadius: 12 }}
                             >
-                              <InitialAvatar name={userNames[activity.user_id] || 'User'} size={32} className="shrink-0" />
+                              <UserAvatar
+                                name={userNames[activity.user_id] || 'User'}
+                                avatarUrl={activity.user_avatar_url}
+                                size={32}
+                                className="shrink-0"
+                              />
 
                               <div className="flex-1 space-y-2 min-w-0">
                                 <div className="flex items-center justify-between">

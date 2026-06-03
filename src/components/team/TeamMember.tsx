@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Trash } from "lucide-react";
 import { TeamMember } from "@/types";
+import { UserAvatar } from "@/components/ui/avatar";
 import {
   Tooltip,
   TooltipContent,
@@ -34,11 +35,14 @@ const TeamMemberItem = ({ member, onEdit, onDelete }: TeamMemberItemProps) => {
   return (
     <TableRow key={member.id}>
       <TableCell className="font-medium">
-        <div className="flex flex-col">
-          <span>{member.name}</span>
-          {member.email && (
-            <span className="text-xs text-muted-foreground">{member.email}</span>
-          )}
+        <div className="flex items-center gap-3">
+          <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size={32} />
+          <div className="min-w-0 flex flex-col">
+            <span className="truncate">{member.name}</span>
+            {member.email && (
+              <span className="truncate text-xs text-muted-foreground">{member.email}</span>
+            )}
+          </div>
         </div>
       </TableCell>
       

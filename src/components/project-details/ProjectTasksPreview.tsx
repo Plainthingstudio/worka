@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useAssigneeNames } from "@/hooks/useAssigneeNames";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { InitialAvatar } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/avatar";
 import { PriorityIndicator } from "@/components/tasks/PriorityIndicator";
 
 interface ProjectTasksPreviewProps {
@@ -60,8 +60,8 @@ const statusOrder: TaskStatus[] = [
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
-const Avatar24 = ({ name }: { name: string }) => (
-  <InitialAvatar name={name} size={24} />
+const Avatar24 = ({ name, avatarUrl }: { name: string; avatarUrl?: string }) => (
+  <UserAvatar name={name} avatarUrl={avatarUrl} size={24} />
 );
 
 // ── Main component ───────────────────────────────────────────────────────────
@@ -73,7 +73,7 @@ const ProjectTasksPreview: React.FC<ProjectTasksPreviewProps> = ({
   onCreateTask,
 }) => {
   const navigate = useNavigate();
-  const { getAssigneeNames } = useAssigneeNames();
+  const { getAssigneeMembers } = useAssigneeNames();
   const [collapsedGroups, setCollapsedGroups] = React.useState<Set<string>>(new Set());
 
   const toggleGroup = (status: string) => {
@@ -102,7 +102,7 @@ const ProjectTasksPreview: React.FC<ProjectTasksPreviewProps> = ({
   }, {} as Record<string, TaskWithRelations[]>);
 
   const renderTaskRow = (task: TaskWithRelations, index: number) => {
-    const assigneeNames = getAssigneeNames(task.assignees || []);
+    const assigneeMembers = getAssigneeMembers(task.assignees || []);
     const statusBadge = statusBadgeConfig[task.status] || statusBadgeConfig.Planning;
     const subtaskCount = task.subtasks?.length ?? 0;
 
@@ -157,16 +157,16 @@ const ProjectTasksPreview: React.FC<ProjectTasksPreviewProps> = ({
 
         {/* Assignee */}
         <div className="flex items-center" style={{ width: colWidths.assignee }}>
-          {assigneeNames.length > 0 ? (
+          {assigneeMembers.length > 0 ? (
             <div className="flex items-center">
-              {assigneeNames.slice(0, 3).map((name, i) => (
-                <div key={i} style={{ marginLeft: i === 0 ? 0 : -6 }}>
-                  <Avatar24 name={name} />
+              {assigneeMembers.slice(0, 3).map((member, i) => (
+                <div key={member.id} style={{ marginLeft: i === 0 ? 0 : -6 }}>
+                  <Avatar24 name={member.name} avatarUrl={member.avatarUrl} />
                 </div>
               ))}
-              {assigneeNames.length > 3 && (
+              {assigneeMembers.length > 3 && (
                 <span className="text-muted-foreground" style={{ marginLeft: 6, fontFamily: 'Inter, sans-serif', fontWeight: 500, fontSize: 12 }}>
-                  +{assigneeNames.length - 3}
+                  +{assigneeMembers.length - 3}
                 </span>
               )}
             </div>

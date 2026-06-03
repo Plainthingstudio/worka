@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, InitialAvatar } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, UserAvatar } from '@/components/ui/avatar';
 import { useAssigneeNames } from '@/hooks/useAssigneeNames';
 import { PriorityIndicator } from './PriorityIndicator';
 
@@ -48,7 +48,7 @@ export const TaskBoardView = ({
   onAddTask,
   onTaskClick 
 }: TaskBoardViewProps) => {
-  const { getAssigneeNames } = useAssigneeNames();
+  const { getAssigneeMembers } = useAssigneeNames();
   const [draggedTask, setDraggedTask] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
 
@@ -133,7 +133,7 @@ export const TaskBoardView = ({
                 </div>
               )}
               {columnTasks.map((task) => {
-                const assigneeNames = getAssigneeNames(task.assignees || []);
+                const assigneeMembers = getAssigneeMembers(task.assignees || []);
                 const subtasks = task.subtasks ?? [];
 
                 return (
@@ -207,14 +207,14 @@ export const TaskBoardView = ({
                       <div className="flex w-full items-center justify-between">
                         {/* Left side - Assignees */}
                         <div className="flex items-center gap-2">
-                          {assigneeNames.length > 0 ? (
+                          {assigneeMembers.length > 0 ? (
                             <div className="flex -space-x-1">
-                              {assigneeNames.slice(0, 3).map((name, index) => (
-                                <InitialAvatar key={index} name={name} size={24} />
+                              {assigneeMembers.slice(0, 3).map((member) => (
+                                <UserAvatar key={member.id} name={member.name} avatarUrl={member.avatarUrl} size={24} />
                               ))}
-                              {assigneeNames.length > 3 && (
+                              {assigneeMembers.length > 3 && (
                                 <div className="h-6 w-6 rounded-full bg-muted border border-card flex items-center justify-center">
-                                  <span className="text-[11px] text-muted-foreground">+{assigneeNames.length - 3}</span>
+                                  <span className="text-[11px] text-muted-foreground">+{assigneeMembers.length - 3}</span>
                                 </div>
                               )}
                             </div>

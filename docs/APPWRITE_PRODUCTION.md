@@ -29,6 +29,7 @@ node scripts/bootstrap-appwrite.mjs
 Yang dibuat:
 
 - 1 database Appwrite
+- bucket `profile-avatars`
 - bucket `task-attachments`
 - collection production yang dipakai aplikasi
 
@@ -75,6 +76,16 @@ Script ini memastikan data awal berikut ada:
 - `team_members`
 
 ## 4. Production notes
+
+Avatar/foto profil disimpan di Appwrite Storage bucket `profile-avatars`.
+Metadata file aktif disimpan sebagai field optional di `profiles`:
+
+- `avatar_file_id`
+- `avatar_updated_at`
+
+Jika user belum upload foto, aplikasi tetap memakai avatar inisial otomatis.
+
+Task attachment disimpan di bucket `task-attachments`. Bucket ini tidak membatasi extension file, jadi HTML, video, archive, design source, dan format lain bisa diupload selama masih berada di bawah batas ukuran bucket.
 
 - `invitations.metadata`
 - `graphic_design_briefs.logo_feelings`

@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { InitialAvatar } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/avatar";
 import {
   TooltipProvider,
   Tooltip,
@@ -31,9 +31,10 @@ const AvatarStack = ({ members }: { members: TeamMember[] }) => {
   return (
     <div className="flex items-center">
       {visible.map((m, i) => (
-        <InitialAvatar
+        <UserAvatar
           key={m.id}
           name={m.name}
+          avatarUrl={m.avatarUrl}
           size={24}
           className={i > 0 ? "-ml-1.5" : ""}
         />

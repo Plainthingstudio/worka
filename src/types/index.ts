@@ -66,6 +66,9 @@ export interface TeamMember {
   createdAt: Date;
   role?: string;
   email?: string;
+  avatarFileId?: string;
+  avatarUpdatedAt?: string;
+  avatarUrl?: string;
 }
 
 export interface Project {

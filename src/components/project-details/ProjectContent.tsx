@@ -36,8 +36,9 @@ interface ProjectContentProps {
     onDeleteProject: () => void;
     onChangeStatusSubmit: () => void;
     onStatusChange: (status: ProjectStatus) => void;
-    onCreateTaskSubmit: (data: ProjectFormValues) => void;
+    onCreateTaskSubmit: (data: ProjectFormValues) => boolean | Promise<boolean>;
   };
+  isCreatingTask?: boolean;
 }
 
 const ProjectContent = ({
@@ -51,6 +52,7 @@ const ProjectContent = ({
   onChangeStatus,
   onCreateTask,
   handlers,
+  isCreatingTask = false,
 }: ProjectContentProps) => {
   const [activeTab, setActiveTab] = useState<ProjectTab>("overview");
   const [myTasksOnly, setMyTasksOnly] = useState(true);
@@ -143,6 +145,7 @@ const ProjectContent = ({
         onClose={handlers.onCloseCreateTaskDialog}
         onSubmit={handlers.onCreateTaskSubmit}
         project={project}
+        isSubmitting={isCreatingTask}
       />
     </div>
   );

@@ -15,7 +15,7 @@ import { TaskWithRelations, TaskStatus } from '@/types/task';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useAssigneeNames } from '@/hooks/useAssigneeNames';
-import { InitialAvatar } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -187,8 +187,8 @@ const headerCellStyle: React.CSSProperties = {
   letterSpacing: '0.6px',
 };
 
-const Avatar24 = ({ name }: { name: string }) => (
-  <InitialAvatar name={name} size={24} />
+const Avatar24 = ({ name, avatarUrl }: { name: string; avatarUrl?: string }) => (
+  <UserAvatar name={name} avatarUrl={avatarUrl} size={24} />
 );
 
 export const ClickUpTaskList = ({
@@ -203,7 +203,7 @@ export const ClickUpTaskList = ({
   const [collapsedSubtasks, setCollapsedSubtasks] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>('asc');
-  const { getAssigneeNames, teamMembers } = useAssigneeNames();
+  const { getAssigneeMembers, teamMembers } = useAssigneeNames();
   const showProjectColumn = Array.isArray(projects);
   const listMinWidth = getListMinWidth(showProjectColumn);
   const projectNamesById = new Map((projects || []).map((project) => [project.id, project.name]));
@@ -298,7 +298,7 @@ export const ClickUpTaskList = ({
     index: number,
     isSubtask = false
   ) => {
-    const assigneeNames = getAssigneeNames(task.assignees || []);
+    const assigneeMembers = getAssigneeMembers(task.assignees || []);
     const subtasks = isSubtask ? [] : getSubtasks(task);
     const statusLabel = task.status;
 
@@ -485,14 +485,14 @@ export const ClickUpTaskList = ({
                 className="flex items-center hover:opacity-80 transition-opacity"
                 style={{ gap: 0, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
               >
-                {assigneeNames.length > 0 ? (
+                {assigneeMembers.length > 0 ? (
                   <div className="flex items-center">
-                    {assigneeNames.slice(0, 3).map((name, i) => (
-                      <div key={i} style={{ marginLeft: i === 0 ? 0 : -6 }}>
-                        <Avatar24 name={name} />
+                    {assigneeMembers.slice(0, 3).map((member, i) => (
+                      <div key={member.id} style={{ marginLeft: i === 0 ? 0 : -6 }}>
+                        <Avatar24 name={member.name} avatarUrl={member.avatarUrl} />
                       </div>
                     ))}
-                    {assigneeNames.length > 3 && (
+                    {assigneeMembers.length > 3 && (
                       <span
                         className="text-muted-foreground"
                         style={{
@@ -502,7 +502,7 @@ export const ClickUpTaskList = ({
                           fontSize: 12,
                         }}
                       >
-                        +{assigneeNames.length - 3}
+                        +{assigneeMembers.length - 3}
                       </span>
                     )}
                   </div>
@@ -544,7 +544,7 @@ export const ClickUpTaskList = ({
                       >
                         {isChecked && <Check style={{ width: 10, height: 10, color: 'hsl(var(--brand-foreground))' }} strokeWidth={2.5} />}
                       </div>
-                      <Avatar24 name={member.name} />
+                      <Avatar24 name={member.name} avatarUrl={member.avatarUrl} />
                       <span className="text-foreground" style={{ fontFamily: 'Inter, sans-serif', fontSize: 13 }}>
                         {member.name}
                       </span>

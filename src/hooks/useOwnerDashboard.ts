@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { client, databases, DATABASE_ID, Query } from "@/integrations/appwrite/client";
+import { getAvatarUrl } from "@/lib/avatars";
 import { Client, Invoice, Lead, Project, TeamMember } from "@/types";
 import { getPaidInvoiceAmount, invoiceTypeFromDocument } from "@/utils/invoiceTypes";
 import { TaskWithRelations, isTaskClosedStatus, isTaskWorkingStatus } from "@/types/task";
@@ -151,16 +152,23 @@ const fetchOwnerDashboardData = async (): Promise<OwnerDashboardData> => {
     updatedAt: new Date(lead.$updatedAt),
   }));
 
-  const teamMembers: TeamMember[] = teamDocuments.map((member: any) => ({
-    id: member.$id,
-    user_id: member.user_id,
-    name: member.name,
-    position: member.position,
-    skills: member.skills || [],
-    startDate: new Date(member.start_date),
-    createdAt: new Date(member.$createdAt),
-    email: profilesMap.get(member.user_id)?.email || "",
-  }));
+  const teamMembers: TeamMember[] = teamDocuments.map((member: any) => {
+    const profile = profilesMap.get(member.user_id);
+
+    return {
+      id: member.$id,
+      user_id: member.user_id,
+      name: member.name,
+      position: member.position,
+      skills: member.skills || [],
+      startDate: new Date(member.start_date),
+      createdAt: new Date(member.$createdAt),
+      email: profile?.email || "",
+      avatarFileId: profile?.avatar_file_id || undefined,
+      avatarUpdatedAt: profile?.avatar_updated_at || undefined,
+      avatarUrl: getAvatarUrl(profile?.avatar_file_id, profile?.avatar_updated_at),
+    };
+  });
 
   const clientsById = new Map(clients.map((client) => [client.id, client]));
   const invoices: Invoice[] = invoiceDocuments.map((invoice: any) => {
@@ -408,5 +416,13 @@ export const useOwnerDashboard = (enabled: boolean) => {
           )?.name
         )
         .filter((name): name is string => Boolean(name)),
+    getTeamMembersByIds: (assigneeIds: string[]) =>
+      assigneeIds
+        .map((assigneeId) =>
+          teamMembers.find(
+            (member) => member.user_id === assigneeId || member.id === assigneeId
+          )
+        )
+        .filter((member): member is TeamMember => Boolean(member)),
   };
 };

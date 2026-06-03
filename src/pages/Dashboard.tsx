@@ -17,12 +17,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { InitialAvatar } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/avatar";
 import DashboardStatCard from "@/components/dashboard/DashboardStatCard";
 import MeetingScheduleCard from "@/components/dashboard/MeetingScheduleCard";
 import TeamDashboard from "@/components/dashboard/TeamDashboard";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useOwnerDashboard } from "@/hooks/useOwnerDashboard";
+import { TeamMember } from "@/types";
 import { TaskWithRelations } from "@/types/task";
 
 const shellCardClass =
@@ -52,24 +53,25 @@ const formatShortDate = (date?: Date) => {
   });
 };
 
-const AssigneePills = ({ names }: { names: string[] }) => {
-  if (!names.length) {
+const AssigneePills = ({ members }: { members: TeamMember[] }) => {
+  if (!members.length) {
     return <span className="dashboard-text-muted text-xs text-muted-foreground">Unassigned</span>;
   }
 
   return (
     <div className="flex items-center">
-      {names.slice(0, 3).map((name, index) => (
-        <InitialAvatar
-          key={`${name}-${index}`}
-          name={name}
+      {members.slice(0, 3).map((member, index) => (
+        <UserAvatar
+          key={member.id}
+          name={member.name}
+          avatarUrl={member.avatarUrl}
           size={24}
           className="-ml-1 first:ml-0"
         />
       ))}
-      {names.length > 3 ? (
+      {members.length > 3 ? (
         <div className="dashboard-surface-nested dashboard-text-primary -ml-1 flex h-6 min-w-6 items-center justify-center rounded-full border border-card bg-surface-3 px-1 text-[11px] font-normal text-foreground">
-          +{names.length - 3}
+          +{members.length - 3}
         </div>
       ) : null}
     </div>
@@ -93,7 +95,7 @@ const Dashboard = () => {
     overdueInvoices,
     availableTeamMembers,
     getClientName,
-    getTeamMemberNames,
+    getTeamMembersByIds,
   } = useOwnerDashboard(!roleLoading && userRole !== "team");
 
   const projectRows = useMemo(() => {
@@ -105,17 +107,17 @@ const Dashboard = () => {
         : 0;
 
       const taskAssigneeIds = Array.from(new Set(relatedTasks.flatMap((task) => task.assignees)));
-      const names = getTeamMemberNames(taskAssigneeIds);
-      const fallbackNames =
-        names.length === 0 ? getTeamMemberNames(project.teamMembers || []) : names;
+      const members = getTeamMembersByIds(taskAssigneeIds);
+      const fallbackMembers =
+        members.length === 0 ? getTeamMembersByIds(project.teamMembers || []) : members;
 
       return {
         ...project,
         progress,
-        assigneeNames: fallbackNames,
+        assigneeMembers: fallbackMembers,
       };
     });
-  }, [activeProjects, getTeamMemberNames, tasks]);
+  }, [activeProjects, getTeamMembersByIds, tasks]);
 
   const activeTaskRows = useMemo(() => activeTasks.slice(0, 5), [activeTasks]);
 
@@ -284,7 +286,7 @@ const Dashboard = () => {
                         </div>
                       </div>
                       <div className={`${tableBodyCellClass} w-[110px]`}>
-                        <AssigneePills names={project.assigneeNames} />
+                        <AssigneePills members={project.assigneeMembers} />
                       </div>
                     </button>
                   ))}
@@ -339,7 +341,7 @@ const Dashboard = () => {
                         {formatShortDate(task.due_date)}
                       </div>
                       <div className={`${tableBodyCellClass} w-[102px]`}>
-                        <AssigneePills names={getTeamMemberNames(task.assignees)} />
+                        <AssigneePills members={getTeamMembersByIds(task.assignees)} />
                       </div>
                     </button>
                   ))}
@@ -426,7 +428,8 @@ const Dashboard = () => {
 
                   {availableTeamMembers.slice(0, 5).map((member) => (
                     <div key={member.id} className="flex h-[57.5px]">
-                      <div className={`${tableBodyCellClass} dashboard-text-primary w-[132px] min-w-0 text-[14px] font-medium leading-5 text-foreground`}>
+                      <div className={`${tableBodyCellClass} dashboard-text-primary w-[132px] min-w-0 gap-2 text-[14px] font-medium leading-5 text-foreground`}>
+                        <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size={24} />
                         <span className="truncate" title={member.name}>
                           {member.name}
                         </span>

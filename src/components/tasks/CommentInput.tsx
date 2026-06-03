@@ -262,7 +262,6 @@ export const CommentInput: React.FC<CommentInputProps> = ({
             className="hidden"
             multiple
             onChange={handleFileSelect}
-            accept="image/*,application/pdf,.doc,.docx,.txt,.zip,.rar"
           />
           <button
             type="button"

@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { InitialAvatar } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/avatar";
 
 interface DeadlineCardProps {
   projects: Project[];
@@ -21,28 +21,29 @@ interface DeadlineCardProps {
   getClientById: (clientId: string) => string;
 }
 
-const AssigneeList = ({ names }: { names: string[] }) => {
-  if (names.length === 0) {
+const AssigneeList = ({ members }: { members: TeamMember[] }) => {
+  if (members.length === 0) {
     return <span className="text-muted-foreground">—</span>;
   }
 
-  const visible = names.slice(0, 2);
-  const remaining = names.length - visible.length;
+  const visible = members.slice(0, 2);
+  const remaining = members.length - visible.length;
 
   return (
     <div className="flex items-center gap-2 min-w-0">
       <div className="flex items-center shrink-0">
-        {visible.map((name, idx) => (
-          <InitialAvatar
-            key={idx}
-            name={name}
+        {visible.map((member, idx) => (
+          <UserAvatar
+            key={member.id}
+            name={member.name}
+            avatarUrl={member.avatarUrl}
             size={24}
             className={idx === 0 ? "" : "-ml-1.5"}
           />
         ))}
       </div>
       <span className="truncate text-foreground" style={{ fontSize: 14 }}>
-        {visible.join(", ")}
+        {visible.map((member) => member.name).join(", ")}
         {remaining > 0 && (
           <span className="text-muted-foreground"> +{remaining}</span>
         )}
@@ -63,16 +64,16 @@ const DeadlineCard: React.FC<DeadlineCardProps> = ({
   endOfThirdDay.setDate(startOfToday.getDate() + 3);
   endOfThirdDay.setHours(23, 59, 59, 999);
 
-  const resolveNames = (ids: string[] | undefined): string[] => {
+  const resolveMembers = (ids: string[] | undefined): TeamMember[] => {
     if (!ids || ids.length === 0) return [];
     return ids
       .map((id) => {
         const match = teamMembers.find(
           (m) => m.id === id || m.user_id === id
         );
-        return match?.name || "";
+        return match;
       })
-      .filter(Boolean);
+      .filter((member): member is TeamMember => Boolean(member));
   };
 
   type Row = {
@@ -80,7 +81,7 @@ const DeadlineCard: React.FC<DeadlineCardProps> = ({
     name: string;
     client: string;
     deadline: Date;
-    assignees: string[];
+    assignees: TeamMember[];
   };
 
   const projectRows: Row[] = projects
@@ -93,7 +94,7 @@ const DeadlineCard: React.FC<DeadlineCardProps> = ({
       name: p.name,
       client: getClientById(p.clientId),
       deadline: new Date(p.deadline),
-      assignees: resolveNames(p.teamMembers),
+      assignees: resolveMembers(p.teamMembers),
     }));
 
   const taskRows: Row[] = tasks
@@ -110,7 +111,7 @@ const DeadlineCard: React.FC<DeadlineCardProps> = ({
         name: t.title,
         client,
         deadline: new Date(t.due_date!),
-        assignees: resolveNames(t.assignees),
+        assignees: resolveMembers(t.assignees),
       };
     });
 
@@ -160,7 +161,7 @@ const DeadlineCard: React.FC<DeadlineCardProps> = ({
                     {format(row.deadline, "MMM dd, yyyy")}
                   </TableCell>
                   <TableCell>
-                    <AssigneeList names={row.assignees} />
+                    <AssigneeList members={row.assignees} />
                   </TableCell>
                 </TableRow>
               ))

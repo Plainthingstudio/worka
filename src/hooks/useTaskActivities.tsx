@@ -4,6 +4,7 @@ import { account, databases, storage, DATABASE_ID, ID, Query } from '@/integrati
 import { toast } from '@/hooks/use-toast';
 import { logComment } from '@/utils/activityLogger';
 import { parseJsonField } from "@/utils/appwriteJson";
+import { getAvatarUrl } from '@/lib/avatars';
 
 const TASK_ATTACHMENTS_BUCKET = 'task-attachments';
 
@@ -18,6 +19,7 @@ interface TaskActivity {
   created_at: Date;
   user_name?: string;
   user_email?: string;
+  user_avatar_url?: string;
 }
 
 export const useTaskActivities = (taskId: string) => {
@@ -85,6 +87,7 @@ export const useTaskActivities = (taskId: string) => {
           created_at: new Date(activity.$createdAt),
           user_name: displayName,
           user_email: profile?.email || '',
+          user_avatar_url: getAvatarUrl(profile?.avatar_file_id, profile?.avatar_updated_at),
         };
       });
       setActivities(transformedActivities);

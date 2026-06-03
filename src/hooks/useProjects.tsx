@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Project, ProjectStatus, Currency, ProjectType, LeadSource } from "@/types";
 import { account, client, databases, DATABASE_ID, ID, Query } from "@/integrations/appwrite/client";
+import { getAvatarUrl } from "@/lib/avatars";
 import {
   getCurrentUserId,
   notifyProjectAssigneeChanges,
@@ -48,12 +49,18 @@ const fetchAllDocuments = async (collectionId: string, queries: string[] = []) =
 };
 
 const fetchProjectsData = async (): Promise<ProjectsData> => {
-  const [clientDocuments, teamDocuments, projectDocuments, paymentDocuments] = await Promise.all([
+  const [clientDocuments, teamDocuments, projectDocuments, paymentDocuments, profileDocuments] = await Promise.all([
     fetchAllDocuments("clients"),
     fetchAllDocuments("team_members"),
     fetchAllDocuments("projects"),
     fetchAllDocuments("payments"),
+    fetchAllDocuments("profiles"),
   ]);
+
+  const profilesMap = new Map<string, any>();
+  profileDocuments.forEach((profile: any) => {
+    profilesMap.set(profile.$id, profile);
+  });
 
   const clients = clientDocuments.map((c: any) => ({
     id: c.$id,
@@ -65,15 +72,23 @@ const fetchProjectsData = async (): Promise<ProjectsData> => {
     createdAt: new Date(c.$createdAt),
   }));
 
-  const teamMembers = teamDocuments.map((member: any) => ({
-    id: member.$id,
-    user_id: member.user_id,
-    name: member.name,
-    position: member.position,
-    startDate: new Date(member.start_date),
-    skills: member.skills || [],
-    createdAt: new Date(member.$createdAt),
-  }));
+  const teamMembers = teamDocuments.map((member: any) => {
+    const profile = profilesMap.get(member.user_id);
+
+    return {
+      id: member.$id,
+      user_id: member.user_id,
+      name: member.name,
+      position: member.position,
+      startDate: new Date(member.start_date),
+      skills: member.skills || [],
+      createdAt: new Date(member.$createdAt),
+      email: profile?.email || undefined,
+      avatarFileId: profile?.avatar_file_id || undefined,
+      avatarUpdatedAt: profile?.avatar_updated_at || undefined,
+      avatarUrl: getAvatarUrl(profile?.avatar_file_id, profile?.avatar_updated_at),
+    };
+  });
 
   const paymentsByProject = new Map<string, any[]>();
   paymentDocuments.forEach((payment: any) => {

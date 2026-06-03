@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, InitialAvatar } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, UserAvatar } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { TaskWithRelations } from '@/types/task';
 import { 
@@ -45,6 +45,7 @@ interface TaskActivityFeedActivity {
   created_at: Date;
   user_name?: string;  // Add user name field
   user_email?: string; // Add user email field
+  user_avatar_url?: string;
 }
 
 interface TaskActivityFeedProps {
@@ -251,7 +252,6 @@ export const TaskActivityFeed = ({
               className="hidden"
               multiple
               onChange={handleFileSelect}
-              accept="image/*,application/pdf,.doc,.docx,.txt,.zip,.rar"
             />
             <Button
               variant="ghost"
@@ -295,7 +295,7 @@ export const TaskActivityFeed = ({
 
               return (
                 <div key={activity.id} className="flex gap-3 p-3 border rounded-lg">
-                  <InitialAvatar name={displayName} size={32} />
+                  <UserAvatar name={displayName} avatarUrl={activity.user_avatar_url} size={32} />
                   
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center justify-between">
@@ -462,7 +462,6 @@ export const TaskActivityFeed = ({
               className="hidden"
               multiple
               onChange={handleFileSelect}
-              accept="image/*,application/pdf,.doc,.docx,.txt,.zip,.rar"
             />
             <Button
               variant="ghost"

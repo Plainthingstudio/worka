@@ -494,7 +494,6 @@ export const TaskDetailDialog = ({
                     id="file-upload"
                     className="hidden"
                     onChange={handleFileUpload}
-                    accept="image/*,application/pdf,.doc,.docx,.txt,.zip,.rar"
                   />
                   <Button 
                     variant="outline" 
