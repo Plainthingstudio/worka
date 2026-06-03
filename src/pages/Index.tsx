@@ -7,7 +7,15 @@ import Dashboard from "./Dashboard";
 
 export default function Index() {
   const navigate = useNavigate();
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth >= 1024;
+  });
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth >= 1024;
+  });
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Check if user is logged in, redirect to login if not
   useEffect(() => {
@@ -17,37 +25,57 @@ export default function Index() {
     }
   }, [navigate]);
 
-  // Listen for sidebar state changes
   useEffect(() => {
-    const handleSidebarChange = () => {
-      const sidebarElement = document.querySelector('[class*="w-56"], [class*="w-14"]');
-      setIsSidebarExpanded(sidebarElement?.classList.contains('w-56') || false);
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const handleViewportChange = (event: MediaQueryListEvent) => {
+      setIsDesktop(event.matches);
+      if (event.matches) {
+        setIsSidebarExpanded(true);
+      } else {
+        setIsMobileSidebarOpen(false);
+      }
     };
 
-    // Initial check
-    handleSidebarChange();
-
-    // Set up mutation observer to watch for class changes on the sidebar
-    const observer = new MutationObserver(handleSidebarChange);
-    const sidebarElement = document.querySelector('[class*="flex flex-col border-r"]');
-    
-    if (sidebarElement) {
-      observer.observe(sidebarElement, { attributes: true, attributeFilter: ['class'] });
-    }
-
-    return () => observer.disconnect();
+    setIsDesktop(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleViewportChange);
+    return () => mediaQuery.removeEventListener("change", handleViewportChange);
   }, []);
+
+  const sidebarOffsetClass = isDesktop
+    ? isSidebarExpanded
+      ? "ml-56"
+      : "ml-16"
+    : "ml-0";
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar />
+      {isDesktop ? (
+        <Sidebar expanded={isSidebarExpanded} onExpandedChange={setIsSidebarExpanded} />
+      ) : isMobileSidebarOpen ? (
+        <>
+          <button
+            type="button"
+            className="fixed inset-0 z-40 bg-black/40"
+            aria-label="Close sidebar"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+          <Sidebar
+            expanded
+            onExpandedChange={(nextExpanded) => {
+              if (!nextExpanded) setIsMobileSidebarOpen(false);
+            }}
+            onNavigate={() => setIsMobileSidebarOpen(false)}
+          />
+        </>
+      ) : null}
       <div 
-        className={`flex-1 w-full transition-all duration-300 ease-in-out ${
-          isSidebarExpanded ? "ml-56" : "ml-14"
-        }`}
+        className={`flex-1 w-full transition-all duration-300 ease-in-out ${sidebarOffsetClass}`}
       >
-        <Navbar title="Dashboard" />
-        <main className="p-6">
+        <Navbar
+          title="Dashboard"
+          onMenuClick={!isDesktop ? () => setIsMobileSidebarOpen(true) : undefined}
+        />
+        <main className="p-4 sm:p-6">
           <Dashboard />
         </main>
       </div>

@@ -33,8 +33,8 @@ const TeamFilter = ({
   ];
 
   return (
-    <div className="flex flex-col space-y-4 md:flex-row md:items-center md:space-x-4 md:space-y-0 mb-6">
-      <div className="relative flex-1">
+    <div className="mb-6 flex flex-row items-stretch gap-2 md:items-center md:gap-4">
+      <div className="relative min-w-0 flex-1">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           type="search"
@@ -48,7 +48,7 @@ const TeamFilter = ({
         value={positionFilter}
         onValueChange={setPositionFilter}
       >
-        <SelectTrigger className="w-full md:w-[200px]">
+        <SelectTrigger className="w-[132px] shrink-0 md:w-[200px]">
           <SelectValue placeholder="Filter by position" />
         </SelectTrigger>
         <SelectContent>

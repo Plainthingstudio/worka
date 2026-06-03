@@ -28,8 +28,8 @@ const ClientsFilter = ({
 }: ClientsFilterProps) => {
   return (
     <div className="mb-6 rounded-xl animate-fade-in">
-      <div className="flex flex-col gap-4 p-0 sm:flex-row">
-        <div className="relative flex-1">
+      <div className="flex flex-row items-stretch gap-2 p-0 sm:gap-4">
+        <div className="relative min-w-0 flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search clients..."
@@ -38,12 +38,12 @@ const ClientsFilter = ({
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="w-full sm:w-48">
+        <div className="w-[132px] shrink-0 sm:w-48">
           <Select
             value={sourceFilter}
             onValueChange={setSourceFilter}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Filter by source" />
             </SelectTrigger>
             <SelectContent>

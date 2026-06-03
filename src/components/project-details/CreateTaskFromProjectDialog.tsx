@@ -40,6 +40,7 @@ import { Project, ProjectStatus } from '@/types';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { cn } from '@/lib/utils';
 import { PriorityIndicator } from '@/components/tasks/PriorityIndicator';
+import TeamMemberMultiSelect from '@/components/team/TeamMemberMultiSelect';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -283,51 +284,14 @@ export const CreateTaskFromProjectDialog = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Assignees</FormLabel>
-                  <Select
-                    onValueChange={(value) => {
-                      const currentAssignees = field.value || [];
-                      if (!currentAssignees.includes(value)) {
-                        field.onChange([...currentAssignees, value]);
-                      }
-                    }}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select assignees" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {teamMembers.map((member) => (
-                        <SelectItem key={member.id} value={member.user_id}>
-                          {member.name} ({member.position})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {field.value && field.value.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {field.value.map((assigneeId) => {
-                        const member = teamMembers.find(m => m.user_id === assigneeId);
-                        return member ? (
-                          <span
-                            key={assigneeId}
-                            className="bg-primary/10 text-primary px-2 py-1 rounded text-sm flex items-center gap-1"
-                          >
-                            {member.name}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                field.onChange(field.value?.filter(id => id !== assigneeId));
-                              }}
-                              className="ml-1 hover:text-destructive"
-                            >
-                              ×
-                            </button>
-                          </span>
-                        ) : null;
-                      })}
-                    </div>
-                  )}
+                  <TeamMemberMultiSelect
+                    teamMembers={teamMembers}
+                    selectedIds={field.value || []}
+                    onChange={field.onChange}
+                    getMemberValue={(member) => member.user_id}
+                    placeholder="Select assignees"
+                    emptySelectionText="No assignees assigned yet. Select members from the dropdown above."
+                  />
                   <FormMessage />
                 </FormItem>
               )}

@@ -25,8 +25,8 @@ const ProjectsFilter = ({
 }: ProjectsFilterProps) => {
   return (
     <div className="rounded-xl animate-fade-in">
-      <div className="flex w-full flex-col gap-4 pt-0 px-0 pb-6 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full max-w-[250px]">
+      <div className="flex w-full flex-row items-stretch gap-2 pt-0 px-0 pb-6 sm:items-center sm:justify-between sm:gap-4">
+        <div className="relative min-w-0 flex-1 sm:max-w-[250px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search projects..."
@@ -35,9 +35,9 @@ const ProjectsFilter = ({
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="w-full sm:w-48">
+        <div className="w-[132px] shrink-0 sm:w-48">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>

@@ -31,18 +31,18 @@ const DashboardStatCard = ({
     typeof change === "number" ? `${change > 0 ? "+" : ""}${change}%` : null;
 
   return (
-    <div className="dashboard-panel flex min-h-[130px] flex-col justify-between rounded-[10px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
+    <div className="dashboard-panel flex min-h-[130px] flex-col justify-between rounded-[10px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)] max-lg:min-h-[112px]">
       <div className="flex items-center gap-2">
         <div className="dashboard-icon-tile flex h-8 w-8 items-center justify-center rounded-[8px] border border-border-soft text-brand-accent">
           <Icon className="h-4 w-4" strokeWidth={1.75} />
         </div>
-        <p className="dashboard-text-muted text-sm font-medium tracking-[-0.02em] text-muted-foreground">{title}</p>
+        <p className="dashboard-text-muted text-sm font-medium tracking-[-0.02em] text-muted-foreground max-lg:min-w-0 max-lg:text-[13px]">{title}</p>
       </div>
 
-      <div className="flex items-end justify-between gap-4">
-        <h3 className="dashboard-text-primary text-[24px] font-bold leading-8 text-foreground">{value}</h3>
+      <div className="flex items-end justify-between gap-4 max-lg:gap-2">
+        <h3 className="dashboard-text-primary text-[24px] font-bold leading-8 text-foreground max-lg:min-w-0">{value}</h3>
         {(formattedChange || changeLabel || meta) && (
-          <div className="text-right">
+          <div className="text-right max-lg:max-w-[96px] max-lg:shrink-0">
             {formattedChange ? (
               <p className={cn("text-xs font-medium leading-3 tracking-[-0.02em]", changeToneClassName)}>
                 {formattedChange}

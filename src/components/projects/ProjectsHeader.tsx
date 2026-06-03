@@ -9,8 +9,8 @@ interface ProjectsHeaderProps {
 
 const ProjectsHeader = ({ onCreateProject }: ProjectsHeaderProps) => {
   return (
-    <div className="mb-8 flex items-start justify-between">
-      <div>
+    <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-start sm:justify-between">
+      <div className="min-w-0">
         <h1 className="text-2xl font-semibold tracking-tight">
           Projects
         </h1>
@@ -18,7 +18,7 @@ const ProjectsHeader = ({ onCreateProject }: ProjectsHeaderProps) => {
           Track and manage all your client projects.
         </p>
       </div>
-      <Button onClick={onCreateProject} className="whitespace-nowrap">
+      <Button onClick={onCreateProject} className="w-full whitespace-nowrap sm:w-auto">
         <Plus className="mr-2 h-4 w-4" />
         Create Project
       </Button>

@@ -15,7 +15,8 @@ import {
   Settings,
   FolderKanban,
   CheckSquare,
-  Package
+  Package,
+  MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "./Logo";
@@ -27,13 +28,27 @@ const BRAND_NAME_COLOR = "#1D3485";
 const BRAND_SUBTITLE_COLOR = "#77706A";
 const CARD_SHADOW = "0px 1px 2px rgba(10,13,20,0.0314)";
 
-const Sidebar = () => {
-  const [expanded, setExpanded] = useState(true);
+interface SidebarProps {
+  expanded?: boolean;
+  onExpandedChange?: (expanded: boolean) => void;
+  onNavigate?: () => void;
+}
+
+const Sidebar = ({ expanded: expandedProp, onExpandedChange, onNavigate }: SidebarProps) => {
+  const [uncontrolledExpanded, setUncontrolledExpanded] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth >= 1024;
+  });
   const navigate = useNavigate();
   const { userRole, canViewTeam, canViewProjects } = useUserRole();
+  const expanded = expandedProp ?? uncontrolledExpanded;
 
   const toggleSidebar = () => {
-    setExpanded(!expanded);
+    const nextExpanded = !expanded;
+    onExpandedChange?.(nextExpanded);
+    if (expandedProp === undefined) {
+      setUncontrolledExpanded(nextExpanded);
+    }
   };
 
   const handleLogout = async () => {
@@ -46,6 +61,23 @@ const Sidebar = () => {
       toast.error(error.message || "Failed to log out");
       console.error("Logout error:", error);
     }
+  };
+
+  const handleFeedbackClick = () => {
+    const tally = (window as any).Tally;
+
+    if (tally?.openPopup) {
+      tally.openPopup("Me7DGk", {
+        emoji: {
+          text: "👋",
+          animation: "wave",
+        },
+      });
+    } else {
+      window.location.hash = "tally-open=Me7DGk&tally-emoji-text=👋&tally-emoji-animation=wave";
+    }
+
+    onNavigate?.();
   };
 
   const getAllNavItems = () => [
@@ -80,7 +112,7 @@ const Sidebar = () => {
       {/* Header */}
       <div
         className={cn(
-          "flex items-center justify-between",
+          "app-sidebar-header flex items-center justify-between",
           expanded ? "px-3" : "px-2 justify-center"
         )}
         style={{ height: 65 }}
@@ -130,7 +162,7 @@ const Sidebar = () => {
             </button>
           </>
         ) : (
-          <Logo size={36} />
+          <Logo size={32} />
         )}
       </div>
 
@@ -186,7 +218,9 @@ const Sidebar = () => {
             onClick={(e) => {
               if (window.location.pathname === item.href) {
                 e.preventDefault();
+                return;
               }
+              onNavigate?.();
             }}
           >
             {({ isActive }) => (
@@ -223,11 +257,55 @@ const Sidebar = () => {
             )}
           </NavLink>
         ))}
+
+        <button
+          type="button"
+          onClick={handleFeedbackClick}
+          title={!expanded ? "Feedback" : undefined}
+          data-tally-open="Me7DGk"
+          data-tally-emoji-text="👋"
+          data-tally-emoji-animation="wave"
+          className={cn(
+            "flex items-center transition-colors app-sidebar-nav-idle hover:bg-sidebar-accent text-muted-foreground",
+            expanded ? "" : "justify-center"
+          )}
+          style={{
+            gap: 8,
+            padding: expanded ? "8px 12px" : "8px",
+            height: 36,
+            borderRadius: 7,
+            WebkitTapHighlightColor: "transparent",
+          }}
+        >
+          <MessageSquare
+            className="app-sidebar-icon-idle text-muted-foreground"
+            style={{
+              width: 16,
+              height: 16,
+              flexShrink: 0,
+            }}
+            strokeWidth={1.67}
+          />
+          {expanded && (
+            <span
+              className="truncate app-sidebar-nav-label-idle text-muted-foreground"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 500,
+                fontSize: 14,
+                lineHeight: "135%",
+                letterSpacing: "-0.03em",
+              }}
+            >
+              Feedback
+            </span>
+          )}
+        </button>
       </nav>
 
       {/* Motivational Card */}
       {expanded && (
-        <div className="flex justify-center pt-2 pb-2">
+        <div className="app-sidebar-motivation flex justify-center pt-2 pb-2">
           <div
             className="flex flex-col justify-end items-start"
             style={{

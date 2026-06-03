@@ -32,11 +32,11 @@ export function PriorityIndicator({
 }: PriorityIndicatorProps) {
   const flagColor = getPriorityFlagColor(priority);
   const iconSize = size === "default" ? 16 : size === "sm" ? 14 : 12;
-  const fontSize = size === "default" ? 14 : size === "sm" ? 12 : 11;
-  const lineHeight = size === "default" ? 20 : size === "sm" ? 16 : 14;
+  const fontSize = size === "xs" ? 11 : 14;
+  const lineHeight = size === "xs" ? 14 : 20;
 
   return (
-    <span
+    <div
       className={cn("inline-flex items-center justify-center whitespace-nowrap", className)}
       style={{
         padding: noPadding ? 0 : size === "xs" ? "0 4px" : "2px 8px",
@@ -49,18 +49,17 @@ export function PriorityIndicator({
         <span
           className="text-muted-foreground"
           style={{
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 400,
+            fontWeight: "inherit",
             fontSize,
             lineHeight: `${lineHeight}px`,
-            letterSpacing: "0.01em",
+            letterSpacing: 0,
             color: PRIORITY_TEXT_COLOR,
           }}
         >
           {priority}
         </span>
       )}
-    </span>
+    </div>
   );
 }
 

@@ -67,14 +67,14 @@ const InfoRow = ({
   label: string;
   children: React.ReactNode;
 }) => (
-  <div style={rowStyle}>
+    <div className="project-info-row" style={rowStyle}>
     <Icon
       className="h-4 w-4 flex-shrink-0 text-muted-foreground"
       style={{ marginTop: 4 }}
     />
     <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1 }}>
-      <span className="text-foreground" style={labelStyle}>{label}</span>
-      <div className="text-muted-foreground" style={valueStyle}>{children}</div>
+      <span className="project-info-label text-foreground" style={labelStyle}>{label}</span>
+      <div className="project-info-value text-muted-foreground" style={valueStyle}>{children}</div>
     </div>
   </div>
 );
@@ -134,7 +134,7 @@ const ProjectInfo = ({ project, client }: ProjectInfoProps) => {
   }, [project.teamMembers, project.id]);
 
   return (
-    <div className="flex flex-col md:flex-row" style={{ gap: 16, width: "100%" }}>
+    <div className="project-info-grid flex flex-col md:flex-row" style={{ gap: 16, width: "100%" }}>
       {/* Client Information Card */}
       <div className="bg-card border border-border-soft" style={cardStyle}>
         <SectionCardHeader

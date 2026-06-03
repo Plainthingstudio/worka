@@ -172,35 +172,39 @@ const Services = () => {
   };
 
   return (
-    <main className="p-6">
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Services</h1>
-          <p className="text-muted-foreground">
+    <main className="p-6 max-lg:w-full max-lg:overflow-hidden max-lg:p-4">
+      <div className="mb-6 flex items-start justify-between gap-4 max-lg:mb-5 max-lg:w-full max-lg:max-w-[calc(100vw-48px)] max-lg:flex-col max-lg:gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight max-lg:text-[22px] max-lg:leading-7">Services</h1>
+          <p className="text-muted-foreground max-lg:mt-1 max-lg:max-w-[24rem] max-lg:text-[13px] max-lg:leading-5">
             Create reusable services, sub-services, and pricing for projects.
           </p>
         </div>
-        <Button onClick={() => openServiceDialog()}>
+        <Button
+          onClick={() => openServiceDialog()}
+          className="max-lg:h-9 max-lg:w-fit max-lg:self-start max-lg:px-3 max-lg:text-sm"
+        >
           <Plus className="mr-2 h-4 w-4" />
           New Service
         </Button>
       </div>
 
       {!setupRequired && !isLoading && services.length > 0 && (
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 max-lg:mb-4 max-lg:w-full max-lg:max-w-[calc(100vw-48px)] max-lg:flex-col max-lg:items-stretch max-lg:gap-2 max-lg:overflow-hidden">
           <Tabs
             value={categoryFilter}
             onValueChange={(value) => setCategoryFilter(value as ServiceCategoryFilter)}
+            className="max-lg:w-full max-lg:min-w-0 max-lg:overflow-hidden"
           >
-            <TabsList className="max-w-full overflow-x-auto">
+            <TabsList className="mobile-scroll max-w-full justify-start overflow-x-auto max-lg:flex max-lg:w-full max-lg:min-w-0 max-lg:px-1">
               {CATEGORY_TABS.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value}>
+                <TabsTrigger key={tab.value} value={tab.value} className="max-lg:h-8 max-lg:shrink-0 max-lg:px-3 max-lg:text-[13px]">
                   {tab.label}
                 </TabsTrigger>
               ))}
             </TabsList>
           </Tabs>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground max-lg:text-[13px] max-lg:leading-5">
             {filteredServices.length} service{filteredServices.length === 1 ? "" : "s"}
           </p>
         </div>
@@ -233,32 +237,32 @@ const Services = () => {
           </p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 max-lg:w-full max-lg:max-w-[calc(100vw-48px)] max-lg:min-w-0 max-lg:gap-3 max-lg:overflow-hidden">
           {filteredServices.map((service) => {
             const subServices = service.subServices || [];
 
             return (
               <article
                 key={service.id}
-                className="flex min-h-[260px] flex-col rounded-md border border-border-soft bg-card shadow-sm transition-colors hover:border-border"
+                className="flex min-h-[260px] flex-col rounded-md border border-border-soft bg-card shadow-sm transition-colors hover:border-border max-lg:min-h-0 max-lg:w-full max-lg:min-w-0 max-lg:max-w-full max-lg:overflow-hidden"
               >
-                <div className="flex flex-1 flex-col p-4">
+                <div className="flex flex-1 flex-col p-4 max-lg:p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       {service.category && (
-                        <div className="mb-2">
-                          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${CATEGORY_COLORS[service.category]}`}>
+                        <div className="mb-2 max-lg:mb-1.5">
+                          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium max-lg:px-2 max-lg:text-[11px] ${CATEGORY_COLORS[service.category]}`}>
                             {SERVICE_CATEGORY_LABELS[service.category]}
                           </span>
                         </div>
                       )}
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="min-w-0 truncate text-lg font-semibold leading-7">
+                        <h2 className="min-w-0 truncate text-lg font-semibold leading-7 max-lg:text-base max-lg:leading-6">
                           {service.name}
                         </h2>
                       </div>
-                      <div className="mt-3">
-                        <p className="text-lg font-semibold leading-7 text-foreground">
+                      <div className="mt-3 max-lg:mt-2">
+                        <p className="text-lg font-semibold leading-7 text-foreground max-lg:text-base max-lg:leading-6">
                           {formatPrice(service.price, service.currency)}
                         </p>
                       </div>
@@ -268,7 +272,7 @@ const Services = () => {
                       <Button
                         variant="outline"
                         size="icon"
-                        className="group relative h-8 w-8"
+                        className="group relative h-8 w-8 max-lg:h-9 max-lg:w-9"
                         onClick={() => openSubServiceDialog(service.id)}
                       >
                         <Plus className="h-4 w-4" />
@@ -286,17 +290,17 @@ const Services = () => {
                   </div>
 
                   {service.description ? (
-                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">
+                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground max-lg:mt-2 max-lg:text-[13px] max-lg:leading-5">
                       {service.description}
                     </p>
                   ) : (
-                    <p className="mt-3 text-sm leading-6 text-muted-foreground/70">
+                    <p className="mt-3 text-sm leading-6 text-muted-foreground/70 max-lg:mt-2 max-lg:text-[13px] max-lg:leading-5">
                       No description yet.
                     </p>
                   )}
 
-                  <div className="mt-4 flex items-center border-t border-border-soft pt-4">
-                    <span className="text-sm font-medium text-muted-foreground">
+                  <div className="mt-4 flex items-center border-t border-border-soft pt-4 max-lg:mt-3 max-lg:pt-3">
+                    <span className="text-sm font-medium text-muted-foreground max-lg:text-[13px]">
                       {subServices.length} sub-service{subServices.length === 1 ? "" : "s"}
                     </span>
                   </div>

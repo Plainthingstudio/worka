@@ -64,12 +64,12 @@ export const TaskBoardView = ({
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 h-full">
+    <div className="mobile-scroll -mx-4 flex h-full gap-4 overflow-x-auto px-4 pb-4 sm:mx-0 sm:px-0">
       {statusColumns.map((column) => {
         const columnTasks = tasks.filter(task => task.status === column.status);
         
         return (
-          <div key={column.status} className="min-w-[280px] flex-shrink-0 flex flex-col h-full">
+          <div key={column.status} className="flex h-full w-[82vw] max-w-[300px] flex-shrink-0 flex-col sm:w-[280px]">
             {/* Column Header */}
             <div className="px-4 py-3 flex items-center justify-between bg-transparent">
               <div className="flex items-center gap-2">

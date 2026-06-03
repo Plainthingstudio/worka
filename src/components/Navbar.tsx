@@ -17,14 +17,15 @@ const Navbar = ({ title, onMenuClick }: NavbarProps) => {
       className="app-topbar bg-card border-b border-border-soft"
       style={{ height: 53 }}
     >
-      <div className="flex h-full items-center justify-between" style={{ padding: "0 24px" }}>
-        <div className="flex items-center gap-4">
+      <div className="app-topbar-inner flex h-full items-center justify-between" style={{ padding: "0 24px" }}>
+        <div className="flex items-center gap-3 sm:gap-4">
           {onMenuClick && (
             <Button
               variant="ghost"
               size="icon"
               onClick={onMenuClick}
-              className="lg:hidden"
+              className="app-mobile-sidebar-trigger h-9 w-9 shrink-0 border border-border-soft bg-card text-muted-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.05)] hover:bg-accent hover:text-foreground focus-visible:ring-0 focus-visible:ring-offset-0 lg:hidden"
+              aria-label="Open sidebar"
             >
               <Menu className="h-5 w-5" />
             </Button>

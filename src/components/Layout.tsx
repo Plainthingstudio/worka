@@ -9,39 +9,70 @@ interface LayoutProps {
 }
 
 export const Layout = ({ children, title }: LayoutProps) => {
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth >= 1024;
+  });
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth >= 1024;
+  });
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
-    const sidebarElement = document.querySelector('[class*="flex flex-col"][class*="fixed inset-y-0 left-0"]');
-
-    const handleSidebarChange = () => {
-      if (!sidebarElement) return;
-      setIsSidebarExpanded(sidebarElement.classList.contains('w-56'));
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const handleViewportChange = (event: MediaQueryListEvent) => {
+      setIsDesktop(event.matches);
+      if (event.matches) {
+        setIsSidebarExpanded(true);
+      } else {
+        setIsMobileSidebarOpen(false);
+      }
     };
 
-    handleSidebarChange();
-
-    const observer = new MutationObserver(handleSidebarChange);
-    if (sidebarElement) {
-      observer.observe(sidebarElement, { attributes: true, attributeFilter: ['class'] });
-    }
-
-    return () => observer.disconnect();
+    setIsDesktop(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleViewportChange);
+    return () => mediaQuery.removeEventListener("change", handleViewportChange);
   }, []);
+
+  const sidebarOffsetClass = isDesktop
+    ? isSidebarExpanded
+      ? "pl-56"
+      : "pl-16"
+    : "pl-0";
 
   return (
     <div className="app-charcoal min-h-screen bg-surface-2">
-      <Sidebar />
+      {isDesktop ? (
+        <Sidebar expanded={isSidebarExpanded} onExpandedChange={setIsSidebarExpanded} />
+      ) : isMobileSidebarOpen ? (
+        <>
+          <button
+            type="button"
+            className="fixed inset-0 z-40 bg-black/40"
+            aria-label="Close sidebar"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+          <Sidebar
+            expanded
+            onExpandedChange={(nextExpanded) => {
+              if (!nextExpanded) setIsMobileSidebarOpen(false);
+            }}
+            onNavigate={() => setIsMobileSidebarOpen(false)}
+          />
+        </>
+      ) : null}
       <div
-        className={`w-full transition-all duration-300 ease-in-out ${
-          isSidebarExpanded ? "pl-56" : "pl-16"
-        }`}
+        className={`w-full transition-all duration-300 ease-in-out ${sidebarOffsetClass}`}
       >
-        <div className="pt-3 min-h-screen">
+        <div className="min-h-screen pt-0 sm:pt-3">
           <div
-            className="app-shell-frame bg-card min-h-[calc(100vh-12px)] overflow-hidden border border-border-soft border-r-0 border-b-0 rounded-tl-lg"
+            className="app-shell-frame min-h-screen overflow-hidden bg-card sm:min-h-[calc(100vh-12px)] sm:rounded-tl-lg sm:border sm:border-r-0 sm:border-b-0 sm:border-border-soft"
           >
-            <Navbar title={title || ""} />
+            <Navbar
+              title={title || ""}
+              onMenuClick={!isDesktop ? () => setIsMobileSidebarOpen(true) : undefined}
+            />
             <main className="app-shell-content w-full overflow-auto bg-card">
               {children}
             </main>

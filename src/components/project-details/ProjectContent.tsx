@@ -56,7 +56,7 @@ const ProjectContent = ({
   const [myTasksOnly, setMyTasksOnly] = useState(true);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
+    <div className="project-content" style={{ display: "flex", flexDirection: "column", gap: 40 }}>
       <ProjectHeader
         project={project}
         onEdit={onEdit}
@@ -67,7 +67,7 @@ const ProjectContent = ({
       />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 max-lg:flex-nowrap max-lg:overflow-hidden">
           <ProjectTabs activeTab={activeTab} onChange={setActiveTab} />
 
           {activeTab !== "overview" && (

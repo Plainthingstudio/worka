@@ -255,13 +255,13 @@ const Team = () => {
 
   return (
     <>
-      <main className="w-full p-6 space-y-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight">
+      <main className="w-full p-6 space-y-6 max-lg:p-4 max-lg:space-y-5">
+          <div className="flex items-start justify-between gap-4 max-lg:flex-col">
+            <div className="min-w-0">
+              <h1 className="text-2xl font-semibold tracking-tight max-lg:text-[22px] max-lg:leading-7">
                 Team
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground max-lg:max-w-[24rem] max-lg:text-[13px] max-lg:leading-5">
                 Manage your team members, their roles, and their skills.
               </p>
               {userRole && (
@@ -270,17 +270,16 @@ const Team = () => {
                 </p>
               )}
             </div>
-            {/* Only owners can invite team members, administrators can see all but cannot invite */}
-            {userRole === 'owner' && (
-              <Button onClick={openInvitationDialog}>
+            {canManageTeam() && (
+              <Button onClick={openInvitationDialog} className="max-lg:h-9 max-lg:w-auto max-lg:self-start max-lg:text-sm">
                 <Plus className="mr-2 h-4 w-4" />
-                Invite Team Member
+                <span className="max-[420px]:hidden">Invite Team Member</span>
+                <span className="hidden max-[420px]:inline">Invite Member</span>
               </Button>
             )}
           </div>
 
-          {/* Pending Invitations - only show to owners */}
-          {userRole === 'owner' && (
+          {canManageTeam() && (
             <PendingInvitations refreshTrigger={invitationRefreshTrigger} />
           )}
 
@@ -292,7 +291,7 @@ const Team = () => {
           />
 
           <div className="rounded-xl animate-fade-in">
-            <div className="overflow-x-auto">
+            <div className="mobile-scroll overflow-x-auto">
               <TeamTable
                 members={filteredMembers}
                 onEdit={canManageTeam() ? openEditMemberDialog : undefined}
@@ -302,8 +301,7 @@ const Team = () => {
           </div>
       </main>
 
-      {/* Invitation Dialog - only for owners */}
-      {userRole === 'owner' && (
+      {canManageTeam() && (
         <InvitationDialog
           isOpen={isInvitationDialogOpen}
           onClose={closeInvitationDialog}

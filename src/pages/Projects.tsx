@@ -97,7 +97,7 @@ const Projects = () => {
 
   return (
     <>
-      <main className="w-full p-6">
+      <main className="w-full p-4 sm:p-6">
         <ProjectsHeader onCreateProject={openAddProjectDialog} />
 
         {isLoading ? (
@@ -113,8 +113,8 @@ const Projects = () => {
               setStatusFilter={setStatusFilter} 
             />
 
-            <div className="rounded-xl animate-fade-in">
-              <div className="overflow-x-auto">
+            <div className="animate-fade-in rounded-xl">
+              <div className="mobile-scroll overflow-x-auto pb-2">
                 <ProjectsTable
                   projects={filteredProjects}
                   clients={clients}

@@ -58,9 +58,9 @@ const LeadsFilter: React.FC<LeadsFilterProps> = ({
 }) => {
   return (
     <div className="glass-card mb-6 rounded-xl border shadow-sm animate-fade-in">
-      <div className="flex flex-row items-center gap-4 p-4 flex-wrap">
+      <div className="mobile-scroll flex flex-row items-center gap-2 overflow-x-auto p-4 lg:flex-wrap lg:gap-4">
         {/* Search Input */}
-        <div className="relative flex-1 min-w-64">
+        <div className="relative min-w-[180px] flex-1 lg:min-w-64">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search leads..."
@@ -72,7 +72,7 @@ const LeadsFilter: React.FC<LeadsFilterProps> = ({
 
         
         {/* Year Filter */}
-        <div className="w-32">
+        <div className="w-28 shrink-0 lg:w-32">
           <Select value={yearFilter} onValueChange={setYearFilter}>
             <SelectTrigger>
               <SelectValue placeholder="Year" />
@@ -89,7 +89,7 @@ const LeadsFilter: React.FC<LeadsFilterProps> = ({
         </div>
 
         {/* Month Filter */}
-        <div className="w-40">
+        <div className="w-32 shrink-0 lg:w-40">
           <Select value={monthFilter} onValueChange={setMonthFilter}>
             <SelectTrigger>
               <SelectValue placeholder="Month" />
@@ -105,7 +105,7 @@ const LeadsFilter: React.FC<LeadsFilterProps> = ({
         </div>
 
         {/* Quarter Filter */}
-        <div className="w-40">
+        <div className="w-32 shrink-0 lg:w-40">
           <Select value={quarterFilter} onValueChange={setQuarterFilter}>
             <SelectTrigger>
               <SelectValue placeholder="Quarter" />

@@ -539,20 +539,20 @@ export const Tasks = () => {
     { key: 'calendar', label: 'Timeline', icon: Calendar },
   ];
 
-  return <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
+  return <div className="flex flex-col gap-4 p-4 sm:gap-6 sm:p-6">
         {/* Header row — title + Add Task */}
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <h1 className="text-foreground" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 24, lineHeight: '32px', letterSpacing: '-0.03em' }}>
+            <h1 className="text-foreground max-lg:!text-[22px] max-lg:!leading-7" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 24, lineHeight: '32px', letterSpacing: '-0.03em' }}>
               Tasks
             </h1>
-            <p className="text-muted-foreground" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 400, fontSize: 16, lineHeight: '24px' }}>
+            <p className="text-muted-foreground max-lg:!text-[13px] max-lg:!leading-5" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 400, fontSize: 16, lineHeight: '24px' }}>
               List of task for all team members
             </p>
           </div>
           <button
             onClick={() => handleAddTask()}
-            className="inline-flex items-center justify-center transition-opacity hover:opacity-90 bg-brand text-brand-foreground"
+            className="inline-flex w-full items-center justify-center transition-opacity hover:opacity-90 bg-brand text-brand-foreground lg:w-auto max-lg:h-9 max-lg:w-auto max-lg:self-start max-lg:text-sm"
             style={{
               gap: 8,
               padding: '8px 12px',
@@ -572,10 +572,10 @@ export const Tasks = () => {
         </div>
 
         {/* Tabs + search/filter row */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col items-stretch justify-between gap-3 xl:flex-row xl:items-center">
+          <div className="flex flex-col items-stretch gap-3 lg:flex-row lg:flex-wrap lg:items-center">
             <div
-              className="inline-flex items-center bg-surface-2 dark:bg-surface-2"
+              className="mobile-scroll inline-flex w-full items-center overflow-x-auto bg-surface-2 dark:bg-surface-2 sm:w-auto"
               style={{ padding: 4, gap: 0, borderRadius: 8 }}
             >
               {viewTabs.map(({ key, label, icon: Icon }) => {
@@ -586,7 +586,7 @@ export const Tasks = () => {
                     type="button"
                     onClick={() => setActiveView(key)}
                     className={cn(
-                      "inline-flex items-center text-[14px] font-medium leading-5 transition-all",
+                      "inline-flex flex-1 items-center justify-center text-[14px] font-medium leading-5 transition-all lg:flex-none max-lg:text-[13px]",
                       active
                         ? "bg-card text-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.08)] dark:bg-surface-3 dark:shadow-none"
                         : "bg-transparent text-muted-foreground"
@@ -609,7 +609,7 @@ export const Tasks = () => {
             </div>
 
             <label
-              className="inline-flex items-center border border-border-soft bg-card text-foreground"
+              className="inline-flex w-full items-center justify-center border border-border-soft bg-card text-foreground lg:w-auto lg:justify-start max-lg:text-sm"
               style={{
                 gap: 8,
                 height: 36,
@@ -630,8 +630,8 @@ export const Tasks = () => {
             </label>
           </div>
 
-          <div className="flex items-center" style={{ gap: 12 }}>
-            <div className="relative" style={{ width: 208, height: 36 }}>
+          <div className="flex w-full flex-row items-stretch gap-2 lg:w-auto" style={{ gap: 8 }}>
+            <div className="relative min-w-0 flex-1 lg:w-[208px] lg:flex-none" style={{ height: 36 }}>
               <Search
                 className="text-muted-foreground"
                 style={{ position: 'absolute', left: 12, top: 10, width: 16, height: 16 }}
@@ -641,9 +641,8 @@ export const Tasks = () => {
                 placeholder="Search task..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="bg-surface-2 border-border-soft text-foreground"
+                className="w-full bg-surface-2 border-border-soft text-foreground"
                 style={{
-                  width: 208,
                   height: 36,
                   paddingLeft: 40,
                   paddingRight: 12,
@@ -657,7 +656,7 @@ export const Tasks = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="inline-flex items-center justify-center transition-colors hover:bg-surface-hover bg-surface-2 border border-border-soft text-foreground"
+                  className="inline-flex w-auto shrink-0 items-center justify-center transition-colors hover:bg-surface-hover bg-surface-2 border border-border-soft text-foreground max-lg:text-sm"
                   style={{
                     gap: 8,
                     height: 36,
@@ -727,7 +726,7 @@ export const Tasks = () => {
         </div>
 
         {/* Content */}
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           {activeView === 'list' && <ClickUpTaskList tasks={filteredTasks} projects={projects} isLoading={isLoading} onTaskClick={task => {
       setSelectedTask(task);
     }} onUpdateTask={updateTask} onAddTask={handleAddTask} />}

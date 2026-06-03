@@ -29,7 +29,7 @@ const shellCardClass =
   "dashboard-panel rounded-[12px] border border-border-soft bg-card p-3 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]";
 const headerIconClass =
   "dashboard-icon-tile flex h-8 w-8 items-center justify-center rounded-[8px] border border-border-soft text-brand-accent";
-const tableShellClass = "overflow-hidden rounded-[8px]";
+const tableShellClass = "mobile-scroll overflow-hidden rounded-[8px] max-lg:overflow-x-auto max-lg:pb-2";
 const tableRowButtonClass =
   "dashboard-row flex w-full text-left outline-none transition-colors hover:bg-surface-3/60 focus-visible:outline-none focus-visible:bg-surface-3/60";
 const tableHeaderCellClass =
@@ -151,10 +151,10 @@ const Dashboard = () => {
   );
 
   return (
-    <main className="dashboard-charcoal bg-card px-6 py-6">
-      <div className="flex flex-col gap-6">
+    <main className="dashboard-charcoal bg-card px-6 py-6 max-lg:px-4 max-lg:py-5">
+      <div className="flex flex-col gap-6 max-lg:gap-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <h2 className="dashboard-text-primary text-[24px] font-semibold leading-8 tracking-[-0.03em] text-foreground">
+          <h2 className="dashboard-text-primary text-[24px] font-semibold leading-8 tracking-[-0.03em] text-foreground max-lg:text-[22px]">
             Dashboard Overview
           </h2>
 
@@ -194,7 +194,7 @@ const Dashboard = () => {
           </DropdownMenu>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 max-lg:grid-cols-2 max-[520px]:grid-cols-1">
           <DashboardStatCard
             title="New Leads"
             value={String(stats.monthlyNewLeads)}
@@ -239,6 +239,7 @@ const Dashboard = () => {
                 <EmptyTableState message="No active projects right now." />
               ) : (
                 <div className={tableShellClass}>
+                  <div className="min-w-[720px]">
                   <div className="flex h-9 rounded-[8px]">
                     <div className={`${tableHeaderCellClass} w-[147.75px] flex-1 rounded-l-[8px]`}>
                       Project Name
@@ -287,6 +288,7 @@ const Dashboard = () => {
                       </div>
                     </button>
                   ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -310,6 +312,7 @@ const Dashboard = () => {
                 <EmptyTableState message="No active tasks available." />
               ) : (
                 <div className={tableShellClass}>
+                  <div className="min-w-[460px]">
                   <div className="flex h-9 rounded-[8px]">
                     <div className={`${tableHeaderCellClass} w-[149.75px] flex-1 rounded-l-[8px]`}>
                       Task
@@ -340,6 +343,7 @@ const Dashboard = () => {
                       </div>
                     </button>
                   ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -359,6 +363,7 @@ const Dashboard = () => {
                 <EmptyTableState message="No overdue invoices at the moment." />
               ) : (
                 <div className={tableShellClass}>
+                  <div className="min-w-[400px]">
                   <div className="flex h-9 rounded-[8px]">
                     <div className={`${tableHeaderCellClass} w-[133.83px] flex-1 rounded-l-[8px]`}>
                       No
@@ -389,6 +394,7 @@ const Dashboard = () => {
                       </div>
                     </button>
                   ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -408,6 +414,7 @@ const Dashboard = () => {
                 <EmptyTableState message="No team members are currently waiting on feedback only." />
               ) : (
                 <div className={tableShellClass}>
+                  <div className="min-w-[360px]">
                   <div className="flex h-9 rounded-[8px]">
                     <div className={`${tableHeaderCellClass} w-[132px] min-w-0 rounded-l-[8px]`}>
                       Name
@@ -431,6 +438,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                   ))}
+                  </div>
                 </div>
               )}
             </div>

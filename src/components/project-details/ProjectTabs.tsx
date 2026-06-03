@@ -22,7 +22,7 @@ const tabs: {
 const ProjectTabs = ({ activeTab, onChange }: ProjectTabsProps) => {
   return (
     <div
-      className="inline-flex items-center bg-surface-2 dark:bg-surface-2"
+      className="project-tabs mobile-scroll inline-flex items-center overflow-x-auto bg-surface-2 dark:bg-surface-2"
       style={{
         padding: 4,
         borderRadius: 8,
@@ -53,7 +53,7 @@ const ProjectTabs = ({ activeTab, onChange }: ProjectTabsProps) => {
             }}
           >
             <Icon className="h-4 w-4 shrink-0" />
-            <span>{label}</span>
+            <span className="project-tab-label">{label}</span>
           </button>
         );
       })}

@@ -18,10 +18,10 @@ const BriefsFilter: React.FC<BriefsFilterProps> = ({
   setSearch
 }) => {
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-4">
-      <div className="flex items-center gap-2">
+    <div className="mb-4 flex flex-row items-stretch gap-2 md:items-center md:justify-between md:gap-4">
+      <div className="order-2 flex shrink-0 items-center gap-2 md:order-1">
         <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[132px] md:w-[180px]">
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
           <SelectContent>
@@ -32,7 +32,7 @@ const BriefsFilter: React.FC<BriefsFilterProps> = ({
           </SelectContent>
         </Select>
       </div>
-      <div className="relative w-full md:w-64">
+      <div className="relative order-1 min-w-0 flex-1 md:order-2 md:w-64 md:flex-none">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input placeholder="Search briefs..." className="w-full pl-8" value={search} onChange={e => setSearch(e.target.value)} />
       </div>

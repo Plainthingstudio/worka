@@ -92,21 +92,21 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
   }];
   return <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-semibold">Leads & Pipeline</h1>
-            <p className="text-muted-foreground text-sm sm:text-base">Manage your leads through the sales pipeline.</p>
+        <div className="flex items-start justify-between gap-4 max-lg:flex-col">
+          <div className="min-w-0">
+            <h1 className="text-xl font-semibold leading-7 sm:text-2xl max-lg:text-[22px] max-lg:leading-7">Leads & Pipeline</h1>
+            <p className="text-muted-foreground text-sm leading-5 sm:text-base max-lg:max-w-[26rem] max-lg:text-[13px] max-lg:leading-5">Manage your leads through the sales pipeline.</p>
           </div>
           
-          <Button onClick={() => onAddLead('Leads')}>
+          <Button onClick={() => onAddLead('Leads')} className="max-lg:h-9 max-lg:w-auto max-lg:self-start max-lg:text-sm">
             <Plus className="mr-2 h-4 w-4" />
-            Add Lead
+            <span>Add Lead</span>
           </Button>
         </div>
         
-        <div className="flex justify-between items-center mb-6 ">
+        <div className="mb-6 flex items-center justify-between gap-3 max-lg:flex-col max-lg:items-stretch">
           <div
-            className="inline-flex items-center bg-surface-2 dark:bg-surface-2"
+            className="inline-flex items-center bg-surface-2 dark:bg-surface-2 max-lg:w-full"
             style={{ padding: 4, gap: 0, borderRadius: 8 }}
           >
             {([
@@ -119,7 +119,7 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
                   key={key}
                   type="button"
                   onClick={() => onViewModeChange(key)}
-                  className={`inline-flex items-center text-[14px] font-medium leading-5 transition-all ${
+                    className={`inline-flex items-center text-[14px] font-medium leading-5 transition-all max-lg:flex-1 max-lg:justify-center ${
                     active
                       ? 'bg-card text-foreground shadow-[0px_1px_2px_rgba(15,23,42,0.08)] dark:bg-surface-3 dark:shadow-none'
                       : 'bg-transparent text-muted-foreground'
@@ -141,15 +141,15 @@ const KanbanHeader: React.FC<KanbanHeaderProps> = ({
             })}
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="relative">
+          <div className="flex items-center gap-3 max-lg:w-full max-lg:items-stretch max-lg:gap-2">
+            <div className="relative max-lg:min-w-0 max-lg:flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input placeholder="Search leads..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10 w-64 h-9" />
+              <Input placeholder="Search leads..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 w-64 pl-10 max-lg:w-full max-lg:text-sm" />
             </div>
 
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2 h-9">
+                <Button variant="outline" className="flex h-9 items-center gap-2 max-lg:w-auto max-lg:shrink-0 max-lg:px-3">
                   <Filter className="h-4 w-4" />
                   Filter
                 </Button>

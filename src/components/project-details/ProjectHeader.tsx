@@ -43,7 +43,7 @@ const ProjectHeader = ({
   const navigate = useNavigate();
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+    <div className="project-detail-header" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <button
         type="button"
         onClick={() => navigate("/projects")}
@@ -67,10 +67,11 @@ const ProjectHeader = ({
       </button>
 
       <div
-        className="flex items-start justify-between"
+        className="project-detail-header-row flex items-start justify-between"
         style={{ gap: 40, width: "100%" }}
       >
         <div
+          className="project-detail-title-wrap"
           style={{
             display: "flex",
             flexDirection: "column",
@@ -80,7 +81,7 @@ const ProjectHeader = ({
           }}
         >
           <h1
-            className="text-foreground"
+            className="project-detail-title text-foreground"
             style={{
               fontFamily: "Inter, sans-serif",
               fontWeight: 600,
@@ -106,7 +107,7 @@ const ProjectHeader = ({
           </div>
         </div>
 
-        <div className="flex items-center flex-shrink-0" style={{ gap: 8 }}>
+        <div className="project-detail-actions flex items-center flex-shrink-0" style={{ gap: 8 }}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
@@ -143,7 +144,7 @@ const ProjectHeader = ({
             <button
               type="button"
               onClick={onMarkAsCompleted}
-              className="inline-flex items-center justify-center transition-colors hover:bg-accent bg-card border border-border-soft text-foreground"
+              className="project-detail-secondary-action inline-flex items-center justify-center transition-colors hover:bg-accent bg-card border border-border-soft text-foreground"
               style={{
                 gap: 4,
                 padding: "0 12px",
@@ -161,13 +162,14 @@ const ProjectHeader = ({
                 className="h-4 w-4"
                 strokeWidth={1.67}
               />
-              <span>Mark as Completed</span>
+              <span className="project-detail-action-label-full">Mark as Completed</span>
+              <span className="project-detail-action-label-short">Complete</span>
             </button>
           ) : (
             <button
               type="button"
               onClick={onChangeStatus}
-              className="inline-flex items-center justify-center transition-colors hover:bg-accent bg-card border border-border-soft text-foreground"
+              className="project-detail-secondary-action inline-flex items-center justify-center transition-colors hover:bg-accent bg-card border border-border-soft text-foreground"
               style={{
                 gap: 4,
                 padding: "0 12px",
@@ -185,14 +187,15 @@ const ProjectHeader = ({
                 className="h-4 w-4"
                 strokeWidth={1.67}
               />
-              <span>Change Status</span>
+              <span className="project-detail-action-label-full">Change Status</span>
+              <span className="project-detail-action-label-short">Status</span>
             </button>
           )}
 
           <button
             type="button"
             onClick={onCreateTask}
-            className="inline-flex items-center justify-center transition-opacity hover:opacity-90 bg-brand text-brand-foreground"
+            className="project-detail-primary-action inline-flex items-center justify-center transition-opacity hover:opacity-90 bg-brand text-brand-foreground"
             style={{
               gap: 8,
               padding: "0 12px",
@@ -214,7 +217,8 @@ const ProjectHeader = ({
               className="h-4 w-4 text-brand-foreground"
               strokeWidth={1.67}
             />
-            <span>Create Task</span>
+            <span className="project-detail-action-label-full">Create Task</span>
+            <span className="project-detail-action-label-short">Task</span>
           </button>
         </div>
       </div>

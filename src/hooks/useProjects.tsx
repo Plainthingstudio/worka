@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Project, ProjectStatus, Currency, ProjectType, LeadSource } from "@/types";
-import { account, client, databases, DATABASE_ID, ID } from "@/integrations/appwrite/client";
+import { account, client, databases, DATABASE_ID, ID, Query } from "@/integrations/appwrite/client";
 import {
   getCurrentUserId,
   notifyProjectAssigneeChanges,
@@ -24,15 +24,38 @@ const PROJECTS_REALTIME_COLLECTIONS = [
 
 export const projectsQueryKey = ["projects"] as const;
 
+const APPWRITE_PAGE_SIZE = 100;
+
+const fetchAllDocuments = async (collectionId: string, queries: string[] = []) => {
+  const documents: any[] = [];
+  let offset = 0;
+
+  while (true) {
+    const response = await databases.listDocuments(DATABASE_ID, collectionId, [
+      ...queries,
+      Query.limit(APPWRITE_PAGE_SIZE),
+      Query.offset(offset),
+    ]);
+
+    documents.push(...response.documents);
+
+    if (response.documents.length < APPWRITE_PAGE_SIZE) {
+      return documents;
+    }
+
+    offset += APPWRITE_PAGE_SIZE;
+  }
+};
+
 const fetchProjectsData = async (): Promise<ProjectsData> => {
-  const [clientsResponse, teamResponse, projectsResponse, paymentsResponse] = await Promise.all([
-    databases.listDocuments(DATABASE_ID, "clients"),
-    databases.listDocuments(DATABASE_ID, "team_members"),
-    databases.listDocuments(DATABASE_ID, "projects"),
-    databases.listDocuments(DATABASE_ID, "payments"),
+  const [clientDocuments, teamDocuments, projectDocuments, paymentDocuments] = await Promise.all([
+    fetchAllDocuments("clients"),
+    fetchAllDocuments("team_members"),
+    fetchAllDocuments("projects"),
+    fetchAllDocuments("payments"),
   ]);
 
-  const clients = clientsResponse.documents.map((c: any) => ({
+  const clients = clientDocuments.map((c: any) => ({
     id: c.$id,
     name: c.name,
     email: c.email,
@@ -42,7 +65,7 @@ const fetchProjectsData = async (): Promise<ProjectsData> => {
     createdAt: new Date(c.$createdAt),
   }));
 
-  const teamMembers = teamResponse.documents.map((member: any) => ({
+  const teamMembers = teamDocuments.map((member: any) => ({
     id: member.$id,
     user_id: member.user_id,
     name: member.name,
@@ -53,7 +76,7 @@ const fetchProjectsData = async (): Promise<ProjectsData> => {
   }));
 
   const paymentsByProject = new Map<string, any[]>();
-  paymentsResponse.documents.forEach((payment: any) => {
+  paymentDocuments.forEach((payment: any) => {
     const list = paymentsByProject.get(payment.project_id) || [];
     list.push({
       id: payment.$id,
@@ -66,7 +89,7 @@ const fetchProjectsData = async (): Promise<ProjectsData> => {
     paymentsByProject.set(payment.project_id, list);
   });
 
-  const projects: Project[] = projectsResponse.documents.map((project: any) => ({
+  const projects: Project[] = projectDocuments.map((project: any) => ({
     id: project.$id,
     user_id: project.user_id,
     name: project.name,
@@ -238,8 +261,8 @@ export const useProjects = () => {
 
   const handleDeleteProject = async (id: string) => {
     try {
-      const paymentsResponse = await databases.listDocuments(DATABASE_ID, "payments", []);
-      const relatedPayments = paymentsResponse.documents.filter(
+      const paymentDocuments = await fetchAllDocuments("payments");
+      const relatedPayments = paymentDocuments.filter(
         (p: any) => p.project_id === id
       );
 

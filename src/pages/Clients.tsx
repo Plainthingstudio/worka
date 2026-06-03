@@ -51,7 +51,7 @@ const Clients = () => {
 
   return (
     <>
-      <main className="w-full p-6">
+      <main className="w-full p-6 max-lg:p-4">
         <ClientsHeader 
           onCreateClient={canManageProjects() ? openAddClientDialog : undefined}
           userRole={userRole}
@@ -66,7 +66,7 @@ const Clients = () => {
         />
 
         <div className="rounded-xl animate-fade-in">
-          <div className="overflow-x-auto p-0">
+          <div className="mobile-scroll overflow-x-auto p-0">
             {isLoading ? (
               <ClientsLoading />
             ) : (

@@ -755,6 +755,7 @@ export const ClickUpTaskList = ({
                 position: 'sticky',
                 top: 0,
                 zIndex: 10,
+                minWidth: 0,
               }}
             >
               <div className="flex items-center flex-1" style={{ gap: 8 }}>
@@ -778,6 +779,7 @@ export const ClickUpTaskList = ({
                     fontWeight: 600,
                     fontSize: 14,
                     lineHeight: '20px',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {config.label}
@@ -799,7 +801,7 @@ export const ClickUpTaskList = ({
 
               <button
                 type="button"
-                className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center text-muted-foreground"
+                className="inline-flex items-center text-muted-foreground transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
                 style={{
                   gap: 4,
                   padding: '0 8px',
@@ -821,7 +823,7 @@ export const ClickUpTaskList = ({
 
             {/* Columns + rows — horizontally scrollable */}
             {!isCollapsed && (
-              <div style={{ overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="[&::-webkit-scrollbar]:hidden">
+              <div className="mobile-scroll overflow-x-auto pb-2">
                 <div style={{ minWidth: listMinWidth }}>
                   <ColumnHeaders
                     sortKey={sortKey}

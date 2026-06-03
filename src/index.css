@@ -379,6 +379,143 @@
   color: var(--dashboard-muted);
 }
 
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+.project-detail-action-label-short {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .mobile-scroll {
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .mobile-scroll > table {
+    min-width: 640px;
+  }
+
+  .mobile-scroll th,
+  .mobile-scroll td {
+    white-space: nowrap;
+  }
+
+  .mobile-scroll::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .mobile-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .mobile-scroll::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+  }
+
+  .mobile-scroll::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.45);
+    background-clip: padding-box;
+  }
+
+  .app-charcoal .app-sidebar {
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.14);
+  }
+
+  .app-sidebar-header {
+    height: 53px !important;
+  }
+
+  .app-topbar-inner {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .app-mobile-sidebar-trigger {
+    box-shadow: none !important;
+  }
+
+  .app-sidebar-motivation {
+    display: none !important;
+  }
+
+  .project-content {
+    gap: 24px !important;
+  }
+
+  .project-detail-header-row {
+    flex-direction: column;
+    gap: 14px !important;
+  }
+
+  .project-detail-title {
+    font-size: 22px !important;
+    line-height: 28px !important;
+    letter-spacing: -0.03em !important;
+    overflow-wrap: anywhere;
+  }
+
+  .project-detail-actions {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .project-detail-actions > button {
+    flex-shrink: 0;
+  }
+
+  .project-detail-secondary-action {
+    height: 34px !important;
+    padding: 0 10px !important;
+    font-size: 13px !important;
+  }
+
+  .project-detail-primary-action {
+    height: 34px !important;
+    padding: 0 10px !important;
+    font-size: 13px !important;
+  }
+
+  .project-detail-action-label-short {
+    display: inline;
+  }
+
+  .project-detail-action-label-full {
+    display: none;
+  }
+
+  .project-tabs {
+    width: calc(100vw - 96px) !important;
+    max-width: 100%;
+  }
+
+  .project-tabs button {
+    flex-shrink: 0;
+    padding: 4px 10px !important;
+    font-size: 13px !important;
+  }
+
+  .project-info-grid {
+    gap: 12px !important;
+  }
+
+  .project-info-row {
+    gap: 10px !important;
+  }
+
+  .project-info-label,
+  .project-info-value {
+    font-size: 13px !important;
+    line-height: 18px !important;
+  }
+}
+
 /* Loading animations */
 @keyframes shimmer {
   0% {
