@@ -11,6 +11,14 @@ interface CommentInputProps {
   candidates: MentionCandidate[];
   onSubmit: (content: string, files: File[], mentionedUserIds: string[]) => Promise<boolean>;
   isSubmitting?: boolean;
+  initialContent?: string;
+  placeholder?: string;
+  submitLabel?: string;
+  submittingLabel?: string;
+  allowAttachments?: boolean;
+  onCancel?: () => void;
+  clearOnSubmit?: boolean;
+  autoFocus?: boolean;
 }
 
 const formatFileSize = (bytes: number) => {
@@ -25,14 +33,32 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   candidates,
   onSubmit,
   isSubmitting = false,
+  initialContent = "",
+  placeholder = "Add a comment...",
+  submitLabel = "Send",
+  submittingLabel = "Sending...",
+  allowAttachments = true,
+  onCancel,
+  clearOnSubmit = true,
+  autoFocus = false,
 }) => {
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState(initialContent);
   const [files, setFiles] = useState<File[]>([]);
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [mentionAnchor, setMentionAnchor] = useState<number>(0);
   const [highlightIndex, setHighlightIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const resizeTextarea = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = "auto";
+    const nextHeight = Math.min(Math.max(textarea.scrollHeight, 80), 180);
+    textarea.style.height = `${nextHeight}px`;
+    textarea.style.overflowY = textarea.scrollHeight > 180 ? "auto" : "hidden";
+  };
 
   const filteredCandidates = mentionQuery === null
     ? []
@@ -43,6 +69,16 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   useEffect(() => {
     setHighlightIndex(0);
   }, [mentionQuery]);
+
+  useEffect(() => {
+    setContent(initialContent);
+    setFiles([]);
+    setMentionQuery(null);
+  }, [initialContent]);
+
+  useEffect(() => {
+    resizeTextarea();
+  }, [content]);
 
   const detectMention = (value: string, cursor: number) => {
     const before = value.slice(0, cursor);
@@ -140,6 +176,8 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!allowAttachments) return;
+
     const picked = Array.from(e.target.files || []);
     const valid = picked.filter((f) => {
       if (f.size > 50 * 1024 * 1024) {
@@ -174,9 +212,10 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   const handleSubmit = async () => {
     if (!content.trim() && files.length === 0) return;
     const mentioned = extractMentionedIds(content);
-    const ok = await onSubmit(content, files, mentioned);
+    const submittedFiles = allowAttachments ? files : [];
+    const ok = await onSubmit(content, submittedFiles, mentioned);
     if (ok) {
-      setContent("");
+      if (clearOnSubmit) setContent("");
       setFiles([]);
       setMentionQuery(null);
     }
@@ -195,14 +234,17 @@ export const CommentInput: React.FC<CommentInputProps> = ({
         value={content}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        placeholder="Add a comment..."
+        placeholder={placeholder}
+        autoFocus={autoFocus}
         rows={3}
         className="w-full resize-none outline-none bg-transparent text-foreground placeholder:text-muted-foreground"
         style={{
           fontFamily: "Inter, sans-serif",
           fontSize: 14,
           lineHeight: "20px",
-          minHeight: 60,
+          minHeight: 80,
+          maxHeight: 180,
+          overflowY: "hidden",
         }}
       />
 
@@ -234,7 +276,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
       )}
 
       {/* File previews */}
-      {files.length > 0 && (
+      {allowAttachments && files.length > 0 && (
         <div className="mt-2 space-y-1">
           {files.map((f, i) => (
             <div key={i} className="flex items-center gap-2 bg-surface-2 px-2 py-1 rounded text-xs">
@@ -256,23 +298,27 @@ export const CommentInput: React.FC<CommentInputProps> = ({
       {/* Toolbar */}
       <div className="flex items-center justify-between mt-2">
         <div className="flex items-center gap-1">
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            multiple
-            onChange={handleFileSelect}
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center justify-center transition-colors hover:bg-accent"
-            style={{ width: 28, height: 28, borderRadius: 6 }}
-            aria-label="Attach file"
-            title="Attach file"
-          >
-            <Paperclip className="text-muted-foreground" style={{ width: 16, height: 16 }} strokeWidth={1.67} />
-          </button>
+          {allowAttachments && (
+            <>
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                multiple
+                onChange={handleFileSelect}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center justify-center transition-colors hover:bg-accent"
+                style={{ width: 28, height: 28, borderRadius: 6 }}
+                aria-label="Attach file"
+                title="Attach file"
+              >
+                <Paperclip className="text-muted-foreground" style={{ width: 16, height: 16 }} strokeWidth={1.67} />
+              </button>
+            </>
+          )}
           <button
             type="button"
             onClick={handleTriggerMention}
@@ -284,30 +330,49 @@ export const CommentInput: React.FC<CommentInputProps> = ({
             <AtSign className="text-muted-foreground" style={{ width: 16, height: 16 }} strokeWidth={1.67} />
           </button>
         </div>
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={isSubmitting || (!content.trim() && files.length === 0)}
-          className="inline-flex items-center justify-center transition-opacity hover:opacity-90 disabled:opacity-50 bg-brand text-brand-foreground"
-          style={{
-            gap: 6,
-            padding: "6px 10px",
-            height: 28,
-            backgroundImage:
-              "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 100%)",
-            boxShadow:
-              "0px 1px 2px rgba(14,18,27,0.239216), 0px 0px 0px 1px hsl(var(--brand))",
-            borderRadius: 7,
-            fontFamily: "Inter, sans-serif",
-            fontWeight: 500,
-            fontSize: 12,
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          <Send className="text-brand-foreground" style={{ width: 12, height: 12 }} strokeWidth={1.67} />
-          {isSubmitting ? "Sending..." : "Send"}
-        </button>
+        <div className="flex items-center gap-2">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="inline-flex items-center justify-center transition-colors hover:bg-accent text-foreground border border-border-soft bg-card"
+              style={{
+                padding: "6px 10px",
+                height: 28,
+                borderRadius: 7,
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 500,
+                fontSize: 12,
+              }}
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmitting || (!content.trim() && (allowAttachments ? files.length === 0 : true))}
+            className="inline-flex items-center justify-center transition-opacity hover:opacity-90 disabled:opacity-50 bg-brand text-brand-foreground"
+            style={{
+              gap: 6,
+              padding: "6px 10px",
+              height: 28,
+              backgroundImage:
+                "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 100%)",
+              boxShadow:
+                "0px 1px 2px rgba(14,18,27,0.239216), 0px 0px 0px 1px hsl(var(--brand))",
+              borderRadius: 7,
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 500,
+              fontSize: 12,
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            <Send className="text-brand-foreground" style={{ width: 12, height: 12 }} strokeWidth={1.67} />
+            {isSubmitting ? submittingLabel : submitLabel}
+          </button>
+        </div>
       </div>
     </div>
   );

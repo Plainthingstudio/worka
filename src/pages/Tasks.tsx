@@ -23,6 +23,17 @@ import {
   notifyTaskFollowers,
 } from '@/services/notificationService';
 
+const findTaskInTree = (tasks: TaskWithRelations[], taskId: string): TaskWithRelations | undefined => {
+  for (const task of tasks) {
+    if (task.id === taskId) return task;
+
+    const subtask = task.subtasks?.find((item) => item.id === taskId);
+    if (subtask) return subtask as TaskWithRelations;
+  }
+
+  return undefined;
+};
+
 export const Tasks = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { tasks, projects, isLoading, invalidate, setQueryData } = useTasksData();
@@ -87,11 +98,14 @@ export const Tasks = () => {
       setSearchParams({});
     }
 
-    // Auto-select task if provided
+    // Auto-select task/subtask if provided
     if (taskId && tasks.length > 0) {
-      const task = tasks.find(t => t.id === taskId);
+      const task = findTaskInTree(tasks, taskId);
       if (task) {
         setSelectedTask(task);
+        if (!projectId && task.project_id) {
+          setSelectedProject(task.project_id);
+        }
       }
     }
   }, [searchParams, tasks, isLoading, setSearchParams]);
@@ -375,14 +389,7 @@ export const Tasks = () => {
   };
 
   const findTaskById = (taskId: string): TaskWithRelations | undefined => {
-    for (const task of tasks) {
-      if (task.id === taskId) return task;
-
-      const subtask = task.subtasks?.find((item) => item.id === taskId);
-      if (subtask) return subtask as TaskWithRelations;
-    }
-
-    return undefined;
+    return findTaskInTree(tasks, taskId);
   };
 
   useEffect(() => {

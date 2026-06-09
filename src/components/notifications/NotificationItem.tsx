@@ -25,11 +25,12 @@ export const NotificationItem = ({ notification, icon, onMarkAsRead }: Notificat
   const navigate = useNavigate();
 
   const handleClick = () => {
+    const destination = getNotificationDestination(notification.data);
+
     if (!notification.read_at) {
       onMarkAsRead(notification.id);
     }
 
-    const destination = getNotificationDestination(notification.data);
     if (destination) navigate(destination);
   };
 
@@ -39,7 +40,7 @@ export const NotificationItem = ({ notification, icon, onMarkAsRead }: Notificat
     <Button
       variant="ghost"
       className={cn(
-        "w-full p-3 h-auto text-left justify-start relative group",
+        "w-full p-3 h-auto text-left justify-start relative group whitespace-normal",
         !notification.read_at && "bg-accent/50"
       )}
       onClick={handleClick}
@@ -50,14 +51,14 @@ export const NotificationItem = ({ notification, icon, onMarkAsRead }: Notificat
         </div>
         <div className="flex-1 min-w-0 space-y-1">
           <div className="flex items-start justify-between gap-2">
-            <h4 className="text-sm font-medium line-clamp-1">
+            <h4 className="text-sm font-medium leading-5 whitespace-normal break-words">
               {notification.title}
             </h4>
             {!notification.read_at && (
               <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-1" />
             )}
           </div>
-          <p className="text-xs text-muted-foreground line-clamp-2">
+          <p className="text-xs leading-5 text-muted-foreground whitespace-normal break-words">
             {notification.message}
           </p>
           <p className="text-xs text-muted-foreground/70">

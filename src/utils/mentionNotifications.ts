@@ -8,11 +8,15 @@ import { dispatchNotifications } from "@/services/notificationService";
 export async function dispatchMentionNotifications({
   mentionedUserIds,
   taskId,
+  projectId,
+  parentTaskId,
   taskTitle,
   commentContent,
 }: {
   mentionedUserIds: string[];
   taskId: string;
+  projectId?: string | null;
+  parentTaskId?: string | null;
   taskTitle: string;
   commentContent: string;
 }) {
@@ -25,18 +29,19 @@ export async function dispatchMentionNotifications({
     return;
   }
 
-  const preview = commentContent.length > 140
-    ? commentContent.slice(0, 140) + "..."
-    : commentContent;
-
   const actorName = currentUser?.name || currentUser?.email?.split("@")[0] || "Someone";
 
   await dispatchNotifications({
     recipientIds: mentionedUserIds,
     type: "task_mention",
     title: `${actorName} mentioned you in ${taskTitle}`,
-    message: preview,
-    data: { task_id: taskId, actor_id: currentUser?.$id },
+    message: commentContent,
+    data: {
+      task_id: taskId,
+      project_id: projectId || undefined,
+      parent_task_id: parentTaskId || undefined,
+      actor_id: currentUser?.$id,
+    },
     actorId: currentUser?.$id,
   });
 }

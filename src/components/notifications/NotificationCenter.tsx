@@ -79,7 +79,7 @@ export const NotificationCenter = () => {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80" align="end">
+      <DropdownMenuContent className="w-[min(calc(100vw-1.5rem),32rem)]" align="end">
         <div className="flex items-center justify-between p-3">
           <h3 className="font-semibold">Notifications</h3>
           {unreadCount > 0 && (

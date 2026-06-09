@@ -267,6 +267,8 @@ export const TaskDetailSidebar = ({
         await dispatchMentionNotifications({
           mentionedUserIds,
           taskId: task.id,
+          projectId: task.project_id,
+          parentTaskId: task.parent_task_id,
           taskTitle: task.title,
           commentContent: content,
         });
@@ -277,18 +279,61 @@ export const TaskDetailSidebar = ({
     }
   };
 
+  const extractMentionedUserIds = (content: string): string[] => {
+    const sortedCandidates = [...mentionCandidates].sort((a, b) => b.name.length - a.name.length);
+    const ids = new Set<string>();
+    let cursor = 0;
+
+    while (cursor < content.length) {
+      const atIndex = content.indexOf("@", cursor);
+      if (atIndex === -1) break;
+
+      const remainder = content.slice(atIndex + 1);
+      const matched = sortedCandidates.find((candidate) => remainder.startsWith(candidate.name));
+
+      if (matched) {
+        ids.add(matched.user_id);
+        cursor = atIndex + 1 + matched.name.length;
+      } else {
+        cursor = atIndex + 1;
+      }
+    }
+
+    return Array.from(ids);
+  };
+
   const handleEditStart = (activity: any) => {
     setEditingActivityId(activity.id);
     setEditingContent(activity.content || '');
   };
 
-  const handleEditSave = async (activityId: string) => {
-    if (!editingContent.trim()) return;
-    const success = await updateActivity(activityId, editingContent);
+  const handleEditSave = async (
+    activityId: string,
+    nextContent = editingContent,
+    mentionedUserIds = extractMentionedUserIds(nextContent)
+  ) => {
+    if (!task || !nextContent.trim()) return false;
+
+    const previousContent = activities.find((activity) => activity.id === activityId)?.content || '';
+    const previousMentionedIds = new Set(extractMentionedUserIds(previousContent));
+    const newlyMentionedIds = mentionedUserIds.filter((id) => !previousMentionedIds.has(id));
+
+    const success = await updateActivity(activityId, nextContent);
     if (success) {
+      if (newlyMentionedIds.length > 0) {
+        await dispatchMentionNotifications({
+          mentionedUserIds: newlyMentionedIds,
+          taskId: task.id,
+          projectId: task.project_id,
+          parentTaskId: task.parent_task_id,
+          taskTitle: task.title,
+          commentContent: nextContent,
+        });
+      }
       setEditingActivityId(null);
       setEditingContent('');
     }
+    return success;
   };
 
   const handleEditCancel = () => {
@@ -1131,30 +1176,21 @@ export const TaskDetailSidebar = ({
                                 </div>
 
                                 {isEditingThis ? (
-                                  <div className="space-y-2">
-                                    <Textarea
-                                      value={editingContent}
-                                      onChange={(e) => setEditingContent(e.target.value)}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                                          e.preventDefault();
-                                          handleEditSave(activity.id);
-                                        }
-                                      }}
-                                      className="text-sm resize-none min-h-[80px]"
-                                      autoFocus
-                                      rows={3}
-                                    />
-                                    <div className="flex gap-2">
-                                      <Button size="sm" onClick={() => handleEditSave(activity.id)} className="h-6 text-xs">
-                                        <CheckCircle className="h-3 w-3 mr-1" />
-                                        Save
-                                      </Button>
-                                      <Button variant="outline" size="sm" onClick={handleEditCancel} className="h-6 text-xs">
-                                        Cancel
-                                      </Button>
-                                    </div>
-                                  </div>
+                                  <CommentInput
+                                    key={activity.id}
+                                    candidates={mentionCandidates}
+                                    initialContent={editingContent}
+                                    onSubmit={(content, _files, mentionedUserIds) =>
+                                      handleEditSave(activity.id, content, mentionedUserIds)
+                                    }
+                                    allowAttachments={false}
+                                    clearOnSubmit={false}
+                                    onCancel={handleEditCancel}
+                                    placeholder="Edit your comment..."
+                                    submitLabel="Save"
+                                    submittingLabel="Saving..."
+                                    autoFocus
+                                  />
                                 ) : activity.activity_type === 'comment' ? (
                                   <div
                                     className="text-sm break-words text-foreground"

@@ -16,18 +16,40 @@ const TASKS_REALTIME_COLLECTIONS = [
   "projects",
 ];
 
+const PAGE_SIZE = 100;
+
 export const tasksQueryKey = ["tasks"] as const;
 
-const fetchTasksData = async (): Promise<TasksData> => {
-  const [tasksResponse, projectsResponse, commentsResponse, attachmentsResponse] =
-    await Promise.all([
-      databases.listDocuments(DATABASE_ID, "tasks", [Query.orderDesc("$createdAt")]),
-      databases.listDocuments(DATABASE_ID, "projects", [Query.orderDesc("$createdAt")]),
-      databases.listDocuments(DATABASE_ID, "task_comments"),
-      databases.listDocuments(DATABASE_ID, "task_attachments"),
+const listAllDocuments = async (collectionId: string, queries: string[] = []) => {
+  const documents: any[] = [];
+  let offset = 0;
+
+  while (true) {
+    const response = await databases.listDocuments(DATABASE_ID, collectionId, [
+      ...queries,
+      Query.limit(PAGE_SIZE),
+      Query.offset(offset),
     ]);
 
-  const projects: Project[] = projectsResponse.documents.map((project: any) => ({
+    documents.push(...response.documents);
+
+    if (response.documents.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+
+  return documents;
+};
+
+const fetchTasksData = async (): Promise<TasksData> => {
+  const [taskDocuments, projectDocuments, commentDocuments, attachmentDocuments] =
+    await Promise.all([
+      listAllDocuments("tasks", [Query.orderDesc("$createdAt")]),
+      listAllDocuments("projects", [Query.orderDesc("$createdAt")]),
+      listAllDocuments("task_comments"),
+      listAllDocuments("task_attachments"),
+    ]);
+
+  const projects: Project[] = projectDocuments.map((project: any) => ({
     id: project.$id,
     name: project.name,
     clientId: project.client_id,
@@ -42,18 +64,18 @@ const fetchTasksData = async (): Promise<TasksData> => {
   }));
 
   const commentsByTask = new Map<string, any[]>();
-  commentsResponse.documents.forEach((c: any) => {
+  commentDocuments.forEach((c: any) => {
     if (!commentsByTask.has(c.task_id)) commentsByTask.set(c.task_id, []);
     commentsByTask.get(c.task_id)!.push(c);
   });
 
   const attachmentsByTask = new Map<string, any[]>();
-  attachmentsResponse.documents.forEach((a: any) => {
+  attachmentDocuments.forEach((a: any) => {
     if (!attachmentsByTask.has(a.task_id)) attachmentsByTask.set(a.task_id, []);
     attachmentsByTask.get(a.task_id)!.push(a);
   });
 
-  const allTasks: TaskWithRelations[] = tasksResponse.documents.map((task: any) => ({
+  const allTasks: TaskWithRelations[] = taskDocuments.map((task: any) => ({
     ...task,
     id: task.$id,
     status: task.status as TaskStatus,
