@@ -19,9 +19,10 @@ interface NotificationItemProps {
   notification: Notification;
   icon: React.ReactNode;
   onMarkAsRead: (notificationId: string) => void;
+  onClose: () => void;
 }
 
-export const NotificationItem = ({ notification, icon, onMarkAsRead }: NotificationItemProps) => {
+export const NotificationItem = ({ notification, icon, onMarkAsRead, onClose }: NotificationItemProps) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -31,6 +32,7 @@ export const NotificationItem = ({ notification, icon, onMarkAsRead }: Notificat
       onMarkAsRead(notification.id);
     }
 
+    onClose();
     if (destination) navigate(destination);
   };
 

@@ -7,7 +7,7 @@ import { ClickUpTaskList } from '@/components/tasks/ClickUpTaskList';
 import { TaskBoardView } from '@/components/tasks/TaskBoardView';
 import { TaskCalendarView } from '@/components/tasks/TaskCalendarView';
 import { TaskDetailSidebar } from '@/components/tasks/TaskDetailSidebar';
-import { TaskDialog } from '@/components/tasks/TaskDialog';
+import { TaskDialog, type TaskFormData } from '@/components/tasks/TaskDialog';
 import { SubtaskDialog } from '@/components/tasks/SubtaskDialog';
 import { account, databases, DATABASE_ID, ID, Query, storage } from '@/integrations/appwrite/client';
 import { TaskWithRelations, TaskStatus, TASK_STATUS_OPTIONS } from '@/types/task';
@@ -38,6 +38,7 @@ export const Tasks = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { tasks, projects, isLoading, invalidate, setQueryData } = useTasksData();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<TaskWithRelations | null>(null);
   const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
   const [selectedProject, setSelectedProject] = useState<string>('all');
   const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = useState(false);
@@ -376,11 +377,34 @@ export const Tasks = () => {
     }
   };
 
-  const handleCreateTask = async (taskData: any) => {
+  const handleCreateTask = async (taskData: TaskFormData) => {
     const success = await createTask(taskData);
     if (success) {
       setIsCreateDialogOpen(false);
+      return true;
     }
+    return false;
+  };
+
+  const handleEditTaskSubmit = async (taskData: TaskFormData) => {
+    if (!editingTask) return false;
+
+    const success = await updateTask(editingTask.id, {
+      title: taskData.title,
+      description: taskData.description,
+      status: taskData.status,
+      priority: taskData.priority,
+      task_type: taskData.task_type,
+      assignees: taskData.assignees || [],
+      due_date: taskData.due_date?.toISOString?.() || taskData.due_date,
+    });
+
+    if (success) {
+      setEditingTask(null);
+      return true;
+    }
+
+    return false;
   };
 
   const handleAddTask = (status: TaskStatus = 'Planning') => {
@@ -738,7 +762,7 @@ export const Tasks = () => {
           {activeView === 'calendar' && <TaskCalendarView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} />}
         </div>
       {/* Task Detail Sidebar */}
-      <TaskDetailSidebar task={selectedTask} isOpen={!!selectedTask} onClose={() => setSelectedTask(null)} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddSubtask={handleAddSubtask} onTaskSelect={setSelectedTask} allTasks={tasks} focusActivityOnOpen={Boolean(searchParams.get('taskId'))} />
+      <TaskDetailSidebar task={selectedTask} isOpen={!!selectedTask} onClose={() => setSelectedTask(null)} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddSubtask={handleAddSubtask} onTaskSelect={setSelectedTask} onEditTask={setEditingTask} allTasks={tasks} focusActivityOnOpen={Boolean(searchParams.get('taskId'))} />
 
       {/* Create Task Dialog */}
       <TaskDialog
@@ -749,6 +773,25 @@ export const Tasks = () => {
         projects={projects.map((project) => ({ id: project.id, name: project.name }))}
         requireProjectSelection={selectedProject === 'all'}
         initialData={selectedProject !== 'all' ? { project_id: selectedProject } : undefined}
+      />
+
+      <TaskDialog
+        isOpen={!!editingTask}
+        onClose={() => setEditingTask(null)}
+        onSubmit={handleEditTaskSubmit}
+        title="Edit Task"
+        submitLabel="Save Changes"
+        projects={projects.map((project) => ({ id: project.id, name: project.name }))}
+        initialData={editingTask ? {
+          project_id: editingTask.project_id,
+          title: editingTask.title,
+          description: editingTask.description || '',
+          priority: editingTask.priority,
+          task_type: editingTask.task_type,
+          status: editingTask.status,
+          due_date: editingTask.due_date ? new Date(editingTask.due_date) : undefined,
+          assignees: editingTask.assignees || [],
+        } : undefined}
       />
 
       {/* Create Subtask Dialog */}

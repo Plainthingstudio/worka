@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Bell,
   CalendarClock,
@@ -25,6 +25,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationItem } from './NotificationItem';
 
 export const NotificationCenter = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const { notifications, unreadCount, isLoading, markAllAsRead, markAsRead } = useNotifications();
 
   const getNotificationIcon = (type: string) => {
@@ -65,7 +66,7 @@ export const NotificationCenter = () => {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
@@ -114,6 +115,7 @@ export const NotificationCenter = () => {
                   notification={notification}
                   icon={getNotificationIcon(notification.type)}
                   onMarkAsRead={markAsRead}
+                  onClose={() => setIsOpen(false)}
                 />
               ))}
             </div>

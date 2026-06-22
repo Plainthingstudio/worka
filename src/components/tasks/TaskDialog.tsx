@@ -51,16 +51,17 @@ const taskSchema = z.object({
   assignees: z.array(z.string()).optional(),
 });
 
-type TaskFormData = z.infer<typeof taskSchema>;
+export type TaskFormData = z.infer<typeof taskSchema>;
 
 interface TaskDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: TaskFormData) => void;
+  onSubmit: (data: TaskFormData) => void | boolean | Promise<void | boolean>;
   title: string;
   initialData?: Partial<TaskFormData>;
   projects?: Array<{ id: string; name: string }>;
   requireProjectSelection?: boolean;
+  submitLabel?: string;
 }
 
 export const TaskDialog = ({
@@ -71,32 +72,46 @@ export const TaskDialog = ({
   initialData,
   projects = [],
   requireProjectSelection = false,
+  submitLabel = 'Create Task',
 }: TaskDialogProps) => {
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
+  const initialDueDateTime = initialData?.due_date?.getTime();
+  const initialAssigneesKey = (initialData?.assignees || []).join('\0');
+  const defaultValues = React.useMemo<TaskFormData>(() => ({
+    project_id: initialData?.project_id || '',
+    title: initialData?.title || '',
+    description: initialData?.description || '',
+    priority: initialData?.priority || 'Normal',
+    task_type: initialData?.task_type || 'Primary',
+    status: initialData?.status || 'Planning',
+    due_date: initialDueDateTime !== undefined ? new Date(initialDueDateTime) : undefined,
+    assignees: initialAssigneesKey ? initialAssigneesKey.split('\0') : [],
+  }), [
+    initialData?.project_id,
+    initialData?.title,
+    initialData?.description,
+    initialData?.priority,
+    initialData?.task_type,
+    initialData?.status,
+    initialDueDateTime,
+    initialAssigneesKey,
+  ]);
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
-    defaultValues: {
-      project_id: initialData?.project_id || '',
-      title: initialData?.title || '',
-      description: initialData?.description || '',
-      priority: initialData?.priority || 'Normal',
-      task_type: initialData?.task_type || 'Primary',
-      status: 'Planning',
-      due_date: undefined,
-      assignees: [],
-    },
+    defaultValues,
   });
 
   useEffect(() => {
     if (isOpen) {
+      form.reset(defaultValues);
       fetchTeamMembers().then((members) => {
         console.log('Fetched team members:', members);
       });
     }
-  }, [isOpen, fetchTeamMembers]);
+  }, [isOpen, fetchTeamMembers, form, defaultValues]);
 
-  const handleSubmit = (data: TaskFormData) => {
+  const handleSubmit = async (data: TaskFormData) => {
     if (requireProjectSelection && !data.project_id) {
       form.setError('project_id', {
         type: 'manual',
@@ -105,12 +120,12 @@ export const TaskDialog = ({
       return;
     }
 
-    onSubmit(data);
-    form.reset();
+    const result = await onSubmit(data);
+    if (result !== false) form.reset(defaultValues);
   };
 
   const handleClose = () => {
-    form.reset();
+    form.reset(defaultValues);
     onClose();
   };
 
@@ -214,7 +229,7 @@ export const TaskDialog = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Task Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select task type" />
@@ -238,7 +253,7 @@ export const TaskDialog = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select status" />
@@ -322,7 +337,7 @@ export const TaskDialog = ({
                 Cancel
               </Button>
               <Button type="submit">
-                Create Task
+                {submitLabel}
               </Button>
             </div>
           </form>

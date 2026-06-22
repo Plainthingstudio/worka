@@ -90,6 +90,7 @@ interface TaskDetailSidebarProps {
   onUploadAttachment: (taskId: string, file: File) => Promise<boolean>;
   onAddSubtask?: (taskId: string) => void;
   onTaskSelect?: (task: TaskWithRelations) => void;
+  onEditTask?: (task: TaskWithRelations) => void;
   allTasks?: TaskWithRelations[];
   focusActivityOnOpen?: boolean;
 }
@@ -104,6 +105,7 @@ export const TaskDetailSidebar = ({
   onUploadAttachment,
   onAddSubtask,
   onTaskSelect,
+  onEditTask,
   allTasks = [],
   focusActivityOnOpen = false
 }: TaskDetailSidebarProps) => {
@@ -459,7 +461,13 @@ export const TaskDetailSidebar = ({
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="bg-popover border z-[80]">
-                    <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                    <DropdownMenuItem onClick={() => {
+                      if (onEditTask) {
+                        onEditTask(task);
+                      } else {
+                        setIsEditing(true);
+                      }
+                    }}>
                       <Edit className="h-4 w-4 mr-2" />
                       Edit
                     </DropdownMenuItem>

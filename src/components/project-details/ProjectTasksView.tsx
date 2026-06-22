@@ -4,6 +4,7 @@ import { ClickUpTaskList } from "@/components/tasks/ClickUpTaskList";
 import { TaskBoardView } from "@/components/tasks/TaskBoardView";
 import { TaskCalendarView } from "@/components/tasks/TaskCalendarView";
 import { TaskDetailSidebar } from "@/components/tasks/TaskDetailSidebar";
+import { TaskDialog, type TaskFormData } from "@/components/tasks/TaskDialog";
 import { SubtaskDialog } from "@/components/tasks/SubtaskDialog";
 import { useTasks } from "@/hooks/useTasks";
 import { ProjectTab } from "./ProjectTabs";
@@ -28,6 +29,7 @@ const ProjectTasksView = ({ projectId, view, onCreateTask, myTasksOnly }: Projec
   } = useTasks(projectId);
 
   const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
+  const [editingTask, setEditingTask] = useState<TaskWithRelations | null>(null);
   const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = useState(false);
   const [parentTaskId, setParentTaskId] = useState<string>("");
   const [myTaskIdentityIds, setMyTaskIdentityIds] = useState<string[]>([]);
@@ -77,6 +79,27 @@ const ProjectTasksView = ({ projectId, view, onCreateTask, myTasksOnly }: Projec
 
   const handleAddTask = (_status?: TaskStatus) => {
     onCreateTask();
+  };
+
+  const handleEditTaskSubmit = async (taskData: TaskFormData) => {
+    if (!editingTask) return false;
+
+    const success = await updateTask(editingTask.id, {
+      title: taskData.title,
+      description: taskData.description,
+      status: taskData.status,
+      priority: taskData.priority,
+      task_type: taskData.task_type,
+      assignees: taskData.assignees || [],
+      due_date: taskData.due_date,
+    });
+
+    if (success) {
+      setEditingTask(null);
+      return true;
+    }
+
+    return false;
   };
 
   const isAssignedToCurrentUser = (task: TaskWithRelations) => {
@@ -141,7 +164,26 @@ const ProjectTasksView = ({ projectId, view, onCreateTask, myTasksOnly }: Projec
         onUploadAttachment={uploadAttachment}
         onAddSubtask={handleAddSubtask}
         onTaskSelect={setSelectedTask}
+        onEditTask={setEditingTask}
         allTasks={tasks}
+      />
+
+      <TaskDialog
+        isOpen={!!editingTask}
+        onClose={() => setEditingTask(null)}
+        onSubmit={handleEditTaskSubmit}
+        title="Edit Task"
+        submitLabel="Save Changes"
+        initialData={editingTask ? {
+          project_id: editingTask.project_id,
+          title: editingTask.title,
+          description: editingTask.description || "",
+          priority: editingTask.priority,
+          task_type: editingTask.task_type,
+          status: editingTask.status,
+          due_date: editingTask.due_date ? new Date(editingTask.due_date) : undefined,
+          assignees: editingTask.assignees || [],
+        } : undefined}
       />
 
       <SubtaskDialog
