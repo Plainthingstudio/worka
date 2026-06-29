@@ -92,6 +92,23 @@ export interface Project {
   createdAt: Date;
 }
 
+export type ProjectFileSourceType = 'upload' | 'link';
+
+export interface ProjectFile {
+  id: string;
+  projectId: string;
+  userId: string;
+  name: string;
+  sourceType: ProjectFileSourceType;
+  fileId?: string;
+  fileUrl?: string;
+  fileSize?: number;
+  fileType?: string;
+  externalUrl?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 /** Stored in Appwrite (no spaces — Appwrite enum UI splits on space). */
 export type ServiceCategory = 'ui_ux_design' | 'graphic_design' | 'illustrations';
 

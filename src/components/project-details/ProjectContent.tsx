@@ -4,6 +4,7 @@ import ProjectHeader from "@/components/project-details/ProjectHeader";
 import ProjectInfo from "@/components/project-details/ProjectInfo";
 import PaymentSummary from "@/components/project-details/PaymentSummary";
 import PaymentHistory from "@/components/project-details/PaymentHistory";
+import ProjectFilesSection from "@/components/project-details/ProjectFilesSection";
 import ProjectDialogs from "@/components/project-details/ProjectDialogs";
 import ProjectTabs, { ProjectTab } from "@/components/project-details/ProjectTabs";
 import ProjectTasksView from "@/components/project-details/ProjectTasksView";
@@ -97,19 +98,24 @@ const ProjectContent = ({
         </div>
 
         {activeTab === "overview" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <ProjectInfo project={project} client={client} />
+          <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_400px]">
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
+              <ProjectInfo project={project} client={client} />
 
-            <div
-              className="flex flex-col md:flex-row"
-              style={{ gap: 8, width: "100%" }}
-            >
-              <div style={{ flex: "1 1 0", minWidth: 0, maxWidth: 485 }}>
-                <PaymentSummary project={project} />
+              <div
+                className="flex flex-col md:flex-row"
+                style={{ gap: 8, width: "100%" }}
+              >
+                <div style={{ flex: "1 1 0", minWidth: 0, maxWidth: 485 }}>
+                  <PaymentSummary project={project} />
+                </div>
+                <div style={{ flex: "1 1 0", minWidth: 0 }}>
+                  <PaymentHistory project={project} />
+                </div>
               </div>
-              <div style={{ flex: "1 1 0", minWidth: 0 }}>
-                <PaymentHistory project={project} />
-              </div>
+            </div>
+            <div className="min-w-0 xl:self-stretch">
+              <ProjectFilesSection projectId={project.id} stretch />
             </div>
           </div>
         )}

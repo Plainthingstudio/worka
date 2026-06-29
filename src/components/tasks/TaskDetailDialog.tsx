@@ -57,6 +57,7 @@ import { MentionText } from '@/components/tasks/MentionText';
 import { useTaskProject } from '@/hooks/useTaskProject';
 import DeleteConfirmationDialog from '@/components/projects/DeleteConfirmationDialog';
 import { PriorityIndicator } from './PriorityIndicator';
+import ProjectFilesSection from '@/components/project-details/ProjectFilesSection';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -261,6 +262,16 @@ export const TaskDetailDialog = ({
                     </div>
                   </div>
 
+                  {task.project_id && (
+                    <ProjectFilesSection
+                      projectId={task.project_id}
+                      mode="readonly"
+                      variant="section"
+                      compact
+                      title="Project Files"
+                    />
+                  )}
+
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Status</label>
@@ -337,6 +348,16 @@ export const TaskDetailDialog = ({
                         </FormItem>
                       )}
                     />
+
+                    {task.project_id && (
+                      <ProjectFilesSection
+                        projectId={task.project_id}
+                        mode="readonly"
+                        variant="section"
+                        compact
+                        title="Project Files"
+                      />
+                    )}
 
                     <div className="grid grid-cols-3 gap-4">
                       <FormField

@@ -50,6 +50,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { PriorityIndicator } from './PriorityIndicator';
 import { PriorityFlagIcon } from '@/components/icons/PriorityFlagIcon';
+import ProjectFilesSection from '@/components/project-details/ProjectFilesSection';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -394,6 +395,18 @@ export const ClickUpTaskDetail = ({
                   />
                 </Form>
               </div>
+
+              {task.project_id && (
+                <div className="mb-6">
+                  <ProjectFilesSection
+                    projectId={task.project_id}
+                    mode="readonly"
+                    variant="section"
+                    compact
+                    title="Project Files"
+                  />
+                </div>
+              )}
 
               {/* Tabs */}
               <Tabs defaultValue="activity" className="w-full">

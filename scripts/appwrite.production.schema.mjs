@@ -133,6 +133,19 @@ export const APPWRITE_PRODUCTION_SCHEMA = {
       antivirus: true,
       transformations: true,
     },
+    {
+      bucketId: "project-files",
+      name: "Project Files",
+      permissions: INTERNAL_BUCKET_PERMISSIONS,
+      fileSecurity: false,
+      enabled: true,
+      maximumFileSize: 50 * 1024 * 1024,
+      allowedFileExtensions: [],
+      compression: "gzip",
+      encryption: true,
+      antivirus: true,
+      transformations: true,
+    },
   ],
   collections: [
     {
@@ -492,6 +505,28 @@ export const APPWRITE_PRODUCTION_SCHEMA = {
       indexes: [
         keyIndex("task_attachments_task_idx", ["task_id"]),
         keyIndex("task_attachments_user_idx", ["user_id"]),
+      ],
+    },
+    {
+      collectionId: "project_files",
+      name: "Project Files",
+      permissions: AUTHENTICATED_RW,
+      documentSecurity: false,
+      enabled: true,
+      attributes: [
+        attr.string("project_id", 36, true),
+        attr.string("user_id", 36, true),
+        attr.string("name", 255, true),
+        attr.enum("source_type", ["upload", "link"], true),
+        attr.string("file_id", 36),
+        attr.string("file_url", 2048),
+        attr.integer("file_size"),
+        attr.string("file_type", 128),
+        attr.string("external_url", 2048),
+      ],
+      indexes: [
+        keyIndex("project_files_project_idx", ["project_id"]),
+        keyIndex("project_files_user_idx", ["user_id"]),
       ],
     },
     {

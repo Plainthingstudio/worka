@@ -67,6 +67,7 @@ import { Badge } from '@/components/ui/badge';
 import { CommentInput } from './CommentInput';
 import { MentionText } from './MentionText';
 import { dispatchMentionNotifications } from '@/utils/mentionNotifications';
+import ProjectFilesSection from '@/components/project-details/ProjectFilesSection';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -925,6 +926,16 @@ export const TaskDetailSidebar = ({
                     />
                   )}
                 </div>
+
+                {task.project_id && (
+                  <ProjectFilesSection
+                    projectId={task.project_id}
+                    mode="readonly"
+                    variant="section"
+                    compact
+                    title="Project Files"
+                  />
+                )}
 
                 {/* Subtasks (collapsible) */}
                 {!task.parent_task_id && (
