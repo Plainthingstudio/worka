@@ -47,6 +47,23 @@ const mapProjectFileDocument = (document: ProjectFileDocument): ProjectFile => (
   updatedAt: new Date(document.$updatedAt),
 });
 
+const parseProjectLinkUrl = (value: string) => {
+  const trimmedValue = value.trim();
+  if (!trimmedValue) return null;
+
+  try {
+    const url = new URL(/^[a-z][a-z\d+\-.]*:\/\//i.test(trimmedValue) ? trimmedValue : `https://${trimmedValue}`);
+
+    if (!["http:", "https:"].includes(url.protocol)) {
+      return null;
+    }
+
+    return url;
+  } catch {
+    return null;
+  }
+};
+
 const fetchProjectFiles = async (projectId: string): Promise<ProjectFile[]> => {
   const response = await databases.listDocuments(DATABASE_ID, PROJECT_FILES_COLLECTION, [
     Query.equal("project_id", projectId),
@@ -130,7 +147,13 @@ export const useProjectFiles = (projectId: string | undefined) => {
     if (!projectId) return false;
 
     try {
-      const parsedUrl = new URL(url);
+      const parsedUrl = parseProjectLinkUrl(url);
+
+      if (!parsedUrl) {
+        toast.error("Enter a valid web URL");
+        return false;
+      }
+
       const user = await account.get();
 
       await databases.createDocument(DATABASE_ID, PROJECT_FILES_COLLECTION, ID.unique(), {
@@ -146,7 +169,7 @@ export const useProjectFiles = (projectId: string | undefined) => {
       return true;
     } catch (error) {
       console.error("Error adding project link:", error);
-      toast.error("Enter a valid URL, including https://");
+      toast.error("Failed to add link");
       return false;
     }
   };
