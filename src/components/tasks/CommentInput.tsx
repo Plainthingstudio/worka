@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Paperclip, AtSign, Send, X } from "lucide-react";
 import { InitialAvatar } from "@/components/ui/avatar";
+import { getClipboardImageFiles } from "@/utils/clipboardImages";
 
 interface MentionCandidate {
   user_id: string;
@@ -20,6 +21,8 @@ interface CommentInputProps {
   clearOnSubmit?: boolean;
   autoFocus?: boolean;
 }
+
+const MAX_ATTACHMENT_SIZE = 50 * 1024 * 1024;
 
 const formatFileSize = (bytes: number) => {
   if (bytes === 0) return "0 B";
@@ -175,19 +178,36 @@ export const CommentInput: React.FC<CommentInputProps> = ({
     });
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!allowAttachments) return;
+  const appendFiles = (picked: File[]) => {
+    if (!allowAttachments || picked.length === 0) return;
 
-    const picked = Array.from(e.target.files || []);
     const valid = picked.filter((f) => {
-      if (f.size > 50 * 1024 * 1024) {
+      if (f.size > MAX_ATTACHMENT_SIZE) {
         alert(`File "${f.name}" is too large. Max 50MB.`);
         return false;
       }
       return true;
     });
     setFiles((prev) => [...prev, ...valid]);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!allowAttachments) return;
+
+    const picked = Array.from(e.target.files || []);
+    appendFiles(picked);
     e.target.value = "";
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLElement>) => {
+    if (!allowAttachments) return;
+
+    const pastedFiles = getClipboardImageFiles(e.clipboardData);
+    if (pastedFiles.length === 0) return;
+
+    e.preventDefault();
+    appendFiles(pastedFiles);
+    setMentionQuery(null);
   };
 
   const extractMentionedIds = (text: string): string[] => {
@@ -224,6 +244,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   return (
     <div
       className="relative bg-card border border-border-soft"
+      onPaste={handlePaste}
       style={{
         borderRadius: 12,
         padding: 12,

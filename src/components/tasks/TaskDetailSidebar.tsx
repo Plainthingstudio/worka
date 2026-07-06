@@ -36,6 +36,7 @@ import {
   CheckCircle,
   Circle,
   ExternalLink,
+  Eye,
   MoreHorizontal,
   Edit,
   Trash2,
@@ -48,7 +49,7 @@ import {
   Check,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { TaskWithRelations, TASK_STATUS_OPTIONS, TASK_STATUSES } from '@/types/task';
+import { TaskAttachment, TaskWithRelations, TASK_STATUS_OPTIONS, TASK_STATUSES } from '@/types/task';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { useTaskActivities } from '@/hooks/useTaskActivities';
 import { BriefSelector } from './BriefSelector';
@@ -68,6 +69,16 @@ import { CommentInput } from './CommentInput';
 import { MentionText } from './MentionText';
 import { dispatchMentionNotifications } from '@/utils/mentionNotifications';
 import ProjectFilesSection from '@/components/project-details/ProjectFilesSection';
+import { FilePreviewDialog, FilePreviewItem } from '@/components/files/FilePreviewDialog';
+import {
+  extractAppwriteFileId,
+  fetchAuthenticatedAppwriteFileBlob,
+  getAppwriteDownloadUrl,
+  getAppwritePreviewUrl,
+  isPreviewableFile,
+} from '@/utils/filePreview';
+import { downloadFileFromUrl } from '@/utils/fileDownload';
+import { getClipboardImageFiles } from '@/utils/clipboardImages';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -81,14 +92,215 @@ const taskSchema = z.object({
 
 type TaskFormData = z.infer<typeof taskSchema>;
 
+const MAX_ATTACHMENT_SIZE = 50 * 1024 * 1024;
+
+const isImageAttachment = (fileType?: string) => (fileType || "").toLowerCase().startsWith("image/");
+
+interface DescriptionAttachmentGridProps {
+  attachments?: TaskAttachment[];
+  canDelete?: boolean;
+  downloadingFileUrl: string | null;
+  deletingAttachmentId: string | null;
+  onPreview: (attachment: TaskAttachment) => void;
+  onDownload: (attachment: TaskAttachment) => void;
+  onDelete: (attachment: TaskAttachment) => void;
+}
+
+const DescriptionAttachmentGrid = ({
+  attachments,
+  canDelete = false,
+  downloadingFileUrl,
+  deletingAttachmentId,
+  onPreview,
+  onDownload,
+  onDelete,
+}: DescriptionAttachmentGridProps) => {
+  if (!attachments || attachments.length === 0) return null;
+
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {attachments.map((attachment) => (
+        <DescriptionAttachmentTile
+          key={attachment.id}
+          attachment={attachment}
+          isDownloading={downloadingFileUrl === attachment.file_url}
+          isDeleting={deletingAttachmentId === attachment.id}
+          canDelete={canDelete}
+          onPreview={onPreview}
+          onDownload={onDownload}
+          onDelete={onDelete}
+        />
+      ))}
+    </div>
+  );
+};
+
+interface DescriptionAttachmentTileProps {
+  attachment: TaskAttachment;
+  canDelete: boolean;
+  isDownloading: boolean;
+  isDeleting: boolean;
+  onPreview: (attachment: TaskAttachment) => void;
+  onDownload: (attachment: TaskAttachment) => void;
+  onDelete: (attachment: TaskAttachment) => void;
+}
+
+const DescriptionAttachmentTile = ({
+  attachment,
+  canDelete,
+  isDownloading,
+  isDeleting,
+  onPreview,
+  onDownload,
+  onDelete,
+}: DescriptionAttachmentTileProps) => {
+  const fileId = extractAppwriteFileId(attachment.file_url);
+  const canPreview = isPreviewableFile(attachment.file_type);
+  const isImage = isImageAttachment(attachment.file_type);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isImage || !fileId) {
+      setThumbnailUrl(null);
+      return;
+    }
+
+    let isActive = true;
+    let objectUrl: string | null = null;
+
+    const loadThumbnail = async () => {
+      try {
+        const blob = await fetchAuthenticatedAppwriteFileBlob({
+          bucketId: "task-attachments",
+          fileId,
+          fileType: attachment.file_type,
+        });
+        objectUrl = URL.createObjectURL(blob);
+        if (isActive) setThumbnailUrl(objectUrl);
+      } catch (error) {
+        console.error("Error loading task attachment thumbnail:", error);
+        if (isActive) setThumbnailUrl(null);
+      }
+    };
+
+    loadThumbnail();
+
+    return () => {
+      isActive = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [attachment.file_type, fileId, isImage]);
+
+  const handlePreviewClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (canPreview) onPreview(attachment);
+  };
+
+  const handleDownloadClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    onDownload(attachment);
+  };
+
+  const handleDeleteClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    onDelete(attachment);
+  };
+
+  return (
+    <div
+      className={cn(
+        "group w-24 overflow-hidden rounded-md border border-border-soft bg-card text-left shadow-sm",
+        canPreview && "cursor-pointer transition-colors hover:border-ring"
+      )}
+      onClick={handlePreviewClick}
+      role={canPreview ? "button" : undefined}
+      tabIndex={canPreview ? 0 : undefined}
+      onKeyDown={(event) => {
+        if (canPreview && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          onPreview(attachment);
+        }
+      }}
+    >
+      <div className="relative h-14 bg-surface-2">
+        {isImage && thumbnailUrl ? (
+          <img src={thumbnailUrl} alt={attachment.file_name} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <Paperclip className="h-4 w-4 text-muted-foreground" />
+          </div>
+        )}
+        <div className="absolute right-1 top-1 flex gap-1 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
+          {canPreview && (
+            <Button
+              type="button"
+              size="icon"
+              variant="secondary"
+              className="h-6 w-6 bg-card/90"
+              onClick={handlePreviewClick}
+              aria-label={`Preview ${attachment.file_name}`}
+            >
+              <Eye className="h-3 w-3" />
+            </Button>
+          )}
+          <Button
+            type="button"
+            size="icon"
+            variant="secondary"
+            className="h-6 w-6 bg-card/90"
+            onClick={handleDownloadClick}
+            disabled={isDownloading}
+            aria-label={`Download ${attachment.file_name}`}
+          >
+            {isDownloading ? <Clock className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+          </Button>
+          {canDelete && (
+            <Button
+              type="button"
+              size="icon"
+              variant="secondary"
+              className="h-6 w-6 bg-card/90 text-destructive hover:text-destructive"
+              onClick={handleDeleteClick}
+              disabled={isDeleting}
+              aria-label={`Delete ${attachment.file_name}`}
+            >
+              {isDeleting ? <Clock className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+type ActivityAttachmentPreview = {
+  file_id?: string;
+  file_name?: string;
+  file_url?: string;
+  file_type?: string;
+  file_size?: number;
+};
+
+type ActivitySummary = {
+  id: string;
+  activity_type: string;
+  content?: string | null;
+  metadata?: Record<string, string | undefined>;
+  attachments?: unknown[];
+};
+
+const getTaskStatusBadgeVariant = (status: string): React.ComponentProps<typeof Badge>["variant"] =>
+  status.toLowerCase().replace(/\s+/g, "-") as React.ComponentProps<typeof Badge>["variant"];
+
 interface TaskDetailSidebarProps {
   task: TaskWithRelations | null;
   isOpen: boolean;
   onClose: () => void;
-  onUpdateTask: (taskId: string, updates: any) => Promise<boolean>;
+  onUpdateTask: (taskId: string, updates: Partial<TaskWithRelations>) => Promise<boolean>;
   onDeleteTask: (taskId: string) => Promise<boolean>;
   onAddComment: (taskId: string, content: string) => Promise<boolean>;
   onUploadAttachment: (taskId: string, file: File) => Promise<boolean>;
+  onDeleteAttachment: (attachment: TaskAttachment) => Promise<boolean>;
   onAddSubtask?: (taskId: string) => void;
   onTaskSelect?: (task: TaskWithRelations) => void;
   onEditTask?: (task: TaskWithRelations) => void;
@@ -104,6 +316,7 @@ export const TaskDetailSidebar = ({
   onDeleteTask,
   onAddComment,
   onUploadAttachment,
+  onDeleteAttachment,
   onAddSubtask,
   onTaskSelect,
   onEditTask,
@@ -116,9 +329,13 @@ export const TaskDetailSidebar = ({
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [editingActivityId, setEditingActivityId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
+  const [previewFile, setPreviewFile] = useState<FilePreviewItem | null>(null);
+  const [downloadingFileUrl, setDownloadingFileUrl] = useState<string | null>(null);
+  const [deletingAttachmentId, setDeletingAttachmentId] = useState<string | null>(null);
   const [isSubtasksOpen, setIsSubtasksOpen] = useState(true);
   const [isActivityOpen, setIsActivityOpen] = useState(true);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [isUploadingDescriptionAttachment, setIsUploadingDescriptionAttachment] = useState(false);
   const [assigneePickerOpen, setAssigneePickerOpen] = useState(false);
   const [draftAssignees, setDraftAssignees] = useState<string[]>([]);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
@@ -208,7 +425,7 @@ export const TaskDetailSidebar = ({
       });
       setIsEditingDescription(false);
     }
-  }, [task]);
+  }, [form, task]);
 
   useEffect(() => {
     if (!isOpen || !focusActivityOnOpen || activitiesLoading) return;
@@ -282,6 +499,34 @@ export const TaskDetailSidebar = ({
     }
   };
 
+  const handleDescriptionPaste = async (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    if (!task || userRole === 'team') return;
+
+    const pastedFiles = getClipboardImageFiles(event.clipboardData);
+    if (pastedFiles.length === 0) return;
+
+    event.preventDefault();
+    const validFiles = pastedFiles.filter((file) => {
+      if (file.size <= MAX_ATTACHMENT_SIZE) return true;
+      toast({
+        title: "File too large",
+        description: `File "${file.name || "pasted image"}" is too large. Max 50MB.`,
+        variant: "destructive",
+      });
+      return false;
+    });
+    if (validFiles.length === 0) return;
+
+    setIsUploadingDescriptionAttachment(true);
+    try {
+      for (const file of validFiles) {
+        await onUploadAttachment(task.id, file);
+      }
+    } finally {
+      setIsUploadingDescriptionAttachment(false);
+    }
+  };
+
   const extractMentionedUserIds = (content: string): string[] => {
     const sortedCandidates = [...mentionCandidates].sort((a, b) => b.name.length - a.name.length);
     const ids = new Set<string>();
@@ -305,7 +550,7 @@ export const TaskDetailSidebar = ({
     return Array.from(ids);
   };
 
-  const handleEditStart = (activity: any) => {
+  const handleEditStart = (activity: ActivitySummary) => {
     setEditingActivityId(activity.id);
     setEditingContent(activity.content || '');
   };
@@ -349,8 +594,64 @@ export const TaskDetailSidebar = ({
     if (confirmed) await deleteActivity(activityId);
   };
 
-  const getActivityDescription = (activity: any) => {
-    const { activity_type, metadata, content } = activity;
+  const openAttachmentPreview = (attachment: ActivityAttachmentPreview) => {
+    const fileUrl = String(attachment.file_url || "");
+    if (!fileUrl) return;
+    const fileId = attachment.file_id || extractAppwriteFileId(fileUrl);
+
+    setPreviewFile({
+      fileName: attachment.file_name || "Attachment",
+      fileUrl,
+      fileType: attachment.file_type,
+      fileSize: attachment.file_size,
+      bucketId: "task-attachments",
+      fileId,
+      previewUrl: getAppwritePreviewUrl({
+        bucketId: "task-attachments",
+        fileId,
+        fileType: attachment.file_type,
+        fallbackUrl: fileUrl,
+      }),
+      downloadUrl: getAppwriteDownloadUrl({
+        bucketId: "task-attachments",
+        fileId,
+        fallbackUrl: fileUrl,
+      }),
+    });
+  };
+
+  const handleDownloadAttachment = async (attachment: ActivityAttachmentPreview) => {
+    const fileUrl = String(attachment.file_url || "");
+    if (!fileUrl) return;
+    const fileId = attachment.file_id || extractAppwriteFileId(fileUrl);
+    const downloadUrl = getAppwriteDownloadUrl({
+      bucketId: "task-attachments",
+      fileId,
+      fallbackUrl: fileUrl,
+    });
+
+    setDownloadingFileUrl(fileUrl);
+    try {
+      await downloadFileFromUrl(downloadUrl, attachment.file_name || "attachment");
+    } catch (error) {
+      console.error("Error downloading attachment:", error);
+      window.open(downloadUrl, "_blank", "noopener,noreferrer");
+    } finally {
+      setDownloadingFileUrl(null);
+    }
+  };
+
+  const handleDeleteDescriptionAttachment = async (attachment: TaskAttachment) => {
+    setDeletingAttachmentId(attachment.id);
+    try {
+      await onDeleteAttachment(attachment);
+    } finally {
+      setDeletingAttachmentId(null);
+    }
+  };
+
+  const getActivityDescription = (activity: ActivitySummary) => {
+    const { activity_type, metadata = {}, content } = activity;
     switch (activity_type) {
       case 'comment': return content || 'Added a comment';
       case 'status_change':
@@ -633,7 +934,7 @@ export const TaskDetailSidebar = ({
                   {/* Status */}
                   <FieldRow icon={<Target style={iconStyle} strokeWidth={1.67} />} label="Status">
                     {userRole === 'team' ? (
-                      <Badge variant={form.watch('status').toLowerCase().replace(' ', '-') as any}>
+                      <Badge variant={getTaskStatusBadgeVariant(form.watch('status'))}>
                         {form.watch('status')}
                       </Badge>
                     ) : (
@@ -650,7 +951,7 @@ export const TaskDetailSidebar = ({
                           >
                             <SelectTrigger className="text-sm w-48 border-none shadow-none bg-transparent px-0 py-0 h-auto hover:bg-transparent focus:ring-0 group [&>svg]:hidden">
                               <div className="flex items-center gap-2">
-                                <Badge variant={field.value.toLowerCase().replace(' ', '-') as any}>
+                                <Badge variant={getTaskStatusBadgeVariant(field.value)}>
                                   {field.value}
                                 </Badge>
                                 <ChevronDown className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -899,6 +1200,15 @@ export const TaskDetailSidebar = ({
                       ) : (
                         <span className="text-muted-foreground">No description</span>
                       )}
+                      <DescriptionAttachmentGrid
+                        attachments={task.attachments}
+                        canDelete={userRole !== 'team'}
+                        downloadingFileUrl={downloadingFileUrl}
+                        deletingAttachmentId={deletingAttachmentId}
+                        onPreview={openAttachmentPreview}
+                        onDownload={handleDownloadAttachment}
+                        onDelete={handleDeleteDescriptionAttachment}
+                      />
                     </div>
                   ) : (
                     <FormField
@@ -907,19 +1217,33 @@ export const TaskDetailSidebar = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Textarea
-                              {...field}
-                              placeholder="Add a description..."
-                              rows={10}
-                              className="min-h-[220px] resize-y text-sm leading-6 border border-border-soft text-foreground bg-card"
-                              style={{ borderRadius: 10, padding: "12px" }}
-                              onBlur={() => {
-                                form.handleSubmit(handleSubmit)();
-                                setIsEditingDescription(false);
-                              }}
-                              autoFocus
-                            />
+                            <div className="min-h-[220px] rounded-[10px] border border-border-soft bg-card p-3">
+                              <Textarea
+                                {...field}
+                                placeholder="Add a description..."
+                                rows={8}
+                                className="min-h-[150px] resize-y border-0 bg-transparent p-0 text-sm leading-6 text-foreground shadow-none focus-visible:border-transparent focus-visible:ring-0"
+                                onPaste={handleDescriptionPaste}
+                                onBlur={() => {
+                                  form.handleSubmit(handleSubmit)();
+                                  setIsEditingDescription(false);
+                                }}
+                                autoFocus
+                              />
+                              <DescriptionAttachmentGrid
+                                attachments={task.attachments}
+                                canDelete={userRole !== 'team'}
+                                downloadingFileUrl={downloadingFileUrl}
+                                deletingAttachmentId={deletingAttachmentId}
+                                onPreview={openAttachmentPreview}
+                                onDownload={handleDownloadAttachment}
+                                onDelete={handleDeleteDescriptionAttachment}
+                              />
+                            </div>
                           </FormControl>
+                          {isUploadingDescriptionAttachment && (
+                            <p className="text-xs text-muted-foreground">Uploading attachment...</p>
+                          )}
                           <FormMessage />
                         </FormItem>
                       )}
@@ -1225,26 +1549,59 @@ export const TaskDetailSidebar = ({
 
                                 {activity.attachments && activity.attachments.length > 0 && (
                                   <div className="space-y-2">
-                                    {activity.attachments.map((attachment: any, index: number) => (
-                                      <div
-                                        key={index}
-                                        className="flex items-center gap-2 p-2 rounded bg-surface-2"
-                                        style={{ borderRadius: 4 }}
-                                      >
-                                        <Paperclip className="h-4 w-4 text-muted-foreground" />
-                                        <span className="text-sm text-foreground">{attachment.file_name}</span>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-6 w-6 p-0 ml-auto"
-                                          asChild
+                                    {activity.attachments.map((attachment: ActivityAttachmentPreview, index: number) => {
+                                      const fileUrl = String(attachment.file_url || "");
+                                      const canPreview = isPreviewableFile(attachment.file_type);
+
+                                      return (
+                                        <div
+                                          key={index}
+                                          className="flex items-center gap-2 p-2 rounded bg-surface-2"
+                                          style={{ borderRadius: 4 }}
                                         >
-                                          <a href={attachment.file_url} target="_blank" rel="noopener noreferrer">
-                                            <Download className="h-3 w-3" />
-                                          </a>
-                                        </Button>
-                                      </div>
-                                    ))}
+                                          <Paperclip className="h-4 w-4 text-muted-foreground" />
+                                          <span className="min-w-0 flex-1 truncate text-sm text-foreground">{attachment.file_name}</span>
+                                          {fileUrl && canPreview ? (
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-6 w-6 p-0"
+                                              onClick={() => openAttachmentPreview(attachment)}
+                                              aria-label={`Preview ${attachment.file_name}`}
+                                            >
+                                              <Eye className="h-3 w-3" />
+                                            </Button>
+                                          ) : fileUrl ? (
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-6 w-6 p-0"
+                                              asChild
+                                            >
+                                              <a href={fileUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open ${attachment.file_name}`}>
+                                                <ExternalLink className="h-3 w-3" />
+                                              </a>
+                                            </Button>
+                                          ) : null}
+                                          {fileUrl && (
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-6 w-6 p-0"
+                                              onClick={() => handleDownloadAttachment(attachment)}
+                                              disabled={downloadingFileUrl === fileUrl}
+                                              aria-label={`Download ${attachment.file_name}`}
+                                            >
+                                              {downloadingFileUrl === fileUrl ? (
+                                                <Clock className="h-3 w-3 animate-spin" />
+                                              ) : (
+                                                <Download className="h-3 w-3" />
+                                              )}
+                                            </Button>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 )}
                               </div>
@@ -1280,6 +1637,21 @@ export const TaskDetailSidebar = ({
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleDeleteTask}
       />
+
+      {previewFile && (
+        <FilePreviewDialog
+          open={Boolean(previewFile)}
+          onOpenChange={(open) => !open && setPreviewFile(null)}
+          fileName={previewFile.fileName}
+          fileUrl={previewFile.fileUrl}
+          fileType={previewFile.fileType}
+          fileSize={previewFile.fileSize}
+          bucketId={previewFile.bucketId}
+          fileId={previewFile.fileId}
+          previewUrl={previewFile.previewUrl}
+          downloadUrl={previewFile.downloadUrl}
+        />
+      )}
     </TooltipProvider>
   );
 };

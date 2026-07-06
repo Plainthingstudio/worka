@@ -28,14 +28,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Calendar as CalendarIcon, Check, ChevronsUpDown, Search } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { TaskPriority, TaskType, TaskStatus, TASK_STATUS_OPTIONS, TASK_STATUSES } from '@/types/task';
+import { TaskStatus, TASK_STATUS_OPTIONS, TASK_STATUSES } from '@/types/task';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
-import { BriefSelector } from './BriefSelector';
 import { PriorityIndicator } from './PriorityIndicator';
+import TeamMemberMultiSelect from '@/components/team/TeamMemberMultiSelect';
 
 const subtaskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -67,9 +66,6 @@ export const SubtaskDialog = ({
   initialData 
 }: SubtaskDialogProps) => {
   const [dateOpen, setDateOpen] = useState(false);
-  const [assigneesOpen, setAssigneesOpen] = useState(false);
-  const [assigneeSearch, setAssigneeSearch] = useState('');
-  const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
 
   const form = useForm<SubtaskFormData>({
@@ -93,14 +89,12 @@ export const SubtaskDialog = ({
         fetchTeamMembers();
       }
     }
-  }, [isOpen, teamMembers.length]);
+  }, [fetchTeamMembers, isOpen, teamMembers.length]);
 
   useEffect(() => {
     if (!isOpen) return;
 
     const assignees = initialData?.assignees || [];
-    setSelectedAssignees(assignees);
-    setAssigneeSearch('');
     form.reset({
       title: initialData?.title || '',
       description: initialData?.description || '',
@@ -110,17 +104,15 @@ export const SubtaskDialog = ({
       assignees,
       due_date: initialData?.due_date,
     });
-  }, [isOpen, initialData]);
+  }, [form, isOpen, initialData]);
 
   const handleSubmit = async (data: SubtaskFormData) => {
     try {
       await onSubmit({
         ...data,
         parent_task_id: parentTaskId,
-        assignees: selectedAssignees,
       });
       form.reset();
-      setSelectedAssignees([]);
       onClose();
     } catch (error) {
       console.error('Error creating subtask:', error);
@@ -129,36 +121,8 @@ export const SubtaskDialog = ({
 
   const handleClose = () => {
     form.reset();
-    setSelectedAssignees([]);
-    setAssigneeSearch('');
-    setAssigneesOpen(false);
     onClose();
   };
-
-  const toggleAssignee = (memberId: string) => {
-    setSelectedAssignees((currentAssignees) => {
-      const newAssignees = currentAssignees.includes(memberId) 
-        ? currentAssignees.filter(id => id !== memberId)
-        : [...currentAssignees, memberId];
-      
-      form.setValue('assignees', newAssignees, { shouldDirty: true });
-      return newAssignees;
-    });
-  };
-
-  const getSelectedAssigneeNames = () => {
-    return selectedAssignees
-      .map(id => teamMembers.find(member => member.user_id === id || member.id === id)?.name)
-      .filter(Boolean)
-      .join(', ');
-  };
-
-  const filteredTeamMembers = teamMembers.filter((member) => {
-    const query = assigneeSearch.trim().toLowerCase();
-    if (!query) return true;
-
-    return `${member.name} ${member.position}`.toLowerCase().includes(query);
-  });
 
   return (
     <>
@@ -316,108 +280,26 @@ export const SubtaskDialog = ({
                   </Popover>
                 </div>
 
-                <div className="relative space-y-2">
-                  <FormLabel>Assignees</FormLabel>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={assigneesOpen}
-                    className="w-full justify-between"
-                    onClick={() => {
-                      setAssigneesOpen((open) => !open);
-                      setAssigneeSearch('');
-                    }}
-                  >
-                    {selectedAssignees.length > 0 ? (
-                      <span className="truncate">
-                        {selectedAssignees.length === 1 
-                          ? getSelectedAssigneeNames()
-                          : `${selectedAssignees.length} assignees selected`
-                        }
-                      </span>
-                    ) : (
-                      "Select assignees..."
-                    )}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-
-                  {assigneesOpen && (
-                    <div className="absolute left-0 right-0 top-full z-[160] mt-2 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg">
-                      <div className="flex items-center border-b px-3">
-                        <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                        <input
-                          value={assigneeSearch}
-                          onChange={(event) => setAssigneeSearch(event.target.value)}
-                          placeholder="Search team members..."
-                          className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
-                          autoFocus
-                        />
-                      </div>
-                      <div className="max-h-72 overflow-y-auto p-1">
-                        {filteredTeamMembers.length === 0 ? (
-                          <div className="px-3 py-2 text-sm text-muted-foreground">
-                            No team members found.
-                          </div>
-                        ) : (
-                          filteredTeamMembers.map((member) => {
-                            const assigneeId = member.user_id || member.id;
-                            const isSelected = selectedAssignees.includes(assigneeId);
-
-                            return (
-                              <button
-                                key={member.id}
-                                type="button"
-                                onClick={() => toggleAssignee(assigneeId)}
-                                className="flex w-full cursor-pointer items-center rounded-sm px-2 py-2 text-left text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    isSelected ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                <div className="flex flex-col">
-                                  <span>{member.name}</span>
-                                  <span className="text-xs text-muted-foreground">{member.position}</span>
-                                </div>
-                              </button>
-                            );
-                          })
-                        )}
-                      </div>
-                      <div className="border-t px-3 py-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-full justify-center text-xs"
-                          onClick={() => setAssigneesOpen(false)}
-                        >
-                          {selectedAssignees.length > 1 ? "Done selecting assignees" : "Done selecting"}
-                        </Button>
-                      </div>
-                    </div>
+                <FormField
+                  control={form.control}
+                  name="assignees"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Assignees</FormLabel>
+                      <TeamMemberMultiSelect
+                        teamMembers={teamMembers}
+                        selectedIds={field.value || []}
+                        onChange={field.onChange}
+                        getMemberValue={(member) => member.user_id}
+                        placeholder="Select assignees"
+                        emptySelectionText="No assignees assigned yet. Select members from the dropdown above."
+                        popoverPortalled
+                      />
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </div>
+                />
               </div>
-
-              {selectedAssignees.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {selectedAssignees.map((assigneeId) => {
-                    const member = teamMembers.find(m => m.user_id === assigneeId || m.id === assigneeId);
-                    return member ? (
-                      <Badge 
-                        key={assigneeId} 
-                        variant="secondary" 
-                        className="text-xs"
-                      >
-                        {member.name}
-                      </Badge>
-                    ) : null;
-                  })}
-                </div>
-              )}
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={handleClose}>

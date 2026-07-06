@@ -105,9 +105,7 @@ export const TaskDialog = ({
   useEffect(() => {
     if (isOpen) {
       form.reset(defaultValues);
-      fetchTeamMembers().then((members) => {
-        console.log('Fetched team members:', members);
-      });
+      fetchTeamMembers();
     }
   }, [isOpen, fetchTeamMembers, form, defaultValues]);
 

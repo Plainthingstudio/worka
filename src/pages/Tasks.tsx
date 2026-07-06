@@ -10,7 +10,7 @@ import { TaskDetailSidebar } from '@/components/tasks/TaskDetailSidebar';
 import { TaskDialog, type TaskFormData } from '@/components/tasks/TaskDialog';
 import { SubtaskDialog } from '@/components/tasks/SubtaskDialog';
 import { account, databases, DATABASE_ID, ID, Query, storage } from '@/integrations/appwrite/client';
-import { TaskWithRelations, TaskStatus, TASK_STATUS_OPTIONS } from '@/types/task';
+import { TaskAttachment, TaskWithRelations, TaskStatus, TASK_STATUS_OPTIONS } from '@/types/task';
 import { useTasksData } from '@/hooks/useTasksData';
 import { Plus, Search, Filter, LayoutList, Calendar, Kanban } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -22,6 +22,7 @@ import {
   notifyTaskCreated,
   notifyTaskFollowers,
 } from '@/services/notificationService';
+import { extractAppwriteFileId } from '@/utils/filePreview';
 
 const findTaskInTree = (tasks: TaskWithRelations[], taskId: string): TaskWithRelations | undefined => {
   for (const task of tasks) {
@@ -373,6 +374,27 @@ export const Tasks = () => {
       return true;
     } catch (error) {
       console.error('Error uploading attachment:', error);
+      return false;
+    }
+  };
+
+  const deleteAttachment = async (attachment: TaskAttachment) => {
+    try {
+      const fileId = extractAppwriteFileId(attachment.file_url);
+      if (fileId) {
+        try {
+          await storage.deleteFile('task-attachments', fileId);
+        } catch (storageError) {
+          console.error('Error deleting task attachment file:', storageError);
+        }
+      }
+
+      await databases.deleteDocument(DATABASE_ID, 'task_attachments', attachment.id);
+      invalidate();
+      return true;
+    } catch (error) {
+      console.error('Error deleting attachment:', error);
+      toast({ title: "Error", description: "Failed to delete attachment", variant: "destructive" });
       return false;
     }
   };
@@ -762,7 +784,7 @@ export const Tasks = () => {
           {activeView === 'calendar' && <TaskCalendarView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} />}
         </div>
       {/* Task Detail Sidebar */}
-      <TaskDetailSidebar task={selectedTask} isOpen={!!selectedTask} onClose={() => setSelectedTask(null)} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddSubtask={handleAddSubtask} onTaskSelect={setSelectedTask} onEditTask={setEditingTask} allTasks={tasks} focusActivityOnOpen={Boolean(searchParams.get('taskId'))} />
+      <TaskDetailSidebar task={selectedTask} isOpen={!!selectedTask} onClose={() => setSelectedTask(null)} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onDeleteAttachment={deleteAttachment} onAddSubtask={handleAddSubtask} onTaskSelect={setSelectedTask} onEditTask={setEditingTask} allTasks={tasks} focusActivityOnOpen={Boolean(searchParams.get('taskId'))} />
 
       {/* Create Task Dialog */}
       <TaskDialog

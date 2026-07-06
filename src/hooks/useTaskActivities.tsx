@@ -133,6 +133,7 @@ export const useTaskActivities = (taskId: string) => {
           const fileUrl = storage.getFileView(TASK_ATTACHMENTS_BUCKET, uploadedFile.$id);
 
           uploadedAttachments.push({
+            file_id: uploadedFile.$id,
             file_name: file.name,
             file_url: fileUrl,
             file_size: file.size,

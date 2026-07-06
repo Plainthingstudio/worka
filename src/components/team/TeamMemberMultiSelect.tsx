@@ -22,6 +22,7 @@ interface TeamMemberMultiSelectProps {
   placeholder?: string;
   searchPlaceholder?: string;
   emptySelectionText?: string;
+  popoverPortalled?: boolean;
 }
 
 const getCreatedAtTime = (member: TeamMember) => {
@@ -38,6 +39,7 @@ const TeamMemberMultiSelect = ({
   placeholder = "Select team members",
   searchPlaceholder = "Search team member...",
   emptySelectionText = "No team members assigned yet. Select members from the dropdown above.",
+  popoverPortalled = false,
 }: TeamMemberMultiSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -107,7 +109,7 @@ const TeamMemberMultiSelect = ({
         <PopoverContent
           className="w-[--radix-popover-trigger-width] p-0"
           align="start"
-          portalled={false}
+          portalled={popoverPortalled}
         >
           <Command shouldFilter={false}>
             <CommandInput
