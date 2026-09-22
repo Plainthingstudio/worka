@@ -46,11 +46,11 @@ import {
   Download,
   ChevronDown,
   ChevronUp,
-  Check,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { TaskAttachment, TaskWithRelations, TASK_STATUS_OPTIONS, TASK_STATUSES } from '@/types/task';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
+import TeamMemberMultiSelect from '@/components/team/TeamMemberMultiSelect';
 import { useTaskActivities } from '@/hooks/useTaskActivities';
 import { BriefSelector } from './BriefSelector';
 import { format } from 'date-fns';
@@ -336,8 +336,6 @@ export const TaskDetailSidebar = ({
   const [isActivityOpen, setIsActivityOpen] = useState(true);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [isUploadingDescriptionAttachment, setIsUploadingDescriptionAttachment] = useState(false);
-  const [assigneePickerOpen, setAssigneePickerOpen] = useState(false);
-  const [draftAssignees, setDraftAssignees] = useState<string[]>([]);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const activitySectionRef = useRef<HTMLDivElement | null>(null);
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
@@ -476,7 +474,6 @@ export const TaskDetailSidebar = ({
   const candidateNames = mentionCandidates.map((c) => c.name);
   const findTeamMemberByAssigneeId = (assigneeId: string) =>
     teamMembers.find((member) => member.user_id === assigneeId || member.id === assigneeId);
-  const getTeamMemberAssigneeId = (member: typeof teamMembers[number]) => member.user_id || member.id;
 
   const handleSubmitComment = async (content: string, files: File[], mentionedUserIds: string[]) => {
     if (!task) return false;
@@ -1086,12 +1083,13 @@ export const TaskDetailSidebar = ({
                                         <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size={32} className="cursor-pointer" />
                                         <button
                                           type="button"
-                                          onClick={() => {
-                                            const newAssignees = field.value?.filter(id => id !== assigneeId) || [];
-                                            field.onChange(newAssignees);
-                                            form.handleSubmit(handleSubmit)();
+                                          aria-label={`Remove ${member.name} from assignees`}
+                                          onClick={async () => {
+                                            const newAssignees = field.value?.filter((id) => id !== assigneeId) || [];
+                                            const saved = await onUpdateTask(task.id, { assignees: newAssignees });
+                                            if (saved) field.onChange(newAssignees);
                                           }}
-                                          className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10"
+                                          className="absolute -top-1 -right-1 z-10 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
                                         >
                                           <X className="h-2 w-2" />
                                         </button>
@@ -1102,70 +1100,25 @@ export const TaskDetailSidebar = ({
                                 );
                               })}
                             </div>
-
-                            <Popover
-                              open={assigneePickerOpen}
-                              onOpenChange={(open) => {
-                                setAssigneePickerOpen(open);
-                                if (open) setDraftAssignees(field.value || []);
+                            <TeamMemberMultiSelect
+                              teamMembers={teamMembers}
+                              selectedIds={field.value || []}
+                              getMemberValue={(member) => member.user_id || member.id}
+                              onChange={async (ids) => {
+                                const saved = await onUpdateTask(task.id, { assignees: ids });
+                                if (saved) field.onChange(ids);
+                                return saved;
                               }}
-                            >
-                              <PopoverTrigger asChild>
-                                <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-full">
+                              confirmSelection
+                              showSelected={false}
+                              popoverPortalled
+                              popoverClassName="w-64 z-[80]"
+                              trigger={
+                                <Button type="button" variant="outline" size="sm" className="h-8 w-8 p-0 rounded-full" aria-label="Edit assignees">
                                   <Plus className="h-4 w-4" />
                                 </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-64 p-2 z-[80]" align="start">
-                                <div className="flex flex-col gap-1 max-h-72 overflow-y-auto mb-2">
-                                  {teamMembers.map((member) => {
-                                    const memberId = getTeamMemberAssigneeId(member);
-                                    const isChecked = draftAssignees.includes(memberId);
-
-                                    return (
-                                      <button
-                                        key={member.id}
-                                        type="button"
-                                        onClick={() => {
-                                          setDraftAssignees((current) =>
-                                            isChecked
-                                              ? current.filter((id) => id !== memberId)
-                                              : [...current, memberId]
-                                          );
-                                        }}
-                                        className="flex items-center gap-3 px-2 py-1.5 rounded hover:bg-accent text-left w-full transition-colors"
-                                      >
-                                        <div
-                                          className={cn(
-                                            "flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors",
-                                            isChecked
-                                              ? "border-brand bg-brand text-brand-foreground"
-                                              : "border-border bg-background text-transparent"
-                                          )}
-                                        >
-                                          <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
-                                        </div>
-                                        <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size={28} />
-                                        <span className="min-w-0 truncate text-sm text-foreground">
-                                          {member.name}
-                                        </span>
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                                <Button
-                                  type="button"
-                                  className="w-full"
-                                  onClick={async () => {
-                                    field.onChange(draftAssignees);
-                                    form.setValue('assignees', draftAssignees);
-                                    await onUpdateTask(task.id, { assignees: draftAssignees });
-                                    setAssigneePickerOpen(false);
-                                  }}
-                                >
-                                  Apply
-                                </Button>
-                              </PopoverContent>
-                            </Popover>
+                              }
+                            />
                           </div>
                         )}
                       />

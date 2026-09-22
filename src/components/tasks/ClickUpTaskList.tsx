@@ -14,7 +14,8 @@ import {
 import { TaskWithRelations, TaskStatus } from '@/types/task';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { useAssigneeNames } from '@/hooks/useAssigneeNames';
+import { useTeamMembers } from '@/hooks/useTeamMembers';
+import TeamMemberMultiSelect from '@/components/team/TeamMemberMultiSelect';
 import { UserAvatar } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -22,11 +23,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Project } from '@/types';
 import { PriorityIndicator } from './PriorityIndicator';
 
@@ -203,16 +201,14 @@ export const ClickUpTaskList = ({
   const [collapsedSubtasks, setCollapsedSubtasks] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>('asc');
-  const { getAssigneeMembers, teamMembers } = useAssigneeNames();
+  const { teamMembers } = useTeamMembers();
   const showProjectColumn = Array.isArray(projects);
   const listMinWidth = getListMinWidth(showProjectColumn);
   const projectNamesById = new Map((projects || []).map((project) => [project.id, project.name]));
 
   // Inline editing state
   const [editingTitle, setEditingTitle] = useState<{ taskId: string; value: string } | null>(null);
-  const [editingDate, setEditingDate] = useState<{ taskId: string; value: string } | null>(null);
-  const [assigneePopoverTask, setAssigneePopoverTask] = useState<string | null>(null);
-  const [draftAssignees, setDraftAssignees] = useState<string[]>([]);
+  const [openDateTaskId, setOpenDateTaskId] = useState<string | null>(null);
 
   const handleToggleSort = (key: SortKey) => {
     if (sortKey !== key) {
@@ -298,7 +294,9 @@ export const ClickUpTaskList = ({
     index: number,
     isSubtask = false
   ) => {
-    const assigneeMembers = getAssigneeMembers(task.assignees || []);
+    const assigneeMembers = (task.assignees || [])
+      .map((id) => teamMembers.find((member) => member.user_id === String(id) || member.id === String(id)))
+      .filter((member): member is typeof teamMembers[number] => Boolean(member));
     const subtasks = isSubtask ? [] : getSubtasks(task);
     const statusLabel = task.status;
 
@@ -307,7 +305,6 @@ export const ClickUpTaskList = ({
     const showBorderBottom = false;
 
     const isEditingTitle = editingTitle?.taskId === task.id;
-    const isEditingDate = editingDate?.taskId === task.id;
     const projectName = task.project_id ? projectNamesById.get(task.project_id) : null;
 
     return (
@@ -467,165 +464,104 @@ export const ClickUpTaskList = ({
 
         {/* Assignee */}
         <div className="flex items-center" style={{ width: colWidths.assignee }}>
-          <Popover
-            open={assigneePopoverTask === task.id}
-            onOpenChange={(open) => {
-              if (open) {
-                setAssigneePopoverTask(task.id);
-                setDraftAssignees(task.assignees?.map(String) || []);
-              } else {
-                setAssigneePopoverTask(null);
+          <div onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
+            <TeamMemberMultiSelect
+              teamMembers={teamMembers}
+              selectedIds={task.assignees?.map(String) || []}
+              getMemberValue={(member) => member.user_id || member.id}
+              onChange={(ids) => onUpdateTask(task.id, { assignees: ids })}
+              confirmSelection
+              showSelected={false}
+              popoverPortalled
+              popoverClassName="w-64"
+              trigger={
+                <button
+                  type="button"
+                  aria-label={`Edit assignees for ${task.title}`}
+                  className="flex items-center hover:opacity-80 transition-opacity"
+                  style={{ gap: 0, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
+                >
+                  {assigneeMembers.length > 0 ? (
+                    <div className="flex items-center">
+                      {assigneeMembers.slice(0, 3).map((member, i) => (
+                        <div key={member.id} style={{ marginLeft: i === 0 ? 0 : -6 }}>
+                          <Avatar24 name={member.name} avatarUrl={member.avatarUrl} />
+                        </div>
+                      ))}
+                      {assigneeMembers.length > 3 && (
+                        <span
+                          className="text-muted-foreground"
+                          style={{
+                            marginLeft: 6,
+                            fontFamily: 'Inter, sans-serif',
+                            fontWeight: 500,
+                            fontSize: 12,
+                          }}
+                        >
+                          +{assigneeMembers.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-text-disabled" style={{ fontFamily: 'Inter, sans-serif', fontSize: 14 }}>Assign…</span>
+                  )}
+                </button>
               }
-            }}
+            />
+          </div>
+        </div>
+
+        {/* Due date */}
+        <div className="flex items-center" style={{ width: colWidths.due, gap: 8 }}>
+          <Popover
+            open={openDateTaskId === task.id}
+            onOpenChange={(open) => setOpenDateTaskId(open ? task.id : null)}
           >
             <PopoverTrigger asChild>
               <button
                 type="button"
                 onClick={(e) => e.stopPropagation()}
-                className="flex items-center hover:opacity-80 transition-opacity"
-                style={{ gap: 0, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
+                className="flex items-center hover:opacity-80 transition-opacity bg-transparent border-none p-0 cursor-pointer"
+                style={{ gap: 8 }}
               >
-                {assigneeMembers.length > 0 ? (
-                  <div className="flex items-center">
-                    {assigneeMembers.slice(0, 3).map((member, i) => (
-                      <div key={member.id} style={{ marginLeft: i === 0 ? 0 : -6 }}>
-                        <Avatar24 name={member.name} avatarUrl={member.avatarUrl} />
-                      </div>
-                    ))}
-                    {assigneeMembers.length > 3 && (
-                      <span
-                        className="text-muted-foreground"
-                        style={{
-                          marginLeft: 6,
-                          fontFamily: 'Inter, sans-serif',
-                          fontWeight: 500,
-                          fontSize: 12,
-                        }}
-                      >
-                        +{assigneeMembers.length - 3}
-                      </span>
-                    )}
-                  </div>
+                {task.due_date ? (
+                  <span className="contents">
+                    <Calendar className="text-muted-foreground" style={{ width: 14, height: 14 }} strokeWidth={1.17} />
+                    <span
+                      className="text-muted-foreground"
+                      style={{
+                        fontFamily: 'Inter, sans-serif',
+                        fontWeight: 400,
+                        fontSize: 14,
+                        lineHeight: '20px',
+                      }}
+                    >
+                      {format(task.due_date, 'MMM dd')}
+                    </span>
+                  </span>
                 ) : (
-                  <span className="text-text-disabled" style={{ fontFamily: 'Inter, sans-serif', fontSize: 14 }}>Assign…</span>
+                  <span className="text-text-disabled" style={{ fontFamily: 'Inter, sans-serif', fontSize: 14 }}>Set date…</span>
                 )}
               </button>
             </PopoverTrigger>
             <PopoverContent
-              className="w-56 p-2"
+              className="w-auto p-0 bg-popover border z-[80]"
+              align="start"
               onClick={(e) => e.stopPropagation()}
               onKeyDown={(e) => e.stopPropagation()}
             >
-              <div className="flex flex-col gap-1 max-h-48 overflow-y-auto mb-2">
-                {teamMembers.map((member) => {
-                  const memberId = member.user_id || member.id;
-                  const isChecked = draftAssignees.includes(memberId);
-                  return (
-                    <button
-                      key={member.id}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDraftAssignees((prev) =>
-                          isChecked ? prev.filter((id) => id !== memberId) : [...prev, memberId]
-                        );
-                      }}
-                      className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent text-left w-full transition-colors"
-                    >
-                      <div
-                        className="flex items-center justify-center shrink-0"
-                        style={{
-                          width: 16,
-                          height: 16,
-                          borderRadius: 4,
-                          border: isChecked ? '2px solid hsl(var(--brand))' : '2px solid hsl(var(--text-disabled))',
-                          background: isChecked ? 'hsl(var(--brand))' : 'transparent',
-                        }}
-                      >
-                        {isChecked && <Check style={{ width: 10, height: 10, color: 'hsl(var(--brand-foreground))' }} strokeWidth={2.5} />}
-                      </div>
-                      <Avatar24 name={member.name} avatarUrl={member.avatarUrl} />
-                      <span className="text-foreground" style={{ fontFamily: 'Inter, sans-serif', fontSize: 13 }}>
-                        {member.name}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onUpdateTask(task.id, { assignees: draftAssignees });
-                  setAssigneePopoverTask(null);
+              <CalendarComponent
+                mode="single"
+                selected={task.due_date}
+                onSelect={async (date) => {
+                  if (!date) return;
+                  const saved = await onUpdateTask(task.id, { due_date: date.toISOString() });
+                  if (saved) setOpenDateTaskId(null);
                 }}
-                className="w-full text-center text-sm font-medium rounded-md py-1.5 transition-colors bg-brand text-brand-foreground"
-              >
-                Apply
-              </button>
+                initialFocus
+              />
             </PopoverContent>
           </Popover>
-        </div>
-
-        {/* Due date */}
-        <div className="flex items-center" style={{ width: colWidths.due, gap: 8 }}>
-          {isEditingDate ? (
-            <input
-              type="date"
-              autoFocus
-              value={editingDate.value}
-              onChange={(e) => setEditingDate({ taskId: task.id, value: e.target.value })}
-              onBlur={async () => {
-                if (editingDate.value) {
-                  await onUpdateTask(task.id, { due_date: new Date(editingDate.value).toISOString() });
-                }
-                setEditingDate(null);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') e.currentTarget.blur();
-                if (e.key === 'Escape') setEditingDate(null);
-                e.stopPropagation();
-              }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-card border border-brand rounded px-2 outline-none focus:ring-1 focus:ring-brand text-muted-foreground"
-              style={{
-                fontFamily: 'Inter, sans-serif',
-                fontSize: 13,
-                height: 28,
-                width: 130,
-              }}
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                const val = task.due_date ? format(new Date(task.due_date), 'yyyy-MM-dd') : '';
-                setEditingDate({ taskId: task.id, value: val });
-              }}
-              className="flex items-center hover:opacity-80 transition-opacity bg-transparent border-none p-0 cursor-pointer"
-              style={{ gap: 8 }}
-            >
-              {task.due_date ? (
-                <span className="contents">
-                  <Calendar className="text-muted-foreground" style={{ width: 14, height: 14 }} strokeWidth={1.17} />
-                  <span
-                    className="text-muted-foreground"
-                    style={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 400,
-                      fontSize: 14,
-                      lineHeight: '20px',
-                    }}
-                  >
-                    {format(task.due_date, 'MMM dd')}
-                  </span>
-                </span>
-              ) : (
-                <span className="text-text-disabled" style={{ fontFamily: 'Inter, sans-serif', fontSize: 14 }}>Set date…</span>
-              )}
-            </button>
-          )}
         </div>
 
         {/* Priority */}
