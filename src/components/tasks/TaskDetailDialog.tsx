@@ -58,6 +58,7 @@ import { useTaskProject } from '@/hooks/useTaskProject';
 import DeleteConfirmationDialog from '@/components/projects/DeleteConfirmationDialog';
 import { PriorityIndicator } from './PriorityIndicator';
 import ProjectFilesSection from '@/components/project-details/ProjectFilesSection';
+import { TASK_COMMENT_MAX_LENGTH } from '@/config/taskComments';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -497,9 +498,13 @@ export const TaskDetailDialog = ({
                   placeholder="Add a comment..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
+                  maxLength={TASK_COMMENT_MAX_LENGTH}
                   rows={2}
                   className="flex-1"
                 />
+                <span className="self-end pb-2 text-xs text-muted-foreground">
+                  {newComment.length.toLocaleString('en-US')}/{TASK_COMMENT_MAX_LENGTH.toLocaleString('en-US')}
+                </span>
                 <Button onClick={handleAddComment} disabled={!newComment.trim()}>
                   <Send className="h-4 w-4" />
                 </Button>

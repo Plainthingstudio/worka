@@ -5,6 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { logComment } from '@/utils/activityLogger';
 import { parseJsonField } from "@/utils/appwriteJson";
 import { getAvatarUrl } from '@/lib/avatars';
+import { TASK_COMMENT_MAX_LENGTH, TASK_COMMENT_MAX_LENGTH_MESSAGE } from '@/config/taskComments';
 
 const TASK_ATTACHMENTS_BUCKET = 'task-attachments';
 
@@ -109,6 +110,14 @@ export const useTaskActivities = (taskId: string) => {
     mentionedUserIds: string[] = []
   ): Promise<boolean> => {
     if (!content.trim() && files.length === 0) return false;
+    if (content.length > TASK_COMMENT_MAX_LENGTH) {
+      toast({
+        title: "Comment too long",
+        description: TASK_COMMENT_MAX_LENGTH_MESSAGE,
+        variant: "destructive",
+      });
+      return false;
+    }
 
     try {
       // Handle file uploads first
@@ -156,6 +165,12 @@ export const useTaskActivities = (taskId: string) => {
           title: "Success",
           description: files.length > 0 ? "Comment and files added successfully" : "Comment added successfully",
         });
+      } else {
+        toast({
+          title: "Error",
+          description: "The comment could not be saved. Please try again.",
+          variant: "destructive",
+        });
       }
 
       return success;
@@ -171,6 +186,15 @@ export const useTaskActivities = (taskId: string) => {
   };
 
   const updateActivity = async (activityId: string, content: string): Promise<boolean> => {
+    if (content.length > TASK_COMMENT_MAX_LENGTH) {
+      toast({
+        title: "Comment too long",
+        description: TASK_COMMENT_MAX_LENGTH_MESSAGE,
+        variant: "destructive",
+      });
+      return false;
+    }
+
     try {
       console.log('Attempting to update activity:', activityId, 'with content:', content);
 

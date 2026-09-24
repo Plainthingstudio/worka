@@ -185,6 +185,28 @@ const ensureAttribute = async ({ databaseId, collectionId, attribute }) => {
     if (existing.status !== "available") {
       await waitForAttribute({ databaseId, collectionId, attributeKey: attribute.key });
     }
+
+    if (
+      attribute.type === "string" &&
+      existing.type === "string" &&
+      Number(existing.size) < Number(attribute.size)
+    ) {
+      await request(
+        "PATCH",
+        `/v1/databases/${databaseId}/collections/${collectionId}/attributes/string/${attribute.key}`,
+        {
+          required: existing.required,
+          default: existing.default ?? null,
+          size: attribute.size,
+        }
+      );
+      await waitForAttribute({ databaseId, collectionId, attributeKey: attribute.key });
+      console.log(
+        `✓ Increased attribute ${collectionId}.${attribute.key} size from ${existing.size} to ${attribute.size}`
+      );
+      return;
+    }
+
     console.log(`✓ Attribute ${collectionId}.${attribute.key} already exists`);
     return;
   } catch (error) {

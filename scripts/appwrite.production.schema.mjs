@@ -481,7 +481,7 @@ export const APPWRITE_PRODUCTION_SCHEMA = {
       attributes: [
         attr.string("task_id", 36, true),
         attr.string("user_id", 36, true),
-        attr.string("content", 2048, true),
+        attr.string("content", 6000, true),
       ],
       indexes: [
         keyIndex("task_comments_task_idx", ["task_id"]),
@@ -554,7 +554,7 @@ export const APPWRITE_PRODUCTION_SCHEMA = {
           ],
           true
         ),
-        attr.string("content", 2048),
+        attr.string("content", 6000),
         attr.string("metadata", 2048),
         attr.string("attachments", 16384),
       ],

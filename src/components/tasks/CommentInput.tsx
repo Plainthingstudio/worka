@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Paperclip, AtSign, Send, X } from "lucide-react";
 import { InitialAvatar } from "@/components/ui/avatar";
 import { getClipboardImageFiles } from "@/utils/clipboardImages";
+import { TASK_COMMENT_MAX_LENGTH } from "@/config/taskComments";
 
 interface MentionCandidate {
   user_id: string;
@@ -20,6 +21,7 @@ interface CommentInputProps {
   onCancel?: () => void;
   clearOnSubmit?: boolean;
   autoFocus?: boolean;
+  maxLength?: number;
 }
 
 const MAX_ATTACHMENT_SIZE = 50 * 1024 * 1024;
@@ -44,6 +46,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   onCancel,
   clearOnSubmit = true,
   autoFocus = false,
+  maxLength = TASK_COMMENT_MAX_LENGTH,
 }) => {
   const [content, setContent] = useState(initialContent);
   const [files, setFiles] = useState<File[]>([]);
@@ -231,6 +234,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
 
   const handleSubmit = async () => {
     if (!content.trim() && files.length === 0) return;
+    if (content.length > maxLength) return;
     const mentioned = extractMentionedIds(content);
     const submittedFiles = allowAttachments ? files : [];
     const ok = await onSubmit(content, submittedFiles, mentioned);
@@ -257,6 +261,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         autoFocus={autoFocus}
+        maxLength={maxLength}
         rows={3}
         className="w-full resize-none outline-none bg-transparent text-foreground placeholder:text-muted-foreground"
         style={{
@@ -352,6 +357,13 @@ export const CommentInput: React.FC<CommentInputProps> = ({
           </button>
         </div>
         <div className="flex items-center gap-2">
+          <span
+            className="text-muted-foreground"
+            style={{ fontFamily: "Inter, sans-serif", fontSize: 11 }}
+            aria-live="polite"
+          >
+            {content.length.toLocaleString("en-US")}/{maxLength.toLocaleString("en-US")}
+          </span>
           {onCancel && (
             <button
               type="button"

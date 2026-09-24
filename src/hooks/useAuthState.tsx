@@ -15,6 +15,24 @@ interface UseAuthStateOptions {
   redirectOnAuthenticated?: boolean;
 }
 
+const LOGIN_RATE_LIMIT_DURATION_MS = 60 * 60 * 1000;
+const LOGIN_RATE_LIMIT_STORAGE_PREFIX = "worka.loginRateLimitUntil.";
+
+const getLoginRateLimitStorageKey = (email: string) =>
+  `${LOGIN_RATE_LIMIT_STORAGE_PREFIX}${email.trim().toLowerCase()}`;
+
+const getStoredLoginRateLimit = (email: string) => {
+  if (!email.trim()) return null;
+
+  const value = Number(localStorage.getItem(getLoginRateLimitStorageKey(email)));
+  if (!Number.isFinite(value) || value <= Date.now()) {
+    localStorage.removeItem(getLoginRateLimitStorageKey(email));
+    return null;
+  }
+
+  return value;
+};
+
 export function useAuthState(options: UseAuthStateOptions = {}) {
   const { redirectOnAuthenticated = true } = options;
   const navigate = useNavigate();
@@ -23,6 +41,34 @@ export function useAuthState(options: UseAuthStateOptions = {}) {
   const [password, setPassword] = useState("");
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginRateLimitUntil, setLoginRateLimitUntil] = useState<number | null>(null);
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  useEffect(() => {
+    setLoginRateLimitUntil(getStoredLoginRateLimit(email));
+  }, [email]);
+
+  useEffect(() => {
+    if (!loginRateLimitUntil) return;
+
+    const updateCountdown = () => {
+      if (loginRateLimitUntil <= Date.now()) {
+        localStorage.removeItem(getLoginRateLimitStorageKey(email));
+        setLoginRateLimitUntil(null);
+        return;
+      }
+
+      setCurrentTime(Date.now());
+    };
+
+    updateCountdown();
+    const intervalId = window.setInterval(updateCountdown, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [email, loginRateLimitUntil]);
+
+  const loginRateLimitRemainingSeconds = loginRateLimitUntil
+    ? Math.max(0, Math.ceil((loginRateLimitUntil - currentTime) / 1000))
+    : 0;
 
   useEffect(() => {
     const checkUser = async () => {
@@ -80,6 +126,10 @@ export function useAuthState(options: UseAuthStateOptions = {}) {
       return;
     }
 
+    if (loginRateLimitRemainingSeconds > 0) {
+      return;
+    }
+
     setIsLoading(true);
     let isSuccessful = false;
 
@@ -90,6 +140,15 @@ export function useAuthState(options: UseAuthStateOptions = {}) {
       navigate("/dashboard", { replace: true });
       isSuccessful = true;
     } catch (error: any) {
+      if (error?.code === 429) {
+        const retryAt = Date.now() + LOGIN_RATE_LIMIT_DURATION_MS;
+        localStorage.setItem(getLoginRateLimitStorageKey(email), String(retryAt));
+        setLoginRateLimitUntil(retryAt);
+        setCurrentTime(Date.now());
+        toast.error("Terlalu banyak percobaan login. Silakan coba lagi dalam satu jam.");
+        return;
+      }
+
       toast.error(error instanceof AppwriteException ? error.message : "Failed to login");
     } finally {
       if (!isSuccessful) {
@@ -157,6 +216,7 @@ export function useAuthState(options: UseAuthStateOptions = {}) {
     setPassword,
     isCheckingAuth,
     isAuthenticated,
+    loginRateLimitRemainingSeconds,
     handleLogin,
     handleDummyLogin,
     handleSignup,

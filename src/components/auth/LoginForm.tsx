@@ -12,8 +12,15 @@ interface LoginFormProps {
   password: string;
   setPassword: (password: string) => void;
   isLoading: boolean;
+  loginRateLimitRemainingSeconds: number;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
+
+const formatRemainingTime = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+};
 
 // Use memo to prevent unnecessary re-renders
 const LoginForm = memo(({
@@ -22,6 +29,7 @@ const LoginForm = memo(({
   password,
   setPassword,
   isLoading,
+  loginRateLimitRemainingSeconds,
   onSubmit,
 }: LoginFormProps) => {
   const [rememberMe, setRememberMe] = useState(false);
@@ -96,12 +104,25 @@ const LoginForm = memo(({
         />
         <Label htmlFor="remember" className="text-sm">Remember me</Label>
       </div>
+      {loginRateLimitRemainingSeconds > 0 && (
+        <p
+          className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive"
+          role="status"
+          aria-live="polite"
+        >
+          Terlalu banyak percobaan login. Coba lagi dalam {formatRemainingTime(loginRateLimitRemainingSeconds)}.
+        </p>
+      )}
       <Button 
         type="submit" 
         className="w-full" 
-        disabled={isLoading}
+        disabled={isLoading || loginRateLimitRemainingSeconds > 0}
       >
-        {isLoading ? "Logging in..." : "Login"}
+        {isLoading
+          ? "Logging in..."
+          : loginRateLimitRemainingSeconds > 0
+            ? `Coba lagi dalam ${formatRemainingTime(loginRateLimitRemainingSeconds)}`
+            : "Login"}
       </Button>
     </form>
   );

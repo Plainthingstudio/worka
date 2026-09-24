@@ -9,6 +9,7 @@ interface AuthCardProps {
   password: string;
   setPassword: (password: string) => void;
   isLoading: boolean;
+  loginRateLimitRemainingSeconds: number;
   handleLogin: (e: React.FormEvent<HTMLFormElement>) => void;
   handleDummyLogin: () => void;
   handleSignup: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -21,6 +22,7 @@ const AuthCard = memo(({
   password,
   setPassword,
   isLoading,
+  loginRateLimitRemainingSeconds,
   handleLogin,
   handleDummyLogin,
   handleSignup: _handleSignup,
@@ -48,6 +50,7 @@ const AuthCard = memo(({
             password={password}
             setPassword={setPassword}
             isLoading={isLoading}
+            loginRateLimitRemainingSeconds={loginRateLimitRemainingSeconds}
             onSubmit={handleLogin}
           />
         </div>

@@ -50,6 +50,7 @@ const Auth = () => {
     setPassword,
     isCheckingAuth,
     isAuthenticated,
+    loginRateLimitRemainingSeconds,
     handleLogin,
     handleDummyLogin,
     handleSignup
@@ -186,6 +187,7 @@ const Auth = () => {
           password={password}
           setPassword={setPassword}
           isLoading={isLoading}
+          loginRateLimitRemainingSeconds={loginRateLimitRemainingSeconds}
           handleLogin={handleLogin}
           handleDummyLogin={handleDummyLogin}
           handleSignup={handleSignup}

@@ -67,7 +67,7 @@ const statusBadgeConfig: Record<TaskStatus, { bg: string; fg: string; ring: stri
 
 // Task is widest; assignee + due are medium; priority + status share equal width for even spacing
 const colWidths = {
-  task: 440,
+  task: 'var(--task-column-width)',
   project: 220,
   assignee: 180,
   due: 170,
@@ -75,14 +75,17 @@ const colWidths = {
   status: 160,
 };
 
-const getListMinWidth = (showProjectColumn: boolean) =>
-  colWidths.task +
-  (showProjectColumn ? colWidths.project + 24 : 0) +
-  colWidths.assignee +
-  colWidths.due +
-  colWidths.priority +
-  colWidths.status +
-  4 * 24; // row gap between columns
+const getListMinWidth = (showProjectColumn: boolean) => {
+  const remainingColumnsWidth =
+    (showProjectColumn ? colWidths.project + 24 : 0) +
+    colWidths.assignee +
+    colWidths.due +
+    colWidths.priority +
+    colWidths.status +
+    4 * 24; // row gap between columns
+
+  return `calc(var(--task-column-width) + ${remainingColumnsWidth}px)`;
+};
 
 interface ColumnHeadersProps {
   sortKey: SortKey | null;
@@ -760,7 +763,10 @@ export const ClickUpTaskList = ({
             {/* Columns + rows — horizontally scrollable */}
             {!isCollapsed && (
               <div className="mobile-scroll overflow-x-auto pb-2">
-                <div style={{ minWidth: listMinWidth }}>
+                <div
+                  className="[--task-column-width:280px] md:[--task-column-width:440px]"
+                  style={{ minWidth: listMinWidth }}
+                >
                   <ColumnHeaders
                     sortKey={sortKey}
                     sortDir={sortDir}

@@ -680,7 +680,7 @@ export const TaskDetailSidebar = ({
 
       <div
         className={cn(
-          "fixed top-0 right-0 w-[550px] h-full z-[70] flex flex-col transition-transform duration-300 ease-in-out bg-card border-l border-border-soft",
+          "fixed top-0 right-0 z-[70] flex h-[100dvh] w-full max-w-full flex-col border-l border-border-soft bg-card transition-transform duration-300 ease-in-out sm:w-[550px]",
           isOpen ? "translate-x-0" : "translate-x-full"
         )}
         style={{
@@ -691,11 +691,7 @@ export const TaskDetailSidebar = ({
         <Form {...form}>
           {/* Top bar — project name + Go to Project + actions */}
           <div
-            className="flex items-center justify-between shrink-0 border-b border-border-soft"
-            style={{
-              height: 52,
-              padding: "8px 24px",
-            }}
+            className="flex h-[52px] shrink-0 items-center justify-between border-b border-border-soft px-4 py-2 sm:px-6"
           >
             <div className="flex items-center gap-2 min-w-0">
               <span
@@ -805,7 +801,7 @@ export const TaskDetailSidebar = ({
           {/* Content */}
           <div className="flex-1 flex flex-col min-h-0">
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <div style={{ padding: "24px 24px 0", display: "flex", flexDirection: "column", gap: 32 }}>
+              <div className="flex flex-col gap-8 px-4 pt-5 sm:px-6 sm:pt-6">
                 {/* Task title + parent reference */}
                 <div className="space-y-3">
                   {/* Mark complete button */}
@@ -946,7 +942,7 @@ export const TaskDetailSidebar = ({
                             }}
                             value={field.value}
                           >
-                            <SelectTrigger className="text-sm w-48 border-none shadow-none bg-transparent px-0 py-0 h-auto hover:bg-transparent focus:ring-0 group [&>svg]:hidden">
+                            <SelectTrigger className="group h-auto w-full border-none bg-transparent px-0 py-0 text-sm shadow-none hover:bg-transparent focus:ring-0 sm:w-48 [&>svg]:hidden">
                               <div className="flex items-center gap-2">
                                 <Badge variant={getTaskStatusBadgeVariant(field.value)}>
                                   {field.value}
@@ -983,7 +979,7 @@ export const TaskDetailSidebar = ({
                             }}
                             value={field.value}
                           >
-                            <SelectTrigger className="text-sm w-48 border-none shadow-none bg-transparent px-0 py-0 h-auto hover:bg-transparent focus:ring-0 group [&>svg]:hidden">
+                            <SelectTrigger className="group h-auto w-full border-none bg-transparent px-0 py-0 text-sm shadow-none hover:bg-transparent focus:ring-0 sm:w-48 [&>svg]:hidden">
                               <div className="flex items-center gap-2">
                                 <PriorityIndicator priority={field.value} size="sm" />
                                 <ChevronDown className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -1018,7 +1014,7 @@ export const TaskDetailSidebar = ({
                             <PopoverTrigger asChild>
                               <Button
                                 variant="outline"
-                                className="w-48 justify-between text-left font-normal text-sm border-none shadow-none bg-transparent px-0 py-0 h-auto hover:bg-transparent focus:ring-0 group"
+                                className="group h-auto w-full justify-between border-none bg-transparent px-0 py-0 text-left text-sm font-normal shadow-none hover:bg-transparent focus:ring-0 sm:w-48"
                               >
                                 <span className="text-foreground" style={fieldValueStyle}>
                                   {field.value ? format(field.value, 'MMMM dd, yyyy') : 'Set due date'}
@@ -1572,8 +1568,7 @@ export const TaskDetailSidebar = ({
 
             {/* Chat input (compact w/ mentions) */}
             <div
-              className="shrink-0 border-t border-border-soft bg-surface-2"
-              style={{ padding: 16 }}
+              className="shrink-0 border-t border-border-soft bg-surface-2 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]"
             >
               <CommentInput
                 candidates={mentionCandidates}
@@ -1644,12 +1639,17 @@ const FieldRow: React.FC<{
   children: React.ReactNode;
   alignTop?: boolean;
 }> = ({ icon, label, children, alignTop }) => (
-  <div className={cn("flex", alignTop ? "items-start" : "items-center")} style={{ gap: 24 }}>
-    <div className="flex items-center" style={{ gap: 8, width: 120 }}>
+  <div
+    className={cn(
+      "flex flex-col gap-1.5 sm:flex-row sm:gap-6",
+      alignTop ? "items-start" : "sm:items-center",
+    )}
+  >
+    <div className="flex w-full items-center gap-2 sm:w-[120px]">
       {icon}
       <span style={fieldLabelStyle}>{label}</span>
     </div>
-    <div className="flex-1 min-w-0">{children}</div>
+    <div className="w-full min-w-0 flex-1 sm:w-auto">{children}</div>
   </div>
 );
 

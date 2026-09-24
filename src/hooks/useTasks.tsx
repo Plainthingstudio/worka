@@ -10,6 +10,7 @@ import {
   notifyTaskCreated,
   notifyTaskFollowers,
 } from '@/services/notificationService';
+import { TASK_COMMENT_MAX_LENGTH, TASK_COMMENT_MAX_LENGTH_MESSAGE } from '@/config/taskComments';
 
 const TASK_ATTACHMENTS_BUCKET = 'task-attachments';
 const PROJECT_TASKS_REALTIME_COLLECTIONS = ['tasks', 'task_comments', 'task_attachments'];
@@ -278,6 +279,11 @@ export const useTasks = (projectId: string) => {
   };
 
   const addComment = async (taskId: string, content: string) => {
+    if (content.length > TASK_COMMENT_MAX_LENGTH) {
+      toast({ title: "Comment too long", description: TASK_COMMENT_MAX_LENGTH_MESSAGE, variant: "destructive" });
+      return false;
+    }
+
     try {
       const user = await account.get();
       if (!user) {
