@@ -10,6 +10,9 @@ import {
   ArrowDown,
   ArrowUpDown,
   Check,
+  ChevronsDown,
+  ChevronsUp,
+  type LucideIcon,
 } from 'lucide-react';
 import { TaskWithRelations, TaskStatus } from '@/types/task';
 import { format } from 'date-fns';
@@ -192,6 +195,32 @@ const headerCellStyle: React.CSSProperties = {
 
 const Avatar24 = ({ name, avatarUrl }: { name: string; avatarUrl?: string }) => (
   <UserAvatar name={name} avatarUrl={avatarUrl} size={24} />
+);
+
+const StageHeaderAction = ({
+  icon: Icon,
+  children,
+  ...buttonProps
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  icon: LucideIcon;
+}) => (
+  <button
+    type="button"
+    className="inline-flex items-center text-muted-foreground transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
+    style={{
+      gap: 4,
+      padding: '0 8px',
+      height: 24,
+      borderRadius: 6,
+      fontFamily: 'Inter, sans-serif',
+      fontWeight: 500,
+      fontSize: 12,
+    }}
+    {...buttonProps}
+  >
+    <Icon aria-hidden="true" style={{ width: 12, height: 12 }} strokeWidth={1.67} />
+    {children}
+  </button>
 );
 
 export const ClickUpTaskList = ({
@@ -759,40 +788,27 @@ export const ClickUpTaskList = ({
               </div>
 
               {hasStageSubtasks && (
-                <button
-                  type="button"
+                <StageHeaderAction
+                  icon={areStageSubtasksCollapsed ? ChevronsDown : ChevronsUp}
                   aria-label={`${areStageSubtasksCollapsed ? 'Expand' : 'Collapse'} subtasks in ${status}`}
-                  className="inline-flex items-center rounded-md border border-border bg-card px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground"
-                  style={{ height: 24 }}
                   onClick={(event) => {
                     event.stopPropagation();
                     setCollapsedSubtasks((current) => toggleStageSubtasks(current, statusTasks));
                   }}
                 >
                   {areStageSubtasksCollapsed ? 'Expand subtasks' : 'Collapse subtasks'}
-                </button>
+                </StageHeaderAction>
               )}
 
-              <button
-                type="button"
-                className="inline-flex items-center text-muted-foreground transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
-                style={{
-                  gap: 4,
-                  padding: '0 8px',
-                  height: 24,
-                  borderRadius: 6,
-                  fontFamily: 'Inter, sans-serif',
-                  fontWeight: 500,
-                  fontSize: 12,
-                }}
+              <StageHeaderAction
+                icon={Plus}
                 onClick={(e) => {
                   e.stopPropagation();
                   onAddTask(status);
                 }}
               >
-                <Plus style={{ width: 12, height: 12 }} strokeWidth={1.67} />
                 Add Task
-              </button>
+              </StageHeaderAction>
             </div>
 
             {/* Columns + rows — horizontally scrollable */}

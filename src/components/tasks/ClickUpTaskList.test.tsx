@@ -97,7 +97,14 @@ describe('ClickUpTaskList stage subtask controls', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Collapse subtasks in Planning' }));
+    const collapseSubtasks = screen.getByRole('button', { name: 'Collapse subtasks in Planning' });
+    const addTask = screen.getAllByRole('button', { name: 'Add Task' })[0];
+
+    expect(collapseSubtasks.className).toBe(addTask.className);
+    expect(collapseSubtasks.querySelector('svg')).not.toBeNull();
+    expect(collapseSubtasks).not.toHaveClass('border');
+
+    await user.click(collapseSubtasks);
 
     expect(screen.getByText('Parent task')).toBeInTheDocument();
     expect(screen.queryByText('Child task')).not.toBeInTheDocument();
