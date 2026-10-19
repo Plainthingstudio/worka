@@ -27,6 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Project } from '@/types';
 import { PriorityIndicator } from './PriorityIndicator';
+import { areAllStageSubtasksCollapsed, toggleStageSubtasks } from './taskListCollapse';
 
 type SortKey = 'due_date' | 'priority';
 type SortDir = 'asc' | 'desc';
@@ -693,6 +694,8 @@ export const ClickUpTaskList = ({
 
         const config = statusConfig[status];
         const isCollapsed = collapsedGroups.has(status);
+        const hasStageSubtasks = statusTasks.some((task) => (task.subtasks?.length || 0) > 0);
+        const areStageSubtasksCollapsed = areAllStageSubtasksCollapsed(collapsedSubtasks, statusTasks);
 
         return (
           <div
@@ -754,6 +757,21 @@ export const ClickUpTaskList = ({
                   {statusTasks.length}
                 </span>
               </div>
+
+              {hasStageSubtasks && (
+                <button
+                  type="button"
+                  aria-label={`${areStageSubtasksCollapsed ? 'Expand' : 'Collapse'} subtasks in ${status}`}
+                  className="inline-flex items-center rounded-md border border-border bg-card px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground"
+                  style={{ height: 24 }}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setCollapsedSubtasks((current) => toggleStageSubtasks(current, statusTasks));
+                  }}
+                >
+                  {areStageSubtasksCollapsed ? 'Expand subtasks' : 'Collapse subtasks'}
+                </button>
+              )}
 
               <button
                 type="button"

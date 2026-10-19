@@ -65,3 +65,44 @@ describe('ClickUpTaskList quick-create subtask action', () => {
     expect(onTaskClick).not.toHaveBeenCalled();
   });
 });
+
+describe('ClickUpTaskList stage subtask controls', () => {
+  it('collapses and expands every subtask in one stage without collapsing the whole stage', async () => {
+    const user = userEvent.setup();
+    const progressChild: TaskWithRelations = {
+      ...child,
+      id: 'progress-child',
+      parent_task_id: 'progress-parent',
+      title: 'Progress child',
+      status: 'In progress',
+    };
+    const progressParent: TaskWithRelations = {
+      ...parent,
+      id: 'progress-parent',
+      title: 'Progress parent',
+      status: 'In progress',
+      subtasks: [progressChild],
+    };
+
+    render(
+      <ClickUpTaskList
+        tasks={[parent, progressParent]}
+        isLoading={false}
+        onTaskClick={vi.fn()}
+        onUpdateTask={vi.fn().mockResolvedValue(true)}
+        onAddTask={vi.fn()}
+        onAddSubtask={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Collapse subtasks in Planning' }));
+
+    expect(screen.getByText('Parent task')).toBeInTheDocument();
+    expect(screen.queryByText('Child task')).not.toBeInTheDocument();
+    expect(screen.getByText('Progress child')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Expand subtasks in Planning' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Expand subtasks in Planning' }));
+    expect(screen.getByText('Child task')).toBeInTheDocument();
+  });
+});
