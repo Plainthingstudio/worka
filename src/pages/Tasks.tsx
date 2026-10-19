@@ -822,7 +822,7 @@ export const Tasks = () => {
         <div className="min-w-0 flex-1">
           {activeView === 'list' && <ClickUpTaskList tasks={filteredTasks} projects={projects} isLoading={isLoading} onTaskClick={task => {
       setSelectedTask(task);
-    }} onUpdateTask={updateTask} onAddTask={handleAddTask} />}
+    }} onUpdateTask={updateTask} onAddTask={handleAddTask} onAddSubtask={handleAddSubtask} />}
 
           {activeView === 'board' && <TaskBoardView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onAddTask={status => handleAddTask(status)} onTaskClick={task => {
       setSelectedTask(task);
@@ -864,7 +864,14 @@ export const Tasks = () => {
       />
 
       {/* Create Subtask Dialog */}
-      <SubtaskDialog isOpen={isSubtaskDialogOpen} onClose={() => setIsSubtaskDialogOpen(false)} onSubmit={handleCreateSubtask} parentTaskId={parentTaskId} title="Create New Subtask" />
+      <SubtaskDialog
+        isOpen={isSubtaskDialogOpen}
+        onClose={() => setIsSubtaskDialogOpen(false)}
+        onSubmit={handleCreateSubtask}
+        parentTaskId={parentTaskId}
+        parentAssignees={findTaskInTree(tasks, parentTaskId)?.assignees || []}
+        title="Create New Subtask"
+      />
 
       <DuplicateTaskDialog
         task={taskToDuplicate}

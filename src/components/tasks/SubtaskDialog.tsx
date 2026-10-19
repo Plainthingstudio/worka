@@ -5,6 +5,7 @@ import { z } from 'zod';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -35,6 +36,8 @@ import { TaskStatus, TASK_STATUS_OPTIONS, TASK_STATUSES } from '@/types/task';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { PriorityIndicator } from './PriorityIndicator';
 import TeamMemberMultiSelect from '@/components/team/TeamMemberMultiSelect';
+import { UserAvatar } from '@/components/ui/avatar';
+import { mergeAssigneeIds } from './subtaskAssignees';
 
 const subtaskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -53,6 +56,7 @@ interface SubtaskDialogProps {
   onClose: () => void;
   onSubmit: (data: SubtaskFormData & { parent_task_id: string }) => Promise<void>;
   parentTaskId: string;
+  parentAssignees?: string[];
   title?: string;
   initialData?: Partial<SubtaskFormData>;
 }
@@ -62,11 +66,13 @@ export const SubtaskDialog = ({
   onClose, 
   onSubmit, 
   parentTaskId, 
+  parentAssignees = [],
   title = "Create Subtask",
   initialData 
 }: SubtaskDialogProps) => {
   const [dateOpen, setDateOpen] = useState(false);
   const { teamMembers, fetchTeamMembers } = useTeamMembers();
+  const uniqueParentAssignees = Array.from(new Set(parentAssignees));
 
   const form = useForm<SubtaskFormData>({
     resolver: zodResolver(subtaskSchema),
@@ -135,6 +141,9 @@ export const SubtaskDialog = ({
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto z-[120]">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>
+              Add a subtask and choose who should work on it.
+            </DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -285,7 +294,44 @@ export const SubtaskDialog = ({
                   name="assignees"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Assignees</FormLabel>
+                      <div className="flex items-center justify-between gap-2">
+                        <FormLabel>Assignees</FormLabel>
+                        {uniqueParentAssignees.length > 0 && (() => {
+                          const selectedIds = field.value || [];
+                          const allParentMembersAdded = uniqueParentAssignees.every((id) => selectedIds.includes(id));
+                          const parentMembers = uniqueParentAssignees
+                            .map((id) => teamMembers.find((member) => member.user_id === id || member.id === id))
+                            .filter((member): member is typeof teamMembers[number] => Boolean(member));
+
+                          return (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-7 gap-2 px-2 text-xs text-primary"
+                              onClick={() => {
+                                form.setValue(
+                                  'assignees',
+                                  mergeAssigneeIds(selectedIds, uniqueParentAssignees),
+                                  { shouldDirty: true, shouldValidate: true },
+                                );
+                              }}
+                              aria-label={allParentMembersAdded ? 'Parent team added' : `Use parent team · ${uniqueParentAssignees.length}`}
+                            >
+                              {parentMembers.length > 0 && (
+                                <span className="flex items-center" aria-hidden="true">
+                                  {parentMembers.slice(0, 3).map((member, index) => (
+                                    <span key={member.id} style={{ marginLeft: index === 0 ? 0 : -5 }}>
+                                      <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size={20} />
+                                    </span>
+                                  ))}
+                                </span>
+                              )}
+                              <span>{allParentMembersAdded ? 'Parent team added' : `Use parent team · ${uniqueParentAssignees.length}`}</span>
+                            </Button>
+                          );
+                        })()}
+                      </div>
                       <TeamMemberMultiSelect
                         teamMembers={teamMembers}
                         selectedIds={field.value || []}

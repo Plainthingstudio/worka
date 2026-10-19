@@ -44,6 +44,7 @@ interface ClickUpTaskListProps {
   onTaskClick: (task: TaskWithRelations) => void;
   onUpdateTask: (taskId: string, updates: any) => Promise<boolean>;
   onAddTask: (status: TaskStatus) => void;
+  onAddSubtask: (taskId: string) => void;
   projects?: Pick<Project, 'id' | 'name'>[];
 }
 
@@ -198,6 +199,7 @@ export const ClickUpTaskList = ({
   onTaskClick,
   onUpdateTask,
   onAddTask,
+  onAddSubtask,
   projects,
 }: ClickUpTaskListProps) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
@@ -441,6 +443,21 @@ export const ClickUpTaskList = ({
               >
                 {subtasks.length}
               </span>
+            )}
+            {!isSubtask && (
+              <button
+                type="button"
+                aria-label={`Create subtask for ${task.title}`}
+                title="Create subtask"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onAddSubtask(task.id);
+                }}
+                className="shrink-0 inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-xs font-medium text-muted-foreground opacity-100 transition-opacity hover:bg-surface-hover hover:text-foreground sm:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+              >
+                <Plus aria-hidden="true" className="h-3.5 w-3.5" />
+                <span className="hidden lg:inline">Create subtask</span>
+              </button>
             )}
           </div>
         </div>
