@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -29,6 +29,7 @@ import {
   duplicateTaskTree,
   type DuplicateTaskOptions,
 } from '@/services/taskDuplicationService';
+import { isNotificationTaskNavigation } from './taskNavigation';
 
 const findTaskInTree = (tasks: TaskWithRelations[], taskId: string): TaskWithRelations | undefined => {
   for (const task of tasks) {
@@ -59,6 +60,7 @@ export const Tasks = () => {
   const [activeView, setActiveView] = useState<'list' | 'board' | 'calendar'>('list');
   const [myTasksOnly, setMyTasksOnly] = useState(true);
   const [myTaskIdentityIds, setMyTaskIdentityIds] = useState<string[]>([]);
+  const handledNotificationNavigation = useRef<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -95,6 +97,17 @@ export const Tasks = () => {
     const taskId = searchParams.get('taskId');
     const projectId = searchParams.get('projectId');
     const newParam = searchParams.get('new');
+    const notificationNavigation = isNotificationTaskNavigation(searchParams);
+
+    if (notificationNavigation) {
+      const navigationKey = `${taskId}:${projectId || ''}`;
+      if (handledNotificationNavigation.current !== navigationKey) {
+        setMyTasksOnly(false);
+        handledNotificationNavigation.current = navigationKey;
+      }
+    } else {
+      handledNotificationNavigation.current = null;
+    }
 
     // Set project filter if provided
     if (projectId) {

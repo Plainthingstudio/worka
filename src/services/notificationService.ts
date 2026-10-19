@@ -97,6 +97,7 @@ export const getNotificationDestination = (data: NotificationData) => {
     const params = new URLSearchParams({ taskId: String(data.task_id) });
     if (data.project_id) params.set("projectId", String(data.project_id));
     if (data.parent_task_id) params.set("parentTaskId", String(data.parent_task_id));
+    params.set("source", "notification");
     return `/tasks?${params.toString()}`;
   }
 
