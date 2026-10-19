@@ -9,6 +9,7 @@ import { TaskCalendarView } from '@/components/tasks/TaskCalendarView';
 import { TaskDetailSidebar } from '@/components/tasks/TaskDetailSidebar';
 import { TaskDialog, type TaskFormData } from '@/components/tasks/TaskDialog';
 import { SubtaskDialog } from '@/components/tasks/SubtaskDialog';
+import { DuplicateTaskDialog } from '@/components/tasks/DuplicateTaskDialog';
 import { account, databases, DATABASE_ID, ID, Query, storage } from '@/integrations/appwrite/client';
 import { TaskAttachment, TaskWithRelations, TaskStatus, TASK_STATUS_OPTIONS } from '@/types/task';
 import { useTasksData } from '@/hooks/useTasksData';
@@ -24,6 +25,10 @@ import {
 } from '@/services/notificationService';
 import { extractAppwriteFileId } from '@/utils/filePreview';
 import { TASK_COMMENT_MAX_LENGTH, TASK_COMMENT_MAX_LENGTH_MESSAGE } from '@/config/taskComments';
+import {
+  duplicateTaskTree,
+  type DuplicateTaskOptions,
+} from '@/services/taskDuplicationService';
 
 const findTaskInTree = (tasks: TaskWithRelations[], taskId: string): TaskWithRelations | undefined => {
   for (const task of tasks) {
@@ -41,6 +46,8 @@ export const Tasks = () => {
   const { tasks, projects, isLoading, invalidate, setQueryData } = useTasksData();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskWithRelations | null>(null);
+  const [taskToDuplicate, setTaskToDuplicate] = useState<TaskWithRelations | null>(null);
+  const [isDuplicating, setIsDuplicating] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
   const [selectedProject, setSelectedProject] = useState<string>('all');
   const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = useState(false);
@@ -535,6 +542,40 @@ export const Tasks = () => {
     setIsSubtaskDialogOpen(true);
   };
 
+  const handleDuplicateTask = async (options: DuplicateTaskOptions) => {
+    if (!taskToDuplicate || isDuplicating) return;
+
+    setIsDuplicating(true);
+    try {
+      const userId = await getCurrentUserId();
+      if (!userId) throw new Error('You must be logged in to duplicate tasks');
+
+      const result = await duplicateTaskTree(taskToDuplicate, options, userId);
+      const projectId = taskToDuplicate.project_id;
+      setTaskToDuplicate(null);
+      await invalidate();
+      setSearchParams({ taskId: result.taskId, projectId });
+
+      const totalFailures = result.failedSubtasks + result.failedAttachments;
+      if (totalFailures > 0) {
+        toast({
+          title: 'Task duplicated with warnings',
+          description: `${result.failedSubtasks} subtask(s) and ${result.failedAttachments} attachment(s) could not be copied.`,
+        });
+      } else {
+        toast({ title: 'Success', description: 'Task duplicated successfully' });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to duplicate task',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDuplicating(false);
+    }
+  };
+
   const isAssignedToCurrentUser = (task: TaskWithRelations) => {
     const assignees = task.assignees || [];
 
@@ -790,7 +831,7 @@ export const Tasks = () => {
           {activeView === 'calendar' && <TaskCalendarView tasks={filteredTasks} isLoading={isLoading} onUpdateTask={updateTask} />}
         </div>
       {/* Task Detail Sidebar */}
-      <TaskDetailSidebar task={selectedTask} isOpen={!!selectedTask} onClose={() => setSelectedTask(null)} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onDeleteAttachment={deleteAttachment} onAddSubtask={handleAddSubtask} onTaskSelect={setSelectedTask} onEditTask={setEditingTask} allTasks={tasks} focusActivityOnOpen={Boolean(searchParams.get('taskId'))} />
+      <TaskDetailSidebar task={selectedTask} isOpen={!!selectedTask} onClose={() => setSelectedTask(null)} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddComment={addComment} onUploadAttachment={uploadAttachment} onDeleteAttachment={deleteAttachment} onAddSubtask={handleAddSubtask} onDuplicateTask={setTaskToDuplicate} onTaskSelect={setSelectedTask} onEditTask={setEditingTask} allTasks={tasks} focusActivityOnOpen={Boolean(searchParams.get('taskId'))} />
 
       {/* Create Task Dialog */}
       <TaskDialog
@@ -824,6 +865,16 @@ export const Tasks = () => {
 
       {/* Create Subtask Dialog */}
       <SubtaskDialog isOpen={isSubtaskDialogOpen} onClose={() => setIsSubtaskDialogOpen(false)} onSubmit={handleCreateSubtask} parentTaskId={parentTaskId} title="Create New Subtask" />
+
+      <DuplicateTaskDialog
+        task={taskToDuplicate}
+        open={Boolean(taskToDuplicate)}
+        onOpenChange={(open) => {
+          if (!open && !isDuplicating) setTaskToDuplicate(null);
+        }}
+        onConfirm={handleDuplicateTask}
+        isDuplicating={isDuplicating}
+      />
     </div>;
 };
 

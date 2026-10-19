@@ -46,6 +46,7 @@ import {
   Download,
   ChevronDown,
   ChevronUp,
+  Copy,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { TaskAttachment, TaskWithRelations, TASK_STATUS_OPTIONS, TASK_STATUSES } from '@/types/task';
@@ -302,6 +303,7 @@ interface TaskDetailSidebarProps {
   onUploadAttachment: (taskId: string, file: File) => Promise<boolean>;
   onDeleteAttachment: (attachment: TaskAttachment) => Promise<boolean>;
   onAddSubtask?: (taskId: string) => void;
+  onDuplicateTask?: (task: TaskWithRelations) => void;
   onTaskSelect?: (task: TaskWithRelations) => void;
   onEditTask?: (task: TaskWithRelations) => void;
   allTasks?: TaskWithRelations[];
@@ -318,6 +320,7 @@ export const TaskDetailSidebar = ({
   onUploadAttachment,
   onDeleteAttachment,
   onAddSubtask,
+  onDuplicateTask,
   onTaskSelect,
   onEditTask,
   allTasks = [],
@@ -766,6 +769,12 @@ export const TaskDetailSidebar = ({
                       <Edit className="h-4 w-4 mr-2" />
                       Edit
                     </DropdownMenuItem>
+                    {onDuplicateTask && (
+                      <DropdownMenuItem onClick={() => onDuplicateTask(task)}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Duplicate
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       onClick={() => {
                         form.setValue('status', 'Completed');
