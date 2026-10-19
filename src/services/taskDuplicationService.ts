@@ -1,5 +1,9 @@
 import { databases, DATABASE_ID, ID, storage } from '@/integrations/appwrite/client';
 import type { TaskAttachment, TaskWithRelations } from '@/types/task';
+import {
+  extractAppwriteFileId,
+  fetchAuthenticatedAppwriteFileBlob,
+} from '@/utils/filePreview';
 
 const TASK_ATTACHMENTS_BUCKET = 'task-attachments';
 
@@ -55,10 +59,21 @@ const copyAttachment = async (
   targetTaskId: string,
   userId: string,
 ) => {
-  const response = await fetch(attachment.file_url);
-  if (!response.ok) throw new Error(`Could not download ${attachment.file_name}`);
+  const sourceFileId = extractAppwriteFileId(attachment.file_url);
+  let blob: Blob;
 
-  const blob = await response.blob();
+  if (sourceFileId) {
+    blob = await fetchAuthenticatedAppwriteFileBlob({
+      bucketId: TASK_ATTACHMENTS_BUCKET,
+      fileId: sourceFileId,
+      fileType: attachment.file_type,
+    });
+  } else {
+    const response = await fetch(attachment.file_url, { credentials: 'include' });
+    if (!response.ok) throw new Error(`Could not download ${attachment.file_name}`);
+    blob = await response.blob();
+  }
+
   const file = new File([blob], attachment.file_name, {
     type: attachment.file_type || blob.type,
   });

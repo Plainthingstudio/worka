@@ -12,6 +12,11 @@ const appwrite = vi.hoisted(() => ({
   unique: vi.fn(),
 }));
 
+const filePreview = vi.hoisted(() => ({
+  extractAppwriteFileId: vi.fn(),
+  fetchAuthenticatedAppwriteFileBlob: vi.fn(),
+}));
+
 vi.mock('@/integrations/appwrite/client', () => ({
   DATABASE_ID: 'database',
   databases: { createDocument: appwrite.createDocument },
@@ -21,6 +26,8 @@ vi.mock('@/integrations/appwrite/client', () => ({
   },
   ID: { unique: appwrite.unique },
 }));
+
+vi.mock('@/utils/filePreview', () => filePreview);
 
 const now = new Date('2026-10-19T00:00:00.000Z');
 
@@ -82,6 +89,13 @@ describe('duplicateTaskTree', () => {
     appwrite.createFile.mockImplementation(async (_bucket: string, fileId: string) => ({ $id: fileId }));
     appwrite.getFileView.mockImplementation(
       (_bucket: string, fileId: string) => new URL(`https://files.example/${fileId}`),
+    );
+    filePreview.extractAppwriteFileId.mockImplementation((fileUrl: string) => {
+      const match = fileUrl.match(/\/storage\/buckets\/[^/]+\/files\/([^/]+)/);
+      return match?.[1];
+    });
+    filePreview.fetchAuthenticatedAppwriteFileBlob.mockResolvedValue(
+      new Blob(['authenticated file'], { type: 'image/png' }),
     );
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true,
@@ -187,6 +201,13 @@ describe('duplicateTaskTree', () => {
     expect(taskCalls[1][3]).not.toHaveProperty('completed_at');
 
     expect(appwrite.createFile).toHaveBeenCalledTimes(2);
+    expect(filePreview.fetchAuthenticatedAppwriteFileBlob).toHaveBeenCalledTimes(2);
+    expect(filePreview.fetchAuthenticatedAppwriteFileBlob).toHaveBeenNthCalledWith(1, {
+      bucketId: 'task-attachments',
+      fileId: 'file-root',
+      fileType: 'image/png',
+    });
+    expect(fetch).not.toHaveBeenCalled();
     const attachmentCalls = appwrite.createDocument.mock.calls.filter(
       (call) => call[1] === 'task_attachments',
     );

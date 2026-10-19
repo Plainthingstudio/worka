@@ -57,6 +57,8 @@ describe('ClickUpTaskList quick-create subtask action', () => {
     expect(screen.queryByRole('button', { name: 'Create subtask for Child task' })).not.toBeInTheDocument();
     expect(quickCreate).toHaveClass('group-hover:opacity-100');
     expect(quickCreate).toHaveClass('group-focus-within:opacity-100');
+    expect(quickCreate).not.toHaveClass('sm:opacity-0');
+    expect(quickCreate).toHaveClass('[@media(hover:hover)]:opacity-0');
 
     await user.click(quickCreate);
 

@@ -454,7 +454,7 @@ export const ClickUpTaskList = ({
                   event.stopPropagation();
                   onAddSubtask(task.id);
                 }}
-                className="shrink-0 inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-xs font-medium text-muted-foreground opacity-100 transition-opacity hover:bg-surface-hover hover:text-foreground sm:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+                className="shrink-0 inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-xs font-medium text-muted-foreground opacity-100 transition-opacity hover:bg-surface-hover hover:text-foreground group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100"
               >
                 <Plus aria-hidden="true" className="h-3.5 w-3.5" />
                 <span className="hidden lg:inline">Create subtask</span>

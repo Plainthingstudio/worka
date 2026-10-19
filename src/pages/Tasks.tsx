@@ -15,7 +15,7 @@ import { TaskAttachment, TaskWithRelations, TaskStatus, TASK_STATUS_OPTIONS } fr
 import { useTasksData } from '@/hooks/useTasksData';
 import { Plus, Search, Filter, LayoutList, Calendar, Kanban } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   getCurrentUserId,
@@ -29,7 +29,10 @@ import {
   duplicateTaskTree,
   type DuplicateTaskOptions,
 } from '@/services/taskDuplicationService';
-import { isNotificationTaskNavigation } from './taskNavigation';
+import {
+  isNotificationTaskNavigation,
+  shouldDisableMyTasksForNavigation,
+} from './taskNavigation';
 
 const findTaskInTree = (tasks: TaskWithRelations[], taskId: string): TaskWithRelations | undefined => {
   for (const task of tasks) {
@@ -44,6 +47,7 @@ const findTaskInTree = (tasks: TaskWithRelations[], taskId: string): TaskWithRel
 
 export const Tasks = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const { tasks, projects, isLoading, invalidate, setQueryData } = useTasksData();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskWithRelations | null>(null);
@@ -99,14 +103,15 @@ export const Tasks = () => {
     const newParam = searchParams.get('new');
     const notificationNavigation = isNotificationTaskNavigation(searchParams);
 
-    if (notificationNavigation) {
-      const navigationKey = `${taskId}:${projectId || ''}`;
-      if (handledNotificationNavigation.current !== navigationKey) {
-        setMyTasksOnly(false);
-        handledNotificationNavigation.current = navigationKey;
-      }
+    if (shouldDisableMyTasksForNavigation(
+      searchParams,
+      location.key,
+      handledNotificationNavigation.current,
+    )) {
+      setMyTasksOnly(false);
+      handledNotificationNavigation.current = location.key;
     } else {
-      handledNotificationNavigation.current = null;
+      if (!notificationNavigation) handledNotificationNavigation.current = null;
     }
 
     // Set project filter if provided
@@ -131,7 +136,7 @@ export const Tasks = () => {
         }
       }
     }
-  }, [searchParams, tasks, isLoading, setSearchParams]);
+  }, [searchParams, tasks, isLoading, setSearchParams, location.key]);
 
   const createTask = async (taskData: any) => {
     try {
