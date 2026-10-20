@@ -5,6 +5,7 @@ import { Project, ProjectStatus } from "@/types";
 import { TaskStatus, TaskPriority, TaskType } from "@/types/task";
 import { account, databases, DATABASE_ID, ID, Query } from "@/integrations/appwrite/client";
 import { notifyTaskCreated } from "@/services/notificationService";
+import { logTaskCreated } from "@/utils/activityLogger";
 
 type TaskFromProjectOverrides = {
   title?: string;
@@ -108,6 +109,7 @@ export const useProjectToTask = () => {
       console.log('Inserting task with data:', taskData);
 
       const data = await databases.createDocument(DATABASE_ID, 'tasks', ID.unique(), taskData);
+      await logTaskCreated(data.$id);
       await notifyTaskCreated(data, user.$id);
 
       console.log('Task created successfully:', data);

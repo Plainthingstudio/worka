@@ -365,6 +365,7 @@ export const useTasks = (projectId: string) => {
       };
 
       const data = await databases.createDocument(DATABASE_ID, 'tasks', ID.unique(), insertData);
+      await logTaskCreated(data.$id);
       await notifyTaskCreated(data, user.$id);
 
       toast({ title: "Success", description: "Subtask created successfully" });

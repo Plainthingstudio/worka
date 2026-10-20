@@ -14,6 +14,7 @@ import { account, databases, DATABASE_ID, Query } from "@/integrations/appwrite/
 import { useUserRole } from "@/hooks/useUserRole";
 import { dispatchNotifications } from "@/services/notificationService";
 import { getAvatarUrl } from "@/lib/avatars";
+import { TeamMemberDetailsSheet } from "@/components/team/TeamMemberDetailsSheet";
 
 const APPWRITE_PAGE_SIZE = 100;
 
@@ -43,6 +44,7 @@ const Team = () => {
   const [search, setSearch] = useState("");
   const [positionFilter, setPositionFilter] = useState<string>("all");
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [viewingMember, setViewingMember] = useState<TeamMember | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isInvitationDialogOpen, setIsInvitationDialogOpen] = useState(false);
@@ -298,6 +300,7 @@ const Team = () => {
             <div className="mobile-scroll overflow-x-auto">
               <TeamTable
                 members={filteredMembers}
+                onView={setViewingMember}
                 onEdit={canManageTeam() ? openEditMemberDialog : undefined}
                 onDelete={canManageTeam() ? openDeleteDialog : undefined}
               />
@@ -329,6 +332,14 @@ const Team = () => {
           onConfirm={() => isDeleting && handleDeleteMember(isDeleting)}
         />
       )}
+
+      <TeamMemberDetailsSheet
+        member={viewingMember}
+        open={Boolean(viewingMember)}
+        onOpenChange={(open) => {
+          if (!open) setViewingMember(null);
+        }}
+      />
     </>
   );
 };

@@ -16,11 +16,12 @@ import {
 
 interface TeamMemberItemProps {
   member: TeamMember;
+  onView?: (member: TeamMember) => void;
   onEdit?: (member: TeamMember) => void;
   onDelete?: (id: string) => void;
 }
 
-const TeamMemberItem = ({ member, onEdit, onDelete }: TeamMemberItemProps) => {
+const TeamMemberItem = ({ member, onView, onEdit, onDelete }: TeamMemberItemProps) => {
   const showActions = onEdit || onDelete;
 
   const getRoleBadgeVariant = (role?: string): React.ComponentProps<typeof Badge>["variant"] => {
@@ -33,7 +34,19 @@ const TeamMemberItem = ({ member, onEdit, onDelete }: TeamMemberItemProps) => {
   };
 
   return (
-    <TableRow key={member.id}>
+    <TableRow
+      key={member.id}
+      className={onView ? "cursor-pointer" : undefined}
+      tabIndex={onView ? 0 : undefined}
+      onClick={() => onView?.(member)}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return;
+        if (onView && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          onView(member);
+        }
+      }}
+    >
       <TableCell className="font-medium">
         <div className="flex items-center gap-3">
           <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size={32} />
@@ -92,7 +105,10 @@ const TeamMemberItem = ({ member, onEdit, onDelete }: TeamMemberItemProps) => {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => onEdit(member)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onEdit(member);
+                      }}
                     >
                       <Pencil className="h-4 w-4" />
                       <span className="sr-only">Edit</span>
@@ -113,7 +129,10 @@ const TeamMemberItem = ({ member, onEdit, onDelete }: TeamMemberItemProps) => {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-destructive"
-                      onClick={() => onDelete(member.id)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onDelete(member.id);
+                      }}
                     >
                       <Trash className="h-4 w-4" />
                       <span className="sr-only">Delete</span>

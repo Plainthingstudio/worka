@@ -13,11 +13,12 @@ import TeamMemberItem from "./TeamMember";
 
 interface TeamTableProps {
   members: TeamMember[];
+  onView?: (member: TeamMember) => void;
   onEdit?: (member: TeamMember) => void;
   onDelete?: (id: string) => void;
 }
 
-const TeamTable = ({ members, onEdit, onDelete }: TeamTableProps) => {
+const TeamTable = ({ members, onView, onEdit, onDelete }: TeamTableProps) => {
   const showActions = onEdit || onDelete;
 
   return (
@@ -46,6 +47,7 @@ const TeamTable = ({ members, onEdit, onDelete }: TeamTableProps) => {
             <TeamMemberItem 
               key={member.id}
               member={member}
+              onView={onView}
               onEdit={onEdit}
               onDelete={onDelete}
             />
